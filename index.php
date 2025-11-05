@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Encontre Ocampo - E-commerce de Frutas</title>
     <link rel="stylesheet" href="index.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%234CAF50'>EO</text></svg>">
+    <link rel="shortcut icon" href="img/Logo - Copia.jpg" type="image/x-icon">
 </head>
 <body>
     <!-- Header/Navbar -->
@@ -63,7 +63,7 @@
                         <h3>Maçãs Vermelhas</h3>
                         <p>Frescas direto do pomar</p>
                         <span class="price">R$ 4,50/kg</span>
-                        <button class="buy-btn">Adicionar ao Carrinho</button>
+                        <button class="buy-btn">Ver</button>
                     </div>
                 </div>
                 <div class="product-card">
@@ -72,7 +72,7 @@
                         <h3>Laranjas Doces</h3>
                         <p>Colhidas no ponto certo</p>
                         <span class="price">R$ 3,20/kg</span>
-                        <button class="buy-btn">Adicionar ao Carrinho</button>
+                        <button class="buy-btn">Ver</button>
                     </div>
                 </div>
                 <div class="product-card">
@@ -81,7 +81,7 @@
                         <h3>Bananas Prata</h3>
                         <p>Maduras e saborosas</p>
                         <span class="price">R$ 2,80/kg</span>
-                        <button class="buy-btn">Adicionar ao Carrinho</button>
+                        <button class="buy-btn">Ver</button>
                     </div>
                 </div>
                 <div class="product-card">
@@ -90,28 +90,28 @@
                         <h3>Uvas Verdes</h3>
                         <p>Dulces e sem sementes</p>
                         <span class="price">R$ 8,90/kg</span>
-                        <button class="buy-btn">Adicionar ao Carrinho</button>
+                        <button class="buy-btn">Ver</button>
                     </div>
                 </div>
             </div>
+            <button id="accesbtn">Acessar plataforma</button>
         </div>
     </section>
 
     <!-- Seção Vender -->
     <section id="vender" class="section bg-light">
         <div class="container">
-            <h2 class="section-title">Venda Suas Frutas</h2>
+            <h2 class="section-title">Torne-se um Vendedor</h2>
             <div class="sell-content">
                 <div class="sell-text">
-                    <h3>Conecte-se com compradores de todo o país</h3>
+                    <h3>Venda para compradores de todo o país</h3>
                     <p>Oferecemos uma plataforma segura para que produtores rurais possam vender suas frutas diretamente para comerciantes, atacadistas e consumidores finais.</p>
                     <ul class="benefits-list">
                         <li>Alcance nacional</li>
-                        <li>Pagamento seguro</li>
-                        <li>Logística integrada</li>
+                        <li>Compra segura</li>
                         <li>Suporte ao produtor</li>
                     </ul>
-                    <a href="#contato" class="cta-button">Cadastre-se como vendedor</a>
+                    <a href="#contato" class="cta-button">Inscreva-se como vendedor</a>
                 </div>
                 <div class="sell-image">
                     <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Agricultor colhendo frutas">
@@ -123,29 +123,29 @@
     <!-- Seção Transporte -->
     <section id="transporte" class="section">
         <div class="container">
-            <h2 class="section-title">Serviço de Transporte</h2>
+            <h2 class="section-title">Transporte</h2>
             <div class="transport-content">
                 <div class="transport-image">
                     <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80" alt="Caminhão de transporte de frutas">
                 </div>
                 <div class="transport-text">
                     <h3>Logística especializada para frutas</h3>
-                    <p>Oferecemos serviços de transporte refrigerado para garantir que suas frutas cheguem frescas ao destino, mantendo a qualidade e o sabor.</p>
+                    <p>Cadastre-se como transportador, escolha um destino e receba por isso!</p>
                     <div class="transport-features">
                         <div class="feature">
-                            <h4>Transporte Refrigerado</h4>
-                            <p>Veículos com temperatura controlada</p>
+                            <h4>Transporte Seguro</h4>
+                            <p>Apenas transportadores aprovados podem fazer entregas por nossa plataforma.</p>
                         </div>
                         <div class="feature">
                             <h4>Rastreamento</h4>
                             <p>Acompanhe sua carga em tempo real</p>
                         </div>
                         <div class="feature">
-                            <h4>Entrega Rápida</h4>
-                            <p>Prazos otimizados para todo o país</p>
+                            <h4>Entrega </h4>
+                            <p>Entregas para todo o país.</p>
                         </div>
                     </div>
-                    <a href="#contato" class="cta-button">Solicitar Orçamento</a>
+                    <a href="#contato" class="cta-button">Inscreva-se</a>
                 </div>
             </div>
         </div>
@@ -185,11 +185,10 @@
                             <input type="email" id="email" name="email" required>
                         </div>
                         <div class="form-group">
-                            <label for="subject">Assunto</label>
+                            <label for="subject">Quero me tornar:</label>
                             <select id="subject" name="subject">
-                                <option value="compra">Comprar frutas</option>
-                                <option value="venda">Vender frutas</option>
-                                <option value="transporte">Serviço de transporte</option>
+                                <option value="compra">Vendedor</option>
+                                <option value="venda">Transportador</option>
                                 <option value="outro">Outro</option>
                             </select>
                         </div>

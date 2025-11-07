@@ -548,6 +548,265 @@ body {
     color: var(--primary-light);
 }
 
+/* Estilos para os campos específicos do vendedor */
+#sellerFields {
+    margin-top: 20px;
+    padding: 25px;
+    background-color: var(--light-color);
+    border-radius: 10px;
+    border-left: 4px solid var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+/* Loading state para o botão de buscar CEP */
+button[onclick="buscarCEP()"] {
+    background: var(--primary-color) !important;
+    color: white !important;
+    border: none !important;
+    padding: 12px 20px !important;
+    border-radius: 5px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    white-space: nowrap;
+}
+
+button[onclick="buscarCEP()"]:hover {
+    background: var(--primary-dark) !important;
+}
+
+button[onclick="buscarCEP()"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed !important;
+}
+
+/* Grupo de campos em linha */
+.form-group-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-group-row .form-group {
+    flex: 1;
+}
+
+/* Estilo para campos com máscara */
+input:valid {
+    border-color: var(--primary-light);
+}
+
+input:invalid:not(:focus):not(:placeholder-shown) {
+    border-color: #ff6b6b;
+}
+
+/* Indicador de campo obrigatório */
+.required::after {
+    content: " *";
+    color: #ff6b6b;
+}
+
+/* Responsividade para os campos em linha */
+@media screen and (max-width: 576px) {
+    .form-group-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    #sellerFields {
+        padding: 15px;
+    }
+    
+    button[onclick="buscarCEP()"] {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+
+
+/* Estilos para os campos específicos do vendedor e transportador */
+#sellerFields, #transportadorFields {
+    margin-top: 20px;
+    padding: 25px;
+    background-color: var(--light-color);
+    border-radius: 10px;
+    border-left: 4px solid var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+/* Sistema de múltiplas etapas */
+.multi-step-form {
+    position: relative;
+}
+
+.progress-indicator {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.progress-indicator::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #ddd;
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+.progress-step {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.progress-step.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.step-content {
+    display: none;
+}
+
+.step-content.active {
+    display: block;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Botões de navegação */
+.step-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    gap: 15px;
+}
+
+.step-btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-prev {
+    background: #f5f5f5;
+    color: var(--text-color);
+}
+
+.btn-next, .btn-submit {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-prev:hover {
+    background: #e0e0e0;
+}
+
+.btn-next:hover, .btn-submit:hover {
+    background: var(--primary-dark);
+}
+
+/* Loading state para o botão de buscar CEP */
+button[onclick="buscarCEP()"] {
+    background: var(--primary-color) !important;
+    color: white !important;
+    border: none !important;
+    padding: 12px 20px !important;
+    border-radius: 5px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    white-space: nowrap;
+}
+
+button[onclick="buscarCEP()"]:hover {
+    background: var(--primary-dark) !important;
+}
+
+button[onclick="buscarCEP()"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed !important;
+}
+
+/* Grupo de campos em linha */
+.form-group-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-group-row .form-group {
+    flex: 1;
+}
+
+/* Estilo para campos com máscara */
+input:valid {
+    border-color: var(--primary-light);
+}
+
+input:invalid:not(:focus):not(:placeholder-shown) {
+    border-color: #ff6b6b;
+}
+
+/* Indicador de campo obrigatório */
+.required::after {
+    content: " *";
+    color: #ff6b6b;
+}
+
+/* Responsividade */
+@media screen and (max-width: 576px) {
+    .form-group-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    #sellerFields, #transportadorFields {
+        padding: 15px;
+    }
+    
+    button[onclick="buscarCEP()"] {
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    .step-navigation {
+        flex-direction: column;
+    }
+    
+    .step-btn {
+        width: 100%;
+    }
+    
+    .progress-indicator {
+        margin-bottom: 20px;
+    }
+    
+    .progress-step {
+        width: 25px;
+        height: 25px;
+        font-size: 0.8rem;
+    }
+}
+
 /* Responsive Design */
 @media screen and (max-width: 992px) {
     .sell-content,

@@ -30,7 +30,7 @@
                         <a href="#contato" class="nav-link">Registre-se</a>
                     </li>
                     <li class="nav-item">
-                        <a href="#login" class="nav-link login-button no-underline">Login</a>
+                        <a href="src/login.php" class="nav-link login-button no-underline">Login</a>
                     </li>
                 </ul>
                 <div class="hamburger">

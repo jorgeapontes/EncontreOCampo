@@ -1,5 +1,4 @@
 <?php
-session_start();
 require_once 'conexao.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -33,14 +32,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $db->beginTransaction();
 
-        // Criar usuário com status pendente
-        $senha_temporaria = password_hash(bin2hex(random_bytes(8)), PASSWORD_DEFAULT);
+        // Criar senha temporária
+        $senha_temporaria = bin2hex(random_bytes(8));
+        $senha_hash = password_hash($senha_temporaria, PASSWORD_DEFAULT);
         
         $query = "INSERT INTO usuarios (email, senha, tipo, nome, status) 
                   VALUES (:email, :senha, :tipo, :nome, 'pendente')";
         $stmt = $db->prepare($query);
         $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':senha', $senha_temporaria);
+        $stmt->bindParam(':senha', $senha_hash);
         $stmt->bindParam(':tipo', $subject);
         $stmt->bindParam(':nome', $nome);
         $stmt->execute();
@@ -106,7 +106,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $db->commit();
 
-        $_SESSION['sucesso'] = "Solicitação de cadastro enviada com sucesso! Aguarde a aprovação do administrador.";
+        // Enviar email com senha temporária (implementar função de email)
+        $_SESSION['sucesso'] = "Solicitação de cadastro enviada com sucesso! Aguarde a aprovação do administrador. Sua senha temporária é: " . $senha_temporaria;
         header("Location: index.php#contato");
         exit();
 

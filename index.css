@@ -23,6 +23,7 @@ body {
     line-height: 1.6;
     color: var(--text-color);
     background-color: var(--white);
+    scroll-behavior: smooth;
 }
 
 .container {
@@ -69,6 +70,7 @@ body {
 .nav-menu {
     display: flex;
     list-style: none;
+    align-items: center;
 }
 
 .nav-item {
@@ -104,6 +106,25 @@ body {
     width: 100%;
 }
 
+.nav-link.login-button {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 8px 20px;
+    border-radius: 20px;
+    transition: background-color 0.3s ease;
+    margin-left: 15px;
+}
+
+.nav-link.login-button:hover {
+    background-color: var(--primary-dark);
+    color: var(--white);
+}
+
+/* Remover sublinhado do botão login */
+.nav-link.no-underline::after {
+    display: none;
+}
+
 .hamburger {
     display: none;
     cursor: pointer;
@@ -131,7 +152,6 @@ body {
     text-align: center;
     color: var(--white);
     margin-top: 70px;
-    text-align: center;
 }
 
 .hero-content h1 {
@@ -140,12 +160,12 @@ body {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.hero-content p {
+.hero-text {
     font-size: 1.2rem;
     margin-bottom: 30px;
     max-width: 600px;
-    justify-content: center;
-    align-items: center;
+    margin-left: auto;
+    margin-right: auto;
     text-align: center;
 }
 
@@ -331,17 +351,31 @@ body {
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--light-color);
+    min-height: 300px;
 }
 
-.sell-image img {
-    width: 100%;
-    height: auto;
-    display: block;
-    transition: transform 0.5s ease;
+.logo-large {
+    text-align: center;
+    color: var(--primary-color);
 }
 
-.sell-image:hover img {
-    transform: scale(1.05);
+.logo-large h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 0;
+}
+
+.logo-large h2 {
+    font-size: 2.8rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-top: -10px;
+    color: var(--dark-color);
 }
 
 /* Transport Section */
@@ -548,90 +582,6 @@ body {
     color: var(--primary-light);
 }
 
-/* Estilos para os campos específicos do vendedor */
-#sellerFields {
-    margin-top: 20px;
-    padding: 25px;
-    background-color: var(--light-color);
-    border-radius: 10px;
-    border-left: 4px solid var(--primary-color);
-    transition: all 0.3s ease;
-}
-
-/* Loading state para o botão de buscar CEP */
-button[onclick="buscarCEP()"] {
-    background: var(--primary-color) !important;
-    color: white !important;
-    border: none !important;
-    padding: 12px 20px !important;
-    border-radius: 5px !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-    white-space: nowrap;
-}
-
-button[onclick="buscarCEP()"]:hover {
-    background: var(--primary-dark) !important;
-}
-
-button[onclick="buscarCEP()"]:disabled {
-    opacity: 0.6;
-    cursor: not-allowed !important;
-}
-
-/* Grupo de campos em linha */
-.form-group-row {
-    display: flex;
-    gap: 15px;
-}
-
-.form-group-row .form-group {
-    flex: 1;
-}
-
-/* Estilo para campos com máscara */
-input:valid {
-    border-color: var(--primary-light);
-}
-
-input:invalid:not(:focus):not(:placeholder-shown) {
-    border-color: #ff6b6b;
-}
-
-/* Indicador de campo obrigatório */
-.required::after {
-    content: " *";
-    color: #ff6b6b;
-}
-
-/* Responsividade para os campos em linha */
-@media screen and (max-width: 576px) {
-    .form-group-row {
-        flex-direction: column;
-        gap: 0;
-    }
-    
-    #sellerFields {
-        padding: 15px;
-    }
-    
-    button[onclick="buscarCEP()"] {
-        width: 100%;
-        margin-top: 10px;
-    }
-}
-
-
-/* Estilos para os campos específicos do vendedor e transportador */
-#sellerFields, #transportadorFields {
-    margin-top: 20px;
-    padding: 25px;
-    background-color: var(--light-color);
-    border-radius: 10px;
-    border-left: 4px solid var(--primary-color);
-    transition: all 0.3s ease;
-}
-
 /* Sistema de múltiplas etapas */
 .multi-step-form {
     position: relative;
@@ -727,7 +677,7 @@ input:invalid:not(:focus):not(:placeholder-shown) {
 }
 
 /* Loading state para o botão de buscar CEP */
-button[onclick="buscarCEP()"] {
+button[onclick*="buscarCEP"] {
     background: var(--primary-color) !important;
     color: white !important;
     border: none !important;
@@ -738,11 +688,11 @@ button[onclick="buscarCEP()"] {
     white-space: nowrap;
 }
 
-button[onclick="buscarCEP()"]:hover {
+button[onclick*="buscarCEP"]:hover {
     background: var(--primary-dark) !important;
 }
 
-button[onclick="buscarCEP()"]:disabled {
+button[onclick*="buscarCEP"]:disabled {
     opacity: 0.6;
     cursor: not-allowed !important;
 }
@@ -783,7 +733,7 @@ input:invalid:not(:focus):not(:placeholder-shown) {
         padding: 15px;
     }
     
-    button[onclick="buscarCEP()"] {
+    button[onclick*="buscarCEP"] {
         width: 100%;
         margin-top: 10px;
     }
@@ -804,6 +754,14 @@ input:invalid:not(:focus):not(:placeholder-shown) {
         width: 25px;
         height: 25px;
         font-size: 0.8rem;
+    }
+
+    .logo-large h1 {
+        font-size: 2.5rem;
+    }
+
+    .logo-large h2 {
+        font-size: 2rem;
     }
 }
 
@@ -891,7 +849,7 @@ input:invalid:not(:focus):not(:placeholder-shown) {
         font-size: 1.8rem;
     }
     
-    .hero-content p {
+    .hero-text {
         font-size: 1rem;
     }
     

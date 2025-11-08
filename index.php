@@ -18,9 +18,6 @@
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="#inicio" class="nav-link">Início</a>
-                    </li>
-                    <li class="nav-item">
                         <a href="#comprar" class="nav-link">Comprar</a>
                     </li>
                     <li class="nav-item">
@@ -31,6 +28,9 @@
                     </li>
                     <li class="nav-item">
                         <a href="#contato" class="nav-link">Registre-se</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#login" class="nav-link login-button no-underline">Login</a>
                     </li>
                 </ul>
                 <div class="hamburger">
@@ -46,7 +46,7 @@
     <section id="inicio" class="hero">
         <div class="hero-content">
             <h1>O melhor mercado de frutas do campo</h1>
-            <p>Conectamos produtores e compradores com qualidade e agilidade</p>
+            <p class="hero-text">Conectamos produtores e compradores com qualidade e agilidade</p>
             <a href="#comprar" class="cta-button">Compre agora</a>
             <a href="#vender" class="cta-button secondary">Venda conosco</a>
         </div>
@@ -114,7 +114,9 @@
                     <a href="#contato" class="cta-button">Inscreva-se como vendedor</a>
                 </div>
                 <div class="sell-image">
-                    <img src="https://images.unsplash.com-1500937386664-56d1dfef3854?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Agricultor colhendo frutas">
+                    <div class="logo-large">
+                        <img src="img/Logo - Copia.jpg" alt="Logo">
+                    </div>
                 </div>
             </div>
         </div>
@@ -126,7 +128,7 @@
             <h2 class="section-title">Transporte</h2>
             <div class="transport-content">
                 <div class="transport-image">
-                    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80" alt="Caminhão de transporte de frutas">
+                    <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Agricultor colhendo frutas">
                 </div>
                 <div class="transport-text">
                     <h3>Logística especializada para frutas</h3>
@@ -195,209 +197,303 @@
                             </select>
                         </div>
 
-                        <!-- Campos específicos para COMPRADOR -->
+                        <!-- Campos específicos para COMPRADOR (Sistema de múltiplas etapas) -->
                         <div id="compradorFields" style="display: none;">
-                            <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados do Comprador</h4>
-                            
-                            <div class="form-group">
-                                <label for="nomeComercialComprador">Nome Comercial</label>
-                                <input type="text" id="nomeComercialComprador" name="nomeComercialComprador">
-                            </div>
-                            <div class="form-group">
-                                <label for="cpfCnpjComprador" class="required">CPF/CNPJ</label>
-                                <input type="text" id="cpfCnpjComprador" name="cpfCnpjComprador" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="cipComprador">CIP</label>
-                                <input type="text" id="cipComprador" name="cipComprador">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="cepComprador">CEP</label>
-                                <div style="display: flex; gap: 10px; align-items: flex-start;">
-                                    <input type="text" id="cepComprador" name="cepComprador" maxlength="9" placeholder="00000-000" style="flex: 1;">
-                                    <button type="button" onclick="buscarCEPComprador()">Buscar CEP</button>
+                            <div class="multi-step-form">
+                                <!-- Indicador de Progresso -->
+                                <div class="progress-indicator">
+                                    <div class="progress-step active" data-step="1">1</div>
+                                    <div class="progress-step" data-step="2">2</div>
+                                    <div class="progress-step" data-step="3">3</div>
                                 </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="ruaComprador" class="required">Rua</label>
-                                <input type="text" id="ruaComprador" name="ruaComprador" required>
-                            </div>
-                            
-                            <div class="form-group-row">
-                                <div class="form-group">
-                                    <label for="numeroComprador" class="required">Número</label>
-                                    <input type="text" id="numeroComprador" name="numeroComprador" required>
+
+                                <!-- Etapa 1: Dados Pessoais -->
+                                <div id="compradorStep1" class="step-content active">
+                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
+                                    
+                                    <div class="form-group">
+                                        <label for="nomeComercialComprador">Nome Comercial</label>
+                                        <input type="text" id="nomeComercialComprador" name="nomeComercialComprador">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cpfCnpjComprador" class="required">CPF/CNPJ</label>
+                                        <input type="text" id="cpfCnpjComprador" name="cpfCnpjComprador" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cipComprador">CIP</label>
+                                        <input type="text" id="cipComprador" name="cipComprador">
+                                    </div>
+                                    
+                                    <div class="step-navigation">
+                                        <div></div>
+                                        <button type="button" class="step-btn btn-next" onclick="nextStep('comprador')">
+                                            Próximo →
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="complementoComprador">Complemento</label>
-                                    <input type="text" id="complementoComprador" name="complementoComprador">
+
+                                <!-- Etapa 2: Endereço -->
+                                <div id="compradorStep2" class="step-content">
+                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
+                                    
+                                    <div class="form-group">
+                                        <label for="cepComprador">CEP</label>
+                                        <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <input type="text" id="cepComprador" name="cepComprador" maxlength="9" placeholder="00000-000" style="flex: 1;">
+                                            <button type="button" onclick="buscarCEPComprador()">Buscar CEP</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="ruaComprador" class="required">Rua</label>
+                                        <input type="text" id="ruaComprador" name="ruaComprador" required>
+                                    </div>
+                                    
+                                    <div class="form-group-row">
+                                        <div class="form-group">
+                                            <label for="numeroComprador" class="required">Número</label>
+                                            <input type="text" id="numeroComprador" name="numeroComprador" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="complementoComprador">Complemento</label>
+                                            <input type="text" id="complementoComprador" name="complementoComprador">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group-row">
+                                        <div class="form-group">
+                                            <label for="estadoComprador" class="required">Estado</label>
+                                            <select id="estadoComprador" name="estadoComprador" required>
+                                                <option value="">Selecione...</option>
+                                                <option value="AC">Acre</option>
+                                                <option value="AL">Alagoas</option>
+                                                <option value="AP">Amapá</option>
+                                                <option value="AM">Amazonas</option>
+                                                <option value="BA">Bahia</option>
+                                                <option value="CE">Ceará</option>
+                                                <option value="DF">Distrito Federal</option>
+                                                <option value="ES">Espírito Santo</option>
+                                                <option value="GO">Goiás</option>
+                                                <option value="MA">Maranhão</option>
+                                                <option value="MT">Mato Grosso</option>
+                                                <option value="MS">Mato Grosso do Sul</option>
+                                                <option value="MG">Minas Gerais</option>
+                                                <option value="PA">Pará</option>
+                                                <option value="PB">Paraíba</option>
+                                                <option value="PR">Paraná</option>
+                                                <option value="PE">Pernambuco</option>
+                                                <option value="PI">Piauí</option>
+                                                <option value="RJ">Rio de Janeiro</option>
+                                                <option value="RN">Rio Grande do Norte</option>
+                                                <option value="RS">Rio Grande do Sul</option>
+                                                <option value="RO">Rondônia</option>
+                                                <option value="RR">Roraima</option>
+                                                <option value="SC">Santa Catarina</option>
+                                                <option value="SP">São Paulo</option>
+                                                <option value="SE">Sergipe</option>
+                                                <option value="TO">Tocantins</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="cidadeComprador" class="required">Cidade</label>
+                                            <input type="text" id="cidadeComprador" name="cidadeComprador" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="step-navigation">
+                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('comprador')">
+                                            ← Voltar
+                                        </button>
+                                        <button type="button" class="step-btn btn-next" onclick="nextStep('comprador')">
+                                            Próximo →
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div class="form-group-row">
-                                <div class="form-group">
-                                    <label for="estadoComprador" class="required">Estado</label>
-                                    <select id="estadoComprador" name="estadoComprador" required>
-                                        <option value="">Selecione...</option>
-                                        <option value="AC">Acre</option>
-                                        <option value="AL">Alagoas</option>
-                                        <option value="AP">Amapá</option>
-                                        <option value="AM">Amazonas</option>
-                                        <option value="BA">Bahia</option>
-                                        <option value="CE">Ceará</option>
-                                        <option value="DF">Distrito Federal</option>
-                                        <option value="ES">Espírito Santo</option>
-                                        <option value="GO">Goiás</option>
-                                        <option value="MA">Maranhão</option>
-                                        <option value="MT">Mato Grosso</option>
-                                        <option value="MS">Mato Grosso do Sul</option>
-                                        <option value="MG">Minas Gerais</option>
-                                        <option value="PA">Pará</option>
-                                        <option value="PB">Paraíba</option>
-                                        <option value="PR">Paraná</option>
-                                        <option value="PE">Pernambuco</option>
-                                        <option value="PI">Piauí</option>
-                                        <option value="RJ">Rio de Janeiro</option>
-                                        <option value="RN">Rio Grande do Norte</option>
-                                        <option value="RS">Rio Grande do Sul</option>
-                                        <option value="RO">Rondônia</option>
-                                        <option value="RR">Roraima</option>
-                                        <option value="SC">Santa Catarina</option>
-                                        <option value="SP">São Paulo</option>
-                                        <option value="SE">Sergipe</option>
-                                        <option value="TO">Tocantins</option>
-                                    </select>
+
+                                <!-- Etapa 3: Contato e Plano -->
+                                <div id="compradorStep3" class="step-content">
+                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Contato e Plano</h4>
+                                    
+                                    <div class="form-group-row">
+                                        <div class="form-group">
+                                            <label for="telefone1Comprador" class="required">Telefone/Celular</label>
+                                            <input type="text" id="telefone1Comprador" name="telefone1Comprador" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="telefone2Comprador">Telefone/Celular (opcional)</label>
+                                            <input type="text" id="telefone2Comprador" name="telefone2Comprador">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="planoComprador">Plano</label>
+                                        <select id="planoComprador" name="planoComprador">
+                                            <option value="">Selecione...</option>
+                                            <option value="basico">Básico</option>
+                                            <option value="premium">Premium</option>
+                                            <option value="empresarial">Empresarial</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="step-navigation">
+                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('comprador')">
+                                            ← Voltar
+                                        </button>
+                                        <button type="submit" class="step-btn btn-submit">
+                                            Finalizar Cadastro
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="cidadeComprador" class="required">Cidade</label>
-                                    <input type="text" id="cidadeComprador" name="cidadeComprador" required>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group-row">
-                                <div class="form-group">
-                                    <label for="telefone1Comprador" class="required">Telefone/Celular</label>
-                                    <input type="text" id="telefone1Comprador" name="telefone1Comprador" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="telefone2Comprador">Telefone/Celular (opcional)</label>
-                                    <input type="text" id="telefone2Comprador" name="telefone2Comprador">
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="planoComprador">Plano</label>
-                                <select id="planoComprador" name="planoComprador">
-                                    <option value="">Selecione...</option>
-                                    <option value="basico">Básico</option>
-                                    <option value="premium">Premium</option>
-                                    <option value="empresarial">Empresarial</option>
-                                </select>
                             </div>
                         </div>
 
-                        <!-- Campos específicos para VENDEDOR -->
+                        <!-- Campos específicos para VENDEDOR (Sistema de múltiplas etapas) -->
                         <div id="vendedorFields" style="display: none;">
-                            <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados do Vendedor</h4>
-                            
-                            <div class="form-group">
-                                <label for="nomeComercialVendedor">Nome Comercial</label>
-                                <input type="text" id="nomeComercialVendedor" name="nomeComercialVendedor">
-                            </div>
-                            <div class="form-group">
-                                <label for="cpfCnpjVendedor" class="required">CPF/CNPJ</label>
-                                <input type="text" id="cpfCnpjVendedor" name="cpfCnpjVendedor" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="cipVendedor">CIP</label>
-                                <input type="text" id="cipVendedor" name="cipVendedor">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="cepVendedor">CEP</label>
-                                <div style="display: flex; gap: 10px; align-items: flex-start;">
-                                    <input type="text" id="cepVendedor" name="cepVendedor" maxlength="9" placeholder="00000-000" style="flex: 1;">
-                                    <button type="button" onclick="buscarCEPVendedor()">Buscar CEP</button>
+                            <div class="multi-step-form">
+                                <!-- Indicador de Progresso -->
+                                <div class="progress-indicator">
+                                    <div class="progress-step active" data-step="1">1</div>
+                                    <div class="progress-step" data-step="2">2</div>
+                                    <div class="progress-step" data-step="3">3</div>
                                 </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="ruaVendedor" class="required">Rua</label>
-                                <input type="text" id="ruaVendedor" name="ruaVendedor" required>
-                            </div>
-                            
-                            <div class="form-group-row">
-                                <div class="form-group">
-                                    <label for="numeroVendedor" class="required">Número</label>
-                                    <input type="text" id="numeroVendedor" name="numeroVendedor" required>
+
+                                <!-- Etapa 1: Dados Pessoais -->
+                                <div id="vendedorStep1" class="step-content active">
+                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
+                                    
+                                    <div class="form-group">
+                                        <label for="nomeComercialVendedor">Nome Comercial</label>
+                                        <input type="text" id="nomeComercialVendedor" name="nomeComercialVendedor">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cpfCnpjVendedor" class="required">CPF/CNPJ</label>
+                                        <input type="text" id="cpfCnpjVendedor" name="cpfCnpjVendedor" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cipVendedor">CIP</label>
+                                        <input type="text" id="cipVendedor" name="cipVendedor">
+                                    </div>
+                                    
+                                    <div class="step-navigation">
+                                        <div></div>
+                                        <button type="button" class="step-btn btn-next" onclick="nextStep('vendedor')">
+                                            Próximo →
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="complementoVendedor">Complemento</label>
-                                    <input type="text" id="complementoVendedor" name="complementoVendedor">
+
+                                <!-- Etapa 2: Endereço -->
+                                <div id="vendedorStep2" class="step-content">
+                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
+                                    
+                                    <div class="form-group">
+                                        <label for="cepVendedor">CEP</label>
+                                        <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <input type="text" id="cepVendedor" name="cepVendedor" maxlength="9" placeholder="00000-000" style="flex: 1;">
+                                            <button type="button" onclick="buscarCEPVendedor()">Buscar CEP</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="ruaVendedor" class="required">Rua</label>
+                                        <input type="text" id="ruaVendedor" name="ruaVendedor" required>
+                                    </div>
+                                    
+                                    <div class="form-group-row">
+                                        <div class="form-group">
+                                            <label for="numeroVendedor" class="required">Número</label>
+                                            <input type="text" id="numeroVendedor" name="numeroVendedor" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="complementoVendedor">Complemento</label>
+                                            <input type="text" id="complementoVendedor" name="complementoVendedor">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group-row">
+                                        <div class="form-group">
+                                            <label for="estadoVendedor" class="required">Estado</label>
+                                            <select id="estadoVendedor" name="estadoVendedor" required>
+                                                <option value="">Selecione...</option>
+                                                <option value="AC">Acre</option>
+                                                <option value="AL">Alagoas</option>
+                                                <option value="AP">Amapá</option>
+                                                <option value="AM">Amazonas</option>
+                                                <option value="BA">Bahia</option>
+                                                <option value="CE">Ceará</option>
+                                                <option value="DF">Distrito Federal</option>
+                                                <option value="ES">Espírito Santo</option>
+                                                <option value="GO">Goiás</option>
+                                                <option value="MA">Maranhão</option>
+                                                <option value="MT">Mato Grosso</option>
+                                                <option value="MS">Mato Grosso do Sul</option>
+                                                <option value="MG">Minas Gerais</option>
+                                                <option value="PA">Pará</option>
+                                                <option value="PB">Paraíba</option>
+                                                <option value="PR">Paraná</option>
+                                                <option value="PE">Pernambuco</option>
+                                                <option value="PI">Piauí</option>
+                                                <option value="RJ">Rio de Janeiro</option>
+                                                <option value="RN">Rio Grande do Norte</option>
+                                                <option value="RS">Rio Grande do Sul</option>
+                                                <option value="RO">Rondônia</option>
+                                                <option value="RR">Roraima</option>
+                                                <option value="SC">Santa Catarina</option>
+                                                <option value="SP">São Paulo</option>
+                                                <option value="SE">Sergipe</option>
+                                                <option value="TO">Tocantins</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="cidadeVendedor" class="required">Cidade</label>
+                                            <input type="text" id="cidadeVendedor" name="cidadeVendedor" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="step-navigation">
+                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('vendedor')">
+                                            ← Voltar
+                                        </button>
+                                        <button type="button" class="step-btn btn-next" onclick="nextStep('vendedor')">
+                                            Próximo →
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div class="form-group-row">
-                                <div class="form-group">
-                                    <label for="estadoVendedor" class="required">Estado</label>
-                                    <select id="estadoVendedor" name="estadoVendedor" required>
-                                        <option value="">Selecione...</option>
-                                        <option value="AC">Acre</option>
-                                        <option value="AL">Alagoas</option>
-                                        <option value="AP">Amapá</option>
-                                        <option value="AM">Amazonas</option>
-                                        <option value="BA">Bahia</option>
-                                        <option value="CE">Ceará</option>
-                                        <option value="DF">Distrito Federal</option>
-                                        <option value="ES">Espírito Santo</option>
-                                        <option value="GO">Goiás</option>
-                                        <option value="MA">Maranhão</option>
-                                        <option value="MT">Mato Grosso</option>
-                                        <option value="MS">Mato Grosso do Sul</option>
-                                        <option value="MG">Minas Gerais</option>
-                                        <option value="PA">Pará</option>
-                                        <option value="PB">Paraíba</option>
-                                        <option value="PR">Paraná</option>
-                                        <option value="PE">Pernambuco</option>
-                                        <option value="PI">Piauí</option>
-                                        <option value="RJ">Rio de Janeiro</option>
-                                        <option value="RN">Rio Grande do Norte</option>
-                                        <option value="RS">Rio Grande do Sul</option>
-                                        <option value="RO">Rondônia</option>
-                                        <option value="RR">Roraima</option>
-                                        <option value="SC">Santa Catarina</option>
-                                        <option value="SP">São Paulo</option>
-                                        <option value="SE">Sergipe</option>
-                                        <option value="TO">Tocantins</option>
-                                    </select>
+
+                                <!-- Etapa 3: Contato e Plano -->
+                                <div id="vendedorStep3" class="step-content">
+                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Contato e Plano</h4>
+                                    
+                                    <div class="form-group-row">
+                                        <div class="form-group">
+                                            <label for="telefone1Vendedor" class="required">Telefone/Celular</label>
+                                            <input type="text" id="telefone1Vendedor" name="telefone1Vendedor" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="telefone2Vendedor">Telefone/Celular (opcional)</label>
+                                            <input type="text" id="telefone2Vendedor" name="telefone2Vendedor">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="planoVendedor">Plano</label>
+                                        <select id="planoVendedor" name="planoVendedor">
+                                            <option value="">Selecione...</option>
+                                            <option value="basico">Básico</option>
+                                            <option value="premium">Premium</option>
+                                            <option value="empresarial">Empresarial</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="step-navigation">
+                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('vendedor')">
+                                            ← Voltar
+                                        </button>
+                                        <button type="submit" class="step-btn btn-submit">
+                                            Finalizar Cadastro
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="cidadeVendedor" class="required">Cidade</label>
-                                    <input type="text" id="cidadeVendedor" name="cidadeVendedor" required>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group-row">
-                                <div class="form-group">
-                                    <label for="telefone1Vendedor" class="required">Telefone/Celular</label>
-                                    <input type="text" id="telefone1Vendedor" name="telefone1Vendedor" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="telefone2Vendedor">Telefone/Celular (opcional)</label>
-                                    <input type="text" id="telefone2Vendedor" name="telefone2Vendedor">
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="planoVendedor">Plano</label>
-                                <select id="planoVendedor" name="planoVendedor">
-                                    <option value="">Selecione...</option>
-                                    <option value="basico">Básico</option>
-                                    <option value="premium">Premium</option>
-                                    <option value="empresarial">Empresarial</option>
-                                </select>
                             </div>
                         </div>
 
@@ -406,9 +502,9 @@
                             <div class="multi-step-form">
                                 <!-- Indicador de Progresso -->
                                 <div class="progress-indicator">
-                                    <div class="progress-step active">1</div>
-                                    <div class="progress-step">2</div>
-                                    <div class="progress-step">3</div>
+                                    <div class="progress-step active" data-step="1">1</div>
+                                    <div class="progress-step" data-step="2">2</div>
+                                    <div class="progress-step" data-step="3">3</div>
                                 </div>
 
                                 <!-- Etapa 1: Dados Pessoais -->
@@ -432,8 +528,8 @@
                                     </div>
                                     
                                     <div class="step-navigation">
-                                        <div></div> <!-- Espaço vazio para alinhar -->
-                                        <button type="button" class="step-btn btn-next" onclick="nextTransportadorStep()">
+                                        <div></div>
+                                        <button type="button" class="step-btn btn-next" onclick="nextStep('transportador')">
                                             Próximo →
                                         </button>
                                     </div>
@@ -461,10 +557,10 @@
                                     </div>
                                     
                                     <div class="step-navigation">
-                                        <button type="button" class="step-btn btn-prev" onclick="prevTransportadorStep()">
+                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('transportador')">
                                             ← Voltar
                                         </button>
-                                        <button type="button" class="step-btn btn-next" onclick="nextTransportadorStep()">
+                                        <button type="button" class="step-btn btn-next" onclick="nextStep('transportador')">
                                             Próximo →
                                         </button>
                                     </div>
@@ -494,7 +590,7 @@
                                     </div>
                                     
                                     <div class="step-navigation">
-                                        <button type="button" class="step-btn btn-prev" onclick="prevTransportadorStep()">
+                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('transportador')">
                                             ← Voltar
                                         </button>
                                         <button type="submit" class="step-btn btn-submit">
@@ -563,5 +659,58 @@
     </footer>
 
     <script src="script.js"></script>
+    <!-- Modal de Login -->
+<div id="loginModal" class="modal" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+    <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 400px; border-radius: 10px;">
+        <span class="close" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+        <h2 style="color: var(--dark-color); margin-bottom: 20px;">Login</h2>
+        
+        <?php if (isset($_SESSION['erro_login'])): ?>
+            <div style="background: #ffebee; color: #c62828; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                <?php echo $_SESSION['erro_login']; unset($_SESSION['erro_login']); ?>
+            </div>
+        <?php endif; ?>
+
+        <form action="login.php" method="POST">
+            <div class="form-group">
+                <label for="email" class="required">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="senha" class="required">Senha</label>
+                <input type="password" id="senha" name="senha" required>
+            </div>
+            <button type="submit" class="cta-button" style="width: 100%;">Entrar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+// Controle do modal de login
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('loginModal');
+    const btnLogin = document.querySelector('a[href="#login"]');
+    const span = document.getElementsByClassName('close')[0];
+
+    if (btnLogin) {
+        btnLogin.addEventListener('click', function(e) {
+            e.preventDefault();
+            modal.style.display = 'block';
+        });
+    }
+
+    if (span) {
+        span.onclick = function() {
+            modal.style.display = 'none';
+        }
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+});
+</script>
 </body>
 </html>

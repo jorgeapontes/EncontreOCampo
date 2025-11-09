@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             header("Location: transportador/dashboard.php");
                             break;
                         default:
-                            header("Location: index.php");
+                            header("Location: ../index.php");
                     }
                     exit();
                 } else {

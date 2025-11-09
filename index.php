@@ -8,7 +8,12 @@
     <link rel="shortcut icon" href="img/Logo - Copia.jpg" type="image/x-icon">
 </head>
 <body>
-    <!-- Header/Navbar -->
+    <?php
+    if (session_status() == PHP_SESSION_NONE) {
+        session_start();
+    }
+    ?>
+    
     <header>
         <nav class="navbar">
             <div class="nav-container">
@@ -42,7 +47,6 @@
         </nav>
     </header>
 
-    <!-- Seção Hero/Banner -->
     <section id="inicio" class="hero">
         <div class="hero-content">
             <h1>O melhor mercado de frutas do campo</h1>
@@ -52,7 +56,6 @@
         </div>
     </section>
 
-    <!-- Seção Comprar -->
     <section id="comprar" class="section">
         <div class="container">
             <h2 class="section-title">Compre Frutas Frescas</h2>
@@ -98,7 +101,6 @@
         </div>
     </section>
 
-    <!-- Seção Vender -->
     <section id="vender" class="section bg-light">
         <div class="container">
             <h2 class="section-title">Torne-se um Vendedor</h2>
@@ -122,7 +124,6 @@
         </div>
     </section>
 
-    <!-- Seção Transporte -->
     <section id="transporte" class="section">
         <div class="container">
             <h2 class="section-title">Transporte</h2>
@@ -153,7 +154,6 @@
         </div>
     </section>
 
-    <!-- Seção Contato -->
     <section id="contato" class="section bg-light">
         <div class="container">
             <h2 class="section-title">Registre-se</h2>
@@ -177,7 +177,7 @@
                     </div>
                 </div>
                 <div class="contact-form">
-                    <form id="mainForm">
+                    <form id="mainForm" action="src/processar_solicitacao.php" method="POST">
                         <div class="form-group">
                             <label for="name" class="required">Nome</label>
                             <input type="text" id="name" name="name" required>
@@ -186,6 +186,14 @@
                             <label for="email" class="required">Email</label>
                             <input type="email" id="email" name="email" required>
                         </div>
+                        <div class="form-group">
+    <label for="senha" class="required">Senha</label>
+    <input type="password" id="senha" name="senha" required minlength="8" placeholder="Mínimo 8 caracteres">
+</div>
+<div class="form-group">
+    <label for="confirma_senha" class="required">Confirme a Senha</label>
+    <input type="password" id="confirma_senha" name="confirma_senha" required>
+</div>
                         <div class="form-group">
                             <label for="subject" class="required">Quero me tornar:</label>
                             <select id="subject" name="subject" onchange="toggleAdditionalFields()" required>
@@ -197,17 +205,14 @@
                             </select>
                         </div>
 
-                        <!-- Campos específicos para COMPRADOR (Sistema de múltiplas etapas) -->
                         <div id="compradorFields" style="display: none;">
                             <div class="multi-step-form">
-                                <!-- Indicador de Progresso -->
                                 <div class="progress-indicator">
                                     <div class="progress-step active" data-step="1">1</div>
                                     <div class="progress-step" data-step="2">2</div>
                                     <div class="progress-step" data-step="3">3</div>
                                 </div>
 
-                                <!-- Etapa 1: Dados Pessoais -->
                                 <div id="compradorStep1" class="step-content active">
                                     <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
                                     
@@ -232,7 +237,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Etapa 2: Endereço -->
                                 <div id="compradorStep2" class="step-content">
                                     <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
                                     
@@ -310,18 +314,17 @@
                                     </div>
                                 </div>
 
-                                <!-- Etapa 3: Contato e Plano -->
                                 <div id="compradorStep3" class="step-content">
                                     <h4 style="margin-bottom: 20px; color: var(--dark-color);">Contato e Plano</h4>
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
                                             <label for="telefone1Comprador" class="required">Telefone/Celular</label>
-                                            <input type="text" id="telefone1Comprador" name="telefone1Comprador" required>
+                                            <input type="text" id="telefone1Comprador" name="telefone1Comprador" maxlength="15" required>
                                         </div>
                                         <div class="form-group">
                                             <label for="telefone2Comprador">Telefone/Celular (opcional)</label>
-                                            <input type="text" id="telefone2Comprador" name="telefone2Comprador">
+                                            <input type="text" id="telefone2Comprador" name="telefone2Comprador" maxlength="15">
                                         </div>
                                     </div>
                                     
@@ -339,7 +342,7 @@
                                         <button type="button" class="step-btn btn-prev" onclick="prevStep('comprador')">
                                             ← Voltar
                                         </button>
-                                        <button type="submit" class="step-btn btn-submit">
+                                        <button type="button" class="step-btn btn-ajax-submit">
                                             Finalizar Cadastro
                                         </button>
                                     </div>
@@ -347,17 +350,14 @@
                             </div>
                         </div>
 
-                        <!-- Campos específicos para VENDEDOR (Sistema de múltiplas etapas) -->
                         <div id="vendedorFields" style="display: none;">
                             <div class="multi-step-form">
-                                <!-- Indicador de Progresso -->
                                 <div class="progress-indicator">
                                     <div class="progress-step active" data-step="1">1</div>
                                     <div class="progress-step" data-step="2">2</div>
                                     <div class="progress-step" data-step="3">3</div>
                                 </div>
 
-                                <!-- Etapa 1: Dados Pessoais -->
                                 <div id="vendedorStep1" class="step-content active">
                                     <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
                                     
@@ -382,7 +382,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Etapa 2: Endereço -->
                                 <div id="vendedorStep2" class="step-content">
                                     <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
                                     
@@ -460,18 +459,17 @@
                                     </div>
                                 </div>
 
-                                <!-- Etapa 3: Contato e Plano -->
                                 <div id="vendedorStep3" class="step-content">
                                     <h4 style="margin-bottom: 20px; color: var(--dark-color);">Contato e Plano</h4>
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
                                             <label for="telefone1Vendedor" class="required">Telefone/Celular</label>
-                                            <input type="text" id="telefone1Vendedor" name="telefone1Vendedor" required>
+                                            <input type="text" id="telefone1Vendedor" name="telefone1Vendedor" maxlength="15" required>
                                         </div>
                                         <div class="form-group">
                                             <label for="telefone2Vendedor">Telefone/Celular (opcional)</label>
-                                            <input type="text" id="telefone2Vendedor" name="telefone2Vendedor">
+                                            <input type="text" id="telefone2Vendedor" name="telefone2Vendedor" maxlength="15">
                                         </div>
                                     </div>
                                     
@@ -489,7 +487,7 @@
                                         <button type="button" class="step-btn btn-prev" onclick="prevStep('vendedor')">
                                             ← Voltar
                                         </button>
-                                        <button type="submit" class="step-btn btn-submit">
+                                        <button type="button" class="step-btn btn-ajax-submit">
                                             Finalizar Cadastro
                                         </button>
                                     </div>
@@ -497,23 +495,20 @@
                             </div>
                         </div>
 
-                        <!-- Campos específicos para TRANSPORTADOR (Sistema de múltiplas etapas) -->
                         <div id="transportadorFields" style="display: none;">
                             <div class="multi-step-form">
-                                <!-- Indicador de Progresso -->
                                 <div class="progress-indicator">
                                     <div class="progress-step active" data-step="1">1</div>
                                     <div class="progress-step" data-step="2">2</div>
                                     <div class="progress-step" data-step="3">3</div>
                                 </div>
 
-                                <!-- Etapa 1: Dados Pessoais -->
                                 <div id="transportadorStep1" class="step-content active">
                                     <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
                                     
                                     <div class="form-group">
                                         <label for="telefoneTransportador" class="required">Telefone/Celular</label>
-                                        <input type="text" id="telefoneTransportador" name="telefoneTransportador" required>
+                                        <input type="text" id="telefoneTransportador" name="telefoneTransportador" maxlength="15" required>
                                     </div>
                                     
                                     <div class="form-group-row">
@@ -535,7 +530,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Etapa 2: Dados do Veículo -->
                                 <div id="transportadorStep2" class="step-content">
                                     <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados do Veículo</h4>
                                     
@@ -566,7 +560,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Etapa 3: Localização -->
                                 <div id="transportadorStep3" class="step-content">
                                     <h4 style="margin-bottom: 20px; color: var(--dark-color);">Localização</h4>
                                     
@@ -593,7 +586,7 @@
                                         <button type="button" class="step-btn btn-prev" onclick="prevStep('transportador')">
                                             ← Voltar
                                         </button>
-                                        <button type="submit" class="step-btn btn-submit">
+                                        <button type="button" class="step-btn btn-ajax-submit">
                                             Finalizar Cadastro
                                         </button>
                                     </div>
@@ -601,20 +594,18 @@
                             </div>
                         </div>
 
-                        <!-- Campo de mensagem (só aparece se não for comprador/vendedor/transportador) -->
                         <div class="form-group" id="messageGroup">
                             <label for="message" class="required">Mensagem</label>
                             <textarea id="message" name="message" rows="5" required></textarea>
                         </div>
 
-                        <button type="submit" class="cta-button">Enviar solicitação</button>
+                        <button type="button" id="submitOther" class="cta-button">Enviar solicitação</button>
                     </form>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -658,59 +649,32 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
-    <!-- Modal de Login -->
-<div id="loginModal" class="modal" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
-    <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 400px; border-radius: 10px;">
-        <span class="close" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
-        <h2 style="color: var(--dark-color); margin-bottom: 20px;">Login</h2>
-        
-        <?php if (isset($_SESSION['erro_login'])): ?>
-            <div style="background: #ffebee; color: #c62828; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
-                <?php echo $_SESSION['erro_login']; unset($_SESSION['erro_login']); ?>
-            </div>
-        <?php endif; ?>
+    <div id="loginModal" class="modal" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 400px; border-radius: 10px;">
+            <span class="close" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <h2 style="color: var(--dark-color); margin-bottom: 20px;">Login</h2>
+            
+            <?php if (isset($_SESSION['erro_login'])): ?>
+                <div style="background: #ffebee; color: #c62828; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                    <?php echo $_SESSION['erro_login']; unset($_SESSION['erro_login']); ?>
+                </div>
+            <?php endif; ?>
 
-        <form action="login.php" method="POST">
-            <div class="form-group">
-                <label for="email" class="required">Email</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="senha" class="required">Senha</label>
-                <input type="password" id="senha" name="senha" required>
-            </div>
-            <button type="submit" class="cta-button" style="width: 100%;">Entrar</button>
-        </form>
+            <form action="login.php" method="POST">
+                <div class="form-group">
+                    <label for="email" class="required">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="senha" class="required">Senha</label>
+                    <input type="password" id="senha" name="senha" required>
+                </div>
+                <button type="submit" class="cta-button" style="width: 100%;">Entrar</button>
+            </form>
+        </div>
     </div>
-</div>
-
-<script>
-// Controle do modal de login
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('loginModal');
-    const btnLogin = document.querySelector('a[href="#login"]');
-    const span = document.getElementsByClassName('close')[0];
-
-    if (btnLogin) {
-        btnLogin.addEventListener('click', function(e) {
-            e.preventDefault();
-            modal.style.display = 'block';
-        });
-    }
-
-    if (span) {
-        span.onclick = function() {
-            modal.style.display = 'none';
-        }
-    }
-
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = 'none';
-        }
-    }
-});
-</script>
-</body>
+    
+    <script src="script.js"></script>
+    
+    </body>
 </html>

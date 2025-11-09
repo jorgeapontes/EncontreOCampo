@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encontre Ocampo - E-commerce de Frutas</title>
+    <title>Encontre o Campo - E-commerce de Frutas</title>
     <link rel="stylesheet" href="index.css">
     <link rel="shortcut icon" href="img/Logo - Copia.jpg" type="image/x-icon">
 </head>
@@ -19,7 +19,7 @@
             <div class="nav-container">
                 <div class="logo">
                     <h1>ENCONTRE</h1>
-                    <h2>OCAMPO</h2>
+                    <h2>O CAMPO</h2>
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
@@ -611,7 +611,7 @@
             <div class="footer-content">
                 <div class="footer-logo">
                     <h2>ENCONTRE</h2>
-                    <h3>OCAMPO</h3>
+                    <h3>O CAMPO</h3>
                     <p>Conectando o campo à cidade</p>
                 </div>
                 <div class="footer-links">
@@ -644,7 +644,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Encontre Ocampo. Todos os direitos reservados.</p>
+                <p>&copy; 2025 Encontre o Campo. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>

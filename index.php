@@ -104,7 +104,7 @@
                     </div>
                 </div>
                 <div class="product-card">
-                    <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1560769684-55015cee73a8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80');"></div>
+                    <div class="product-image" style="background-image: url('https://mondiniplantas.cdn.magazord.com.br/img/2025/05/produto/6871/pe-de-uva-thompson.jpg?ims=800x800');"></div>
                     <div class="product-info">
                         <h3>Uvas Verdes</h3>
                         <p>Dulces e sem sementes</p>
@@ -114,7 +114,7 @@
                 </div>
             </div>
             <center>
-            <a a href="anuncios.php" class="cta-button" style="display: inline-block; margin-top: 40px; text-decoration: none; width: 250px; text-align: center;">Acessar plataforma</a>
+            <a a href="src/anuncios.php" class="cta-button" style="display: inline-block; margin-top: 40px; text-decoration: none; width: 250px; text-align: center;">Acessar plataforma</a>
             </center>
         </div>
     </section>

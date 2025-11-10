@@ -1,11 +1,33 @@
+<?php
+
+    session_start();
+
+    $button_text = 'Não está funcionando';
+
+    if (isset($_SESSION['usuario_nome'])) {
+        $button_text = 'Olá, '.$_SESSION['usuario_nome'];
+        $usuario_tipo = $_SESSION['usuario_tipo'];
+
+        if ($usuario_tipo == 'admin') {
+            $button_action = 'admin/dashboard.php';
+        } else {
+            $button_action = $_SESSION['usuario_tipo'].'/perfil';
+        }
+    } else {
+        $button_text = 'Login';
+        $button_action = 'login.php';
+    }
+
+?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anúncios - Encontre o Campo</title>
-    <link rel="stylesheet" href="index.css">
-    <link rel="stylesheet" href="anuncios.css">
+    <link rel="stylesheet" href="../index.css">
+    <link rel="stylesheet" href="css/anuncios.css">
     <link rel="shortcut icon" href="img/Logo - Copia.jpg" type="image/x-icon">
 </head>
 <body>
@@ -145,7 +167,7 @@
                         <a href="index.php#vender" class="nav-link">Vender</a>
                     </li>
                     <li class="nav-item">
-                        <a href="src/login.php" class="nav-link login-button no-underline">Login</a>
+                        <a href="<?= $button_action ?>" class="nav-link login-button no-underline"> <?= $button_text ?> </a>
                     </li>
                 </ul>
                 <div class="hamburger">

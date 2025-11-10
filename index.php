@@ -1,3 +1,25 @@
+<?php
+
+    session_start();
+
+    $button_text = 'Não está funcionando';
+
+    if (isset($_SESSION['usuario_nome'])) {
+        $button_text = 'Olá, '.$_SESSION['usuario_nome'];
+        $usuario_tipo = $_SESSION['usuario_tipo'];
+
+        if ($usuario_tipo == 'admin') {
+            $button_action = 'src/admin/dashboard.php';
+        } else {
+            $button_action = 'src/'.$_SESSION['usuario_tipo'].'/perfil';
+        }
+    } else {
+        $button_text = 'Login';
+        $button_action = 'src/login.php';
+    }
+
+?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -8,12 +30,6 @@
     <link rel="shortcut icon" href="img/Logo - Copia.jpg" type="image/x-icon">
 </head>
 <body>
-    <?php
-    if (session_status() == PHP_SESSION_NONE) {
-        session_start();
-    }
-    ?>
-    
     <header>
         <nav class="navbar">
             <div class="nav-container">
@@ -35,7 +51,7 @@
                         <a href="#contato" class="nav-link">Registre-se</a>
                     </li>
                     <li class="nav-item">
-                        <a href="src/login.php" class="nav-link login-button no-underline">Login</a>
+                        <a href="<?= $button_action ?>" class="nav-link login-button no-underline"> <?= $button_text ?> </a>
                     </li>
                 </ul>
                 <div class="hamburger">

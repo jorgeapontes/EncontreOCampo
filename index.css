@@ -291,7 +291,7 @@ body {
     background-color: #F57C00;
 }
 
-#accesbtn {
+.acessar-plataforma-btn {
     background-color: var(--primary-color);
     color: var(--white);
     border: none;
@@ -300,9 +300,20 @@ body {
     font-weight: 600;
     cursor: pointer;
     width: 100%;
-    margin-top: 10px;
-    transition: background-color 0.3s ease;
     margin-top: 40px;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    font-family: inherit;
+    font-size: 1rem;
+    border: 2px solid var(--primary-color);
+}
+
+.acessar-plataforma-btn:hover {
+    background-color: var(--primary-dark);
+    color: var(--white);
+    text-decoration: none;
 }
 
 /* Sell Section */
@@ -762,6 +773,13 @@ input:invalid:not(:focus):not(:placeholder-shown) {
 
     .logo-large h2 {
         font-size: 2rem;
+    }
+    
+    .acessar-plataforma-btn {
+        width: 80%;
+        max-width: 250px;
+        margin: 40px auto 0;
+        display: block;
     }
 }
 

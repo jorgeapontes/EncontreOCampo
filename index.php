@@ -97,7 +97,9 @@
                     </div>
                 </div>
             </div>
-            <button id="accesbtn">Acessar plataforma</button>
+            <center>
+            <a a href="anuncios.php" class="cta-button" style="display: inline-block; margin-top: 40px; text-decoration: none; width: 250px; text-align: center;">Acessar plataforma</a>
+            </center>
         </div>
     </section>
 

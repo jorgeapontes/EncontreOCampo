@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $database = new Database();
         $db = $database->getConnection();
 
-        $query = "SELECT id, email, senha, tipo, status FROM usuarios WHERE email = :email";
+        $query = "SELECT id, email, senha, tipo, nome, status FROM usuarios WHERE email = :email";
         $stmt = $db->prepare($query);
         $stmt->bindParam(':email', $email);
         $stmt->execute();
@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['usuario_id'] = $usuario['id'];
                     $_SESSION['usuario_email'] = $usuario['email'];
                     $_SESSION['usuario_tipo'] = $usuario['tipo'];
+                    $_SESSION['usuario_nome'] = $usuario['nome'];
                     
                     // Redirecionar baseado no tipo de usuário
                     switch ($usuario['tipo']) {
@@ -72,6 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Encontre o Campo</title>
+    <link rel="shortcut icon" href="../img/Logo - Copia.jpg" type="image/x-icon">
     <link rel="stylesheet" href="css/login.css">
 </head>
 <body>

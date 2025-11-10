@@ -19,7 +19,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if (password_verify($password, $usuario['senha'])) {
-                if ($usuario['status'] === 'ativo') {
+
+                if ($usuario['status'] === 'pendente') {
+                    // Mensagem clara para o usuário
+                    $_SESSION['erro_login'] = "Sua solicitação de cadastro está em análise. Por favor, aguarde a aprovação do administrador.";
+                    header("Location: ../index.php#login");
+                    exit();
+                }
+
+
+                elseif ($usuario['status'] === 'ativo') {
                     $_SESSION['usuario_id'] = $usuario['id'];
                     $_SESSION['usuario_email'] = $usuario['email'];
                     $_SESSION['usuario_tipo'] = $usuario['tipo'];

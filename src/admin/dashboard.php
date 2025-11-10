@@ -3,10 +3,9 @@
 session_start();
 
 // 1. INCLUIR CONEXÃO
-// Corrigindo o caminho: Se dashboard.php está em src/admin/, conexao.php está em src/
 require_once __DIR__ . '/../conexao.php'; 
 
-// Verificar se é admin (Adicionado um check básico, assumindo que a sessão 'usuario_tipo' é definida no login)
+// Verificar se é admin
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
     header("Location: ../index.php"); 
     exit();
@@ -23,7 +22,6 @@ if (!$conn) {
 
 // 2. BUSCAR SOLICITAÇÕES PENDENTES
 try {
-    // Query para buscar solicitações pendentes
     $sql = "SELECT id, nome, email, tipo_solicitacao, data_solicitacao, dados_json 
             FROM solicitacoes_cadastro 
             WHERE status = 'pendente' 
@@ -47,31 +45,65 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin - Solicitações Pendentes</title>
+    <title>Dashboard Admin - Encontre Ocampo</title>
     <link rel="stylesheet" href="../css/admin.css"> 
 </head>
 <body>
-    <div class="header">
-        <div class="container">
-            <h1>ADMIN - ENCONTRE OCAMPO</h1>
-            <h2>Gerenciamento de Cadastros</h2>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="../../img/Logo - Copia.jpg" alt="Logo Encontre Ocampo" class="logo">
+                <span class="brand-name">Encontre Ocampo</span>
+            </div>
+            <div class="nav-links">
+                <a href="dashboard.php" class="nav-link active">Dashboard</a>
+                <a href="todos_usuarios.php" class="nav-link">Todos os Usuários</a>
+                <a href="../../index.php" class="nav-link">Home</a>
+                <a href="../logout.php" class="nav-link logout">Sair</a>
+            </div>
         </div>
-    </div>
+    </nav>
 
     <div class="container">
-        
         <?php if ($feedback_msg): ?>
             <div class="alert <?php echo $is_error ? 'alert-error' : 'alert-success'; ?>">
-                <?php echo htmlspecialchars(urldecode($feedback_msg)); // Exibe a mensagem de feedback ?>
+                <?php echo htmlspecialchars(urldecode($feedback_msg)); ?>
             </div>
         <?php endif; ?>
 
-        <h3>Solicitações de Cadastro Pendentes</h3>
+        <div class="header-section">
+            <h1>Dashboard Administrativo</h1>
+            <p>Gerencie solicitações de cadastro e usuários do sistema</p>
+        </div>
+
+        <div class="stats-cards">
+            <div class="stat-card">
+                <h3>Solicitações Pendentes</h3>
+                <span class="stat-number"><?php echo count($solicitacoes); ?></span>
+            </div>
+            <div class="stat-card">
+                <h3>Usuários ativos</h3>
+                <span class="stat-number">
+                    <?php 
+                    $sql_total = "SELECT COUNT(*) as total FROM usuarios WHERE status = 'ativo'";
+                    $stmt_total = $conn->prepare($sql_total);
+                    $stmt_total->execute();
+                    $total_usuarios = $stmt_total->fetch(PDO::FETCH_ASSOC);
+                    echo $total_usuarios['total'];
+                    ?>
+                </span>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2>Solicitações de Cadastro Pendentes</h2>
+            <a href="todos_usuarios.php" class="btn btn-primary">Ver todos os usuários cadastrados</a>
+        </div>
 
         <?php if (count($solicitacoes) > 0): ?>
-        
         <div class="table-responsive">
-            <table>
+            <table class="modern-table">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -89,36 +121,37 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
                         <td><?php echo htmlspecialchars($solicitacao['id']); ?></td>
                         <td><?php echo htmlspecialchars($solicitacao['nome']); ?></td>
                         <td><?php echo htmlspecialchars($solicitacao['email']); ?></td>
-                        <td><?php echo htmlspecialchars(ucfirst($solicitacao['tipo_solicitacao'])); ?></td>
+                        <td><span class="badge badge-<?php echo $solicitacao['tipo_solicitacao']; ?>"><?php echo htmlspecialchars(ucfirst($solicitacao['tipo_solicitacao'])); ?></span></td>
                         <td><?php echo date('d/m/Y H:i', strtotime($solicitacao['data_solicitacao'])); ?></td>
                         <td>
                             <button class="btn btn-secondary btn-ver-detalhes" 
                                     data-nome="<?php echo htmlspecialchars($solicitacao['nome']); ?>"
                                     data-tipo="<?php echo htmlspecialchars(ucfirst($solicitacao['tipo_solicitacao'])); ?>"
                                     data-json='<?php 
-                                        // Garante que o JSON é válido, codifica e escapa para ser seguro em um atributo HTML
                                         $safe_json = json_encode(json_decode($solicitacao['dados_json'], true));
                                         echo htmlspecialchars($safe_json, ENT_QUOTES, 'UTF-8');
                                     ?>'>
                                 Ver Detalhes
                             </button>
                         </td>
-                        <td>
-                            <a href="processar_admin_acao.php?id=<?php echo $solicitacao['id']; ?>&acao=aprovar" class="btn btn-success">Aprovar</a>
-                            <a href="processar_admin_acao.php?id=<?php echo $solicitacao['id']; ?>&acao=rejeitar" class="btn btn-danger">Rejeitar</a>
+                        <td class="actions">
+                            <a href="processar_admin_acao.php?id=<?php echo $solicitacao['id']; ?>&acao=aprovar" class="btn btn-success btn-sm">Aprovar</a>
+                            <a href="processar_admin_acao.php?id=<?php echo $solicitacao['id']; ?>&acao=rejeitar" class="btn btn-danger btn-sm">Rejeitar</a>
                         </td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
-        
         <?php else: ?>
-            <p>Não há solicitações de cadastro pendentes no momento.</p>
+            <div class="empty-state">
+                <h3>Não há solicitações pendentes</h3>
+                <p>Todas as solicitações foram processadas.</p>
+            </div>
         <?php endif; ?>
-
     </div>
     
+    <!-- Modal de Detalhes -->
     <div id="detalhesModal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
@@ -129,8 +162,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
             <hr>
             
             <h4>Dados Adicionais:</h4>
-            <div id="modal-corpo-json">
-                </div>
+            <div id="modal-corpo-json"></div>
         </div>
     </div>
 
@@ -142,34 +174,27 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
         const modalNome = document.getElementById('modal-nome');
         const modalTipo = document.getElementById('modal-tipo');
         
-        // Função para formatar as chaves do JSON (CamelCase, remove números e tipos de usuário)
         function formatKey(key) {
             let formatted = key.replace(/([0-9])/g, '')
                                .replace(/([A-Z])/g, ' $1')
                                .trim();
             formatted = formatted.replace(/Comprador|Vendedor|Transportador/i, '').trim();
-
             return formatted.charAt(0).toUpperCase() + formatted.slice(1);
         }
 
-        // Abrir modal
         document.querySelectorAll('.btn-ver-detalhes').forEach(button => {
             button.addEventListener('click', function() {
-                // 1. Coleta dados do botão
                 const nome = this.getAttribute('data-nome');
                 const tipo = this.getAttribute('data-tipo');
                 const jsonString = this.getAttribute('data-json');
                 const dados = JSON.parse(jsonString);
 
-                // 2. Preenche cabeçalho do modal
                 modalNome.textContent = nome;
                 modalTipo.textContent = tipo;
-                modalBody.innerHTML = ''; // Limpa o corpo
+                modalBody.innerHTML = '';
 
-                // 3. Preenche o corpo com os dados JSON
                 for (const key in dados) {
                     if (dados.hasOwnProperty(key) && dados[key].trim() !== '') {
-                        
                         const detailItem = document.createElement('p');
                         detailItem.innerHTML = `<strong>${formatKey(key)}:</strong> ${dados[key]}`;
                         modalBody.appendChild(detailItem);
@@ -180,12 +205,10 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
             });
         });
 
-        // Fechar modal ao clicar no X
         closeButton.addEventListener('click', function() {
             modal.style.display = 'none';
         });
 
-        // Fechar modal ao clicar fora
         window.addEventListener('click', function(event) {
             if (event.target === modal) {
                 modal.style.display = 'none';

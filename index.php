@@ -56,7 +56,7 @@
         </div>
     </section>
 
-    <section id="comprar" class="section">
+    <section id="comprar" class="section bg-light">
         <div class="container">
             <h2 class="section-title">Compre Frutas Frescas</h2>
             <div class="products-grid">
@@ -101,7 +101,7 @@
         </div>
     </section>
 
-    <section id="vender" class="section bg-light">
+    <section id="vender" class="section">
         <div class="container">
             <h2 class="section-title">Torne-se um Vendedor</h2>
             <div class="sell-content">
@@ -124,7 +124,7 @@
         </div>
     </section>
 
-    <section id="transporte" class="section">
+    <section id="transporte" class="section bg-light">
         <div class="container">
             <h2 class="section-title">Transporte</h2>
             <div class="transport-content">
@@ -154,7 +154,7 @@
         </div>
     </section>
 
-    <section id="contato" class="section bg-light">
+    <section id="contato" class="section">
         <div class="container">
             <h2 class="section-title">Registre-se</h2>
             <div class="contact-content">

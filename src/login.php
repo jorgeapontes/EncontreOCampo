@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <button type="submit" class="login-button">Entrar</button>
 
                 <div class="register-link">
-                    Não tem uma conta? <a href="index.php#contato">Registre-se</a>
+                    Não tem uma conta? <a href="../index.php#contato">Registre-se</a>
                 </div>
             </form>
         </div>

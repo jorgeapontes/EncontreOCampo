@@ -28,7 +28,7 @@
     <title>Anúncios - Encontre o Campo</title>
     <link rel="stylesheet" href="../index.css">
     <link rel="stylesheet" href="css/anuncios.css">
-    <link rel="shortcut icon" href="img/Logo - Copia.jpg" type="image/x-icon">
+    <link rel="shortcut icon" href="../img/Logo - Copia.jpg" type="image/x-icon">
 </head>
 <body>
     <?php
@@ -158,7 +158,7 @@
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="index.php" class="nav-link">Início</a>
+                        <a href="../index.php" class="nav-link">Início</a>
                     </li>
                     <li class="nav-item">
                         <a href="#filtros" class="nav-link">Filtrar</a>

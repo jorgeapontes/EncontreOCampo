@@ -11,7 +11,7 @@
         if ($usuario_tipo == 'admin') {
             $button_action = 'src/admin/dashboard.php';
         } else {
-            $button_action = 'src/'.$_SESSION['usuario_tipo'].'/perfil';
+            $button_action = 'src/'.$_SESSION['usuario_tipo'].'/perfil.php';
         }
     } else {
         $button_text = 'Login';

@@ -111,6 +111,7 @@ $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
     <title>Meu Perfil - Vendedor</title>
     <link rel="stylesheet" href="../css/vendedor/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="shortcut icon" href="../../img/Logo - Copia.jpg" type="image/x-icon">
 </head>
 <body>
     <div class="sidebar">
@@ -119,7 +120,8 @@ $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
             <p>Vendedor</p>
         </div>
         <nav class="nav-menu">
-            <a href="dashboard.php" class="nav-link"><i class="fas fa-home"></i> Painel</a>
+            <a href="../../index.php" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="dashboard.php" class="nav-link active"><i class="fas fa-desktop"></i>Painel</a>
             <a href="anuncios.php" class="nav-link"><i class="fas fa-bullhorn"></i> Meus Anúncios</a>
             <a href="propostas.php" class="nav-link"><i class="fas fa-handshake"></i> Painel de Propostas</a>
             <a href="precos.php" class="nav-link"><i class="fas fa-chart-line"></i> Médias de Preços</a>

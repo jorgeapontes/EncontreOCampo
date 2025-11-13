@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 09/11/2025 às 01:30
+-- Tempo de geração: 13/11/2025 às 01:45
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -43,7 +43,13 @@ CREATE TABLE `admin_acoes` (
 INSERT INTO `admin_acoes` (`id`, `admin_id`, `acao`, `tabela_afetada`, `registro_id`, `data_acao`) VALUES
 (1, 1, 'Aprovou cadastro de comprador (ID: 3)', 'usuarios', 3, '2025-11-09 00:23:59'),
 (2, 1, 'Aprovou cadastro de vendedor (ID: 4)', 'usuarios', 4, '2025-11-09 00:28:21'),
-(3, 1, 'Aprovou cadastro de transportador (ID: 7)', 'usuarios', 7, '2025-11-09 00:29:26');
+(3, 1, 'Aprovou cadastro de transportador (ID: 7)', 'usuarios', 7, '2025-11-09 00:29:26'),
+(4, 1, 'Alterou status do usuário (ID: 7) para inativo', 'usuarios', 7, '2025-11-10 14:28:45'),
+(5, 1, 'Alterou status do usuário (ID: 7) para ativo', 'usuarios', 7, '2025-11-10 14:29:10'),
+(6, 1, 'Alterou status do usuário (ID: 3) para inativo', 'usuarios', 3, '2025-11-10 14:39:04'),
+(7, 1, 'Alterou status do usuário (ID: 3) para ativo', 'usuarios', 3, '2025-11-10 14:39:06'),
+(8, 1, 'Alterou status do usuário (ID: 7) para inativo', 'usuarios', 7, '2025-11-10 14:53:29'),
+(9, 1, 'Alterou status do usuário (ID: 7) para ativo', 'usuarios', 7, '2025-11-10 14:53:31');
 
 -- --------------------------------------------------------
 
@@ -91,7 +97,33 @@ CREATE TABLE `produtos` (
   `imagem_url` varchar(500) DEFAULT NULL,
   `estoque` int(11) DEFAULT 0,
   `status` enum('ativo','inativo') DEFAULT 'ativo',
-  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp()
+  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
+  `data_atualizacao` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `produtos`
+--
+
+INSERT INTO `produtos` (`id`, `vendedor_id`, `nome`, `descricao`, `preco`, `categoria`, `imagem_url`, `estoque`, `status`, `data_criacao`, `data_atualizacao`) VALUES
+(2, 1, 'uvas', 'uvas verdes', 3.33, 'Frutas Cítricas', '../uploads/produtos/prod_691527af8dea16.84286255.jpg', 10, 'ativo', '2025-11-13 00:34:55', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `propostas_negociacao`
+--
+
+CREATE TABLE `propostas_negociacao` (
+  `id` int(11) NOT NULL,
+  `produto_id` int(11) NOT NULL COMMENT 'O anúncio ao qual a proposta se refere',
+  `comprador_id` int(11) NOT NULL COMMENT 'O comprador que fez a proposta',
+  `preco_proposto` decimal(10,2) NOT NULL COMMENT 'Preço unitário (por Kg, por exemplo) proposto pelo comprador',
+  `quantidade_proposta` int(11) NOT NULL COMMENT 'Quantidade total em Kg ou unidades proposta',
+  `status` enum('pendente','aceita','rejeitada','finalizada','cancelada') NOT NULL DEFAULT 'pendente',
+  `data_proposta` timestamp NOT NULL DEFAULT current_timestamp(),
+  `data_atualizacao` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
+  `observacoes_vendedor` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -125,7 +157,8 @@ INSERT INTO `solicitacoes_cadastro` (`id`, `usuario_id`, `nome`, `email`, `telef
 (2, NULL, 'Jorge Pontes', 'jorgeappontes13@gmail.com', '11996563500', 'Rua Seis, 206, Jundiaí, SP', 'comprador', '{\"nomeComercialComprador\":\"Jorge Pontes\",\"cpfCnpjComprador\":\"411.115.848-00\",\"cepComprador\":\"13211-87\",\"ruaComprador\":\"Rua Seis\",\"numeroComprador\":\"206\",\"estadoComprador\":\"SP\",\"cidadeComprador\":\"Jundia\\u00ed\",\"telefone1Comprador\":\"11996563500\",\"planoComprador\":\"premium\",\"estadoVendedor\":\"SP\",\"senha_hash\":\"$2y$10$oM84AnD7UCT10BMttSi0ROshhjDaiDUMnMRNJnN7JEDXJeVBBfkGy\"}', 'aprovado', '2025-11-09 00:15:25', '2025-11-09 00:15:43', NULL, NULL),
 (3, 3, 'Jorge Pontes', 'jorgeappontes13@gmail.com', '11996563500', 'Rua Seis, 206, Jundiaí, SP', 'comprador', '{\"nomeComercialComprador\":\"Jorge Pontes\",\"cpfCnpjComprador\":\"411.115.848-00\",\"cepComprador\":\"13211-873\",\"ruaComprador\":\"Rua Seis\",\"numeroComprador\":\"206\",\"estadoComprador\":\"SP\",\"cidadeComprador\":\"Jundia\\u00ed\",\"telefone1Comprador\":\"11996563500\",\"planoComprador\":\"basico\",\"estadoVendedor\":\"SP\",\"senha_hash\":\"$2y$10$G01Lh5IUbanlM7HsqPVJCedjau8JTSyWFxoYa9DYF0EoCNsnA5L2i\"}', 'aprovado', '2025-11-09 00:18:43', '2025-11-09 00:23:59', NULL, NULL),
 (4, 4, 'Vendedor', 'vendedor@gmail.com', '11996563500', 'Rua Seis, 206, Jundiaí, SP', 'vendedor', '{\"estadoComprador\":\"SP\",\"nomeComercialVendedor\":\"Vendedor\",\"cpfCnpjVendedor\":\"11.111.111\\/1111-11\",\"cepVendedor\":\"13211-873\",\"ruaVendedor\":\"Rua Seis\",\"numeroVendedor\":\"206\",\"estadoVendedor\":\"SP\",\"cidadeVendedor\":\"Jundia\\u00ed\",\"telefone1Vendedor\":\"11996563500\",\"planoVendedor\":\"basico\",\"senha_hash\":\"$2y$10$WiZ7DfVl8YB49H7SjzLXEuk6UsnWeNGQnBoCD5bF4f5P8R.8Xt.IS\"}', 'aprovado', '2025-11-09 00:26:58', '2025-11-09 00:28:21', NULL, NULL),
-(5, 7, 'Transportador', 'transportador@gmail.com', '11996563500', 'Campinas, SP', 'transportador', '{\"estadoComprador\":\"SP\",\"estadoVendedor\":\"SP\",\"telefoneTransportador\":\"11996563500\",\"numeroANTT\":\"13231231434142243\",\"placaVeiculo\":\"111-1111\",\"modeloVeiculo\":\"teste\",\"descricaoVeiculo\":\"carreta\",\"estadoTransportador\":\"SP\",\"cidadeTransportador\":\"Campinas\",\"senha_hash\":\"$2y$10$ydt.M8elv07ezQw77wQZc.HCjZ8gvIRsUM.9FvhiAGKHbLtsBi7lS\"}', 'aprovado', '2025-11-09 00:27:58', '2025-11-09 00:29:26', NULL, NULL);
+(5, 7, 'Transportador', 'transportador@gmail.com', '11996563500', 'Campinas, SP', 'transportador', '{\"estadoComprador\":\"SP\",\"estadoVendedor\":\"SP\",\"telefoneTransportador\":\"11996563500\",\"numeroANTT\":\"13231231434142243\",\"placaVeiculo\":\"111-1111\",\"modeloVeiculo\":\"teste\",\"descricaoVeiculo\":\"carreta\",\"estadoTransportador\":\"SP\",\"cidadeTransportador\":\"Campinas\",\"senha_hash\":\"$2y$10$ydt.M8elv07ezQw77wQZc.HCjZ8gvIRsUM.9FvhiAGKHbLtsBi7lS\"}', 'aprovado', '2025-11-09 00:27:58', '2025-11-09 00:29:26', NULL, NULL),
+(6, NULL, 'teste', 'teste@gmail.com', '11996563500', 'Rua Seis, 206, Jundiaí, SP', 'comprador', '{\"nomeComercialComprador\":\"1111111\",\"cpfCnpjComprador\":\"111111111111111111111111111111111111111111111111\",\"cepComprador\":\"11111-111\",\"ruaComprador\":\"Rua Seis\",\"numeroComprador\":\"206\",\"estadoComprador\":\"SP\",\"cidadeComprador\":\"Jundia\\u00ed\",\"telefone1Comprador\":\"11996563500\",\"planoComprador\":\"premium\",\"estadoVendedor\":\"SP\",\"senha_hash\":\"$2y$10$g0JSpSo1Is2zduL4KitN7O5TSD2q9PDIIOIBtljyvD4VqMDV3Uple\"}', 'pendente', '2025-11-10 12:24:28', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -191,6 +224,8 @@ CREATE TABLE `vendedores` (
   `usuario_id` int(11) NOT NULL,
   `nome_comercial` varchar(255) DEFAULT NULL,
   `cpf_cnpj` varchar(20) NOT NULL,
+  `razao_social` varchar(255) DEFAULT NULL,
+  `foto_perfil_url` varchar(255) DEFAULT NULL,
   `cip` varchar(50) DEFAULT NULL,
   `cep` varchar(10) DEFAULT NULL,
   `rua` varchar(255) DEFAULT NULL,
@@ -207,8 +242,8 @@ CREATE TABLE `vendedores` (
 -- Despejando dados para a tabela `vendedores`
 --
 
-INSERT INTO `vendedores` (`id`, `usuario_id`, `nome_comercial`, `cpf_cnpj`, `cip`, `cep`, `rua`, `numero`, `complemento`, `estado`, `cidade`, `telefone1`, `telefone2`, `plano`) VALUES
-(1, 4, 'Vendedor', '11.111.111/1111-11', NULL, '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'basico');
+INSERT INTO `vendedores` (`id`, `usuario_id`, `nome_comercial`, `cpf_cnpj`, `razao_social`, `foto_perfil_url`, `cip`, `cep`, `rua`, `numero`, `complemento`, `estado`, `cidade`, `telefone1`, `telefone2`, `plano`) VALUES
+(1, 4, 'Vendedor', '11.111.111/1111-11', '', '../uploads/vendedores/vend_1_691529daacfe9.png', NULL, '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'basico');
 
 --
 -- Índices para tabelas despejadas
@@ -234,6 +269,14 @@ ALTER TABLE `compradores`
 ALTER TABLE `produtos`
   ADD PRIMARY KEY (`id`),
   ADD KEY `vendedor_id` (`vendedor_id`);
+
+--
+-- Índices de tabela `propostas_negociacao`
+--
+ALTER TABLE `propostas_negociacao`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `propostas_negociacao_ibfk_1` (`produto_id`),
+  ADD KEY `propostas_negociacao_ibfk_2` (`comprador_id`);
 
 --
 -- Índices de tabela `solicitacoes_cadastro`
@@ -271,7 +314,7 @@ ALTER TABLE `vendedores`
 -- AUTO_INCREMENT de tabela `admin_acoes`
 --
 ALTER TABLE `admin_acoes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de tabela `compradores`
@@ -283,13 +326,19 @@ ALTER TABLE `compradores`
 -- AUTO_INCREMENT de tabela `produtos`
 --
 ALTER TABLE `produtos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de tabela `propostas_negociacao`
+--
+ALTER TABLE `propostas_negociacao`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de tabela `solicitacoes_cadastro`
 --
 ALTER TABLE `solicitacoes_cadastro`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de tabela `transportadores`
@@ -330,6 +379,13 @@ ALTER TABLE `compradores`
 --
 ALTER TABLE `produtos`
   ADD CONSTRAINT `produtos_ibfk_1` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `propostas_negociacao`
+--
+ALTER TABLE `propostas_negociacao`
+  ADD CONSTRAINT `propostas_negociacao_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `propostas_negociacao_ibfk_2` FOREIGN KEY (`comprador_id`) REFERENCES `compradores` (`id`) ON DELETE CASCADE;
 
 --
 -- Restrições para tabelas `solicitacoes_cadastro`

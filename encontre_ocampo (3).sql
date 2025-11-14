@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 13/11/2025 às 01:45
+-- Tempo de geração: 14/11/2025 às 20:18
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -96,6 +96,7 @@ CREATE TABLE `produtos` (
   `categoria` varchar(100) DEFAULT NULL,
   `imagem_url` varchar(500) DEFAULT NULL,
   `estoque` int(11) DEFAULT 0,
+  `unidade_medida` varchar(50) DEFAULT NULL,
   `status` enum('ativo','inativo') DEFAULT 'ativo',
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   `data_atualizacao` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
@@ -105,8 +106,8 @@ CREATE TABLE `produtos` (
 -- Despejando dados para a tabela `produtos`
 --
 
-INSERT INTO `produtos` (`id`, `vendedor_id`, `nome`, `descricao`, `preco`, `categoria`, `imagem_url`, `estoque`, `status`, `data_criacao`, `data_atualizacao`) VALUES
-(2, 1, 'uvas', 'uvas verdes', 3.33, 'Frutas Cítricas', '../uploads/produtos/prod_691527af8dea16.84286255.jpg', 10, 'ativo', '2025-11-13 00:34:55', NULL);
+INSERT INTO `produtos` (`id`, `vendedor_id`, `nome`, `descricao`, `preco`, `categoria`, `imagem_url`, `estoque`, `unidade_medida`, `status`, `data_criacao`, `data_atualizacao`) VALUES
+(2, 1, 'uvas', 'uvas verdes', 3.33, 'Frutas Cítricas', '../uploads/produtos/prod_691527af8dea16.84286255.jpg', 10, NULL, 'ativo', '2025-11-13 00:34:55', NULL);
 
 -- --------------------------------------------------------
 
@@ -120,11 +121,24 @@ CREATE TABLE `propostas_negociacao` (
   `comprador_id` int(11) NOT NULL COMMENT 'O comprador que fez a proposta',
   `preco_proposto` decimal(10,2) NOT NULL COMMENT 'Preço unitário (por Kg, por exemplo) proposto pelo comprador',
   `quantidade_proposta` int(11) NOT NULL COMMENT 'Quantidade total em Kg ou unidades proposta',
+  `condicoes_comprador` text DEFAULT NULL,
   `status` enum('pendente','aceita','rejeitada','finalizada','cancelada') NOT NULL DEFAULT 'pendente',
   `data_proposta` timestamp NOT NULL DEFAULT current_timestamp(),
   `data_atualizacao` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
   `observacoes_vendedor` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `propostas_negociacao`
+--
+
+INSERT INTO `propostas_negociacao` (`id`, `produto_id`, `comprador_id`, `preco_proposto`, `quantidade_proposta`, `condicoes_comprador`, `status`, `data_proposta`, `data_atualizacao`, `observacoes_vendedor`) VALUES
+(1, 2, 1, 4.00, 1, '', 'pendente', '2025-11-14 18:38:00', NULL, NULL),
+(2, 2, 1, 10.00, 1, 'teste', 'pendente', '2025-11-14 19:07:35', NULL, NULL),
+(3, 2, 1, 10.00, 1, 'teste', 'pendente', '2025-11-14 19:07:59', NULL, NULL),
+(4, 2, 1, 10.00, 1, 'teste', 'pendente', '2025-11-14 19:11:07', NULL, NULL),
+(5, 2, 1, 10.00, 1, 'teste', 'pendente', '2025-11-14 19:12:24', NULL, NULL),
+(6, 2, 1, 10.00, 1, 'teste', 'pendente', '2025-11-14 19:13:44', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -332,7 +346,7 @@ ALTER TABLE `produtos`
 -- AUTO_INCREMENT de tabela `propostas_negociacao`
 --
 ALTER TABLE `propostas_negociacao`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de tabela `solicitacoes_cadastro`

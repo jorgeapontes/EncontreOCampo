@@ -1,299 +1,343 @@
-/* anuncios.css */
-.anuncios-container {
-    padding: 100px 0 50px;
-    min-height: 100vh;
+/* src/css/anuncios.css (REDESENHADO - CORRIGIDO) */
+
+:root {
+    --primary-color: #2ecc71;
+    --primary-dark: #27ae60;
+    --secondary-color: #3498db;
+    --dark-color: #2c3e50;
+    --text-color: #34495e;
+    --text-light: #7f8c8d;
+    --light-gray: #ecf0f1;
+    --white: #ffffff;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --radius: 12px;
 }
 
-.filtros-container {
-    background: var(--white);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
+/* Configurações Globais */
+.container {
+    padding-top: 100px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: 20px;
+    padding-right: 20px;
+    min-height: calc(100vh - 100px);
 }
 
-.filtros-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    align-items: end;
+.page-header {
+    text-align: center;
+    margin-bottom: 40px;
 }
 
-.filtro-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.filtro-group label {
-    font-weight: 600;
-    margin-bottom: 5px;
+.page-header h2 {
     color: var(--dark-color);
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+    font-weight: 700;
 }
 
-.filtro-group select,
-.filtro-group input {
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-family: inherit;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
+.page-header p {
+    color: var(--text-light);
+    font-size: 1.1rem;
 }
 
-.filtro-group select:focus,
-.filtro-group input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-}
-
-.btn-filtrar {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background 0.3s ease;
-    height: fit-content;
-}
-
-.btn-filtrar:hover {
-    background: var(--primary-dark);
-}
-
+/* Grid de Anúncios */
 .anuncios-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 25px;
-    margin-top: 30px;
+    margin-bottom: 40px;
 }
 
+/* Cards Redesenhados */
 .anuncio-card {
     background: var(--white);
-    border-radius: 10px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
     overflow: hidden;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    position: relative;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .anuncio-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-.anuncio-imagem {
-    height: 200px;
-    background-size: cover;
-    background-position: center;
-    background-color: var(--light-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-light);
+.card-image {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
 }
 
-.anuncio-sem-imagem {
-    background: linear-gradient(135deg, var(--primary-light), var(--light-color));
-    color: var(--dark-color);
-    font-weight: 600;
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
 }
 
-.anuncio-info {
+.anuncio-card:hover .card-image img {
+    transform: scale(1.05);
+}
+
+.card-content {
     padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
 
-.anuncio-titulo {
+.card-header {
+    margin-bottom: 15px;
+}
+
+.card-header h3 {
     font-size: 1.3rem;
     color: var(--dark-color);
-    margin-bottom: 10px;
+    margin-bottom: 5px;
+    font-weight: 600;
     line-height: 1.3;
 }
 
-.anuncio-descricao {
+.vendedor {
     color: var(--text-light);
-    margin-bottom: 15px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.card-body {
+    flex-grow: 1;
+    margin-bottom: 20px;
+}
+
+.price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.price span {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.estoque {
+    color: var(--text-color);
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.estoque i {
+    color: var(--primary-color);
+}
+
+.descricao {
+    color: var(--text-light);
+    font-size: 0.9rem;
     line-height: 1.4;
+    /* Correção para line-clamp com melhor compatibilidade */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    text-overflow: ellipsis;
+    
+    /* Fallback para navegadores modernos que suportam a propriedade padrão */
+    display: -moz-box;
+    -moz-box-orient: vertical;
+    -moz-line-clamp: 2;
+    
+    /* Para futura compatibilidade quando a propriedade for padronizada */
+    line-clamp: 2;
+    box-orient: vertical;
 }
 
-.anuncio-detalhes {
-    display: flex;
-    justify-content: space-between;
+.card-actions {
+    margin-top: auto;
+}
+
+.btn {
+    display: inline-flex;
     align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--light-color);
-}
-
-.anuncio-preco {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
-}
-
-.anuncio-categoria {
-    background: var(--primary-light);
-    color: var(--dark-color);
-    padding: 4px 8px;
-    border-radius: 15px;
-    font-size: 0.8rem;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
     font-weight: 600;
-}
-
-.anuncio-vendedor {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 15px;
-    font-size: 0.9rem;
-    color: var(--text-light);
-}
-
-.anuncio-estoque {
-    color: var(--primary-color);
-    font-weight: 600;
-}
-
-.btn-comprar {
-    background: var(--secondary-color);
-    color: var(--white);
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
     border: none;
-    padding: 12px 20px;
-    border-radius: 5px;
-    font-weight: 600;
     cursor: pointer;
+    justify-content: center;
     width: 100%;
-    transition: background 0.3s ease;
 }
 
-.btn-comprar:hover {
-    background: #F57C00;
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--white);
 }
 
-.sem-anuncios {
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+/* Empty State */
+.empty-state {
     text-align: center;
     padding: 60px 20px;
-    color: var(--text-light);
-}
-
-.sem-anuncios h3 {
-    font-size: 1.5rem;
-    margin-bottom: 15px;
-    color: var(--dark-color);
-}
-
-.paginacao {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
+    background-color: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
     margin-top: 40px;
 }
 
-.btn-pagina {
-    padding: 8px 15px;
-    border: 1px solid var(--primary-color);
-    background: white;
+.empty-state p {
+    font-size: 1.1rem;
+    color: var(--text-color);
+    margin-bottom: 15px;
+}
+
+.empty-state a {
     color: var(--primary-color);
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: inherit;
-    font-size: 0.9rem;
-}
-
-.btn-pagina:hover {
-    background: var(--primary-color);
-    color: white;
-}
-
-.btn-pagina.ativo {
-    background: var(--primary-color);
-    color: white;
-}
-
-.btn-pagina:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.btn-pagina:disabled:hover {
-    background: white;
-    color: var(--primary-color);
-}
-
-.resultados-info {
-    margin-bottom: 20px;
-    color: var(--text-light);
-    font-size: 0.9rem;
-}
-
-.anuncio-status {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: var(--primary-color);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 15px;
-    font-size: 0.7rem;
+    text-decoration: none;
     font-weight: 600;
-    z-index: 2;
 }
 
-.anuncio-data {
-    font-size: 0.8rem;
+.empty-state a:hover {
+    text-decoration: underline;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-color: var(--white);
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: var(--radius);
+    width: 90%;
+    max-width: 400px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.modal-close {
     color: var(--text-light);
-    margin-top: 10px;
-    text-align: right;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    position: absolute;
+    right: 20px;
+    top: 15px;
 }
 
+.modal-close:hover {
+    color: var(--dark-color);
+}
+
+.modal-content h3 {
+    color: var(--dark-color);
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+.modal-content p {
+    margin-bottom: 20px;
+    color: var(--text-color);
+    text-align: center;
+    line-height: 1.5;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--light-gray);
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.modal-content .btn {
+    margin-top: 10px;
+}
+
+.modal-content a {
+    color: var(--secondary-color);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.modal-content a:hover {
+    text-decoration: underline;
+}
+
+/* Responsividade */
 @media (max-width: 768px) {
-    .filtros-grid {
-        grid-template-columns: 1fr;
+    .container {
+        padding-top: 80px;
+        padding-left: 15px;
+        padding-right: 15px;
     }
     
     .anuncios-grid {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
     }
     
-    .anuncios-container {
-        padding: 80px 0 30px;
+    .page-header h2 {
+        font-size: 1.8rem;
     }
     
-    .filtro-group {
-        margin-bottom: 15px;
+    .modal-content {
+        margin: 20% auto;
+        padding: 25px 20px;
     }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 480px) {
     .anuncios-grid {
         grid-template-columns: 1fr;
     }
     
-    .anuncio-detalhes {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-    
-    .anuncio-vendedor {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
-    }
-    
-    .paginacao {
-        flex-wrap: wrap;
-    }
-    
-    .btn-pagina {
-        padding: 6px 12px;
-        font-size: 0.8rem;
+    .card-image {
+        height: 160px;
     }
 }

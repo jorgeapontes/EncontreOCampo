@@ -1,138 +1,286 @@
 <?php
 // src/vendedor/propostas.php
-require_once 'auth.php'; // Inclui a proteção de acesso e carrega os dados do vendedor ($vendedor)
 
-$mensagem_sucesso = '';
-$mensagem_erro = '';
-$vendedor_id_fk = $vendedor['id'];
+session_start();
+require_once __DIR__ . '/../conexao.php'; 
 
-// Lógica para buscar todas as propostas relacionadas aos anúncios deste vendedor
-$propostas = [];
-$query_propostas = "SELECT 
-                        p.id AS proposta_id, 
-                        p.preco_proposto, 
-                        p.quantidade_proposta, 
-                        p.status, 
-                        p.data_proposta,
-                        a.nome AS nome_produto, 
-                        a.id AS anuncio_id,
-                        u.nome AS nome_comprador, 
-                        c.nome_comercial AS loja_comprador
-                    FROM propostas_negociacao p 
-                    JOIN produtos a ON p.produto_id = a.id
-                    JOIN vendedores v ON a.vendedor_id = v.id
-                    JOIN compradores c ON p.comprador_id = c.id
-                    JOIN usuarios u ON c.usuario_id = u.id
-                    WHERE a.vendedor_id = :vendedor_id_fk 
-                    ORDER BY 
-                        CASE p.status 
-                            WHEN 'pendente' THEN 1
-                            WHEN 'aceita' THEN 2
-                            ELSE 3
-                        END, 
-                        p.data_proposta DESC";
-                   
-try {
-    $stmt_propostas = $db->prepare($query_propostas);
-    $stmt_propostas->bindParam(':vendedor_id_fk', $vendedor_id_fk);
-    $stmt_propostas->execute();
-    $propostas = $stmt_propostas->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    // Se a tabela 'propostas_negociacao' não existir, informa um erro
-    if ($e->errorInfo[1] === 1146) {
-        $mensagem_erro = "Erro: A tabela 'propostas_negociacao' não foi encontrada. Certifique-se de que ela está criada no banco de dados.";
-    } else {
-        $mensagem_erro = "Erro ao buscar propostas: " . $e->getMessage();
-    }
+// 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA
+if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor') {
+    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Vendedor."));
+    exit();
 }
 
-$total_propostas = count($propostas);
+$usuario_id = $_SESSION['usuario_id']; // ID do usuário logado na tabela 'usuarios'
+$database = new Database();
+$conn = $database->getConnection();
+$propostas = [];
+$vendedor_id = null;
+
+
+// 2. OBTENDO O ID DO VENDEDOR (ID da tabela 'vendedores')
+try {
+    $sql_vendedor = "SELECT id FROM vendedores WHERE usuario_id = :usuario_id";
+    $stmt_vendedor = $conn->prepare($sql_vendedor);
+    $stmt_vendedor->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt_vendedor->execute();
+    $resultado_vendedor = $stmt_vendedor->fetch(PDO::FETCH_ASSOC);
+
+    if ($resultado_vendedor) {
+        $vendedor_id = $resultado_vendedor['id'];
+    } else {
+        die("Erro: ID de vendedor não encontrado.");
+    }
+} catch (PDOException $e) {
+    die("Erro ao buscar ID do vendedor: " . $e->getMessage());
+}
+
+// 3. BUSCA DAS PROPOSTAS RECEBIDAS
+try {
+    // Busca todas as propostas para os produtos DESTE vendedor
+    $sql = "SELECT 
+                pn.id AS proposta_id,
+                pn.data_proposta,
+                pn.preco_proposto,
+                pn.quantidade_proposta,
+                pn.status,
+                p.nome AS produto_nome,
+                p.unidade_medida,
+                p.preco AS preco_anuncio_original,
+                u.nome AS nome_comprador
+            FROM propostas_negociacao pn
+            JOIN produtos p ON pn.produto_id = p.id
+            JOIN vendedores v ON p.vendedor_id = v.id
+            JOIN compradores c ON pn.comprador_id = c.id
+            JOIN usuarios u ON c.usuario_id = u.id
+            WHERE v.id = :vendedor_id
+            ORDER BY pn.data_proposta DESC";
+            
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $propostas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die("Erro ao carregar propostas: " . $e->getMessage()); 
+}
+
+// Função para traduzir o status
+function formatarStatus($status) {
+    $map = [
+        'pendente' => ['text' => 'Pendente', 'class' => 'status-pending'],
+        'aceita' => ['text' => 'Aceita', 'class' => 'status-accepted'],
+        'recusada' => ['text' => 'Recusada', 'class' => 'status-rejected'],
+        'negociacao' => ['text' => 'Em Negociação', 'class' => 'status-negotiation'],
+    ];
+    return $map[$status] ?? ['text' => ucfirst($status), 'class' => 'status-default'];
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Propostas - Vendedor</title>
-    <link rel="stylesheet" href="../css/vendedor/dashboard.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Propostas Recebidas - Vendedor</title>
+    <link rel="stylesheet" href="../../index.css"> 
+    <link rel="stylesheet" href="../css/vendedor/vendedor.css"> 
     <link rel="shortcut icon" href="../../img/Logo - Copia.jpg" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* Estilos da Listagem de Propostas (Pode ser integrado ao seu CSS do Vendedor) */
+        .propostas-container {
+            padding-top: 120px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .proposta-card {
+            background-color: var(--white);
+            border-left: 5px solid var(--secondary-color); /* Destaque para novas propostas */
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .proposta-card.status-accepted { border-left-color: var(--primary-color); }
+        .proposta-card.status-rejected { border-left-color: #E53935; }
+        .proposta-card.status-negotiation { border-left-color: #2196F3; }
+        .proposta-card.status-pending { border-left-color: #FF9800; }
+
+        .proposta-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .proposta-header h3 {
+            margin: 0;
+            color: var(--dark-color);
+            font-size: 1.5em;
+        }
+
+        .proposta-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .info-group p {
+            margin-bottom: 5px;
+            font-size: 0.95em;
+        }
+
+        .info-group p strong {
+            display: block;
+            font-weight: bold;
+            color: var(--text-color);
+            margin-bottom: 3px;
+            font-size: 1.05em;
+        }
+        
+        .info-group p span {
+            color: var(--secondary-color); /* Destaque para o valor proposto */
+            font-weight: 600;
+        }
+        
+        /* Status Badges - Cores iguais às do Comprador */
+        .status-badge {
+            font-weight: bold;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .status-pending { background-color: #FFF3E0; color: #FF9800; border: 1px solid #FF9800; }
+        .status-accepted { background-color: #E8F5E9; color: #4CAF50; border: 1px solid #4CAF50; }
+        .status-rejected { background-color: #FFEBEE; color: #F44336; border: 1px solid #F44336; }
+        .status-negotiation { background-color: #E3F2FD; color: #2196F3; border: 1px solid #2196F3; }
+
+        .proposta-actions {
+            text-align: right;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .btn-action {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-left: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-action:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            background-color: var(--white);
+            border-radius: 8px;
+            border: 1px dashed #ccc;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .proposta-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .proposta-info {
+                grid-template-columns: 1fr;
+            }
+            .proposta-actions {
+                text-align: center;
+            }
+            .btn-action {
+                display: block;
+                width: 100%;
+                margin: 5px 0 0;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo">
-            <h2>ENCONTRE OCAMPO</h2>
-            <p>Vendedor</p>
-        </div>
-        <nav class="nav-menu">
-            <a href="../../index.php" class="nav-link"><i class="fas fa-home"></i> Home</a>
-            <a href="dashboard.php" class="nav-link active"><i class="fas fa-desktop"></i>Painel</a>
-            <a href="anuncios.php" class="nav-link"><i class="fas fa-bullhorn"></i> Meus Anúncios</a>
-            <a href="propostas.php" class="nav-link active"><i class="fas fa-handshake"></i> Painel de Propostas</a>
-            <a href="precos.php" class="nav-link"><i class="fas fa-chart-line"></i> Médias de Preços</a>
-            <a href="perfil.php" class="nav-link"><i class="fas fa-user-circle"></i> Meu Perfil</a>
-            <a href="../logout.php" class="nav-link logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
-        </nav>
-    </div>
-
-    <div class="main-content">
-        <header class="header">
-            <h1>Painel de Propostas Recebidas</h1>
-        </header>
-
-        <section class="section-propostas">
-            <h2>Negociações Ativas (<?php echo $total_propostas; ?>)</h2>
-
-            <?php if (!empty($mensagem_erro)): ?>
-                <div class="alert error-alert" style="float: none; margin-bottom: 20px;"><?php echo $mensagem_erro; ?></div>
-            <?php endif; ?>
-            
-            <div class="tabela-propostas">
-                <?php if ($total_propostas > 0): ?>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Anúncio</th>
-                                <th>Comprador</th>
-                                <th>Qtd. Proposta (Kg)</th>
-                                <th>Preço Proposto/Kg</th>
-                                <th>Valor Total</th>
-                                <th>Status</th>
-                                <th>Data</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($propostas as $proposta): ?>
-                            <tr>
-                                <td><a href="anuncio_editar.php?id=<?php echo $proposta['anuncio_id']; ?>" title="Ver Anúncio"><?php echo htmlspecialchars($proposta['nome_produto']); ?></a></td>
-                                <td><?php echo htmlspecialchars($proposta['loja_comprador'] ?? $proposta['nome_comprador']); ?></td>
-                                <td><?php echo number_format($proposta['quantidade_proposta'], 0, ',', '.'); ?></td>
-                                <td>R$ <?php echo number_format($proposta['preco_proposto'], 2, ',', '.'); ?></td>
-                                <td>
-                                    <strong>R$ <?php echo number_format($proposta['preco_proposto'] * $proposta['quantidade_proposta'], 2, ',', '.'); ?></strong>
-                                </td>
-                                <td><span class="status proposta-status-<?php echo strtolower($proposta['status']); ?>"><?php echo ucfirst($proposta['status']); ?></span></td>
-                                <td><?php echo date('d/m/Y H:i', strtotime($proposta['data_proposta'])); ?></td>
-                                <td>
-                                    <?php if ($proposta['status'] === 'pendente'): ?>
-                                        <button class="action-btn accept" title="Aceitar Proposta"><i class="fas fa-check"></i></button>
-                                        <button class="action-btn reject" title="Rejeitar Proposta"><i class="fas fa-times"></i></button>
-                                        <button class="action-btn chat" title="Iniciar Negociação/Chat"><i class="fas fa-comment-dots"></i></button>
-                                    <?php elseif ($proposta['status'] === 'aceita'): ?>
-                                        <span class="status success-text"><i class="fas fa-shipping-fast"></i> Preparar Envio</span>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                <?php else: ?>
-                    <p class="empty-state">Você não recebeu nenhuma proposta de compra ainda.</p>
-                <?php endif; ?>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <h1>ENCONTRE</h1>
+                <h2>OCAMPO</h2>
             </div>
-        </section>
-        
-    </div>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>
+                <li class="nav-item"><a href="meus_produtos.php" class="nav-link">Meus Anúncios</a></li>
+                <li class="nav-item"><a href="propostas.php" class="nav-link active">Propostas Recebidas</a></li>
+                <li class="nav-item"><a href="../logout.php" class="nav-link logout">Sair</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container propostas-container">
+        <h1>Propostas de Negociação Recebidas</h1>
+        <p>Gerencie as propostas de compra enviadas para os seus produtos anunciados.</p>
+
+        <?php if (empty($propostas)): ?>
+            <div class="empty-state">
+                <h3>Nenhuma proposta recebida até o momento.</h3>
+                <p>Verifique se seus <a href="meus_produtos.php">anúncios</a> estão ativos.</p>
+            </div>
+        <?php else: ?>
+            <div class="propostas-list">
+                <?php foreach ($propostas as $proposta): 
+                    $status_info = formatarStatus($proposta['status']);
+                ?>
+                    <div class="proposta-card <?php echo $status_info['class']; ?>">
+                        <div class="proposta-header">
+                            <h3>
+                                Proposta de **<?php echo htmlspecialchars($proposta['nome_comprador']); ?>**
+                            </h3>
+                            <span class="status-badge <?php echo $status_info['class']; ?>">
+                                <?php echo $status_info['text']; ?>
+                            </span>
+                        </div>
+                        
+                        <div class="proposta-info">
+                            <div class="info-group">
+                                <p><strong>Produto:</strong> <?php echo htmlspecialchars($proposta['produto_nome']); ?></p>
+                                <p><strong>Data:</strong> <?php echo date('d/m/Y H:i', strtotime($proposta['data_proposta'])); ?></p>
+                            </div>
+                            <div class="info-group">
+                                <p><strong>Proposto:</strong> <span><?php echo 'R$ ' . number_format($proposta['preco_proposto'], 2, ',', '.') . ' / ' . htmlspecialchars($proposta['unidade_medida']); ?></span></p>
+                                <p><strong>Qtde Proposta:</strong> <?php echo htmlspecialchars($proposta['quantidade_proposta']) . ' ' . htmlspecialchars($proposta['unidade_medida']); ?></p>
+                            </div>
+                            <div class="info-group">
+                                <p><strong>Seu Preço Original:</strong> <?php echo 'R$ ' . number_format($proposta['preco_anuncio_original'], 2, ',', '.') . ' / ' . htmlspecialchars($proposta['unidade_medida']); ?></p>
+                            </div>
+                        </div>
+                        
+                        <div class="proposta-actions">
+                            <a href="detalhes_proposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn-action">
+                                <i class="fas fa-search"></i>
+                                Ver Detalhes / Negociar
+                            </a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </main>
 </body>
 </html>

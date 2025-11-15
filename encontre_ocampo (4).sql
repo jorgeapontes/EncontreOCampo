@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 14/11/2025 às 20:18
+-- Tempo de geração: 15/11/2025 às 20:21
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -124,21 +124,23 @@ CREATE TABLE `propostas_negociacao` (
   `condicoes_comprador` text DEFAULT NULL,
   `status` enum('pendente','aceita','rejeitada','finalizada','cancelada') NOT NULL DEFAULT 'pendente',
   `data_proposta` timestamp NOT NULL DEFAULT current_timestamp(),
+  `data_resposta` datetime DEFAULT NULL,
   `data_atualizacao` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
-  `observacoes_vendedor` text DEFAULT NULL
+  `observacoes_vendedor` text DEFAULT NULL,
+  `observacoes_vendedor_teste` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Despejando dados para a tabela `propostas_negociacao`
 --
 
-INSERT INTO `propostas_negociacao` (`id`, `produto_id`, `comprador_id`, `preco_proposto`, `quantidade_proposta`, `condicoes_comprador`, `status`, `data_proposta`, `data_atualizacao`, `observacoes_vendedor`) VALUES
-(1, 2, 1, 4.00, 1, '', 'pendente', '2025-11-14 18:38:00', NULL, NULL),
-(2, 2, 1, 10.00, 1, 'teste', 'pendente', '2025-11-14 19:07:35', NULL, NULL),
-(3, 2, 1, 10.00, 1, 'teste', 'pendente', '2025-11-14 19:07:59', NULL, NULL),
-(4, 2, 1, 10.00, 1, 'teste', 'pendente', '2025-11-14 19:11:07', NULL, NULL),
-(5, 2, 1, 10.00, 1, 'teste', 'pendente', '2025-11-14 19:12:24', NULL, NULL),
-(6, 2, 1, 10.00, 1, 'teste', 'pendente', '2025-11-14 19:13:44', NULL, NULL);
+INSERT INTO `propostas_negociacao` (`id`, `produto_id`, `comprador_id`, `preco_proposto`, `quantidade_proposta`, `condicoes_comprador`, `status`, `data_proposta`, `data_resposta`, `data_atualizacao`, `observacoes_vendedor`, `observacoes_vendedor_teste`) VALUES
+(1, 2, 1, 4.00, 1, '', 'pendente', '2025-11-14 18:38:00', NULL, NULL, NULL, NULL),
+(2, 2, 1, 10.00, 1, 'teste', 'pendente', '2025-11-14 19:07:35', NULL, NULL, NULL, NULL),
+(3, 2, 1, 10.00, 1, 'teste', 'pendente', '2025-11-14 19:07:59', NULL, NULL, NULL, NULL),
+(4, 2, 1, 10.00, 1, 'teste', 'pendente', '2025-11-14 19:11:07', NULL, NULL, NULL, NULL),
+(5, 2, 1, 10.00, 1, 'teste', 'pendente', '2025-11-14 19:12:24', NULL, NULL, NULL, NULL),
+(6, 2, 1, 11.00, 1, 'teste', '', '2025-11-14 19:13:44', '2025-11-15 16:17:19', '2025-11-15 19:17:19', NULL, NULL);
 
 -- --------------------------------------------------------
 

@@ -1,4 +1,9 @@
 // script.js
+
+// script.js - VERIFICAÇÃO DE CARREGAMENTO
+console.log('=== SCRIPT.JS CARREGADO ===');
+
+
 // Navbar toggle for mobile
 const hamburger = document.querySelector(".hamburger");
 const navMenu = document.querySelector(".nav-menu");
@@ -170,47 +175,167 @@ function prevStep(type) {
 }
 
 // Funções para buscar CEP (MANTIDO)
-function buscarCEP(type) {
-    const cepInput = document.getElementById(`cep${type}Comprador` ? `cepComprador` : `cep${type}Vendedor`); // Simplificação, mas o seu código original já era separado
-    const cep = (type === 'Comprador' ? document.getElementById('cepComprador') : document.getElementById('cepVendedor')).value.replace(/\D/g, '');
+// Funções para buscar CEP - VERSÃO CORRIGIDA
+function buscarCEPComprador() {
     
-    if (cep.length !== 8) {
-        alert('CEP inválido! Digite um CEP com 8 dígitos.');
-        (type === 'Comprador' ? document.getElementById('cepComprador') : document.getElementById('cepVendedor')).focus();
+    const cepInput = document.getElementById('cepComprador');
+    if (!cepInput) {
+        console.error('❌ cepComprador não encontrado');
+        alert('Erro: campo CEP não encontrado');
         return;
     }
     
-    const btnBuscar = (type === 'Comprador' ? document.getElementById('cepComprador') : document.getElementById('cepVendedor')).nextElementSibling.querySelector('button');
-    const originalText = btnBuscar.textContent;
-    btnBuscar.textContent = 'Buscando...';
-    btnBuscar.disabled = true;
+    const cep = cepInput.value.replace(/\D/g, '');
     
+    if (cep.length !== 8) {
+        alert('❌ CEP inválido! Digite 8 números.\nCEP atual: ' + cep + ' (' + cep.length + ' dígitos)');
+        return;
+    }
+    
+    // CORREÇÃO: Encontra o botão de forma segura
+    const btnBuscar = cepInput.parentElement.querySelector('button');
+    let originalText = 'Buscar CEP';
+    if (btnBuscar) {
+        originalText = btnBuscar.textContent;
+        btnBuscar.textContent = 'Buscando...';
+        btnBuscar.disabled = true;
+    }
+        
+    // Fazer a busca
     fetch(`https://viacep.com.br/ws/${cep}/json/`)
-    .then(response => response.json())
-    .then(data => {
-        if (data.erro) {
-            alert('CEP não encontrado! Verifique o número digitado.');
-            return;
+        .then(response => response.json())
+        .then(data => {
+            console.log('Resposta da API:', data);
+            
+            if (data.erro) {
+                alert('CEP não encontrado na base de dados!');
+                // Restaura botão em caso de erro
+                if (btnBuscar) {
+                    btnBuscar.textContent = originalText;
+                    btnBuscar.disabled = false;
+                }
+                return;
+            }
+            
+            // Preencher campos
+            document.getElementById('ruaComprador').value = data.logradouro || '';
+            document.getElementById('cidadeComprador').value = data.localidade || '';
+            document.getElementById('estadoComprador').value = data.uf || '';
+            
+            // Restaura botão em caso de sucesso
+            if (btnBuscar) {
+                btnBuscar.textContent = '✓ Encontrado';
+                btnBuscar.style.backgroundColor = '#4CAF50';
+                setTimeout(() => {
+                    btnBuscar.textContent = originalText;
+                    btnBuscar.disabled = false;
+                    btnBuscar.style.backgroundColor = '';
+                }, 2000);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro na busca. Verifique sua conexão.');
+            // Restaura botão em caso de erro
+            if (btnBuscar) {
+                btnBuscar.textContent = originalText;
+                btnBuscar.disabled = false;
+            }
+        });
+}
+
+function buscarCEPVendedor() {
+    
+    const cepInput = document.getElementById('cepVendedor');
+    if (!cepInput) {
+        console.error('❌ cepVendedor não encontrado');
+        alert('Erro: campo CEP não encontrado');
+        return;
+    }
+    
+    const cep = cepInput.value.replace(/\D/g, '');
+    
+    if (cep.length !== 8) {
+        alert('❌ CEP inválido! Digite 8 números.\nCEP atual: ' + cep + ' (' + cep.length + ' dígitos)');
+        return;
+    }
+    
+    // CORREÇÃO: Encontra o botão de forma segura
+    const btnBuscar = cepInput.parentElement.querySelector('button');
+    let originalText = 'Buscar CEP';
+    if (btnBuscar) {
+        originalText = btnBuscar.textContent;
+        btnBuscar.textContent = 'Buscando...';
+        btnBuscar.disabled = true;
+    }
+        
+    // Fazer a busca
+    fetch(`https://viacep.com.br/ws/${cep}/json/`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Resposta da API:', data);
+            
+            if (data.erro) {
+                alert('CEP não encontrado na base de dados!');
+                // Restaura botão em caso de erro
+                if (btnBuscar) {
+                    btnBuscar.textContent = originalText;
+                    btnBuscar.disabled = false;
+                }
+                return;
+            }
+            
+            // Preencher campos
+            document.getElementById('ruaVendedor').value = data.logradouro || '';
+            document.getElementById('cidadeVendedor').value = data.localidade || '';
+            document.getElementById('estadoVendedor').value = data.uf || '';
+            
+            // Restaura botão em caso de sucesso
+            if (btnBuscar) {
+                btnBuscar.textContent = '✓ Encontrado';
+                btnBuscar.style.backgroundColor = '#4CAF50';
+                setTimeout(() => {
+                    btnBuscar.textContent = originalText;
+                    btnBuscar.disabled = false;
+                    btnBuscar.style.backgroundColor = '';
+                }, 2000);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro na busca. Verifique sua conexão.');
+            // Restaura botão em caso de erro
+            if (btnBuscar) {
+                btnBuscar.textContent = originalText;
+                btnBuscar.disabled = false;
+            }
+        });
+}
+
+
+// MÁSCARA SIMPLES E EFICIENTE PARA CEP
+function aplicarMascaraCEP(cepInput, tipo) {
+    if (!cepInput) return;
+    
+    cepInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        
+        // Aplica máscara simples: 00000-000
+        if (value.length > 5) {
+            value = value.substring(0, 5) + '-' + value.substring(5, 8);
         }
         
-        const typePrefix = type === 'Comprador' ? 'Comprador' : 'Vendedor';
-        document.getElementById(`rua${typePrefix}`).value = data.logradouro || '';
-        document.getElementById(`cidade${typePrefix}`).value = data.localidade || '';
-        document.getElementById(`estado${typePrefix}`).value = data.uf || '';
-        document.getElementById(`complemento${typePrefix}`).value = data.complemento || '';
-        document.getElementById(`numero${typePrefix}`).focus();
-    })
-    .catch(error => {
-        console.error('Erro ao buscar CEP:', error);
-        alert('Erro ao buscar CEP. Verifique sua conexão e tente novamente.');
-    })
-    .finally(() => {
-        btnBuscar.textContent = originalText;
-        btnBuscar.disabled = false;
+        e.target.value = value;
+    });
+    
+    // Enter para buscar automaticamente
+    cepInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            buscarCEP(tipo);
+        }
     });
 }
-function buscarCEPComprador() { buscarCEP('Comprador'); }
-function buscarCEPVendedor() { buscarCEP('Vendedor'); }
 
 // Funções para carregar estados e cidades (MANTIDO)
 function loadEstados() {
@@ -293,25 +418,12 @@ function initializeCompradorMasks() {
     aplicarMascaraTelefone(document.getElementById('telefone1Comprador'));
     aplicarMascaraTelefone(document.getElementById('telefone2Comprador'));
     
-    // Máscara para CEP e CPF/CNPJ (MANTIDO O CÓDIGO DO USUÁRIO)
+    // Máscara para CEP - CORRIGIDA
+    aplicarMascaraCEP(document.getElementById('cepComprador'), 'comprador');
+
+
+    // Máscara para CPF/CNPJ (MANTIDO O CÓDIGO DO USUÁRIO)
     // ... Código de máscaras para cepComprador e cpfCnpjComprador ...
-    const cepInput = document.getElementById('cepComprador');
-    if (cepInput) {
-        cepInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 5) {
-                value = value.substring(0, 5) + '-' + value.substring(5, 8);
-            }
-            e.target.value = value;
-        });
-        
-        cepInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                buscarCEPComprador();
-            }
-        });
-    }
 
     const cpfCnpjInput = document.getElementById('cpfCnpjComprador');
     if (cpfCnpjInput) {
@@ -332,25 +444,11 @@ function initializeVendedorMasks() {
     aplicarMascaraTelefone(document.getElementById('telefone1Vendedor'));
     aplicarMascaraTelefone(document.getElementById('telefone2Vendedor'));
 
-    // Máscara para CEP e CPF/CNPJ (MANTIDO O CÓDIGO DO USUÁRIO)
+    // Máscara para CEP - CORRIGIDA
+    aplicarMascaraCEP(document.getElementById('cepVendedor'), 'vendedor');
+
+    // Máscara para CPF/CNPJ (MANTIDO O CÓDIGO DO USUÁRIO)
     // ... Código de máscaras para cepVendedor e cpfCnpjVendedor ...
-    const cepInput = document.getElementById('cepVendedor');
-    if (cepInput) {
-        cepInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 5) {
-                value = value.substring(0, 5) + '-' + value.substring(5, 8);
-            }
-            e.target.value = value;
-        });
-        
-        cepInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                buscarCEPVendedor();
-            }
-        });
-    }
 
     const cpfCnpjInput = document.getElementById('cpfCnpjVendedor');
     if (cpfCnpjInput) {

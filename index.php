@@ -7,12 +7,8 @@
     if (isset($_SESSION['usuario_nome'])) {
         $button_text = 'Olá, '.$_SESSION['usuario_nome'];
         $usuario_tipo = $_SESSION['usuario_tipo'];
-
-        if ($usuario_tipo == 'admin') {
-            $button_action = 'src/admin/dashboard.php';
-        } else {
-            $button_action = 'src/'.$_SESSION['usuario_tipo'].'/perfil.php';
-        }
+        $button_action = 'src/'.$_SESSION['usuario_tipo'].'/dashboard.php';
+        
     } else {
         $button_text = 'Login';
         $button_action = 'src/login.php';

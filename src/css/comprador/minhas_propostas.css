@@ -129,6 +129,31 @@
             color: var(--text-light);
         }
 
+        /* Botão Excluir */
+        .btn-danger {
+            background-color: #dc3545 !important;
+            color: white !important;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333 !important;
+        }
+
+        .proposta-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
         @media (max-width: 768px) {
             .proposta-header {
                 flex-direction: column;

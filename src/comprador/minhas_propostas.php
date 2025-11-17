@@ -78,6 +78,14 @@ function formatarStatus($status) {
 }
 ?>
 
+<script>
+function confirmarExclusao(propostaId) {
+    if (confirm('Tem certeza que deseja excluir esta proposta?\n\nEsta ação não pode ser desfeita.')) {
+        window.location.href = 'excluir_proposta.php?id=' + propostaId;
+    }
+}
+</script>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -172,8 +180,12 @@ function formatarStatus($status) {
                                     <i class="fas fa-edit"></i>
                                     Alterar Detalhes
                                 </a>
+                                <button onclick="confirmarExclusao(<?php echo $proposta['proposta_id']; ?>)" class="btn btn-danger" style="background-color: #dc3545; color: white; border: none; cursor: pointer;">
+                                    <i class="fas fa-trash"></i>
+                                    Excluir Proposta
+                                </button>
                             <?php endif; ?>
-                            </div>
+                        </div>
                     </div>
                 <?php endforeach; ?>
             </div>

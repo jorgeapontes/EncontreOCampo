@@ -170,7 +170,7 @@ function formatarStatus($status) {
                             <?php if ($proposta['status'] === 'pendente' || $proposta['status'] === 'negociacao'): ?>
                                 <a href="editar_proposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn btn-secondary" style="background-color: #FF9800; color: white;">
                                     <i class="fas fa-edit"></i>
-                                    Detalhes / Negociar
+                                    Alterar Detalhes
                                 </a>
                             <?php endif; ?>
                             </div>

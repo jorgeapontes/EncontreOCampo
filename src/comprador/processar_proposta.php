@@ -1,5 +1,5 @@
 <?php
-// src/comprador/processar_resposta.php - CORREÇÃO FINAL (Nome da Coluna)
+// src/comprador/processar_proposta.php - CORRIGIDO
 
 session_start();
 require_once __DIR__ . '/../conexao.php'; 
@@ -7,121 +7,102 @@ require_once __DIR__ . '/../conexao.php';
 $database = new Database();
 $conn = $database->getConnection();
 
-// Função para redirecionar com mensagem de erro/sucesso
-function redirecionar($id, $tipo, $mensagem) {
-    $url = ($id) 
-        ? "detalhes_proposta.php?id={$id}&{$tipo}=" . urlencode($mensagem) 
-        : "minhas_propostas.php?{$tipo}=" . urlencode($mensagem);
-    header("Location: {$url}");
+// Função para redirecionar com mensagem
+function redirecionar($tipo, $mensagem, $anuncio_id = null) {
+    if ($tipo === 'sucesso') {
+        header("Location: minhas_propostas.php?sucesso=" . urlencode($mensagem));
+    } else {
+        // Em caso de erro, volta para a página do anúncio
+        $url = $anuncio_id ? "proposta_nova.php?anuncio_id={$anuncio_id}&erro=" . urlencode($mensagem) 
+                           : "../anuncios.php?erro=" . urlencode($mensagem);
+        header("Location: {$url}");
+    }
     exit();
 }
 
 // 1. VERIFICAÇÃO DE ACESSO
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprador') {
-    redirecionar(null, 'erro', "Acesso negado. Faça login como Comprador.");
+    redirecionar('erro', "Acesso negado. Faça login como Comprador.");
 }
 
-$usuario_id = $_SESSION['usuario_id']; // ID do comprador logado
+$usuario_id = $_SESSION['usuario_id'];
 
-// Obtém action e proposta_id de GET (Aceitar/Recusar) ou POST (Contraproposta)
-$action = filter_input(INPUT_GET, 'action', FILTER_SANITIZE_STRING) 
-          ?? filter_input(INPUT_POST, 'action', FILTER_SANITIZE_STRING);
-
-$proposta_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) 
-               ?? filter_input(INPUT_POST, 'proposta_id', FILTER_VALIDATE_INT);
-
-if (!$proposta_id) {
-    redirecionar(null, 'erro', "ID da proposta inválido ou faltando.");
-}
-
-// 2. VERIFICAÇÃO DE PROPRIEDADE (Segurança)
-try {
-    // 2.1. Busca o ID do comprador na tabela 'compradores'
-    $sql_comprador = "SELECT id FROM compradores WHERE usuario_id = :usuario_id";
-    $stmt_comprador = $conn->prepare($sql_comprador);
-    $stmt_comprador->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
-    $stmt_comprador->execute();
-    $comprador = $stmt_comprador->fetch(PDO::FETCH_ASSOC);
-
-    if (!$comprador || !isset($comprador['id']) || !is_numeric($comprador['id'])) {
-         redirecionar(null, 'erro', "Seu perfil de comprador não foi encontrado ou está inválido.");
-    }
-
-    $comprador_id_fk = $comprador['id']; // ID validado
+// 2. VERIFICA SE É UMA NOVA PROPOSTA (POST)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
-    // 2.2. Verifica se a proposta foi feita por ESTE comprador
-    $sql_propriedade = "SELECT id FROM propostas_negociacao WHERE id = :proposta_id AND comprador_id = :comprador_id";
-    $stmt_propriedade = $conn->prepare($sql_propriedade);
-    $stmt_propriedade->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
-    $stmt_propriedade->bindParam(':comprador_id', $comprador_id_fk, PDO::PARAM_INT); 
-    $stmt_propriedade->execute();
-
-    if ($stmt_propriedade->rowCount() === 0) {
-        redirecionar(null, 'erro', "Proposta não encontrada ou você não tem permissão para esta ação.");
+    // Obter dados do formulário
+    $produto_id = filter_input(INPUT_POST, 'produto_id', FILTER_VALIDATE_INT);
+    $preco_proposto = filter_input(INPUT_POST, 'preco_proposto', FILTER_VALIDATE_FLOAT);
+    $quantidade_proposta = filter_input(INPUT_POST, 'quantidade_proposta', FILTER_VALIDATE_INT);
+    $condicoes_comprador = filter_input(INPUT_POST, 'condicoes', FILTER_SANITIZE_STRING);
+    
+    // Validações básicas
+    if (!$produto_id || !$preco_proposto || !$quantidade_proposta || $preco_proposto <= 0 || $quantidade_proposta <= 0) {
+        redirecionar('erro', "Dados inválidos. Verifique preço e quantidade.", $produto_id);
     }
-} catch (PDOException $e) {
-    error_log("Erro de DB em processar_resposta (Segurança): " . $e->getMessage()); 
-    redirecionar($proposta_id, 'erro', "Erro de segurança ao verificar propriedade. Tente novamente."); 
-}
-
-
-// 3. EXECUÇÃO DA AÇÃO
-try {
-    switch ($action) {
-        case 'aceitar':
-            $sql = "UPDATE propostas_negociacao SET status = 'aceita', data_resposta = NOW() WHERE id = :id";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':id', $proposta_id, PDO::PARAM_INT);
-            $stmt->execute();
-            
-            redirecionar($proposta_id, 'sucesso', "Contraproposta **ACEITA**! A compra foi concluída com sucesso.");
-            break;
-
-        case 'recusar':
-            $sql = "UPDATE propostas_negociacao SET status = 'recusada', data_resposta = NOW() WHERE id = :id";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':id', $proposta_id, PDO::PARAM_INT);
-            $stmt->execute();
-            
-            redirecionar($proposta_id, 'sucesso', "Contraproposta **RECUSADA**. A negociação foi encerrada.");
-            break;
-            
-        case 'contraproposta':
-            $novo_preco = filter_input(INPUT_POST, 'novo_preco', FILTER_VALIDATE_FLOAT);
-            $nova_quantidade = filter_input(INPUT_POST, 'nova_quantidade', FILTER_VALIDATE_FLOAT);
-            $novas_condicoes = filter_input(INPUT_POST, 'novas_condicoes', FILTER_SANITIZE_STRING); 
-
-            if (!$novo_preco || !$nova_quantidade || $novo_preco <= 0 || $nova_quantidade <= 0) {
-                redirecionar($proposta_id, 'erro', "Preço e Quantidade na nova contraproposta devem ser válidos.");
-            }
-            
-            // CORRIGIDO: condicoes_vendedor -> observacoes_vendedor
-            $sql = "UPDATE propostas_negociacao SET 
-                        status = 'pendente', 
-                        preco_proposto = :novo_preco, 
-                        quantidade_proposta = :nova_quantidade, 
-                        condicoes_comprador = :novas_condicoes,
-                        observacoes_vendedor = NULL, -- Limpa a última contraproposta do Vendedor
-                        data_proposta = NOW() 
-                    WHERE id = :id";
-                    
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':novo_preco', $novo_preco);
-            $stmt->bindParam(':nova_quantidade', $nova_quantidade);
-            $stmt->bindParam(':novas_condicoes', $novas_condicoes);
-            $stmt->bindParam(':id', $proposta_id, PDO::PARAM_INT);
-            $stmt->execute();
-            
-            redirecionar($proposta_id, 'sucesso', "Sua nova **Contraproposta** foi enviada ao Vendedor. Aguarde a resposta.");
-            break;
-
-        default:
-            redirecionar($proposta_id, 'erro', "Ação inválida.");
-            break;
+    
+    // 3. BUSCAR ID DO COMPRADOR
+    try {
+        $sql_comprador = "SELECT id FROM compradores WHERE usuario_id = :usuario_id";
+        $stmt_comprador = $conn->prepare($sql_comprador);
+        $stmt_comprador->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+        $stmt_comprador->execute();
+        $comprador = $stmt_comprador->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$comprador) {
+            redirecionar('erro', "Perfil de comprador não encontrado.", $produto_id);
+        }
+        
+        $comprador_id = $comprador['id'];
+        
+        // 4. VERIFICAR SE O PRODUTO EXISTE E ESTÁ ATIVO
+        $sql_produto = "SELECT id, estoque FROM produtos WHERE id = :produto_id AND status = 'ativo'";
+        $stmt_produto = $conn->prepare($sql_produto);
+        $stmt_produto->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+        $stmt_produto->execute();
+        $produto = $stmt_produto->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$produto) {
+            redirecionar('erro', "Produto não encontrado ou inativo.", $produto_id);
+        }
+        
+        // Verificar se há estoque suficiente
+        if ($produto['estoque'] < $quantidade_proposta) {
+            redirecionar('erro', "Quantidade solicitada maior que estoque disponível.", $produto_id);
+        }
+        
+        // 5. INSERIR NOVA PROPOSTA
+        $sql_inserir = "INSERT INTO propostas_negociacao 
+                        (produto_id, comprador_id, preco_proposto, quantidade_proposta, condicoes_comprador, status) 
+                        VALUES 
+                        (:produto_id, :comprador_id, :preco_proposto, :quantidade_proposta, :condicoes_comprador, 'pendente')";
+        
+        $stmt_inserir = $conn->prepare($sql_inserir);
+        $stmt_inserir->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+        $stmt_inserir->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
+        $stmt_inserir->bindParam(':preco_proposto', $preco_proposto);
+        $stmt_inserir->bindParam(':quantidade_proposta', $quantidade_proposta, PDO::PARAM_INT);
+        
+        // Tratar condicoes vazias
+        if (empty($condicoes_comprador)) {
+            $stmt_inserir->bindValue(':condicoes_comprador', null, PDO::PARAM_NULL);
+        } else {
+            $stmt_inserir->bindParam(':condicoes_comprador', $condicoes_comprador, PDO::PARAM_STR);
+        }
+        
+        if ($stmt_inserir->execute()) {
+            redirecionar('sucesso', "Proposta enviada com sucesso! Aguarde a resposta do vendedor.");
+        } else {
+            redirecionar('erro', "Erro ao enviar proposta. Tente novamente.", $produto_id);
+        }
+        
+    } catch (PDOException $e) {
+        error_log("Erro ao processar nova proposta: " . $e->getMessage());
+        redirecionar('erro', "Erro interno do sistema. Tente novamente.", $produto_id);
     }
-} catch (PDOException $e) {
-    error_log("Erro de DB em processar_resposta (Ação): " . $e->getMessage());
-    redirecionar($proposta_id, 'erro', "Erro interno do servidor ao processar a ação. Tente novamente.");
+    
+} else {
+    // Se não for POST, redireciona
+    redirecionar('erro', "Método inválido.");
 }
-
 ?>

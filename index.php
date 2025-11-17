@@ -28,14 +28,20 @@
     <title>Encontre o Campo - E-commerce de Frutas</title>
     <link rel="stylesheet" href="index.css">
     <link rel="shortcut icon" href="img/Logo - Copia.jpg" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <h1>ENCONTRE</h1>
-                    <h2>O CAMPO</h2>
+                    <img src="../EncontreOCampo/img/logo-nova.png" alt="Logo">
+                    <div>
+                        <h1>ENCONTRE</h1>
+                        <h2>O CAMPO</h2>
+                    </div>
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
@@ -65,10 +71,10 @@
 
     <section id="inicio" class="hero">
         <div class="hero-content">
-            <h1>O melhor mercado de frutas do campo</h1>
+            <h1>O Melhor Mercado de Frutas do Campo</h1>
             <p class="hero-text">Conectamos produtores e compradores com qualidade e agilidade</p>
-            <a href="#comprar" class="cta-button">Compre agora</a>
-            <a href="#vender" class="cta-button secondary">Venda conosco</a>
+            <a href="#comprar" id="btn-comprar" class="cta-button">Compre agora</a>
+            <a href="#vender" id="btn-vender" class="cta-button secondary">Venda conosco</a>
         </div>
     </section>
 
@@ -135,7 +141,7 @@
                 </div>
                 <div class="sell-image">
                     <div class="logo-large">
-                        <img src="img/Logo - Copia.jpg" alt="Logo">
+                        <img src="../EncontreOCampo/img/logo-nova.png" alt="Logo">
                     </div>
                 </div>
             </div>
@@ -671,12 +677,6 @@
         <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 400px; border-radius: 10px;">
             <span class="close" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
             <h2 style="color: var(--dark-color); margin-bottom: 20px;">Login</h2>
-            
-            <?php if (isset($_SESSION['erro_login'])): ?>
-                <div style="background: #ffebee; color: #c62828; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
-                    <?php echo $_SESSION['erro_login']; unset($_SESSION['erro_login']); ?>
-                </div>
-            <?php endif; ?>
 
             <form action="login.php" method="POST">
                 <div class="form-group">

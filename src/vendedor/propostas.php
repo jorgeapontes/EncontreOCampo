@@ -81,166 +81,196 @@ function formatarStatus($status) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Propostas Recebidas - Vendedor</title>
-    <link rel="stylesheet" href="../../index.css"> 
-    <link rel="stylesheet" href="../css/vendedor/vendedor.css"> 
+    <link rel="stylesheet" href="../css/vendedor/dashboard.css">
     <link rel="shortcut icon" href="../../img/Logo - Copia.jpg" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
-        /* Estilos da Listagem de Propostas (Pode ser integrado ao seu CSS do Vendedor) */
-        .propostas-container {
-            padding-top: 120px;
-            max-width: 1100px;
-            margin: 0 auto;
-        }
+    /* Estilos da Listagem de Propostas */
+    .propostas-container {
+        margin-top: 80px;
+        padding: 20px;
+        max-width: 1200px; /* Alterado de 1100px para 1200px para igualar ao dashboard */
+        margin-left: auto;
+        margin-right: auto;
+    }
 
-        .proposta-card {
-            background-color: var(--white);
-            border-left: 5px solid var(--secondary-color); /* Destaque para novas propostas */
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .proposta-card.status-accepted { border-left-color: var(--primary-color); }
-        .proposta-card.status-rejected { border-left-color: #E53935; }
-        .proposta-card.status-negotiation { border-left-color: #2196F3; }
-        .proposta-card.status-pending { border-left-color: #FF9800; }
+    .proposta-card {
+        background-color: var(--white);
+        border-left: 5px solid var(--secondary-color);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        width: 100%; /* Garante que ocupe toda a largura disponível */
+    }
+    
+    .proposta-card.status-accepted { border-left-color: var(--primary-color); }
+    .proposta-card.status-rejected { border-left-color: #E53935; }
+    .proposta-card.status-negotiation { border-left-color: #2196F3; }
+    .proposta-card.status-pending { border-left-color: #FF9800; }
 
+    .proposta-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px dashed #eee;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+
+    .proposta-header h3 {
+        margin: 0;
+        color: var(--dark-color);
+        font-size: 1.5em;
+    }
+
+    .proposta-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+    
+    .info-group p {
+        margin-bottom: 5px;
+        font-size: 0.95em;
+    }
+
+    .info-group p strong {
+        display: block;
+        font-weight: bold;
+        color: var(--text-color);
+        margin-bottom: 3px;
+        font-size: 1.05em;
+    }
+    
+    .info-group p span {
+        color: var(--secondary-color);
+        font-weight: 600;
+    }
+    
+    /* Status Badges */
+    .status-badge {
+        font-weight: bold;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        text-transform: uppercase;
+    }
+
+    .status-pending { background-color: #FFF3E0; color: #FF9800; border: 1px solid #FF9800; }
+    .status-accepted { background-color: #E8F5E9; color: #4CAF50; border: 1px solid #4CAF50; }
+    .status-rejected { background-color: #FFEBEE; color: #F44336; border: 1px solid #F44336; }
+    .status-negotiation { background-color: #E3F2FD; color: #2196F3; border: 1px solid #2196F3; }
+
+    .proposta-actions {
+        text-align: right;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #f0f0f0;
+    }
+    
+    .btn-action {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 10px 15px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background-color 0.3s;
+        margin-left: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .btn-action:hover {
+        background-color: var(--primary-dark);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 50px;
+        background-color: var(--white);
+        border-radius: 8px;
+        border: 1px dashed #ccc;
+        margin-top: 30px;
+    }
+
+    @media (max-width: 768px) {
         .proposta-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px dashed #eee;
-            padding-bottom: 15px;
-            margin-bottom: 15px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
         }
-
-        .proposta-header h3 {
-            margin: 0;
-            color: var(--dark-color);
-            font-size: 1.5em;
-        }
-
         .proposta-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            grid-template-columns: 1fr;
         }
-        
-        .info-group p {
-            margin-bottom: 5px;
-            font-size: 0.95em;
-        }
-
-        .info-group p strong {
-            display: block;
-            font-weight: bold;
-            color: var(--text-color);
-            margin-bottom: 3px;
-            font-size: 1.05em;
-        }
-        
-        .info-group p span {
-            color: var(--secondary-color); /* Destaque para o valor proposto */
-            font-weight: 600;
-        }
-        
-        /* Status Badges - Cores iguais às do Comprador */
-        .status-badge {
-            font-weight: bold;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            text-transform: uppercase;
-        }
-
-        .status-pending { background-color: #FFF3E0; color: #FF9800; border: 1px solid #FF9800; }
-        .status-accepted { background-color: #E8F5E9; color: #4CAF50; border: 1px solid #4CAF50; }
-        .status-rejected { background-color: #FFEBEE; color: #F44336; border: 1px solid #F44336; }
-        .status-negotiation { background-color: #E3F2FD; color: #2196F3; border: 1px solid #2196F3; }
-
         .proposta-actions {
-            text-align: right;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #f0f0f0;
-        }
-        
-        .btn-action {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: background-color 0.3s;
-            margin-left: 10px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .btn-action:hover {
-            background-color: var(--primary-dark);
-        }
-        
-        .empty-state {
             text-align: center;
-            padding: 50px;
-            background-color: var(--white);
-            border-radius: 8px;
-            border: 1px dashed #ccc;
-            margin-top: 30px;
         }
-
-        @media (max-width: 768px) {
-            .proposta-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-            .proposta-info {
-                grid-template-columns: 1fr;
-            }
-            .proposta-actions {
-                text-align: center;
-            }
-            .btn-action {
-                display: block;
-                width: 100%;
-                margin: 5px 0 0;
-            }
+        .btn-action {
+            display: block;
+            width: 100%;
+            margin: 5px 0 0;
         }
-    </style>
+    }
+</style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <h1>ENCONTRE</h1>
-                <h2>OCAMPO</h2>
+    <!-- Nova Navbar no estilo do index.php -->
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <h1>ENCONTRE</h1>
+                    <h2>O CAMPO</h2>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="../../index.php" class="nav-link">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="dashboard.php" class="nav-link">Painel</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="anuncios.php" class="nav-link">Meus Anúncios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="propostas.php" class="nav-link active">Propostas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="precos.php" class="nav-link">Médias de Preços</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../logout.php" class="nav-link login-button no-underline">Sair</a>
+                    </li>
+                </ul>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
             </div>
-            <ul class="nav-menu">
-                <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>
-                <li class="nav-item"><a href="meus_produtos.php" class="nav-link">Meus Anúncios</a></li>
-                <li class="nav-item"><a href="propostas.php" class="nav-link active">Propostas Recebidas</a></li>
-                <li class="nav-item"><a href="../logout.php" class="nav-link logout">Sair</a></li>
-            </ul>
-        </div>
-    </nav>
+        </nav>
+    </header>
+    <br>
 
-    <main class="container propostas-container">
-        <h1>Propostas de Negociação Recebidas</h1>
-        <p>Gerencie as propostas de compra enviadas para os seus produtos anunciados.</p>
+    <main class="propostas-container">
+        <header class="header">
+            <h1>Propostas de Negociação Recebidas</h1>
+            <p>Gerencie as propostas de compra enviadas para os seus produtos anunciados.</p>
+        </header>
 
         <?php if (empty($propostas)): ?>
             <div class="empty-state">
                 <h3>Nenhuma proposta recebida até o momento.</h3>
-                <p>Verifique se seus <a href="meus_produtos.php">anúncios</a> estão ativos.</p>
+                <p>Verifique se seus <a href="anuncios.php">anúncios</a> estão ativos.</p>
             </div>
         <?php else: ?>
             <div class="propostas-list">
@@ -282,5 +312,22 @@ function formatarStatus($status) {
             </div>
         <?php endif; ?>
     </main>
+
+    <script>
+        // Script para menu hamburger
+        const hamburger = document.querySelector(".hamburger");
+        const navMenu = document.querySelector(".nav-menu");
+
+        hamburger.addEventListener("click", () => {
+            hamburger.classList.toggle("active");
+            navMenu.classList.toggle("active");
+        });
+
+        // Fechar menu mobile ao clicar em um link
+        document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
+            hamburger.classList.remove("active");
+            navMenu.classList.remove("active");
+        }));
+    </script>
 </body>
 </html>

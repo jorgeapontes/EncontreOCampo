@@ -133,12 +133,53 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Anúncio - Vendedor</title>
+    <title>Criar Novo Anúncio - Vendedor</title>
     <link rel="stylesheet" href="../css/vendedor/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="shortcut icon" href="../../img/Logo - Copia.jpg" type="image/x-icon">
     </head>
 <body>
+    <!-- Nova Navbar no estilo do index.php -->
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <h1>ENCONTRE</h1>
+                    <h2>O CAMPO</h2>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="../../index.php" class="nav-link">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="dashboard.php" class="nav-link">Painel</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="anuncios.php" class="nav-link active">Meus Anúncios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="propostas.php" class="nav-link">Propostas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="precos.php" class="nav-link">Médias de Preços</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../logout.php" class="nav-link login-button no-underline">Sair</a>
+                    </li>
+                </ul>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <br>
+
     <div class="main-content">
         <header class="header">
             <h1>Criar Novo Anúncio</h1>
@@ -205,6 +246,38 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
         </section>
         
     </div>
-    
-    </body>
+
+    <script>
+        // Script para menu hamburger
+        const hamburger = document.querySelector(".hamburger");
+        const navMenu = document.querySelector(".nav-menu");
+
+        hamburger.addEventListener("click", () => {
+            hamburger.classList.toggle("active");
+            navMenu.classList.toggle("active");
+        });
+
+        // Fechar menu mobile ao clicar em um link
+        document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
+            hamburger.classList.remove("active");
+            navMenu.classList.remove("active");
+        }));
+
+        // Máscara de preço
+        document.addEventListener('DOMContentLoaded', function() {
+            const precoInput = document.getElementById('preco');
+            
+            precoInput.addEventListener('input', function(e) {
+                let value = e.target.value;
+                value = value.replace(/\D/g, ''); // Remove tudo que não é dígito
+                
+                if (value) {
+                    value = (parseInt(value) / 100).toFixed(2);
+                    value = value.replace('.', ',');
+                }
+                e.target.value = value;
+            });
+        });
+    </script>
+</body>
 </html>

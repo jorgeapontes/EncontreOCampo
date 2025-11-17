@@ -30,26 +30,50 @@ $total_anuncios = count($anuncios);
     <link rel="shortcut icon" href="../../img/Logo - Copia.jpg" type="image/x-icon">
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo">
-            <h2>ENCONTRE OCAMPO</h2>
-            <p>Vendedor</p>
-        </div>
-        <nav class="nav-menu">
-            <a href="../../index.php" class="nav-link"><i class="fas fa-home"></i> Home</a>
-            <a href="dashboard.php" class="nav-link active"><i class="fas fa-desktop"></i>Painel</a>
-            <a href="anuncios.php" class="nav-link"><i class="fas fa-bullhorn"></i> Meus Anúncios</a>
-            <a href="propostas.php" class="nav-link"><i class="fas fa-handshake"></i> Painel de Propostas</a>
-            <a href="precos.php" class="nav-link"><i class="fas fa-chart-line"></i> Médias de Preços</a>
-            <a href="perfil.php" class="nav-link"><i class="fas fa-user-circle"></i> Meu Perfil</a>
-            <a href="../logout.php" class="nav-link logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+    <!-- Nova Navbar no estilo do index.php -->
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <h1>ENCONTRE</h1>
+                    <h2>O CAMPO</h2>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="../../index.php" class="nav-link">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="dashboard.php" class="nav-link active">Painel</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="anuncios.php" class="nav-link">Meus Anúncios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="propostas.php" class="nav-link">Propostas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="precos.php" class="nav-link">Médias de Preços</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../logout.php" class="nav-link login-button no-underline">Sair</a>
+                    </li>
+                </ul>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
         </nav>
-    </div>
-
+    </header>
+    <br>
     <div class="main-content">
-        <header class="header">
+        <section class="header">
             <h1>Bem-vindo(a), <?php echo htmlspecialchars($_SESSION['vendedor_nome']); ?>!</h1>
-        </header>
+        </section>
 
         <section class="info-cards">
             <div class="card">
@@ -111,5 +135,22 @@ $total_anuncios = count($anuncios);
         </section>
         
     </div>
+
+    <script>
+        // Script para menu hamburger (copiado do index.php)
+        const hamburger = document.querySelector(".hamburger");
+        const navMenu = document.querySelector(".nav-menu");
+
+        hamburger.addEventListener("click", () => {
+            hamburger.classList.toggle("active");
+            navMenu.classList.toggle("active");
+        });
+
+        // Fechar menu mobile ao clicar em um link
+        document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
+            hamburger.classList.remove("active");
+            navMenu.classList.remove("active");
+        }));
+    </script>
 </body>
 </html>

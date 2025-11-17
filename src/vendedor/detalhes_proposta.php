@@ -212,20 +212,46 @@ $condicoes_vendedor = empty($proposta['observacoes_vendedor']) ? 'Nenhuma condi�
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <h1>ENCONTRE</h1>
-                <h2>OCAMPO</h2>
+    <!-- Nova Navbar no estilo do index.php -->
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <h1>ENCONTRE</h1>
+                    <h2>O CAMPO</h2>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="../../index.php" class="nav-link">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="dashboard.php" class="nav-link">Painel</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="anuncios.php" class="nav-link">Meus Anúncios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="propostas.php" class="nav-link active">Propostas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="precos.php" class="nav-link">Médias de Preços</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../logout.php" class="nav-link login-button no-underline">Sair</a>
+                    </li>
+                </ul>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
             </div>
-            <ul class="nav-menu">
-                <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>
-                <li class="nav-item"><a href="propostas.php" class="nav-link active">Propostas</a></li>
-                <li class="nav-item"><a href="anuncios.php" class="nav-link">Meus Anúncios</a></li>
-                <li class="nav-item"><a href="../logout.php" class="nav-link logout">Sair</a></li>
-            </ul>
-        </div>
-    </nav>
+        </nav>
+    </header>
+    <br>
 
     <main class="container details-container">
         

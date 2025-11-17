@@ -101,7 +101,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Garante que a URL da foto de perfil seja carregada para exibição
 $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
 
-// ... (Restante do código HTML) ...
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -114,21 +113,46 @@ $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
     <link rel="shortcut icon" href="../../img/Logo - Copia.jpg" type="image/x-icon">
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo">
-            <h2>ENCONTRE OCAMPO</h2>
-            <p>Vendedor</p>
-        </div>
-        <nav class="nav-menu">
-            <a href="../../index.php" class="nav-link"><i class="fas fa-home"></i> Home</a>
-            <a href="dashboard.php" class="nav-link active"><i class="fas fa-desktop"></i>Painel</a>
-            <a href="anuncios.php" class="nav-link"><i class="fas fa-bullhorn"></i> Meus Anúncios</a>
-            <a href="propostas.php" class="nav-link"><i class="fas fa-handshake"></i> Painel de Propostas</a>
-            <a href="precos.php" class="nav-link"><i class="fas fa-chart-line"></i> Médias de Preços</a>
-            <a href="perfil.php" class="nav-link active"><i class="fas fa-user-circle"></i> Meu Perfil</a>
-            <a href="../logout.php" class="nav-link logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+    <!-- Nova Navbar no estilo do index.php -->
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <h1>ENCONTRE</h1>
+                    <h2>O CAMPO</h2>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="../../index.php" class="nav-link">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="dashboard.php" class="nav-link">Painel</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="anuncios.php" class="nav-link">Meus Anúncios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="propostas.php" class="nav-link">Propostas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="precos.php" class="nav-link">Médias de Preços</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="perfil.php" class="nav-link active">Meu Perfil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../logout.php" class="nav-link login-button no-underline">Sair</a>
+                    </li>
+                </ul>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
         </nav>
-    </div>
+    </header>
+    <br>
 
     <div class="main-content">
         <header class="header">
@@ -148,7 +172,7 @@ $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
 
             <form method="POST" action="perfil.php" class="perfil-form" enctype="multipart/form-data">
 
-                <div class="perfil-header-info">
+                <div class="perfil-header-info" style="display: flex; justify-content: center; align-items: center; flex-direction: column; text-align: center;">
                     <div class="foto-perfil-display">
                         <img id="profile-img-preview" 
                              src="<?php 
@@ -203,6 +227,21 @@ $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
     </div>
 
     <script>
+        // Script para menu hamburger
+        const hamburger = document.querySelector(".hamburger");
+        const navMenu = document.querySelector(".nav-menu");
+
+        hamburger.addEventListener("click", () => {
+            hamburger.classList.toggle("active");
+            navMenu.classList.toggle("active");
+        });
+
+        // Fechar menu mobile ao clicar em um link
+        document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
+            hamburger.classList.remove("active");
+            navMenu.classList.remove("active");
+        }));
+
         // Preview da imagem
         document.getElementById('foto_perfil').addEventListener('change', function(event) {
             const [file] = event.target.files;

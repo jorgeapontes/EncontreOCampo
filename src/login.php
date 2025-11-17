@@ -115,6 +115,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="register-link">
                     Não tem uma conta? <a href="../index.php#contato">Registre-se</a>
                 </div>
+                <div class="register-link">
+                    <a href="../index.php">Home</a>
+                </div>
+
             </form>
         </div>
     </section>

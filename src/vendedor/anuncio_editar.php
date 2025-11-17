@@ -232,7 +232,7 @@ $categorias_disponiveis = [
             <h1>Editar Anúncio: <?php echo htmlspecialchars($anuncio['nome']); ?> (ID: <?php echo $anuncio['id']; ?>)</h1>
         </header>
 
-        <section class="form-section">
+                <section class="form-section">
             <a href="anuncios.php" class="back-link"><i class="fas fa-arrow-left"></i> Voltar para Meus Anúncios</a>
 
             <?php if (!empty($mensagem_sucesso)): ?>
@@ -246,7 +246,7 @@ $categorias_disponiveis = [
             <form method="POST" action="anuncio_editar.php" class="anuncio-form" enctype="multipart/form-data">
                 <input type="hidden" name="anuncio_id" value="<?php echo $anuncio['id']; ?>">
                 
-                <h3 style="color: var(--dark-color); margin-bottom: 20px;">Informações Principais</h3>
+                <h3>Informações Principais</h3>
                 
                 <div class="form-group">
                     <label for="nome" class="required">Nome da Fruta/Produto</label>
@@ -267,7 +267,7 @@ $categorias_disponiveis = [
                 <div class="form-group">
                     <label>Imagem Atual de Capa</label>
                     <?php if (!empty($anuncio['imagem_url']) && file_exists($anuncio['imagem_url'])): ?>
-                        <img src="<?php echo htmlspecialchars($anuncio['imagem_url']); ?>" alt="Imagem do Anúncio" style="max-width: 150px; height: auto; display: block; margin-bottom: 10px; border: 1px solid var(--gray);">
+                        <img src="<?php echo htmlspecialchars($anuncio['imagem_url']); ?>" alt="Imagem do Anúncio" style="max-width: 150px; height: auto; display: block; margin-bottom: 10px;">
                     <?php else: ?>
                         <p>Nenhuma imagem cadastrada.</p>
                     <?php endif; ?>
@@ -278,7 +278,8 @@ $categorias_disponiveis = [
                     <input type="file" id="imagem_upload" name="imagem_upload" accept="image/jpeg, image/png">
                     <small class="help-text">Máximo 2MB. Formatos: JPG, PNG. Se um arquivo for selecionado, ele substituirá o atual.</small>
                 </div>
-                <h3 style="color: var(--dark-color); margin-top: 30px; margin-bottom: 20px;">Preço e Estoque</h3>
+
+                <h3>Preço e Estoque</h3>
 
                 <div class="form-row">
                     <div class="form-group">
@@ -305,7 +306,7 @@ $categorias_disponiveis = [
                     <textarea id="descricao" name="descricao" rows="4"><?php echo htmlspecialchars($anuncio['descricao'] ?? ''); ?></textarea>
                 </div>
                 
-                <button type="submit" class="cta-button big-button"><i class="fas fa-save"></i> Salvar Alterações</button>
+                <button type="submit" class="big-button"><i class="fas fa-save"></i> Salvar Alterações</button>
             </form>
         </section>
         

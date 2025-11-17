@@ -28,37 +28,33 @@ $total_anuncios = count($anuncios);
     <link rel="stylesheet" href="../css/vendedor/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="shortcut icon" href="../../img/Logo - Copia.jpg" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Nova Navbar no estilo do index.php -->
     <header>
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <h1>ENCONTRE</h1>
-                    <h2>O CAMPO</h2>
+                    <img src="../../img/logo-nova.png" alt="Logo">
+                    <div>
+                        <h1>ENCONTRE</h1>
+                        <h2>O CAMPO</h2>
+                    </div>
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
                         <a href="../../index.php" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="dashboard.php" class="nav-link active">Painel</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="anuncios.php" class="nav-link">Meus Anúncios</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="propostas.php" class="nav-link">Propostas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="precos.php" class="nav-link">Médias de Preços</a>
+                        <a href="" class="nav-link active">Painel</a>
                     </li>
                     <li class="nav-item">
                         <a href="perfil.php" class="nav-link">Meu Perfil</a>
                     </li>
                     <li class="nav-item">
-                        <a href="../logout.php" class="nav-link login-button no-underline">Sair</a>
+                        <a href="../logout.php" class="nav-link exit-button no-underline"> Sair </a>
                     </li>
                 </ul>
                 <div class="hamburger">
@@ -72,30 +68,40 @@ $total_anuncios = count($anuncios);
     <br>
     <div class="main-content">
         <section class="header">
-            <h1>Bem-vindo(a), <?php echo htmlspecialchars($_SESSION['vendedor_nome']); ?>!</h1>
+            <center>
+                <h1>Bem-vindo(a), <?php echo htmlspecialchars($_SESSION['vendedor_nome']); ?>!</h1>
+            </center>
         </section>
 
         <section class="info-cards">
+            <a href="anuncios.php">
             <div class="card">
-                <i class="fas fa-bullhorn"></i>
-                <h3>Anúncios Ativos</h3>
-                <p><?php echo $total_anuncios; ?></p>
+                    <i class="fas fa-bullhorn"></i>
+                    <h3>Anúncios Ativos</h3>
+                    <p><?php echo $total_anuncios; ?></p>
             </div>
+            </a>
+            <a href="propostas.php">
             <div class="card">
-                <i class="fas fa-handshake"></i>
-                <h3>Propostas Pendentes</h3>
-                <p>0</p>
+                    <i class="fas fa-handshake"></i>
+                    <h3>Propostas Pendentes</h3>
+                    <p>0</p>
             </div>
-            <div class="card">
-                <i class="fas fa-dollar-sign"></i>
-                <h3>Vendas Mês</h3>
-                <p>R$ 0,00</p>
-            </div>
+            </a>
+            <a href="">
+                <div class="card">
+                        <i class="fas fa-dollar-sign"></i>
+                        <h3>Vendas Mês</h3>
+                        <p>R$ 0,00</p>
+                </div>
+            </a>
         </section>
 
         <section class="section-anuncios">
-            <h2>Meus Anúncios Recentes (<?php echo $total_anuncios; ?>)</h2>
-            <a href="anuncio_novo.php" class="cta-button"><i class="fas fa-plus-circle"></i> Novo Anúncio</a>
+            <div id="header">
+                <h2>Meus Anúncios Recentes (<?php echo $total_anuncios; ?>)</h2>
+                <a href="anuncio_novo.php" class="cta-button"><i class="fas fa-plus-circle"></i> Novo Anúncio</a>
+            </div>
             
             <div class="tabela-anuncios">
                 <?php if ($total_anuncios > 0): ?>

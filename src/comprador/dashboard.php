@@ -17,7 +17,7 @@ $database = new Database();
 $conn = $database->getConnection();
 $dashboard_data = [
     'total_propostas' => 0,
-    'pendentes' => 0,
+    'pendente' => 0,
     'aceitas' => 0,
     'recusadas' => 0,
     'negociacao' => 0
@@ -283,7 +283,7 @@ try {
             <div class="stat-card card-pending">
                 <div class="icon"><i class="fas fa-clock"></i></div>
                 <div class="details">
-                    <h2><?php echo $dashboard_data['pendentes']; ?></h2>
+                    <h2><?php echo $dashboard_data['pendente']; ?></h2>
                     <p>Propostas Pendentes</p>
                 </div>
             </div>
@@ -320,7 +320,7 @@ try {
                     <i class="fas fa-truck"></i>
                     <span>Solicitar Transporte (Em Breve)</span>
                 </a>
-                <a href="#" class="action-link">
+                <a href="perfil.php" class="action-link">
                     <i class="fas fa-user-circle"></i>
                     <span>Gerenciar Perfil</span>
                 </a>

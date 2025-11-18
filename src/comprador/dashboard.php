@@ -310,19 +310,19 @@ try {
             <div class="actions-grid">
                 <a href="../anuncios.php" class="action-link">
                     <i class="fas fa-leaf"></i>
-                    <span>Ver Anúncios e Negociar</span>
+                    <span>Ver Anúncios</span>
                 </a>
                 <a href="minhas_propostas.php" class="action-link">
                     <i class="fas fa-list-alt"></i>
-                    <span>Acompanhar Minhas Propostas</span>
+                    <span>Minhas Propostas</span>
                 </a>
                 <a href="#" class="action-link">
                     <i class="fas fa-truck"></i>
-                    <span>Solicitar Transporte (Em Breve)</span>
+                    <span>Solicitar Transporte</span>
                 </a>
                 <a href="perfil.php" class="action-link">
                     <i class="fas fa-user-circle"></i>
-                    <span>Gerenciar Perfil</span>
+                    <span>Mais (Perfil)</span>
                 </a>
             </div>
         </section>

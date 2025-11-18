@@ -117,9 +117,22 @@ try {
                     <div class="anuncio-card">
                         <div class="card-image">
                             <?php 
-                                $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) : '../img/placeholder.png'; 
+                                // Corrigir o caminho da imagem
+                                $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) : '../img/placeholder.png';
+                                
+                                // Remover o '../' do início do caminho se existir
+                                if (strpos($imagePath, '../') === 0) {
+                                    $imagePath = substr($imagePath, 3);
+                                }
+                                
+                                // Verificar se a imagem existe, senão usar placeholder
+                                $fullImagePath = $imagePath;
+                                if ($anuncio['imagem_url'] && !file_exists($fullImagePath)) {
+                                    $imagePath = '../img/placeholder.png';
+                                }
                             ?>
-                            <img src="<?php echo $imagePath; ?>" alt="Imagem de <?php echo htmlspecialchars($anuncio['produto']); ?>">
+                            <img src="<?php echo $imagePath; ?>" alt="Imagem de <?php echo htmlspecialchars($anuncio['produto']); ?>" 
+                                onerror="this.src='../img/placeholder.png'">
                         </div>
                         <div class="card-content">
                             <div class="card-header">
@@ -135,7 +148,29 @@ try {
                                     <i class="fas fa-box"></i>
                                     <?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?> disponíveis
                                 </p>
-                                <p class="descricao"><?php echo htmlspecialchars(substr($anuncio['descricao'] ?? 'Sem descrição.', 0, 80)); ?>...</p>
+                                <p class="descricao">
+                                    <?php 
+                                    $descricao = $anuncio['descricao'] ?? 'Sem descrição.';
+                                    $descricao = htmlspecialchars($descricao);
+                                    
+                                    // Definir limite de caracteres
+                                    $limite = 120;
+                                    
+                                    if (strlen($descricao) > $limite) {
+                                        // Encontrar o último espaço dentro do limite para não cortar palavras
+                                        $descricao_curta = substr($descricao, 0, $limite);
+                                        $ultimo_espaco = strrpos($descricao_curta, ' ');
+                                        
+                                        if ($ultimo_espaco !== false) {
+                                            echo substr($descricao_curta, 0, $ultimo_espaco) . '...';
+                                        } else {
+                                            echo $descricao_curta . '...';
+                                        }
+                                    } else {
+                                        echo $descricao;
+                                    }
+                                    ?>
+                                </p>
                             </div>
                             <div class="card-actions">
                                 <?php if ($is_comprador): ?>

@@ -108,9 +108,12 @@ $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meu Perfil - Vendedor</title>
-    <link rel="stylesheet" href="../css/vendedor/dashboard.css">
+    <link rel="stylesheet" href="../css/vendedor/perfil.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="shortcut icon" href="../../img/Logo - Copia.jpg" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Nova Navbar no estilo do index.php -->
@@ -118,8 +121,11 @@ $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <h1>ENCONTRE</h1>
-                    <h2>O CAMPO</h2>
+                    <img src="../../img/logo-nova.png" alt="Logo">
+                    <div>
+                        <h1>ENCONTRE</h1>
+                        <h2>O CAMPO</h2>
+                    </div>
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
@@ -129,19 +135,10 @@ $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
                         <a href="dashboard.php" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">
-                        <a href="anuncios.php" class="nav-link">Meus Anúncios</a>
+                        <a href="#" class="nav-link active">Meu Perfil</a>
                     </li>
                     <li class="nav-item">
-                        <a href="propostas.php" class="nav-link">Propostas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="precos.php" class="nav-link">Médias de Preços</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="perfil.php" class="nav-link active">Meu Perfil</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="../logout.php" class="nav-link login-button no-underline">Sair</a>
+                        <a href="../logout.php" class="nav-link exit-button no-underline"> Sair </a>
                     </li>
                 </ul>
                 <div class="hamburger">
@@ -155,13 +152,13 @@ $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
     <br>
 
     <div class="main-content">
-        <header class="header">
-            <h1>Meu Perfil</h1>
-        </header>
+        <center>
+            <header class="header">
+                <h1>Meu Perfil</h1>
+            </header>
+        </center>
 
         <section class="section-perfil">
-            <h2>Dados da Conta e Vendedor</h2>
-
             <?php if (!empty($mensagem_sucesso)): ?>
                 <div class="alert success-alert"><i class="fas fa-check-circle"></i> <?php echo $mensagem_sucesso; ?></div>
             <?php endif; ?>
@@ -171,52 +168,54 @@ $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
             <?php endif; ?>
 
             <form method="POST" action="perfil.php" class="perfil-form" enctype="multipart/form-data">
-
-                <div class="perfil-header-info" style="display: flex; justify-content: center; align-items: center; flex-direction: column; text-align: center;">
-                    <div class="foto-perfil-display">
-                        <img id="profile-img-preview" 
-                             src="<?php 
-                                echo (!empty($foto_perfil_url) && file_exists($foto_perfil_url)) 
-                                    ? htmlspecialchars($foto_perfil_url) 
-                                    : 'caminho/para/imagem/padrao.png'; // Substitua pelo caminho da sua imagem padrão
-                            ?>" 
-                            alt="Foto de Perfil"
-                            style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color);">
-                        
-                        <div class="form-group" style="margin-top: 10px;">
-                            <label for="foto_perfil" class="required">Alterar Foto de Perfil</label>
-                            <input type="file" id="foto_perfil" name="foto_perfil" accept="image/jpeg, image/png">
-                            <small class="help-text">Máximo 1MB. Formatos: JPG, PNG.</small>
+                <div class="perfil-header-info">
+                    <center>
+                        <div class="foto-perfil-display">
+                            <img id="profile-img-preview" 
+                                src="<?php 
+                                    echo (!empty($foto_perfil_url) && file_exists($foto_perfil_url)) 
+                                        ? htmlspecialchars($foto_perfil_url) 
+                                        : 'caminho/para/imagem/padrao.png'; // Substitua pelo caminho da sua imagem padrão
+                                ?>" 
+                            alt="Foto de Perfil">
+                            
+                            <div class="form-group">
+                                <label for="foto_perfil" class="required">Alterar Foto de Perfil</label>
+                                <input type="file" id="foto_perfil" name="foto_perfil" accept="image/jpeg, image/png">
+                                <small class="help-text">Máximo 1MB. Formatos: JPG, PNG.</small>
+                            </div>
                         </div>
-                    </div>
+                    </center>
                 </div>
 
-                <h3 style="margin-top: 20px;">Dados do Usuário (Conta)</h3>
-                <div class="form-group">
-                    <label for="nome" class="required">Nome Completo</label>
-                    <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($usuario['nome'] ?? ''); ?>" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="email">Email (Não Editável)</label>
-                    <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($usuario['email'] ?? ''); ?>" disabled>
-                </div>
-
-                <h3 style="margin-top: 30px;">Dados do Vendedor (Empresa)</h3>
-                
-                <div class="form-group">
-                    <label for="razao_social">Razão Social / Nome da Loja</label>
-                    <input type="text" id="razao_social" name="razao_social" value="<?php echo htmlspecialchars($vendedor['razao_social'] ?? ''); ?>">
-                </div>
-
-                <div class="form-row">
+                <div class="forms-area">
+                    <h3 style="margin-top: 20px;">Dados do Usuário (Conta)</h3>
                     <div class="form-group">
-                        <label>CPF/CNPJ</label>
-                        <input type="text" value="<?php echo htmlspecialchars($vendedor['cpf_cnpj'] ?? ''); ?>" disabled>
+                        <label for="nome" class="required">Nome Completo</label>
+                        <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($usuario['nome'] ?? ''); ?>" required>
                     </div>
+
                     <div class="form-group">
-                        <label for="telefone1" class="required">Telefone Principal</label>
-                        <input type="text" id="telefone1" name="telefone1" value="<?php echo htmlspecialchars($vendedor['telefone1'] ?? ''); ?>" required>
+                        <label for="email">Email (Não Editável)</label>
+                        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($usuario['email'] ?? ''); ?>" disabled>
+                    </div>
+
+                    <h3 style="margin-top: 30px;">Dados do Vendedor (Empresa)</h3>
+                    
+                    <div class="form-group">
+                        <label for="razao_social">Razão Social / Nome da Loja</label>
+                        <input type="text" id="razao_social" name="razao_social" value="<?php echo htmlspecialchars($vendedor['razao_social'] ?? ''); ?>">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>CPF/CNPJ</label>
+                            <input type="text" value="<?php echo htmlspecialchars($vendedor['cpf_cnpj'] ?? ''); ?>" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="telefone1" class="required">Telefone Principal</label>
+                            <input type="text" id="telefone1" name="telefone1" value="<?php echo htmlspecialchars($vendedor['telefone1'] ?? ''); ?>" required>
+                        </div>
                     </div>
                 </div>
                 

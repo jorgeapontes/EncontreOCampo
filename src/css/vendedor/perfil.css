@@ -358,6 +358,183 @@ th:last-child {
     margin-right: 8px;
 }
 
+/* --- Seção de Perfil --- */
+.section-perfil {
+    margin-bottom: 30px;
+}
+
+.section-perfil h2 {
+    color: var(--dark-color);
+    border-bottom: 2px solid var(--primary-light);
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+    display: inline-block;
+    font-size: 1.5rem;
+}
+
+.forms-area {
+    background-color: var(--white);
+    padding: 30px;
+    border-radius: 10px;
+}
+
+.perfil-form {
+    display: grid;
+    gap: 20px;
+}
+
+.perfil-header-info {
+    justify-items: center;
+    gap: 30px;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.foto-perfil-display img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.perfil-form h3 {
+    color: var(--dark-color);
+    margin: 25px 0 15px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--primary-light);
+    font-size: 1.3rem;
+}
+
+.perfil-form .form-group {
+    margin-bottom: 20px;
+}
+
+.perfil-form .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.perfil-form .form-group label.required::after {
+    content: " *";
+    color: #e53935;
+}
+
+.perfil-form .form-group input[type="text"],
+.perfil-form .form-group input[type="email"],
+.perfil-form .form-group input[type="file"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.perfil-form .form-group input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.perfil-form .form-group input:disabled {
+    background-color: var(--gray);
+    color: var(--text-light);
+    cursor: not-allowed;
+}
+
+.perfil-form .form-row {
+    display: flex;
+    gap: 20px;
+}
+
+.perfil-form .form-row .form-group {
+    flex: 1;
+}
+
+.help-text {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+/* Botão de salvar específico do perfil */
+.perfil-form .big-button {
+    font-size: 1.1rem;
+    padding: 15px 30px;
+    width: 100%;
+    margin-top: 20px;
+    justify-content: center;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 5px;
+    color: var(--white);
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.perfil-form .big-button:hover {
+    background-color: var(--primary-dark);
+}
+
+/* Alertas específicos do perfil */
+.section-perfil .alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.section-perfil .alert i {
+    margin-right: 10px;
+}
+
+.section-perfil .success-alert {
+    background-color: #e8f5e9;
+    color: #388e3c;
+    border: 1px solid #c8e6c9;
+}
+
+.section-perfil .error-alert {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+/* Responsividade para a seção de perfil */
+@media (max-width: 768px) {
+    .section-perfil {
+        padding: 20px;
+    }
+    
+    .perfil-header-info {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+    
+    .perfil-form .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .foto-perfil-display img {
+        width: 100px;
+        height: 100px;
+    }
+}
+
 @media (max-width: 576px) {
     .section-perfil {
         padding: 15px;

@@ -164,7 +164,7 @@
                             <p>As frutas mais exóticas às verduras mais tradicionais.</p>
                         </div>
                         <div class="feature">
-                            <h4>Entrega </h4>
+                            <h4>Alcance</h4>
                             <p>Entregas para todo o país.</p>
                         </div>
                     </div>
@@ -618,8 +618,9 @@
                             <label for="message" class="required">Mensagem</label>
                             <textarea id="message" name="message" rows="5" required></textarea>
                         </div>
-
-                        <button type="button" id="submitOther" class="cta-button">Enviar solicitação</button>
+                        <div class="end">
+                            <button type="button" id="submitOther" class="step-btn btn-ajax-submit">Enviar solicitação</button>
+                        </div>
                     </form>
                 </div>
             </div>

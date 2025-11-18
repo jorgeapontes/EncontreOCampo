@@ -100,7 +100,7 @@ $total_anuncios = count($anuncios);
         <section class="section-anuncios">
             <div id="header">
                 <h2>Meus Anúncios Recentes (<?php echo $total_anuncios; ?>)</h2>
-                <a href="anuncio_novo.php" class="cta-button"><i class="fas fa-plus-circle"></i> Novo Anúncio</a>
+                <a href="anuncio_novo.php" class="cta-button"><i class="fas fa-plus"></i> Novo Anúncio</a>
             </div>
             
             <div class="tabela-anuncios">

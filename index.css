@@ -194,7 +194,7 @@ body {
     background-color: var(--primary-color);
     color: var(--white);
     padding: 12px 30px;
-    border-radius: 30px;
+    border-radius: 10px;
     text-decoration: none;
     font-weight: 600;
     transition: all 0.3s ease;
@@ -204,6 +204,7 @@ body {
 .cta-button:hover {
     background-color: transparent;
     color: var(--primary-color);
+    cursor: pointer;
 }
 
 .cta-button.secondary {
@@ -490,6 +491,19 @@ body {
     font-size: 1.1rem;
 }
 
+#messageGroup {
+    display: none;
+}
+
+.end {
+    display: flex;
+    justify-content: end;
+}
+
+#submitOther {
+    display: none;
+}
+
 .contact-details {
     margin-top: 30px;
 }
@@ -692,6 +706,11 @@ body {
 
 .btn-next, .btn-submit {
     background: var(--primary-color);
+    color: white;
+}
+
+.btn-ajax-submit {
+    background-color: var(--primary-color);
     color: white;
 }
 

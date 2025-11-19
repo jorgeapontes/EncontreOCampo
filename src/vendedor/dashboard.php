@@ -18,6 +18,29 @@ $stmt_anuncios->execute(); // A linha 14 que causava o erro agora está correta.
 $anuncios = $stmt_anuncios->fetchAll(PDO::FETCH_ASSOC);
 
 $total_anuncios = count($anuncios);
+
+// NOVO: CONTADOR DE PROPOSTAS PENDENTES
+$total_propostas_pendentes = 0;
+
+try {
+    $query_propostas = "SELECT COUNT(pn.id) as total_pendentes
+                        FROM propostas_negociacao pn
+                        JOIN produtos p ON pn.produto_id = p.id
+                        WHERE p.vendedor_id = :vendedor_id 
+                        AND pn.status = 'pendente'";
+                        
+    $stmt_propostas = $db->prepare($query_propostas);
+    $stmt_propostas->bindParam(':vendedor_id', $vendedor['id']);
+    $stmt_propostas->execute();
+    $resultado = $stmt_propostas->fetch(PDO::FETCH_ASSOC);
+    
+    $total_propostas_pendentes = $resultado['total_pendentes'] ?? 0;
+    
+} catch (PDOException $e) {
+    // Em caso de erro, mantém o valor 0 e loga o erro
+    error_log("Erro ao contar propostas pendentes: " . $e->getMessage());
+    $total_propostas_pendentes = 0;
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -85,7 +108,7 @@ $total_anuncios = count($anuncios);
             <div class="card">
                     <i class="fas fa-handshake"></i>
                     <h3>Propostas Pendentes</h3>
-                    <p>0</p>
+                    <p><?php echo $total_propostas_pendentes; ?></p>
             </div>
             </a>
             <a href="">

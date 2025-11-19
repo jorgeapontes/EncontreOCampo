@@ -18,8 +18,8 @@ $conn = $database->getConnection();
 $dashboard_data = [
     'total_propostas' => 0,
     'pendente' => 0,
-    'aceitas' => 0,
-    'recusadas' => 0,
+    'aceita' => 0,
+    'recusada' => 0,
     'negociacao' => 0
 ];
 $comprador_id = null;
@@ -291,7 +291,7 @@ try {
             <div class="stat-card card-accepted">
                 <div class="icon"><i class="fas fa-check-circle"></i></div>
                 <div class="details">
-                    <h2><?php echo $dashboard_data['aceitas']; ?></h2>
+                    <h2><?php echo $dashboard_data['aceita']; ?></h2>
                     <p>Propostas Aceitas</p>
                 </div>
             </div>
@@ -299,7 +299,7 @@ try {
             <div class="stat-card card-rejected">
                 <div class="icon"><i class="fas fa-times-circle"></i></div>
                 <div class="details">
-                    <h2><?php echo $dashboard_data['recusadas']; ?></h2>
+                    <h2><?php echo $dashboard_data['recusada']; ?></h2>
                     <p>Propostas Recusadas</p>
                 </div>
             </div>

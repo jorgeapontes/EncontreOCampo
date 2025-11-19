@@ -33,7 +33,7 @@ if ($ordenar === "novo_velho") {
 $sql = "SELECT id, nome, email, tipo, status, data_criacao FROM usuarios";
 $params = [];
 
-if (!empty($filtro_tipo)) {
+if (!empty($filtro_tipo) && $filtro_tipo !== "todos") {
     $sql .= " WHERE tipo = :tipo";
     $params[':tipo'] = $filtro_tipo;
 }
@@ -58,22 +58,6 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
     <link rel="stylesheet" href="../css/admin.css">
     <link rel="shortcut icon" href="../../img/Logo - Copia.jpg" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap" rel="stylesheet">
-
-    <style>
-        /* Nenhuma regra existente foi alterada. Apenas adicionando pequenos ajustes mínimos */
-        .table-controls {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 10px;
-            gap: 10px;
-        }
-        .table-controls select {
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            cursor: pointer;
-        }
-    </style>
 </head>
 
 <body>
@@ -81,7 +65,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
 <nav class="navbar">
     <div class="nav-container">
         <div class="nav-logo">
-            <img src="././img/logo-nova.png" alt="Logo Encontre Ocampo" class="logo">
+            <img src="../../img/logo-nova.png" alt="Logo Encontre Ocampo" class="logo">
             <div>
                 <h1>ENCONTRE</h1>
                 <h2>O CAMPO</h2>
@@ -113,9 +97,9 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
     <form method="GET">
         <div class="table-controls">
 
-            <!-- FILTRO -->
-            <select name="filtro_tipo" onchange="this.form.submit()">
-                <option value="">Filtrar por tipo</option>
+            <!-- FILTRAR -->
+            <select name="filtro_tipo" class="filter-select" onchange="this.form.submit()">
+                <option value="todos">Todos</option>
                 <option value="admin" <?= $filtro_tipo === "admin" ? "selected" : "" ?>>Admin</option>
                 <option value="comprador" <?= $filtro_tipo === "comprador" ? "selected" : "" ?>>Comprador</option>
                 <option value="vendedor" <?= $filtro_tipo === "vendedor" ? "selected" : "" ?>>Vendedor</option>
@@ -123,7 +107,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
             </select>
 
             <!-- ORDENAR -->
-            <select name="ordenar" onchange="this.form.submit()">
+            <select name="ordenar" class="filter-select" onchange="this.form.submit()">
                 <option value="">Ordenar por</option>
                 <option value="novo_velho" <?= $ordenar === "novo_velho" ? "selected" : "" ?>>Mais novo → Mais velho</option>
                 <option value="velho_novo" <?= $ordenar === "velho_novo" ? "selected" : "" ?>>Mais velho → Mais novo</option>
@@ -170,7 +154,6 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
                     <td><?= date('d/m/Y H:i', strtotime($usuario['data_criacao'])); ?></td>
 
                     <td class="actions">
-
                         <?php if ($usuario['tipo'] !== 'admin'): ?>
                             <?php if ($usuario['status'] === 'ativo'): ?>
                                 <a href="alterar_status.php?id=<?= $usuario['id']; ?>&status=inativo"
@@ -182,7 +165,6 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
                         <?php else: ?>
                             <span class="text-muted">Admin</span>
                         <?php endif; ?>
-
                     </td>
                 </tr>
             <?php endforeach; ?>

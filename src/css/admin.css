@@ -181,13 +181,17 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
     padding: 20px 0;
+}
+
+.section-header a{
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .section-header h2 {
     color: #333;
-    font-size: 1.5rem;
+    font-size: 1.5rem;  
 }
 
 /* Tabelas */
@@ -423,6 +427,38 @@ body {
     color: #95a5a6 !important;
     font-style: italic;
 }
+
+/* ----------- ESTILOS NOVOS PARA OS BOTÕES DE FILTRO/ORDENAR ----------- */
+
+.table-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+    gap: 12px;
+}
+
+.filter-select {
+    background: #ffffff;
+    border: 2px solid #34495e;
+    color: #333;
+    padding: 8px 3px;
+    font-size: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s ease;
+}
+
+.filter-select:hover {
+    background: #e8f5e8;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #1b5e20;
+    box-shadow: 0 0 5px rgba(46, 125, 50, 0.5);
+}
+
 
 /* Responsividade */
 @media (max-width: 768px) {

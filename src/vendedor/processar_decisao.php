@@ -76,14 +76,68 @@ try {
 try { 
     switch ($action) {
         case 'aceitar':
-            // data_resposta agora existe!
-            $sql = "UPDATE propostas_negociacao SET status = 'aceita', data_resposta = NOW() WHERE id = :id";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':id', $proposta_id, PDO::PARAM_INT);
-            $stmt->execute();
+        // Iniciar transação para garantir consistência
+        $conn->beginTransaction();
+        
+        try {
+            // 1. Primeiro, buscar informações da proposta e produto
+            $sql_info = "SELECT pn.produto_id, pn.quantidade_proposta, pr.estoque 
+                        FROM propostas_negociacao pn
+                        JOIN produtos pr ON pn.produto_id = pr.id
+                        WHERE pn.id = :id";
+            $stmt_info = $conn->prepare($sql_info);
+            $stmt_info->bindParam(':id', $proposta_id, PDO::PARAM_INT);
+            $stmt_info->execute();
+            $info_proposta = $stmt_info->fetch(PDO::FETCH_ASSOC);
             
-            redirecionar($proposta_id, 'sucesso', "Proposta **ACEITA** com sucesso! A negociação foi concluída.");
-            break;
+            if (!$info_proposta) {
+                throw new Exception("Proposta não encontrada.");
+            }
+            
+            $produto_id = $info_proposta['produto_id'];
+            $quantidade_vendida = $info_proposta['quantidade_proposta'];
+            $estoque_atual = $info_proposta['estoque'];
+            
+            // 2. Verificar se há estoque suficiente
+            if ($estoque_atual < $quantidade_vendida) {
+                throw new Exception("Estoque insuficiente. Disponível: {$estoque_atual}, Solicitado: {$quantidade_vendida}");
+            }
+            
+            // 3. Atualizar o estoque do produto
+            $novo_estoque = $estoque_atual - $quantidade_vendida;
+            $sql_estoque = "UPDATE produtos SET estoque = :novo_estoque WHERE id = :produto_id";
+            $stmt_estoque = $conn->prepare($sql_estoque);
+            $stmt_estoque->bindParam(':novo_estoque', $novo_estoque, PDO::PARAM_INT);
+            $stmt_estoque->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+            $stmt_estoque->execute();
+            
+            // 4. Atualizar o status da proposta
+            $sql_proposta = "UPDATE propostas_negociacao 
+                            SET status = 'aceita', data_resposta = NOW() 
+                            WHERE id = :id";
+            $stmt_proposta = $conn->prepare($sql_proposta);
+            $stmt_proposta->bindParam(':id', $proposta_id, PDO::PARAM_INT);
+            $stmt_proposta->execute();
+            
+            // 5. Se o estoque chegou a zero, desativar automaticamente o anúncio
+            if ($novo_estoque <= 0) {
+                $sql_desativar = "UPDATE produtos SET status = 'inativo' WHERE id = :produto_id";
+                $stmt_desativar = $conn->prepare($sql_desativar);
+                $stmt_desativar->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+                $stmt_desativar->execute();
+            }
+            
+            // Confirmar todas as operações
+            $conn->commit();
+            
+            redirecionar($proposta_id, 'sucesso', "Proposta **ACEITA** com sucesso! Estoque atualizado. Quantidade vendida: {$quantidade_vendida}, Novo estoque: {$novo_estoque}");
+            
+        } catch (Exception $e) {
+            // Reverter todas as operações em caso de erro
+            $conn->rollBack();
+            redirecionar($proposta_id, 'erro', "Erro ao aceitar proposta: " . $e->getMessage());
+        }
+        break;
 
         case 'recusar':
             // data_resposta agora existe!

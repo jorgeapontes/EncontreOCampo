@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 19/11/2025 às 04:48
+-- Tempo de geração: 19/11/2025 às 16:20
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -126,7 +126,7 @@ CREATE TABLE `propostas_negociacao` (
   `preco_proposto` decimal(10,2) NOT NULL COMMENT 'Preço unitário (por Kg, por exemplo) proposto pelo comprador',
   `quantidade_proposta` int(11) NOT NULL COMMENT 'Quantidade total em Kg ou unidades proposta',
   `condicoes_comprador` text DEFAULT NULL,
-  `status` enum('pendente','aceita','recusada','finalizada','cancelada') NOT NULL DEFAULT 'pendente',
+  `status` enum('pendente','aceita','recusada','finalizada','cancelada','negociacao') NOT NULL DEFAULT 'pendente',
   `data_proposta` timestamp NOT NULL DEFAULT current_timestamp(),
   `data_resposta` datetime DEFAULT NULL,
   `data_atualizacao` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
@@ -147,11 +147,12 @@ INSERT INTO `propostas_negociacao` (`id`, `produto_id`, `comprador_id`, `preco_p
 (6, 2, 1, 11.00, 1, 'teste', '', '2025-11-14 19:13:44', '2025-11-15 16:17:19', '2025-11-15 19:17:19', NULL, NULL),
 (7, 2, 2, 10.00, 5, 'testando proposta', 'pendente', '2025-11-17 19:20:14', NULL, NULL, NULL, NULL),
 (12, 6, 2, 4.00, 10, 'teste ACEITAR', 'aceita', '2025-11-19 02:34:24', '2025-11-18 23:59:06', '2025-11-19 02:59:06', NULL, NULL),
-(13, 6, 2, 2.00, 5, 'teste CONTRAPROPOSTA', 'pendente', '2025-11-19 02:35:23', NULL, NULL, NULL, NULL),
+(13, 6, 2, 4.00, 10, 'teste CONTRAPROPOSTA', 'negociacao', '2025-11-19 02:35:23', '2025-11-19 12:02:15', '2025-11-19 15:11:47', 'testando CONTRAPROPOSTA', NULL),
 (14, 6, 2, 1.00, 1, 'teste NEGAR', 'recusada', '2025-11-19 02:35:43', '2025-11-19 00:29:34', '2025-11-19 03:44:42', NULL, NULL),
 (15, 6, 2, 4.00, 10, 'teste novo ACEITAR', 'aceita', '2025-11-19 03:12:32', '2025-11-19 00:12:54', '2025-11-19 03:12:54', NULL, NULL),
 (16, 7, 2, 5.00, 10, NULL, 'aceita', '2025-11-19 03:23:36', '2025-11-19 00:23:59', '2025-11-19 03:23:59', NULL, NULL),
-(17, 6, 2, 1.00, 1, 'teste RECUSAR', 'recusada', '2025-11-19 03:43:01', '2025-11-19 00:43:37', '2025-11-19 03:43:37', NULL, NULL);
+(17, 6, 2, 1.00, 1, 'teste RECUSAR', 'recusada', '2025-11-19 03:43:01', '2025-11-19 00:43:37', '2025-11-19 03:43:37', NULL, NULL),
+(18, 6, 2, 1.00, 1, 'teste CONTADOR propostas pendentes vendedor', 'recusada', '2025-11-19 14:58:29', '2025-11-19 11:58:51', '2025-11-19 14:58:51', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -361,7 +362,7 @@ ALTER TABLE `produtos`
 -- AUTO_INCREMENT de tabela `propostas_negociacao`
 --
 ALTER TABLE `propostas_negociacao`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de tabela `solicitacoes_cadastro`

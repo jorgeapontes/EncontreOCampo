@@ -45,16 +45,22 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin - Encontre Ocampo</title>
+    <title>Dashboard Admin - Encontre O Campo</title>
     <link rel="stylesheet" href="../css/admin.css"> 
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Navbar -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <img src="../../img/Logo - Copia.jpg" alt="Logo Encontre Ocampo" class="logo">
-                <span class="brand-name">Encontre Ocampo</span>
+                <img src="../../img/logo-nova.png" alt="Logo Encontre Ocampo" class="logo">
+                <div>
+                        <h1>ENCONTRE</h1>
+                        <h2>O CAMPO</h2>
+                    </div>
             </div>
             <div class="nav-links">
                 <a href="dashboard.php" class="nav-link active">Dashboard</a>

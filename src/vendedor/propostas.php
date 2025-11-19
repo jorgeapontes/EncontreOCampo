@@ -302,10 +302,19 @@ function formatarStatus($status) {
                         </div>
                         
                         <div class="proposta-actions">
-                            <a href="detalhes_proposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn-action">
-                                <i class="fas fa-search"></i>
-                                Ver Detalhes / Negociar
-                            </a>
+                            <?php if ($proposta['status'] == 'aceita' || $proposta['status'] == 'recusada'): ?>
+                                <!-- Para propostas aceitas ou recusadas - apenas Ver Detalhes -->
+                                <a href="detalhes_proposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn-action">
+                                    <i class="fas fa-eye"></i>
+                                    Ver Detalhes
+                                </a>
+                            <?php else: ?>
+                                <!-- Para propostas pendentes ou em negociação - Ver Detalhes / Negociar -->
+                                <a href="detalhes_proposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn-action">
+                                    <i class="fas fa-search"></i>
+                                    Ver Detalhes / Negociar
+                                </a>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>

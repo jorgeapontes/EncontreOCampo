@@ -140,7 +140,9 @@ try {
                         <div class="card-content">
                             <div class="card-header">
                                 <h3><?php echo htmlspecialchars($anuncio['produto']); ?></h3>
-                                <span class="vendedor">por <?php echo htmlspecialchars($anuncio['nome_vendedor']); ?></span>
+                                <span class="vendedor">por <a href="perfil_vendedor.php?vendedor_id=<?php echo $anuncio['vendedor_usuario_id']; ?>" 
+                                    style="color: var(--primary-color); text-decoration: none; font-weight: 600;">
+                                    <?php echo htmlspecialchars($anuncio['nome_vendedor']); ?>   </a>   </span>
                             </div>
                             <div class="card-body">
                                 <p class="price">

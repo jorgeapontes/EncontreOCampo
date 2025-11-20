@@ -148,7 +148,8 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                             <div class="input-with-symbol">
                                 <span class="currency-symbol">R$</span>
                                 <input type="number" id="preco_proposto" name="preco_proposto" 
-                                       step="0.01" min="0.01" required 
+                                       step="0.01" min="0.01" required
+                                        value="<?php echo htmlspecialchars($anuncio['preco']); ?>"
                                        placeholder="0.00">
                             </div>
                             <small>Digite o valor que você deseja pagar por unidade</small>

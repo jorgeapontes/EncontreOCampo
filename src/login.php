@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             header("Location: admin/dashboard.php");
                             break;
                         case 'comprador':
-                            header("Location: comprador/dashboard.php");
+                            header("Location: anuncios.php");
                             break;
                         case 'vendedor':
                             header("Location: vendedor/dashboard.php");

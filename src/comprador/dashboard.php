@@ -212,6 +212,11 @@ try {
             gap: 20px;
         }
 
+        .actions-grid a{
+            /* border: 1px solid green; */
+            box-shadow: 5px 5px 10px rgba(0,0,0,0.1);
+        }
+
         .action-link {
             background-color: var(--white);
             padding: 20px;
@@ -253,12 +258,15 @@ try {
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <h1>ENCONTRE</h1>
-                <h2>OCAMPO</h2>
+                <img src="../../img/logo-nova.png" alt="Logo">
+                <div>
+                        <h1>ENCONTRE</h1>
+                        <h2>O CAMPO</h2>
+                    </div>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item"><a href="dashboard.php" class="nav-link active">Dashboard</a></li>
-                <li class="nav-item"><a href="../anuncios.php" class="nav-link">Ver Anúncios</a></li>
+                <li class="nav-item"><a href="../anuncios.php" class="nav-link">Comprar</a></li>
                 <li class="nav-item"><a href="minhas_propostas.php" class="nav-link">Minhas Propostas</a></li>
                 <li class="nav-item"><a href="../logout.php" class="nav-link logout">Sair</a></li>
             </ul>

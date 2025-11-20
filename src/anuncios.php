@@ -73,9 +73,12 @@ try {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <h1>ENCONTRE</h1>
-                    <h2>OCAMPO</h2>
-                </div>
+                <img src="../img/logo-nova.png" alt="Logo">
+                <div>
+                        <h1>ENCONTRE</h1>
+                        <h2>O CAMPO</h2>
+                    </div>
+            </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
                         <a href="../index.php" class="nav-link">Home</a>

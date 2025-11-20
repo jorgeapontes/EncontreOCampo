@@ -78,8 +78,11 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <h1>ENCONTRE</h1>
-                <h2>OCAMPO</h2>
+                <img src="../../img/logo-nova.png" alt="Logo">
+                <div>
+                        <h1>ENCONTRE</h1>
+                        <h2>O CAMPO</h2>
+                    </div>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>
@@ -171,7 +174,7 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                             <span class="optional">(Opcional)</span>
                         </label>
                         <textarea id="condicoes" name="condicoes" rows="4" 
-                                  placeholder="Ex: Pagamento à vista na entrega, frete por minha conta, prazo de entrega desejado..."></textarea>
+                                  placeholder="Adicione aqui detalhes para a negociação."></textarea>
                     </div>
 
                     <div class="form-actions">

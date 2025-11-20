@@ -104,12 +104,15 @@ function confirmarExclusao(propostaId) {
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <h1>ENCONTRE</h1>
-                <h2>OCAMPO</h2>
+                <img src="../../img/logo-nova.png" alt="Logo">
+                <div>
+                        <h1>ENCONTRE</h1>
+                        <h2>O CAMPO</h2>
+                    </div>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>
-                <li class="nav-item"><a href="../anuncios.php" class="nav-link">Ver Anúncios</a></li>
+                <li class="nav-item"><a href="../anuncios.php" class="nav-link">Comprar</a></li>
                 <li class="nav-item"><a href="minhas_propostas.php" class="nav-link active">Minhas Propostas</a></li>
                 <li class="nav-item"><a href="../logout.php" class="nav-link logout">Sair</a></li>
             </ul>
@@ -147,7 +150,7 @@ function confirmarExclusao(propostaId) {
                     <div class="proposta-card">
                         <div class="proposta-header">
                             <h3>
-                                Proposta para: **<?php echo htmlspecialchars($proposta['produto_nome']); ?>**
+                                Proposta para: <?php echo htmlspecialchars($proposta['produto_nome']); ?>
                             </h3>
                             <span class="status-badge <?php echo $status_info['class']; ?>">
                                 <?php echo $status_info['text']; ?>
@@ -160,11 +163,11 @@ function confirmarExclusao(propostaId) {
                                 <p><strong>Data da Proposta:</strong> <?php echo date('d/m/Y H:i', strtotime($proposta['data_proposta'])); ?></p>
                             </div>
                             <div class="info-group">
-                                <p><strong>Seu Preço Proposto:</strong> <span><?php echo 'R$ ' . number_format($proposta['preco_proposto'], 2, ',', '.') . ' / ' . htmlspecialchars($proposta['unidade_medida']); ?></span></p>
+                                <p><strong>Preço Proposto:</strong> <span><?php echo 'R$ ' . number_format($proposta['preco_proposto'], 2, ',', '.') . ' / ' . htmlspecialchars($proposta['unidade_medida']); ?></span></p>
                                 <p><strong>Preço Original:</strong> <?php echo 'R$ ' . number_format($proposta['preco_anuncio_original'], 2, ',', '.') . ' / ' . htmlspecialchars($proposta['unidade_medida']); ?></p>
                             </div>
                             <div class="info-group">
-                                <p><strong>Quantidade Proposta:</strong> <?php echo htmlspecialchars($proposta['quantidade_proposta']) . ' ' . htmlspecialchars($proposta['unidade_medida']); ?></p>
+                                <p><strong>Quantidade:</strong> <?php echo htmlspecialchars($proposta['quantidade_proposta']) . ' ' . htmlspecialchars($proposta['unidade_medida']); ?></p>
                             </div>
                         </div>
                         

@@ -19,7 +19,6 @@ $comprador_id = null;
 $mensagem_sucesso = isset($_GET['sucesso']) ? htmlspecialchars($_GET['sucesso']) : null;
 $mensagem_erro = isset($_GET['erro']) ? htmlspecialchars($_GET['erro']) : null;
 
-
 // 2. OBTENDO O ID DO COMPRADOR (ID da tabela 'compradores')
 try {
     $sql_comprador = "SELECT id FROM compradores WHERE usuario_id = :usuario_id";
@@ -37,9 +36,8 @@ try {
     die("Erro ao buscar ID do comprador: " . $e->getMessage());
 }
 
-// 3. BUSCA DAS PROPOSTAS
+// 3. BUSCA DAS PROPOSTAS E CONTRAPROPOSTAS
 try {
-    // Busca todas as propostas do comprador, unindo com a tabela produtos para obter o nome
     $sql = "SELECT 
                 pn.id AS proposta_id,
                 pn.data_proposta,
@@ -50,7 +48,9 @@ try {
                 p.nome AS produto_nome,
                 p.unidade_medida,
                 p.preco AS preco_anuncio_original,
-                u.nome AS nome_vendedor
+                u.nome AS nome_vendedor,
+                pn.observacoes_vendedor,
+                pn.data_resposta
             FROM propostas_negociacao pn
             JOIN produtos p ON pn.produto_id = p.id
             JOIN vendedores v ON p.vendedor_id = v.id
@@ -84,6 +84,12 @@ function confirmarExclusao(propostaId) {
         window.location.href = 'excluir_proposta.php?id=' + propostaId;
     }
 }
+
+function responderContraproposta(propostaId, acao) {
+    if (confirm('Tem certeza que deseja ' + acao + ' esta contraproposta?')) {
+        window.location.href = 'responder_contraproposta.php?id=' + propostaId + '&acao=' + acao;
+    }
+}
 </script>
 
 <!DOCTYPE html>
@@ -97,8 +103,6 @@ function confirmarExclusao(propostaId) {
     <link rel="stylesheet" href="../css/comprador/minhas_propostas.css">
     <link rel="shortcut icon" href="../../img/Logo - Copia.jpg" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
-    
 </head>
 <body>
     <nav class="navbar">
@@ -106,9 +110,9 @@ function confirmarExclusao(propostaId) {
             <div class="logo">
                 <img src="../../img/logo-nova.png" alt="Logo">
                 <div>
-                        <h1>ENCONTRE</h1>
-                        <h2>O CAMPO</h2>
-                    </div>
+                    <h1>ENCONTRE</h1>
+                    <h2>O CAMPO</h2>
+                </div>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>
@@ -146,6 +150,7 @@ function confirmarExclusao(propostaId) {
             <div class="propostas-list">
                 <?php foreach ($propostas as $proposta): 
                     $status_info = formatarStatus($proposta['status']);
+                    $tem_contraproposta = !empty($proposta['observacoes_vendedor']);
                 ?>
                     <div class="proposta-card">
                         <div class="proposta-header">
@@ -161,6 +166,9 @@ function confirmarExclusao(propostaId) {
                             <div class="info-group">
                                 <p><strong>Vendedor:</strong> <?php echo htmlspecialchars($proposta['nome_vendedor']); ?></p>
                                 <p><strong>Data da Proposta:</strong> <?php echo date('d/m/Y H:i', strtotime($proposta['data_proposta'])); ?></p>
+                                <?php if ($proposta['data_resposta']): ?>
+                                    <p><strong>Data da Resposta:</strong> <?php echo date('d/m/Y H:i', strtotime($proposta['data_resposta'])); ?></p>
+                                <?php endif; ?>
                             </div>
                             <div class="info-group">
                                 <p><strong>Preço Proposto:</strong> <span><?php echo 'R$ ' . number_format($proposta['preco_proposto'], 2, ',', '.') . ' / ' . htmlspecialchars($proposta['unidade_medida']); ?></span></p>
@@ -172,18 +180,46 @@ function confirmarExclusao(propostaId) {
                         </div>
                         
                         <?php if (!empty($proposta['condicoes_comprador'])): ?>
-                            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #f0f0f0;">
-                                <strong>Condições:</strong> <span style="font-style: italic; color: var(--text-light);"><?php echo nl2br(htmlspecialchars($proposta['condicoes_comprador'])); ?></span>
+                            <div class="condicoes-section">
+                                <strong>Suas Condições:</strong> 
+                                <span class="condicoes-texto"><?php echo nl2br(htmlspecialchars($proposta['condicoes_comprador'])); ?></span>
                             </div>
                         <?php endif; ?>
 
-                        <div class="proposta-actions" style="text-align: right; margin-top: 15px;">
+                        <?php if ($tem_contraproposta): ?>
+                            <div class="contraproposta-section">
+                                <strong>Contraproposta do Vendedor:</strong>
+                                <div class="contraproposta-content">
+                                    <?php echo nl2br(htmlspecialchars($proposta['observacoes_vendedor'])); ?>
+                                </div>
+                                
+                                <!-- BOTÕES PARA RESPONDER À CONTRAPROPOSTA - SEMPRE VISÍVEIS QUANDO HÁ CONTRAPROPOSTA -->
+                                <div class="contraproposta-actions">
+                                    <button onclick="responderContraproposta(<?php echo $proposta['proposta_id']; ?>, 'aceitar')" class="btn btn-success">
+                                        <i class="fas fa-check"></i>
+                                        Aceitar Contraproposta
+                                    </button>
+                                    <button onclick="responderContraproposta(<?php echo $proposta['proposta_id']; ?>, 'recusar')" class="btn btn-danger">
+                                        <i class="fas fa-times"></i>
+                                        Recusar Contraproposta
+                                    </button>
+                                    <a href="fazer_contraproposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn btn-secondary">
+                                        <i class="fas fa-edit"></i>
+                                        Fazer Contraproposta
+                                    </a>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <!-- BOTÕES DE AÇÃO PRINCIPAIS - CORRIGIDOS PARA SEMPRE APARECEREM -->
+                        <div class="proposta-actions">
                             <?php if ($proposta['status'] === 'pendente' || $proposta['status'] === 'negociacao'): ?>
-                                <a href="editar_proposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn btn-secondary" style="background-color: #FF9800; color: white;">
+                                <!-- Botões sempre disponíveis para propostas ativas -->
+                                <a href="editar_proposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn btn-edit">
                                     <i class="fas fa-edit"></i>
-                                    Alterar Detalhes
+                                    <?php echo $tem_contraproposta ? 'Alterar Minha Proposta' : 'Alterar Detalhes'; ?>
                                 </a>
-                                <button onclick="confirmarExclusao(<?php echo $proposta['proposta_id']; ?>)" class="btn btn-danger" style="background-color: #dc3545; color: white; border: none; cursor: pointer;">
+                                <button onclick="confirmarExclusao(<?php echo $proposta['proposta_id']; ?>)" class="btn btn-delete">
                                     <i class="fas fa-trash"></i>
                                     Excluir Proposta
                                 </button>

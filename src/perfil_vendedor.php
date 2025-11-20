@@ -233,11 +233,11 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                                         <div class="card-actions">
                                             <?php if ($is_comprador): ?>
                                                 <a href="comprador/proposta_nova.php?anuncio_id=<?php echo $anuncio['id']; ?>" class="btn btn-primary">
-                                                    <i class="fas fa-handshake"></i> Fazer Proposta
+                                                    <i class="fas fa-handshake"></i> Comprar
                                                 </a>
                                             <?php else: ?>
                                                 <button class="btn btn-primary open-login-modal" data-target="#loginModal">
-                                                    <i class="fas fa-handshake"></i> Fazer Proposta
+                                                    <i class="fas fa-handshake"></i> Comprar
                                                 </button>
                                             <?php endif; ?>
                                         </div>

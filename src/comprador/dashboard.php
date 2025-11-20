@@ -267,6 +267,7 @@ try {
             <ul class="nav-menu">
                 <li class="nav-item"><a href="dashboard.php" class="nav-link active">Dashboard</a></li>
                 <li class="nav-item"><a href="../anuncios.php" class="nav-link">Comprar</a></li>
+                <li class="nav-item"><a href="favoritos.php" class="nav-link">Favoritos</a></li>
                 <li class="nav-item"><a href="minhas_propostas.php" class="nav-link">Minhas Propostas</a></li>
                 <li class="nav-item"><a href="../logout.php" class="nav-link logout">Sair</a></li>
             </ul>

@@ -75,51 +75,41 @@
     </section>
 
     <section id="comprar" class="section bg-light">
-        <div class="container">
-            <h2 class="section-title">Compre Frutas Frescas</h2>
-            <div class="products-grid">
-                <div class="product-card">
-                    <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1610832958506-aa56368176cf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80');"></div>
-                    <div class="product-info">
-                        <h3>Maçãs Vermelhas</h3>
-                        <p>Frescas direto do pomar</p>
-                        <span class="price">R$ 4,50/kg</span>
-                        <button class="buy-btn">Ver</button>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1550258987-190a2d41a8ba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80');"></div>
-                    <div class="product-info">
-                        <h3>Laranjas Doces</h3>
-                        <p>Colhidas no ponto certo</p>
-                        <span class="price">R$ 3,20/kg</span>
-                        <button class="buy-btn">Ver</button>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1160&q=80');"></div>
-                    <div class="product-info">
-                        <h3>Bananas Prata</h3>
-                        <p>Maduras e saborosas</p>
-                        <span class="price">R$ 2,80/kg</span>
-                        <button class="buy-btn">Ver</button>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-image" style="background-image: url('https://mondiniplantas.cdn.magazord.com.br/img/2025/05/produto/6871/pe-de-uva-thompson.jpg?ims=800x800');"></div>
-                    <div class="product-info">
-                        <h3>Uvas Verdes</h3>
-                        <p>Dulces e sem sementes</p>
-                        <span class="price">R$ 8,90/kg</span>
-                        <button class="buy-btn">Ver</button>
+    <div class="container">
+        <h2 class="section-title">Compre Frutas Frescas</h2>
+        
+        <!-- Carrossel melhorado -->
+        <div class="carousel-container">
+            <div class="carousel-wrapper">
+                <div class="carousel-track" id="anunciosCarousel">
+                    <!-- Anúncios serão carregados aqui via JavaScript -->
+                    <div class="loading-state">
+                        <p>Carregando anúncios fresquinhos...</p>
                     </div>
                 </div>
             </div>
-            <center>
-            <a a href="src/anuncios.php" class="cta-button" style="display: inline-block; margin-top: 40px; text-decoration: none; width: 250px; text-align: center;">Acessar plataforma</a>
-            </center>
+            
+            <!-- Controles simplificados -->
+            <div class="carousel-nav">
+                <button class="nav-btn prev" onclick="prevSlide()" aria-label="Anterior">
+                    ‹
+                </button>
+                <div class="carousel-dots" id="carouselDots">
+                    <!-- Pontos de navegação -->
+                </div>
+                <button class="nav-btn next" onclick="nextSlide()" aria-label="Próximo">
+                    ›
+                </button>
+            </div>
         </div>
-    </section>
+
+        <center>
+            <a href="src/anuncios.php" class="cta-button" style="display: inline-block; margin-top: 40px; text-decoration: none; width: 250px; text-align: center;">
+                Ver Todos os Anúncios
+            </a>
+        </center>
+    </div>
+</section>
 
     <section id="vender" class="section">
         <div class="container">

@@ -597,6 +597,354 @@ async function submitForm(e) {
     }
 }
 
+// =============================================== 
+// CARROSSEL CORRIGIDO - TODOS OS ANÚNCIOS VISÍVEIS
+// ===============================================
+
+let anuncios = [];
+let currentSlide = 0;
+let slidesToShow = 4;
+let autoSlideInterval;
+
+// Função principal para carregar anúncios
+async function loadAnuncios() {
+    console.log('🔄 Carregando anúncios...');
+    
+    const carousel = document.getElementById('anunciosCarousel');
+    if (carousel) {
+        carousel.innerHTML = '<div class="loading-state"><p>🌱 Buscando produtos fresquinhos...</p></div>';
+    }
+    
+    try {
+        const response = await fetch('buscar_anuncios.php');
+        
+        if (!response.ok) {
+            throw new Error(`Erro HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('✅ Dados recebidos:', data);
+        
+        if (data.success && data.produtos && data.produtos.length > 0) {
+            anuncios = data.produtos;
+            console.log(`🎯 ${anuncios.length} anúncios carregados com sucesso`);
+            renderCarousel();
+            setupCarouselControls();
+            startAutoSlide();
+        } else {
+            console.warn('⚠️ Nenhum anúncio ativo encontrado, usando fallback');
+            renderStaticProducts();
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar anúncios:', error);
+        renderStaticProducts();
+    }
+}
+
+// Função para renderizar o carrossel com produtos reais
+function renderCarousel() {
+    const carousel = document.getElementById('anunciosCarousel');
+    if (!carousel) {
+        console.error('❌ Elemento do carrossel não encontrado');
+        return;
+    }
+
+    carousel.innerHTML = '';
+
+    if (anuncios.length === 0) {
+        carousel.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #666; width: 100%;">
+                <p>Nenhum anúncio disponível no momento.</p>
+            </div>
+        `;
+        return;
+    }
+
+    anuncios.forEach((produto, index) => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        
+        // Formatar preço
+        const precoFormatado = parseFloat(produto.preco).toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+        // Usar a imagem do banco - agora corrigida
+        let imagemUrl = produto.imagem_url;
+        
+        // Log para debug das imagens
+        console.log(`🖼️ Imagem do produto ${produto.id}:`, imagemUrl);
+
+        card.innerHTML = `
+            <div class="product-image" style="background-image: url('${imagemUrl}')">
+                ${produto.estoque < 10 ? `<div class="product-badge">Poucas unidades</div>` : ''}
+            </div>
+            <div class="product-info">
+                <h3>${produto.nome}</h3>
+                <p>${produto.descricao || 'Produto fresco direto do produtor'}</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                    <span class="price">R$ ${precoFormatado}</span>
+                    <small style="color: #666;">Estoque: ${produto.estoque}</small>
+                </div>
+                <button class="buy-btn" onclick="verAnuncio(${produto.id})">Ver Detalhes</button>
+            </div>
+        `;
+
+        // Animação de entrada
+        card.style.animationDelay = `${index * 0.1}s`;
+        carousel.appendChild(card);
+    });
+
+    updateSlidesToShow();
+    updateCarouselPosition();
+}
+
+// Função para produtos estáticos (fallback)
+function renderStaticProducts() {
+    const carousel = document.getElementById('anunciosCarousel');
+    if (!carousel) return;
+
+    const staticProducts = [
+        {
+            id: 1,
+            nome: 'Maçãs Vermelhas',
+            preco: '4.50',
+            imagem: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+            descricao: 'Frescas direto do pomar',
+            estoque: 15
+        },
+        {
+            id: 2,
+            nome: 'Laranjas Doces', 
+            preco: '3.20',
+            imagem: 'https://images.unsplash.com/photo-1550258987-190a2d41a8ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+            descricao: 'Colhidas no ponto certo',
+            estoque: 25
+        },
+        {
+            id: 3,
+            nome: 'Bananas Prata',
+            preco: '2.80', 
+            imagem: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+            descricao: 'Maduras e saborosas',
+            estoque: 30
+        },
+        {
+            id: 4,
+            nome: 'Uvas Verdes',
+            preco: '8.90',
+            imagem: 'https://mondiniplantas.cdn.magazord.com.br/img/2025/05/produto/6871/pe-de-uva-thompson.jpg?ims=800x800',
+            descricao: 'Dulces e sem sementes',
+            estoque: 12
+        },
+        {
+            id: 5,
+            nome: 'Morangos Frescos',
+            preco: '12.50',
+            imagem: 'https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+            descricao: 'Vermelhos e suculentos',
+            estoque: 8
+        },
+        {
+            id: 6,
+            nome: 'Abacates Maduros',
+            preco: '5.75',
+            imagem: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+            descricao: 'Perfeitos para guacamole',
+            estoque: 18
+        }
+    ];
+
+    carousel.innerHTML = '';
+
+    staticProducts.forEach((produto, index) => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        
+        card.innerHTML = `
+            <div class="product-image" style="background-image: url('${produto.imagem}')">
+                ${produto.estoque < 10 ? `<div class="product-badge">Poucas unidades</div>` : ''}
+            </div>
+            <div class="product-info">
+                <h3>${produto.nome}</h3>
+                <p>${produto.descricao}</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                    <span class="price">R$ ${produto.preco}</span>
+                    <small style="color: #666;">Estoque: ${produto.estoque}</small>
+                </div>
+                <button class="buy-btn" onclick="verAnuncio(${produto.id})">Ver Detalhes</button>
+            </div>
+        `;
+
+        card.style.animationDelay = `${index * 0.1}s`;
+        carousel.appendChild(card);
+    });
+
+    updateSlidesToShow();
+    setupCarouselControls();
+}
+
+// Configurar controles do carrossel
+function setupCarouselControls() {
+    updateDots();
+}
+
+// Atualizar pontos de navegação
+function updateDots() {
+    const dotsContainer = document.getElementById('carouselDots');
+    if (!dotsContainer) return;
+
+    const totalSlides = Math.ceil(anuncios.length / slidesToShow);
+    
+    dotsContainer.innerHTML = '';
+    
+    for (let i = 0; i < totalSlides; i++) {
+        const dot = document.createElement('div');
+        dot.className = `carousel-dot ${i === currentSlide ? 'active' : ''}`;
+        dot.addEventListener('click', () => goToSlide(i));
+        dotsContainer.appendChild(dot);
+    }
+}
+
+// Navegação entre slides
+function nextSlide() {
+    const totalSlides = Math.ceil(anuncios.length / slidesToShow);
+    if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateCarouselPosition();
+        resetAutoSlide();
+    }
+}
+
+function prevSlide() {
+    if (currentSlide > 0) {
+        currentSlide--;
+        updateCarouselPosition();
+        resetAutoSlide();
+    }
+}
+
+function goToSlide(slideIndex) {
+    const totalSlides = Math.ceil(anuncios.length / slidesToShow);
+    currentSlide = Math.max(0, Math.min(slideIndex, totalSlides - 1));
+    updateCarouselPosition();
+    resetAutoSlide();
+}
+
+// Atualizar posição do carrossel - CORRIGIDO SEM CORTES
+function updateCarouselPosition() {
+    const carousel = document.getElementById('anunciosCarousel');
+    if (!carousel) return;
+
+    const cards = carousel.querySelectorAll('.product-card');
+    if (cards.length === 0) return;
+
+    const cardWidth = cards[0].offsetWidth + 25; // width + gap
+    const translateX = -currentSlide * cardWidth * slidesToShow;
+    
+    carousel.style.transform = `translateX(${translateX}px)`;
+    updateDots();
+}
+
+// Atualizar quantidade de slides a mostrar
+function updateSlidesToShow() {
+    const width = window.innerWidth;
+    
+    if (width >= 1200) {
+        slidesToShow = 4;
+    } else if (width >= 992) {
+        slidesToShow = 3;
+    } else if (width >= 768) {
+        slidesToShow = 2;
+    } else {
+        slidesToShow = 1;
+    }
+    
+    updateDots();
+    updateCarouselPosition();
+}
+
+// Auto slide
+function startAutoSlide() {
+    stopAutoSlide();
+    autoSlideInterval = setInterval(() => {
+        const totalSlides = Math.ceil(anuncios.length / slidesToShow);
+        if (currentSlide < totalSlides - 1) {
+            nextSlide();
+        } else {
+            goToSlide(0); // Volta ao início
+        }
+    }, 5000);
+}
+
+function stopAutoSlide() {
+    if (autoSlideInterval) {
+        clearInterval(autoSlideInterval);
+    }
+}
+
+function resetAutoSlide() {
+    stopAutoSlide();
+    startAutoSlide();
+}
+
+// Função para ver anúncio
+function verAnuncio(id) {
+    window.location.href = `src/anuncios.php?produto=${id}`;
+}
+
+// ===============================================
+// INICIALIZAÇÃO E EVENT LISTENERS
+// ===============================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Página carregada - inicializando carrossel...');
+    
+    // Carregar anúncios
+    setTimeout(loadAnuncios, 500);
+    
+    // Atualizar responsividade ao redimensionar
+    window.addEventListener('resize', function() {
+        updateSlidesToShow();
+    });
+    
+    // Pausar auto slide quando o mouse estiver sobre o carrossel
+    const carousel = document.getElementById('anunciosCarousel');
+    if (carousel) {
+        carousel.addEventListener('mouseenter', stopAutoSlide);
+        carousel.addEventListener('mouseleave', startAutoSlide);
+    }
+    
+    // Swipe para dispositivos móveis
+    let startX = 0;
+    let endX = 0;
+    
+    if (carousel) {
+        carousel.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+        });
+        
+        carousel.addEventListener('touchend', (e) => {
+            endX = e.changedTouches[0].clientX;
+            handleSwipe();
+        });
+    }
+    
+    function handleSwipe() {
+        const swipeThreshold = 50;
+        const diff = startX - endX;
+        
+        if (Math.abs(diff) > swipeThreshold) {
+            if (diff > 0) {
+                nextSlide(); // Swipe para esquerda
+            } else {
+                prevSlide(); // Swipe para direita
+            }
+        }
+    }
+});
 // ===============================================
 // INICIALIZAÇÃO E LISTENERS
 // ===============================================

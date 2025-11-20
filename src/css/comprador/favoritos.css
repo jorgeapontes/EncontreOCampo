@@ -1,0 +1,364 @@
+/* src/css/comprador/favoritos.css */
+
+:root {
+    --primary-color: #2ecc71;
+    --primary-dark: #27ae60;
+    --secondary-color: #3498db;
+    --accent-color: #e74c3c;
+    --dark-color: #2c3e50;
+    --text-color: #34495e;
+    --text-light: #7f8c8d;
+    --light-gray: #ecf0f1;
+    --border-color: #ddd;
+    --white: #ffffff;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --radius: 12px;
+}
+
+.favoritos-container {
+    padding-top: 140px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: 20px;
+    padding-right: 20px;
+    min-height: calc(100vh - 100px);
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.page-header h1 {
+    color: var(--dark-color);
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.page-header h1 i {
+    color: var(--accent-color);
+}
+
+.page-subtitle {
+    color: var(--text-light);
+    font-size: 1.2rem;
+    margin-bottom: 0;
+}
+
+.alert {
+    padding: 15px 20px;
+    border-radius: var(--radius);
+    margin-bottom: 30px;
+    font-weight: 500;
+}
+
+.alert-error {
+    background: #ffeaea;
+    color: #d63031;
+    border: 1px solid #ff7675;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-light);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    color: var(--light-gray);
+}
+
+.empty-state h2 {
+    color: var(--text-color);
+    margin-bottom: 15px;
+    font-size: 1.8rem;
+}
+
+.empty-state p {
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+}
+
+.favoritos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+    margin-bottom: 50px;
+}
+
+.favorito-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+
+.favorito-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.favorito-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.favorito-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.favorito-card:hover .favorito-image img {
+    transform: scale(1.05);
+}
+
+.btn-remover-favorito {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 35px;
+    height: 35px;
+    background: rgba(255,255,255,0.9);
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--accent-color);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    opacity: 0;
+}
+
+.favorito-card:hover .btn-remover-favorito {
+    opacity: 1;
+}
+
+.btn-remover-favorito:hover {
+    background: var(--accent-color);
+    color: var(--white);
+    transform: scale(1.1);
+}
+
+.favorito-info {
+    padding: 20px;
+}
+
+.favorito-info h3 {
+    color: var(--dark-color);
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.favorito-preco {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.favorito-estoque {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+.favorito-estoque i {
+    color: var(--primary-color);
+}
+
+.favorito-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.favorito-actions .btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 15px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: var(--light-gray);
+    color: var(--text-color);
+}
+
+.btn-secondary:hover {
+    background: var(--border-color);
+    transform: translateY(-2px);
+}
+
+/* Footer (mesmo estilo do proposta_nova.css) */
+.site-footer {
+    background: var(--dark-color);
+    color: var(--white);
+    margin-top: 80px;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+    padding: 50px 0 30px;
+}
+
+.footer-section h4 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.footer-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-section ul li {
+    margin-bottom: 12px;
+}
+
+.footer-section ul li a {
+    color: var(--light-gray);
+    text-decoration: none;
+    transition: color 0.3s ease;
+    font-size: 1rem;
+}
+
+.footer-section ul li a:hover {
+    color: var(--primary-color);
+    padding-left: 5px;
+}
+
+.contact-info p {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    color: var(--light-gray);
+}
+
+.contact-info i {
+    color: var(--primary-color);
+    width: 20px;
+}
+
+.social-links {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    color: var(--white);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.social-links a:hover {
+    background: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.footer-bottom {
+    text-align: center;
+    padding: 25px 0;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .favoritos-container {
+        padding-top: 120px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .favoritos-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .favorito-actions {
+        flex-direction: column;
+    }
+    
+    .favorito-actions .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .favorito-info {
+        padding: 15px;
+    }
+    
+    .btn-remover-favorito {
+        opacity: 1; /* Sempre visível em mobile */
+    }
+}

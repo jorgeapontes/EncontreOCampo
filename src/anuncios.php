@@ -87,6 +87,9 @@ try {
                         <a href="anuncios.php" class="nav-link active">Anúncios</a>
                     </li>
                     <li class="nav-item">
+                        <a href="comprador/favoritos.php" class="nav-link active">Favoritos</a>
+                    </li>
+                    <li class="nav-item">
                         <a href="<?php echo htmlspecialchars($button_action); ?>" 
                            class="nav-link <?php echo $is_logged_in ? 'user-profile' : 'open-login-modal'; ?>"
                            <?php if (!$is_logged_in) echo 'data-target="#loginModal"'; ?>>
@@ -180,11 +183,11 @@ try {
                             <div class="card-actions">
                                 <?php if ($is_comprador): ?>
                                     <a href="comprador/proposta_nova.php?anuncio_id=<?php echo $anuncio['id']; ?>" class="btn btn-primary">
-                                        <i class="fas fa-handshake"></i> Fazer Proposta
+                                        <i class="fas fa-handshake"></i> Comprar
                                     </a>
                                 <?php else: ?>
                                     <button class="btn btn-primary open-login-modal" data-target="#loginModal">
-                                        <i class="fas fa-handshake"></i> Fazer Proposta
+                                        <i class="fas fa-handshake"></i> Comprar
                                     </button>
                                 <?php endif; ?>
                             </div>

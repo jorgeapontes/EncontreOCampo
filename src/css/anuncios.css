@@ -48,6 +48,30 @@
     margin-bottom: 40px;
 }
 
+/* Foto de perfil vendedor*/
+.default-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    color: #666;
+    border: 3px solid #ddd;
+    margin: 0 auto;
+}
+
+.foto-perfil-display img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
 /* Cards Redesenhados */
 .anuncio-card {
     background: var(--white);

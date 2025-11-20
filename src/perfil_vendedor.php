@@ -42,15 +42,11 @@ $anuncios_vendedor = [];
 $total_anuncios = 0;
 
 try {
-    // Buscar informações do vendedor
-    $sql_vendedor = "SELECT 
-                        u.nome AS nome_vendedor,
-                        v.cidade,
-                        v.estado,
-                        v.nome_comercial
-                    FROM usuarios u
-                    JOIN vendedores v ON u.id = v.usuario_id
-                    WHERE u.id = ? AND u.status = 'ativo'";
+    // Buscar informações do vendedor (CORRIGIDO)
+    $sql_vendedor = "SELECT u.nome AS nome_vendedor, v.cidade, v.estado, v.nome_comercial, v.foto_perfil_url 
+                     FROM usuarios u 
+                     JOIN vendedores v ON u.id = v.usuario_id 
+                     WHERE u.id = ? AND u.status = 'ativo'";
     
     $stmt_vendedor = $conn->prepare($sql_vendedor);
     $stmt_vendedor->execute([$vendedor_id]);
@@ -61,17 +57,11 @@ try {
     }
 
     // Buscar anúncios do vendedor
-    $sql_anuncios = "SELECT 
-                        p.id, 
-                        p.nome AS produto, 
-                        p.preco, 
-                        p.estoque AS quantidade_disponivel, 
-                        p.unidade_medida, 
-                        p.descricao, 
-                        p.imagem_url
-                    FROM produtos p
-                    WHERE p.vendedor_id IN (SELECT id FROM vendedores WHERE usuario_id = ?)
-                    AND p.status = 'ativo'";
+    $sql_anuncios = "SELECT p.id, p.nome AS produto, p.preco, p.estoque AS quantidade_disponivel, 
+                            p.unidade_medida, p.descricao, p.imagem_url 
+                     FROM produtos p 
+                     WHERE p.vendedor_id IN (SELECT id FROM vendedores WHERE usuario_id = ?) 
+                     AND p.status = 'ativo'";
     
     $stmt_anuncios = $conn->prepare($sql_anuncios);
     $stmt_anuncios->execute([$vendedor_id]);
@@ -82,6 +72,8 @@ try {
 } catch (PDOException $e) {
     die("Erro ao carregar informações do vendedor: " . $e->getMessage());
 }
+
+$foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
 ?>
 
 <!DOCTYPE html>
@@ -92,7 +84,7 @@ try {
     <title>Perfil do Vendedor - Encontre Ocampo</title>
     <link rel="stylesheet" href="../index.css">
     <link rel="stylesheet" href="css/anuncios.css">
-    <link rel="stylesheet" href="css/perfil.css">
+    <link rel="stylesheet" href="css/vendedor/perfil.css">
     <link rel="shortcut icon" href="../img/Logo - Copia.jpg" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -139,7 +131,28 @@ try {
         <div class="section-perfil">
             <div class="forms-area">
                 <!-- Informações do Vendedor -->
-                <div class="perfil-header-info">
+                <div class="foto-perfil-display">
+                    <center>
+                        <?php if (!empty($foto_perfil_url)): 
+                            $foto_path = $foto_perfil_url;
+                            if (strpos($foto_path, '../') === 0) {
+                                $foto_path = substr($foto_path, 3);
+                            }
+                        ?>
+                            <img id="profile-img-preview" 
+                                src="<?php echo htmlspecialchars($foto_path); ?>" 
+                                alt="Foto de Perfil"
+                                onerror="this.style.display='none'; document.getElementById('default-avatar').style.display='block';">
+                            <div id="default-avatar" class="default-avatar" style="display: none;">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                        <?php else: ?>
+                            <div class="default-avatar">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                        <?php endif; ?>
+                    </center>
+                </div>
                     <div style="text-align: center;">
                         <h3><?php echo htmlspecialchars($vendedor_info['nome_comercial'] ?? $vendedor_info['nome_vendedor']); ?></h3>
                         <p style="color: var(--text-light); margin-bottom: 10px;">
@@ -151,11 +164,11 @@ try {
                             <?php echo $total_anuncios; ?> anúncio(s) ativo(s)
                         </p>
                     </div>
-                </div>
+                </div><br>
 
                 <!-- Anúncios do Vendedor -->
-                <div style="margin-top: 40px;">
-                    <h3>Anúncios Publicados</h3>
+                <div class="forms-area">
+                    <center><h2>Anúncios Publicados</h2></center>
                     
                     <?php if (empty($anuncios_vendedor)): ?>
                         <div class="empty-state">

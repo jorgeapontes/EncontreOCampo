@@ -84,7 +84,7 @@ try {
                         <a href="../index.php" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="anuncios.php" class="nav-link active">Anúncios</a>
+                        <a href="anuncios.php" class="nav-link active">Comprar</a>
                     </li>
                     <li class="nav-item">
                         <a href="comprador/favoritos.php" class="nav-link active">Favoritos</a>

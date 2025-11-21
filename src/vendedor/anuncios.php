@@ -49,15 +49,6 @@ $total_anuncios = count($anuncios);
                         <a href="dashboard.php" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">
-                        <a href="anuncios.php" class="nav-link active">Meus Anúncios</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="propostas.php" class="nav-link">Propostas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="precos.php" class="nav-link">Médias de Preços</a>
-                    </li>
-                    <li class="nav-item">
                         <a href="perfil.php" class="nav-link">Meu Perfil</a>
                     </li>
                     <li class="nav-item">

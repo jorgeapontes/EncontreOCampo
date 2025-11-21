@@ -111,18 +111,18 @@ try {
                     <p><?php echo $total_propostas_pendentes; ?></p>
             </div>
             </a>
-            <a href="">
+            <a href="precos.php">
                 <div class="card">
                         <i class="fas fa-dollar-sign"></i>
-                        <h3>Vendas Mês</h3>
-                        <p>R$ 0,00</p>
+                        <h3>Minhas vendas</h3>
+                        <p>Ver</p>
                 </div>
             </a>
         </section>
 
         <section class="section-anuncios">
             <div id="header">
-                <h2>Meus Anúncios Recentes (<?php echo $total_anuncios; ?>)</h2>
+                <h2>Anúncios ativos (<?php echo $total_anuncios; ?>)</h2>
                 <a href="anuncio_novo.php" class="cta-button"><i class="fas fa-plus"></i> Novo Anúncio</a>
             </div>
             

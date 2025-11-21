@@ -1,5 +1,5 @@
 <?php
-// src/comprador/proposta_nova.php (Layout Melhorado com Favoritos e Footer - CORRIGIDO)
+// src/comprador/proposta_nova.php (Layout Melhorado com Favoritos, Footer e Produtos Relacionados)
 
 session_start();
 require_once __DIR__ . '/../conexao.php';
@@ -54,6 +54,33 @@ try {
     die("Erro ao carregar anúncio: " . $e->getMessage()); 
 }
 
+// Buscar produtos relacionados (outros anúncios aleatórios)
+$produtos_relacionados = [];
+try {
+    $sql_relacionados = "SELECT 
+                            p.id, 
+                            p.nome, 
+                            p.preco, 
+                            p.imagem_url,
+                            p.unidade_medida,
+                            u.nome AS nome_vendedor
+                         FROM produtos p
+                         JOIN vendedores v ON p.vendedor_id = v.id 
+                         JOIN usuarios u ON v.usuario_id = u.id
+                         WHERE p.id != :anuncio_id 
+                         AND p.status = 'ativo' 
+                         AND p.estoque > 0
+                         ORDER BY RAND() 
+                         LIMIT 4";
+    
+    $stmt_relacionados = $conn->prepare($sql_relacionados);
+    $stmt_relacionados->bindParam(':anuncio_id', $anuncio_id, PDO::PARAM_INT);
+    $stmt_relacionados->execute();
+    $produtos_relacionados = $stmt_relacionados->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    // Se der erro, continua sem produtos relacionados
+}
+
 // Verificar se o produto já está nos favoritos do usuário
 $is_favorito = false;
 try {
@@ -71,8 +98,6 @@ $preco_formatado = 'R$ ' . number_format($anuncio['preco'], 2, ',', '.');
 $unidade = htmlspecialchars($anuncio['unidade_medida']);
 $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) : '../../img/placeholder.png';
 ?>
-
-<!-- O RESTANTE DO HTML PERMANECE IGUAL -->
 
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -100,7 +125,7 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                 <li class="nav-item"><a href="../anuncios.php" class="nav-link">Ver Anúncios</a></li>
                 <li class="nav-item"><a href="minhas_propostas.php" class="nav-link">Minhas Propostas</a></li>
                 <li class="nav-item"><a href="favoritos.php" class="nav-link">Favoritos</a></li>
-                <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
+                <li class="nav-item"><a href="../logout.php" class="nav-link logout">Sair</a></li>
             </ul>
         </div>
     </nav>
@@ -120,33 +145,39 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                     <i class="<?php echo $is_favorito ? 'fas' : 'far'; ?> fa-heart"></i>
                     <span><?php echo $is_favorito ? 'Favoritado' : 'Favoritar'; ?></span>
                 </button>
+
+                <!-- Botão de Compartilhar -->
+                <button class="btn-compartilhar" id="btn-compartilhar">
+                    <i class="fas fa-share-alt"></i>
+                    <span>Compartilhar</span>
+                </button>
             </div>
 
-            <!-- Seção de Informações do Produto -->
-            <div class="produto-info">
-                <div class="info-header">
-                    <h1><?php echo htmlspecialchars($anuncio['produto']); ?></h1>
-                    <div class="vendedor-info">
-                        <span class="vendedor-label">Vendido por:</span>
-                        <a href="../perfil_vendedor.php?id=<?php echo $anuncio['vendedor_usuario_id']; ?>" class="vendedor-nome">
-                            <?php echo htmlspecialchars($anuncio['nome_vendedor']); ?>
-                            <i class="fas fa-external-link-alt"></i>
-                        </a>
+            <!-- Formulário de Compra -->
+            <div class="compra-section">
+                <!-- Seção de Informações do Produto -->
+                <div class="produto-info">
+                    <div class="info-header">
+                        <h1><?php echo htmlspecialchars($anuncio['produto']); ?></h1>
+                        <div class="vendedor-info">
+                            <span class="vendedor-label">Vendido por:</span>
+                            <a href="../perfil_vendedor.php?vendedor_id=<?php echo $anuncio['vendedor_usuario_id']; ?>" class="vendedor-nome">
+                                <?php echo htmlspecialchars($anuncio['nome_vendedor']); ?>
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
                     </div>
-                </div>
 
-                <div class="preco-section">
-                    <span class="preco-atual"><?php echo $preco_formatado; ?></span>
-                    <span class="unidade">por <?php echo $unidade; ?></span>
-                </div>
+                    <div class="preco-section">
+                        <span class="unidade">por <?php echo $unidade; ?></span>
+                        <span class="preco-atual"><?php echo $preco_formatado; ?></span>
+                    </div>
+                    
+                    <div class="estoque-info">
+                        <i class="fas fa-box"></i>
+                        <span><?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?> <?php echo $unidade; ?> disponíveis</span>
+                    </div>
 
-                <div class="estoque-info">
-                    <i class="fas fa-box"></i>
-                    <span><?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?> <?php echo $unidade; ?> disponíveis</span>
-                </div>
-
-                <!-- Formulário de Compra -->
-                <div class="compra-section">
                     <div class="quantidade-selector">
                         <label for="quantidade">Quantidade:</label>
                         <div class="quantidade-control">
@@ -183,6 +214,39 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
             </div>
             <div class="descricao-content">
                 <p><?php echo nl2br(htmlspecialchars($anuncio['descricao'])); ?></p>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Seção de Produtos que Podem te Interessar -->
+        <?php if (!empty($produtos_relacionados)): ?>
+        <div class="produtos-relacionados">
+            <div class="relacionados-header">
+                <h3><i class="fas fa-star"></i> Podem te interessar</h3>
+                <p>Descubra outros produtos disponíveis</p>
+            </div>
+            <div class="relacionados-grid">
+                <?php foreach ($produtos_relacionados as $produto): ?>
+                    <?php 
+                    $preco_produto = 'R$ ' . number_format($produto['preco'], 2, ',', '.');
+                    $imagem_produto = $produto['imagem_url'] ? htmlspecialchars($produto['imagem_url']) : '../../img/placeholder.png';
+                    ?>
+                    <div class="produto-card">
+                        <a href="proposta_nova.php?anuncio_id=<?php echo $produto['id']; ?>" class="produto-link">
+                            <div class="produto-imagem-card">
+                                <img src="<?php echo $imagem_produto; ?>" alt="<?php echo htmlspecialchars($produto['nome']); ?>">
+                            </div>
+                            <div class="produto-info-card">
+                                <h4><?php echo htmlspecialchars($produto['nome']); ?></h4>
+                                <p class="vendedor-card">por <?php echo htmlspecialchars($produto['nome_vendedor']); ?></p>
+                                <div class="preco-card">
+                                    <span class="preco"><?php echo $preco_produto; ?></span>
+                                    <span class="unidade-card">/ <?php echo htmlspecialchars($produto['unidade_medida']); ?></span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                <?php endforeach; ?>
             </div>
         </div>
         <?php endif; ?>
@@ -313,6 +377,7 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
         const propostaSection = document.getElementById('proposta-section');
         const quantidadeProposta = document.getElementById('quantidade_proposta');
         const btnFavoritar = document.getElementById('btn-favoritar');
+        const btnCompartilhar = document.getElementById('btn-compartilhar');
 
         // Inicialmente ocultar a seção de proposta
         propostaSection.style.display = 'none';
@@ -466,6 +531,21 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                         this.querySelector('i').classList.remove('fas');
                         this.querySelector('span').textContent = 'Favoritar';
                     }
+                });
+            });
+        }
+
+        // Funcionalidade de Compartilhar
+        if (btnCompartilhar) {
+            btnCompartilhar.addEventListener('click', function() {
+                // Copiar a URL atual para a área de transferência
+                const url = window.location.href;
+                navigator.clipboard.writeText(url).then(() => {
+                    // Alerta simples - pode ser substituído por um toast mais elegante
+                    alert('Link copiado para a área de transferência!');
+                }).catch(err => {
+                    console.error('Erro ao copiar link: ', err);
+                    alert('Erro ao copiar link. Tente novamente.');
                 });
             });
         }

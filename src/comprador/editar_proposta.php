@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="../../index.css">
     <link rel="stylesheet" href="../css/comprador/comprador.css">
     <link rel="stylesheet" href="../css/comprador/minhas_propostas.css">
-    <link rel="shortcut icon" href="../../img/Logo - Copia.jpg" type="image/x-icon">
+    <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
 </head>
 <body>
     <nav class="navbar">

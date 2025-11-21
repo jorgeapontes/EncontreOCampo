@@ -39,6 +39,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Admin - Encontre O Campo</title>
     <link rel="stylesheet" href="../css/admin.css">
+    <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
 </head>
 <body>
 

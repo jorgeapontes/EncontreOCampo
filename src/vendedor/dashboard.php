@@ -50,7 +50,7 @@ try {
     <title>Dashboard do Vendedor - Encontre Ocampo</title>
     <link rel="stylesheet" href="../css/vendedor/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="shortcut icon" href="../../img/Logo - Copia.jpg" type="image/x-icon">
+    <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
@@ -111,7 +111,7 @@ try {
                     <p><?php echo $total_propostas_pendentes; ?></p>
             </div>
             </a>
-            <a href="precos.php">
+            <a href="vendas.php">
                 <div class="card">
                         <i class="fas fa-dollar-sign"></i>
                         <h3>Minhas vendas</h3>

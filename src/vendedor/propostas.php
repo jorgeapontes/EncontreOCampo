@@ -220,26 +220,28 @@ function formatarStatus($status) {
 </style>
 </head>
 <body>
-    <!-- Nova Navbar no estilo do index.php -->
     <header>
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <h1>ENCONTRE</h1>
-                    <h2>O CAMPO</h2>
+                    <img src="../../img/logo-nova.png" alt="Logo">
+                    <div>
+                        <h1>ENCONTRE</h1>
+                        <h2>O CAMPO</h2>
+                    </div>
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
                         <a href="../../index.php" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="dashboard.php" class="nav-link">Painel</a>
+                        <a href="" class="nav-link active">Painel</a>
                     </li>
                     <li class="nav-item">
                         <a href="perfil.php" class="nav-link">Meu Perfil</a>
                     </li>
                     <li class="nav-item">
-                        <a href="../logout.php" class="nav-link login-button no-underline">Sair</a>
+                        <a href="../logout.php" class="nav-link exit-button no-underline"> Sair </a>
                     </li>
                 </ul>
                 <div class="hamburger">

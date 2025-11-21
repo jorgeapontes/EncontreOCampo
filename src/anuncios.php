@@ -87,7 +87,7 @@ try {
                         <a href="anuncios.php" class="nav-link active">Comprar</a>
                     </li>
                     <li class="nav-item">
-                        <a href="comprador/favoritos.php" class="nav-link active">Favoritos</a>
+                        <a href="comprador/favoritos.php" class="nav-link">Favoritos</a>
                     </li>
                     <li class="nav-item">
                         <a href="<?php echo htmlspecialchars($button_action); ?>" 
@@ -98,7 +98,7 @@ try {
                     </li>
                     <?php if ($is_logged_in): ?>
                         <li class="nav-item">
-                            <a href="logout.php" class="nav-link logout">Sair</a>
+                            <a href="logout.php" class="nav-link exit-button no-underline">Sair</a>
                         </li>
                     <?php endif; ?>
                 </ul>

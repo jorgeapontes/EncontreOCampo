@@ -118,7 +118,7 @@ function responderContraproposta(propostaId, acao) {
                 <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>
                 <li class="nav-item"><a href="../anuncios.php" class="nav-link">Comprar</a></li>
                 <li class="nav-item"><a href="minhas_propostas.php" class="nav-link active">Minhas Propostas</a></li>
-                <li class="nav-item"><a href="../logout.php" class="nav-link logout">Sair</a></li>
+                <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
             </ul>
         </div>
     </nav>

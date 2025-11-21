@@ -97,7 +97,7 @@ $condicoes_vendedor = empty($proposta['observacoes_vendedor']) ? 'Nenhuma condi√
     <title>Detalhes da Proposta #<?php echo $proposta_id; ?></title>
     <link rel="stylesheet" href="../../index.css"> 
     <link rel="stylesheet" href="../css/vendedor/vendedor.css"> 
-    <link rel="shortcut icon" href="../../img/Logo - Copia.jpg" type="image/x-icon">
+    <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>

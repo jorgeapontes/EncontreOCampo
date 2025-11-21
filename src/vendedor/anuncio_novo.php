@@ -136,7 +136,7 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
     <title>Criar Novo Anúncio - Vendedor</title>
     <link rel="stylesheet" href="../css/vendedor/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="shortcut icon" href="../../img/Logo - Copia.jpg" type="image/x-icon">
+    <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     </head>
 <body>
     <!-- Nova Navbar no estilo do index.php -->

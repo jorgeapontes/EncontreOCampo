@@ -31,6 +31,17 @@ $database = new Database();
 $conn = $database->getConnection();
 $anuncios = [];
 
+// Verificar se há pesquisa
+$termo_pesquisa = '';
+$where_conditions = ["p.status = 'ativo'"];
+$params = [];
+
+if (isset($_GET['pesquisa']) && !empty(trim($_GET['pesquisa']))) {
+    $termo_pesquisa = trim($_GET['pesquisa']);
+    $where_conditions[] = "(p.nome LIKE :pesquisa OR p.descricao LIKE :pesquisa OR u.nome LIKE :pesquisa)";
+    $params[':pesquisa'] = '%' . $termo_pesquisa . '%';
+}
+
 try {
     // Consulta SQL que inclui 'p.imagem_url'
     $sql = "SELECT 
@@ -46,9 +57,16 @@ try {
             FROM produtos p
             JOIN vendedores v ON p.vendedor_id = v.id 
             JOIN usuarios u ON v.usuario_id = u.id 
-            WHERE p.status = 'ativo'";
+            WHERE " . implode(' AND ', $where_conditions) . "
+            ORDER BY p.data_criacao DESC";
             
     $stmt = $conn->prepare($sql);
+    
+    // Bind dos parâmetros se houver pesquisa
+    foreach ($params as $key => $value) {
+        $stmt->bindValue($key, $value);
+    }
+    
     $stmt->execute();
     $anuncios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -73,12 +91,29 @@ try {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                <img src="../img/logo-nova.png" alt="Logo">
-                <div>
+                    <img src="../img/logo-nova.png" alt="Logo">
+                    <div>
                         <h1>ENCONTRE</h1>
                         <h2>O CAMPO</h2>
                     </div>
-            </div>
+                </div>
+
+                <!-- Barra de Pesquisa -->
+                <div class="search-container">
+                    <form action="anuncios.php" method="GET" class="search-form">
+                        <div class="search-box">
+                            <input type="text" 
+                                   name="pesquisa" 
+                                   placeholder="Pesquisar produtos, vendedores..." 
+                                   value="<?php echo htmlspecialchars($termo_pesquisa); ?>"
+                                   class="search-input">
+                            <button type="submit" class="search-btn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
                 <ul class="nav-menu">
                     <li class="nav-item">
                         <a href="../index.php" class="nav-link">Home</a>
@@ -87,7 +122,7 @@ try {
                         <a href="anuncios.php" class="nav-link active">Comprar</a>
                     </li>
                     <li class="nav-item">
-                        <a href="comprador/favoritos.php" class="nav-link active">Favoritos</a>
+                        <a href="comprador/favoritos.php" class="nav-link">Favoritos</a>
                     </li>
                     <li class="nav-item">
                         <a href="<?php echo htmlspecialchars($button_action); ?>" 
@@ -108,14 +143,43 @@ try {
 
     <main class="container">
         <div class="page-header">
-            <h2>Anúncios Ativos</h2>
-            <p>Explore as ofertas de frutas e legumes dos nossos vendedores</p>
+            <h2>
+                <?php if (!empty($termo_pesquisa)): ?>
+                    Resultados para "<?php echo htmlspecialchars($termo_pesquisa); ?>"
+                <?php else: ?>
+                    Anúncios Ativos
+                <?php endif; ?>
+            </h2>
+            <p>
+                <?php if (!empty($termo_pesquisa)): ?>
+                    <?php echo count($anuncios); ?> anúncio(s) encontrado(s)
+                <?php else: ?>
+                    Explore as ofertas de frutas e legumes dos nossos vendedores
+                <?php endif; ?>
+            </p>
+            
+            <?php if (!empty($termo_pesquisa)): ?>
+                <div class="search-actions">
+                    <a href="anuncios.php" class="btn-clear-search">
+                        <i class="fas fa-times"></i> Limpar pesquisa
+                    </a>
+                </div>
+            <?php endif; ?>
         </div>
 
         <?php if (empty($anuncios)): ?>
             <div class="empty-state">
-                <p>Nenhum anúncio ativo encontrado no momento.</p>
-                <p>Volte mais tarde ou <a href="../index.php#contato">registre-se</a> para receber notificações.</p>
+                <?php if (!empty($termo_pesquisa)): ?>
+                    <div class="empty-search">
+                        <i class="fas fa-search fa-3x" style="color: var(--text-light); margin-bottom: 20px;"></i>
+                        <h3>Nenhum resultado encontrado</h3>
+                        <p>Não encontramos anúncios para "<?php echo htmlspecialchars($termo_pesquisa); ?>"</p>
+                        <p>Tente outros termos ou <a href="anuncios.php">veja todos os anúncios</a></p>
+                    </div>
+                <?php else: ?>
+                    <p>Nenhum anúncio ativo encontrado no momento.</p>
+                    <p>Volte mais tarde ou <a href="../index.php#contato">registre-se</a> para receber notificações.</p>
+                <?php endif; ?>
             </div>
         <?php else: ?>
             <div class="anuncios-grid">
@@ -262,6 +326,19 @@ try {
                 navbar.style.boxShadow = 'none';
             }
         });
+
+        // Foco na barra de pesquisa quando clicar no ícone de lupa (mobile)
+        const searchBtn = document.querySelector('.search-btn');
+        const searchInput = document.querySelector('.search-input');
+        
+        if (searchBtn && searchInput) {
+            searchBtn.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768) {
+                    e.preventDefault();
+                    searchInput.focus();
+                }
+            });
+        }
     });
     </script>
 </body>

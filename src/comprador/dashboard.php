@@ -243,6 +243,77 @@ try {
             font-weight: bold;
             font-size: 1.1em;
         }
+        /*nav-link*/
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-item {
+            margin-left: 30px;
+        }
+
+        .nav-link {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            padding: 10px 0;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link.active {
+            color: var(--primary-color);
+        }
+
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link.exit-button {
+            background-color: rgb(230, 30, 30);
+            color: var(--white);
+            padding: 8px 20px;
+            border-radius: 20px;
+            transition: background-color 0.3s ease;
+            margin-left: 15px;
+        }
+
+        .nav-link.exit-button:hover {
+            background-color: rgb(200, 30, 30);
+            color: var(--white);
+        }
+
+        /* Remover sublinhado do botão login */
+        .nav-link.no-underline::after {
+            display: none;
+        }
+
+        .hamburger {
+            display: none;
+            cursor: pointer;
+        }
 
         @media (max-width: 768px) {
             .stats-grid {
@@ -269,7 +340,7 @@ try {
                 <li class="nav-item"><a href="../anuncios.php" class="nav-link">Comprar</a></li>
                 <li class="nav-item"><a href="favoritos.php" class="nav-link">Favoritos</a></li>
                 <!-- <li class="nav-item"><a href="minhas_propostas.php" class="nav-link">Minhas Propostas</a></li> -->
-                <li class="nav-item"><a href="../logout.php" class="nav-link logout">Sair</a></li>
+                <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
             </ul>
         </div>
     </nav>

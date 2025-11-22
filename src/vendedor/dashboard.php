@@ -151,7 +151,12 @@ try {
                                 <td><?php echo date('d/m/Y', strtotime($anuncio['data_criacao'])); ?></td>
                                 <td>
                                     <a href="anuncio_editar.php?id=<?php echo $anuncio['id']; ?>" class="action-btn edit" title="Editar"><i class="fas fa-edit"></i></a>
-                                    <button class="action-btn delete" title="Excluir"><i class="fas fa-trash-alt"></i></button>
+                                    <form method="POST" action="processar_anuncio.php" style="display: inline;">
+                                        <input type="hidden" name="anuncio_id" value="<?php echo $anuncio['id']; ?>">
+                                        <button type="submit" name="acao" value="deletar" class="action-btn delete" title="Excluir Definitivamente" onclick="return confirm('Tem certeza que deseja DELETAR este anúncio? Esta ação é irreversível.');">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                             <?php endforeach; ?>

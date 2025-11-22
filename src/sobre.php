@@ -66,7 +66,7 @@ if ($is_logged_in) {
                     </li>
                     <?php if ($is_logged_in): ?>
                         <li class="nav-item">
-                            <a href="logout.php" class="nav-link logout">Sair</a>
+                            <a href="logout.php" class="nav-link exit-button no-underline">Sair</a>
                         </li>
                     <?php endif; ?>
                 </ul>

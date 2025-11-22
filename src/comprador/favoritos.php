@@ -139,17 +139,17 @@ try {
                 <div class="footer-section">
                     <h4>Suporte</h4>
                     <ul>
-                        <li><a href="../../ajuda.php">Central de Ajuda</a></li>
-                        <li><a href="../../contato.php">Fale Conosco</a></li>
-                        <li><a href="../../sobre.php">Sobre Nós</a></li>
+                        <li><a href="../ajuda.php">Central de Ajuda</a></li>
+                        <li><a href="../contato.php">Fale Conosco</a></li>
+                        <li><a href="../sobre.php">Sobre Nós</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-section">
                     <h4>Legal</h4>
                     <ul>
-                        <li><a href="../../termos.php">Termos de Uso</a></li>
-                        <li><a href="../../privacidade.php">Política de Privacidade</a></li>
+                        <li><a href="../termos.php">Termos de Uso</a></li>
+                        <li><a href="../privacidade.php">Política de Privacidade</a></li>
                     </ul>
                 </div>
                 

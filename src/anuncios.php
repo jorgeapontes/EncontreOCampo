@@ -287,6 +287,57 @@ try {
         </div>
     </div>
 
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Encontre o Campo</h4>
+                    <ul>
+                        <li><a href="../index.php">Página Inicial</a></li>
+                        <li><a href="anuncios.php">Ver Anúncios</a></li>
+                        <li><a href="comprador/favoritos.php">Meus Favoritos</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Suporte</h4>
+                    <ul>
+                        <li><a href="../ajuda.php">Central de Ajuda</a></li>
+                        <li><a href="../contato.php">Fale Conosco</a></li>
+                        <li><a href="sobre.php">Sobre Nós</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="faq.php">FAQ</a></li>
+                        <li><a href="termos.php">Termos de Uso</a></li>
+                        <li><a href="privacidade.php">Política de Privacidade</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Contato</h4>
+                    <div class="contact-info">
+                        <p><i class="fas fa-envelope"></i> contato@encontreocampo.com.br</p>
+                        <p><i class="fas fa-phone"></i> (11) 99999-9999</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-facebook"></i></a>
+                            <a href="#"><i class="fab fa-instagram"></i></a>
+                            <a href="#"><i class="fab fa-whatsapp"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; Encontre o Campo. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById('loginModal');

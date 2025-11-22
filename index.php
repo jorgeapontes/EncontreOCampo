@@ -639,9 +639,9 @@
                         <h4>Suporte</h4>
                         <ul>
                             <li><a href="#contato">Contato</a></li>
-                            <li><a href="#">FAQ</a></li>
-                            <li><a href="#">Termos de Uso</a></li>
-                            <li><a href="#">Política de Privacidade</a></li>
+                            <li><a href="src/faq.php">FAQ</a></li>
+                            <li><a href="src/termos.php">Termos de Uso</a></li>
+                            <li><a href="src/privacidade.php">Política de Privacidade</a></li>
                         </ul>
                     </div>
                     <div class="footer-column">
@@ -655,7 +655,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Encontre o Campo. Todos os direitos reservados.</p>
+                <p>&copy; Encontre o Campo. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>

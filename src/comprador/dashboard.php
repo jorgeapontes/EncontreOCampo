@@ -340,6 +340,7 @@ try {
                 <li class="nav-item"><a href="../anuncios.php" class="nav-link">Comprar</a></li>
                 <li class="nav-item"><a href="favoritos.php" class="nav-link">Favoritos</a></li>
                 <!-- <li class="nav-item"><a href="minhas_propostas.php" class="nav-link">Minhas Propostas</a></li> -->
+                 <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
                 <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
             </ul>
         </div>

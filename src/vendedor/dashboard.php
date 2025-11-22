@@ -124,6 +124,7 @@ try {
             <div id="header">
                 <h2>Anúncios ativos (<?php echo $total_anuncios; ?>)</h2>
                 <a href="anuncio_novo.php" class="cta-button"><i class="fas fa-plus"></i> Novo Anúncio</a>
+                <a href="anuncios.php" class="cta-button"><i class="fas fa-list"></i> Todos os Anúncios</a>
             </div>
             
             <div class="tabela-anuncios">

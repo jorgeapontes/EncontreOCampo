@@ -344,6 +344,7 @@ th:last-child {
     transition: background-color 0.3s;
     margin-bottom: 20px;
     float: right;
+    margin-left: 10px;
 }
 
 .cta-button .fas {

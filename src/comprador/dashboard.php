@@ -124,6 +124,9 @@ try {
             align-items: center;
             justify-content: space-between;
             transition: transform 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
         }
 
         .stat-card:hover {
@@ -349,41 +352,41 @@ try {
     <main class="container dashboard-container">
         <div class="welcome-header">
             <h1>Bem-vindo, <?php echo $usuario_nome; ?>!</h1>
-            <p>Seu centro de controle para negociações de produtos frescos.</p>
+            <p>Este é o seu painel de controle.</p>
         </div>
         
         <section class="stats-grid">
-            <div class="stat-card card-total">
+            <a href="minhas_propostas.php" class="stat-card card-total">
                 <div class="icon"><i class="fas fa-handshake"></i></div>
                 <div class="details">
                     <h2><?php echo $dashboard_data['total_propostas']; ?></h2>
                     <p>Total de Propostas</p>
                 </div>
-            </div>
+            </a>
 
-            <div class="stat-card card-pending">
+            <a href="minhas_propostas.php" class="stat-card card-pending">
                 <div class="icon"><i class="fas fa-clock"></i></div>
                 <div class="details">
                     <h2><?php echo $dashboard_data['pendente']; ?></h2>
                     <p>Propostas Pendentes</p>
                 </div>
-            </div>
+            </a>
 
-            <div class="stat-card card-accepted">
+            <a href="#" class="stat-card card-accepted">
                 <div class="icon"><i class="fas fa-check-circle"></i></div>
                 <div class="details">
                     <h2><?php echo $dashboard_data['aceita']; ?></h2>
-                    <p>Propostas Aceitas</p>
+                    <p>Compras realizadas</p>
                 </div>
-            </div>
+            </a>
             
-            <div class="stat-card card-rejected">
-                <div class="icon"><i class="fas fa-times-circle"></i></div>
+            <a href="favoritos.php" class="stat-card card-rejected">
+                <div class="icon"><i class="fas fa-heart"></i></div>
                 <div class="details">
                     <h2><?php echo $dashboard_data['recusada']; ?></h2>
-                    <p>Propostas Recusadas</p>
+                    <p>Produtos favoritos</p>
                 </div>
-            </div>
+            </a>
         </section>
 
         <section class="quick-actions">
@@ -403,7 +406,7 @@ try {
                 </a>
                 <a href="perfil.php" class="action-link">
                     <i class="fas fa-user-circle"></i>
-                    <span>Perfil</span>
+                    <span>Dados</span>
                 </a>
             </div>
         </section>

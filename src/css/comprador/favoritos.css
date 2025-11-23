@@ -264,9 +264,9 @@
 
 .favorito-actions .btn {
     flex: 1;
-    min-width: 120px;
-    padding: 10px 15px;
-    font-size: 0.9rem;
+    min-width: 100%;
+    padding: 12px 15px;
+    font-size: 1rem;
     text-decoration: none;
     text-align: center;
 }

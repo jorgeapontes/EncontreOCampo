@@ -110,11 +110,6 @@ try {
                                     <i class="fas fa-handshake"></i>
                                     Comprar
                                 </a>
-                                <a href="proposta_nova.php?anuncio_id=<?php echo $produto['id']; ?>" 
-                                   class="btn btn-secondary">
-                                    <i class="fas fa-eye"></i>
-                                    Ver Detalhes
-                                </a>
                             </div>
                         </div>
                     </div>

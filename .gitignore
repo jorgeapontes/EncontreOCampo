@@ -1,0 +1,9 @@
+# Arquivos de Sistema Operacional/Ambiente
+.DS_Store
+Thumbs.db
+*.log
+/vendor/
+
+# ARQUIVOS DE CONFIGURAÇÃO DE SEGURANÇA (CRUCIAL!)
+# Não envie credenciais do banco de dados
+/src/conexao.php

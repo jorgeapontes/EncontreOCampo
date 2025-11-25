@@ -1023,3 +1023,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Função para verificar notificações não lidas
+function verificarNotificacoes() {
+    if (document.querySelector('.fa-bell')) {
+        fetch('src/verificar_notificacoes.php')
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.querySelector('.notificacao-badge');
+                if (data.total_nao_lidas > 0) {
+                    if (!badge) {
+                        const newBadge = document.createElement('span');
+                        newBadge.className = 'notificacao-badge';
+                        newBadge.textContent = data.total_nao_lidas;
+                        document.querySelector('.fa-bell').parentNode.appendChild(newBadge);
+                    } else {
+                        badge.textContent = data.total_nao_lidas;
+                    }
+                } else if (badge) {
+                    badge.remove();
+                }
+            })
+            .catch(error => console.error('Erro ao verificar notificações:', error));
+    }
+}
+
+// Verificar notificações a cada 30 segundos
+setInterval(verificarNotificacoes, 30000);
+
+// Verificar ao carregar a página
+document.addEventListener('DOMContentLoaded', verificarNotificacoes);

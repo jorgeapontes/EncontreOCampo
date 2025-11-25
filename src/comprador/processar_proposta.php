@@ -3,6 +3,7 @@
 
 session_start();
 require_once __DIR__ . '/../conexao.php'; 
+require_once 'funcoes_notificacoes.php';
 
 $database = new Database();
 $conn = $database->getConnection();
@@ -92,6 +93,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if ($stmt_inserir->execute()) {
             redirecionar('sucesso', "Proposta enviada com sucesso! Aguarde a resposta do vendedor.");
+            // Notificar o vendedor
+            $sql_vendedor = "SELECT v.usuario_id, p.nome as produto_nome 
+                            FROM produtos p 
+                            JOIN vendedores v ON p.vendedor_id = v.id 
+                            WHERE p.id = :produto_id";
+            $stmt_vendedor = $conn->prepare($sql_vendedor);
+            $stmt_vendedor->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+            $stmt_vendedor->execute();
+            $vendedor = $stmt_vendedor->fetch(PDO::FETCH_ASSOC);
+
+            if ($vendedor) {
+                $comprador_nome = $_SESSION['usuario_nome'];
+                notificarNovaProposta($vendedor['usuario_id'], $vendedor['produto_nome'], $comprador_nome, $proposta_id);
+            }
         } else {
             redirecionar('erro', "Erro ao enviar proposta. Tente novamente.", $produto_id);
         }

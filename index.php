@@ -1,6 +1,10 @@
 <?php
 
-    session_start();
+require_once 'src/conexao.php';
+
+    if (session_status() == PHP_SESSION_NONE) {
+        session_start();
+    }
 
     $button_text = 'Não está funcionando';
 
@@ -24,6 +28,7 @@
     <title>Encontre o Campo - E-commerce de Frutas</title>
     <link rel="stylesheet" href="index.css">
     <link rel="shortcut icon" href="img/logo-nova.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
@@ -52,6 +57,28 @@
                     <li class="nav-item">
                         <a href="#contato" class="nav-link">Registre-se</a>
                     </li>
+                    <?php if (isset($_SESSION['usuario_id'])): ?>
+                    <li class="nav-item">
+                        <a href="src/notificacoes.php" class="nav-link no-underline">
+                            <i class="fas fa-bell"></i>
+                            <?php
+                            // Contar notificações não lidas
+                            if (isset($_SESSION['usuario_id'])) {
+                                $database = new Database();
+                                $conn = $database->getConnection();
+                                $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
+                                $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
+                                $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
+                                $stmt_nao_lidas->execute();
+                                $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
+                                if ($total_nao_lidas > 0) {
+                                    echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
+                                }
+                            }
+                            ?>
+                        </a>
+                    </li>
+                    <?php endif; ?>
                     <li class="nav-item">
                         <a href="<?= $button_action ?>" class="nav-link login-button no-underline"> <?= $button_text ?> </a>
                     </li>

@@ -3,7 +3,9 @@
 header('Content-Type: application/json');
 
 // Incluir a conexão
-require_once __DIR__ . '/conexao.php'; 
+require_once __DIR__ . '/conexao.php';
+
+require_once 'funcoes_notificacoes.php';
 
 // Funções de sanitização e validação (assumindo que estão definidas em outro lugar ou você usará filter_input)
 if (!function_exists('sanitizeInput')) {
@@ -113,6 +115,7 @@ try {
     
     if ($stmt->execute([$nome, $email, $telefone_limpo, $endereco_principal, $tipo_usuario, $dados_json])) {
         echo json_encode(['success' => true, 'message' => 'Solicitação de cadastro enviada com sucesso. Aguarde a aprovação.']);
+        notificarAprovacaoCadastro($usuario_id, $tipo_solicitacao);
     } else {
         http_response_code(500);
         echo json_encode(['success' => false, 'message' => 'Erro ao registrar a solicitação no banco de dados.']);

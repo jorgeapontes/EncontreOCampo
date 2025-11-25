@@ -69,12 +69,14 @@ $total_anuncios = count($anuncios);
 
     <div class="main-content">
         <section class="header">
-            <h1>Gestão de Anúncios</h1>
+            <center>
+                <h1>Gestão de Anúncios</h1>
+            </center>
         </section>
 
         <section class="section-anuncios">
             <h2>Todos os Meus Anúncios (<?php echo $total_anuncios; ?>)</h2>
-            <a href="anuncio_novo.php" class="cta-button"><i class="fas fa-plus-circle"></i> Novo Anúncio</a>
+            <a href="anuncio_novo.php" class="cta-button"><i class="fas fa-plus"></i> Novo Anúncio</a>
             
             <?php if (!empty($mensagem_sucesso)): ?>
                 <div class="alert success-alert" style="float: none; margin-bottom: 20px;"><?php echo $mensagem_sucesso; ?></div>

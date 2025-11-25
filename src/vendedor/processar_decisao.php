@@ -2,7 +2,8 @@
 // src/vendedor/processar_decisao.php - VERSÃO FINAL CORRIGIDA
 
 session_start();
-require_once __DIR__ . '/../conexao.php'; 
+require_once __DIR__ . '/../conexao.php';
+require_once 'funcoes_notificacoes.php';
 
 $database = new Database();
 $conn = $database->getConnection();
@@ -132,6 +133,21 @@ try {
             
             redirecionar($proposta_id, 'sucesso', "Proposta **ACEITA** com sucesso! Estoque atualizado. Quantidade vendida: {$quantidade_vendida}, Novo estoque: {$novo_estoque}");
             
+            // Notificar o comprador
+            $sql_comprador = "SELECT c.usuario_id, p.nome as produto_nome 
+                            FROM propostas_negociacao pn
+                            JOIN compradores c ON pn.comprador_id = c.id
+                            JOIN produtos p ON pn.produto_id = p.id
+                            WHERE pn.id = :proposta_id";
+            $stmt_comprador = $conn->prepare($sql_comprador);
+            $stmt_comprador->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
+            $stmt_comprador->execute();
+            $comprador = $stmt_comprador->fetch(PDO::FETCH_ASSOC);
+
+            if ($comprador) {
+                notificarRespostaProposta($comprador['usuario_id'], $comprador['produto_nome'], $action, $proposta_id);
+            }
+
         } catch (Exception $e) {
             // Reverter todas as operações em caso de erro
             $conn->rollBack();
@@ -147,6 +163,21 @@ try {
             $stmt->execute();
             
             redirecionar($proposta_id, 'sucesso', "Proposta **RECUSADA**. O comprador foi notificado.");
+
+            // Notificar o comprador
+            $sql_comprador = "SELECT c.usuario_id, p.nome as produto_nome 
+                            FROM propostas_negociacao pn
+                            JOIN compradores c ON pn.comprador_id = c.id
+                            JOIN produtos p ON pn.produto_id = p.id
+                            WHERE pn.id = :proposta_id";
+            $stmt_comprador = $conn->prepare($sql_comprador);
+            $stmt_comprador->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
+            $stmt_comprador->execute();
+            $comprador = $stmt_comprador->fetch(PDO::FETCH_ASSOC);
+
+            if ($comprador) {
+                notificarRespostaProposta($comprador['usuario_id'], $comprador['produto_nome'], $action, $proposta_id);
+            }
             break;
             
         case 'contraproposta':
@@ -183,6 +214,21 @@ try {
             $stmt->execute();
             
             redirecionar($proposta_id, 'sucesso', "**Contraproposta** enviada com sucesso! Aguarde a resposta do comprador.");
+
+            // Notificar o comprador
+            $sql_comprador = "SELECT c.usuario_id, p.nome as produto_nome 
+                            FROM propostas_negociacao pn
+                            JOIN compradores c ON pn.comprador_id = c.id
+                            JOIN produtos p ON pn.produto_id = p.id
+                            WHERE pn.id = :proposta_id";
+            $stmt_comprador = $conn->prepare($sql_comprador);
+            $stmt_comprador->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
+            $stmt_comprador->execute();
+            $comprador = $stmt_comprador->fetch(PDO::FETCH_ASSOC);
+
+            if ($comprador) {
+                notificarRespostaProposta($comprador['usuario_id'], $comprador['produto_nome'], $action, $proposta_id);
+            }
             break;
 
         default:

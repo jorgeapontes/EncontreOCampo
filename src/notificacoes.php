@@ -47,6 +47,17 @@ $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
 $stmt_nao_lidas->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
 $stmt_nao_lidas->execute();
 $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
+
+if($_SESSION['usuario_tipo'] == 'vendedor') {
+    $painel_href = 'vendedor/dashboard.php';
+    $perfil_href = 'vendedor/perfil.php';
+} else if ($_SESSION['usuario_tipo'] == 'comprador') {
+    $painel_href = 'comprador/dashboard.php';
+    $perfil_href = 'comprador/perfil.php';
+} else if ($_SESSION['usuario_tipo'] == 'transportador') {
+    $painel_href = 'transportador/dashboard.php';
+    $perfil_href = 'transportador/perfil.php';
+}
 ?>
 
 <!DOCTYPE html>
@@ -78,10 +89,10 @@ $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
                         <a href="../index.php" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="vendedor/dashboard.php" class="nav-link">Painel</a>
+                        <a href="<?= $painel_href ?>?>" class="nav-link">Painel</a>
                     </li>
                      <li class="nav-item">
-                        <a href="vendedor/perfil.php" class="nav-link">Meu Perfil</a>
+                        <a href="<?= $perfil_href ?>?>" class="nav-link">Meu Perfil</a>
                     </li>
                     <li class="nav-item">
                         <a href="notificacoes.php" class="nav-link active no-underline">

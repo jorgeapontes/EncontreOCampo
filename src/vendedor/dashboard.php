@@ -120,24 +120,24 @@ try {
 
         <section class="info-cards">
             <a href="anuncios.php">
-            <div class="card">
+                <div class="card">
                     <i class="fas fa-bullhorn"></i>
                     <h3>Anúncios Ativos</h3>
                     <p><?php echo $total_anuncios; ?></p>
-            </div>
+                </div>
             </a>
             <a href="propostas.php">
-            <div class="card">
+                <div class="card">
                     <i class="fas fa-handshake"></i>
                     <h3>Propostas Pendentes</h3>
                     <p><?php echo $total_propostas_pendentes; ?></p>
-            </div>
+                </div>
             </a>
             <a href="vendas.php">
                 <div class="card">
-                        <i class="fas fa-dollar-sign"></i>
-                        <h3>Minhas vendas</h3>
-                        <p>Ver</p>
+                    <i class="fas fa-dollar-sign"></i>
+                    <h3>Minhas vendas</h3>
+                    <p>Ver</p>
                 </div>
             </a>
         </section>

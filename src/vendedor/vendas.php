@@ -47,7 +47,7 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minhas Vendas - Encontre Ocampo</title>
-    <link rel="stylesheet" href="../css/vendedor/dashboard.css">
+    <link rel="stylesheet" href="../css/vendedor/vendas.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -70,13 +70,10 @@ try {
                         <a href="../../index.php" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="dashboard.php" class="nav-link">Painel</a>
+                        <a href="dashboard.php" class="nav-link active">Painel</a>
                     </li>
                     <li class="nav-item">
                         <a href="perfil.php" class="nav-link">Meu Perfil</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="vendas.php" class="nav-link active">Minhas Vendas</a>
                     </li>
                     <li class="nav-item">
                         <a href="../logout.php" class="nav-link exit-button no-underline"> Sair </a>
@@ -99,20 +96,26 @@ try {
         </section>
 
         <section class="info-cards">
-            <div class="card">
-                <i class="fas fa-shopping-bag"></i>
-                <h3>Total de Vendas</h3>
-                <p><?php echo $total_vendas; ?></p>
+            <div class="cardbox">
+                <div class="card">
+                    <i class="fas fa-shopping-bag"></i>
+                    <h3>Total de Vendas</h3>
+                    <p><?php echo $total_vendas; ?></p>
+                </div>
             </div>
-            <div class="card">
-                <i class="fas fa-dollar-sign"></i>
-                <h3>Valor Total</h3>
-                <p>R$ <?php echo number_format($valor_total_vendas, 2, ',', '.'); ?></p>
+            <div class="cardbox">
+                <div class="card">
+                    <i class="fas fa-dollar-sign"></i>
+                    <h3>Valor Total</h3>
+                    <p>R$ <?php echo number_format($valor_total_vendas, 2, ',', '.'); ?></p>
+                </div>
             </div>
-            <div class="card">
-                <i class="fas fa-chart-line"></i>
-                <h3>Status</h3>
-                <p>Ativas</p>
+            <div class="cardbox">
+                <div class="card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Status</h3>
+                    <p>Ativas</p>
+                </div>
             </div>
         </section>
 

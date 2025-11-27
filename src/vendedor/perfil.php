@@ -192,26 +192,27 @@ $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
             <form method="POST" action="perfil.php" class="perfil-form" enctype="multipart/form-data">
                 <div class="perfil-header-info">
                     <center>
-                        <div class="foto-perfil-display">
-                            <img id="profile-img-preview" 
-                                src="<?php 
-                                    echo (!empty($foto_perfil_url) && file_exists($foto_perfil_url)) 
-                                        ? htmlspecialchars($foto_perfil_url) 
-                                        : 'caminho/para/imagem/padrao.png'; // Substitua pelo caminho da sua imagem padrão
-                                ?>" 
-                            alt="Foto de Perfil">
-                            
-                            <div class="form-group">
-                                <label for="foto_perfil" class="required">Alterar Foto de Perfil</label>
-                                <input type="file" id="foto_perfil" name="foto_perfil" accept="image/jpeg, image/png">
-                                <small class="help-text">Máximo 1MB. Formatos: JPG, PNG.</small>
+                        <div class="foto-perfil-container">
+                            <div class="foto-perfil-display">
+                                <img id="profile-img-preview" 
+                                    src="<?php 
+                                        echo (!empty($foto_perfil_url) && file_exists($foto_perfil_url)) 
+                                            ? htmlspecialchars($foto_perfil_url) 
+                                            : '../../img/no-user-image.png';
+                                    ?>" 
+                                alt="Foto de Perfil">
+                                <div class="foto-overlay">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </div>
                             </div>
+                            <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" style="display: none;">
                         </div>
                     </center>
                 </div>
 
                 <div class="forms-area">
-                    <h3 style="margin-top: 20px;">Dados do Usuário (Conta)</h3>
+                    <h2>Dados do usuário</h2>
+                    
                     <div class="form-group">
                         <label for="nome" class="required">Nome Completo</label>
                         <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($usuario['nome'] ?? ''); ?>" required>
@@ -222,14 +223,14 @@ $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
                         <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($usuario['email'] ?? ''); ?>" disabled>
                     </div>
 
-                    <h3 style="margin-top: 30px;">Dados do Vendedor (Empresa)</h3>
+                    <h2>Dados do Vendedor (Empresa)</h2>
                     
                     <div class="form-group">
                         <label for="razao_social">Razão Social / Nome da Loja</label>
                         <input type="text" id="razao_social" name="razao_social" value="<?php echo htmlspecialchars($vendedor['razao_social'] ?? ''); ?>">
                     </div>
 
-                    <div class="form-row">
+                    <div class="form-group-row">
                         <div class="form-group">
                             <label>CPF/CNPJ</label>
                             <input type="text" value="<?php echo htmlspecialchars($vendedor['cpf_cnpj'] ?? ''); ?>" disabled>
@@ -239,12 +240,11 @@ $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
                             <input type="text" id="telefone1" name="telefone1" value="<?php echo htmlspecialchars($vendedor['telefone1'] ?? ''); ?>" required>
                         </div>
                     </div>
-                </div>
                 
-                <button type="submit" class="cta-button big-button"><i class="fas fa-save"></i> Salvar Alterações</button>
+                    <button type="submit" class="big-button"><i class="fas fa-save"></i> Salvar Alterações</button>
+                </div>
             </form>
         </section>
-        
     </div>
 
     <script>
@@ -263,8 +263,14 @@ $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
             navMenu.classList.remove("active");
         }));
 
-        // Preview da imagem
-        document.getElementById('foto_perfil').addEventListener('change', function(event) {
+        const fotoPerfilDisplay = document.querySelector('.foto-perfil-display');
+        const fotoPerfilInput = document.getElementById('foto_perfil');
+
+        fotoPerfilDisplay.addEventListener('click', () => {
+            fotoPerfilInput.click();
+        });
+
+        fotoPerfilInput.addEventListener('change', function(event) {
             const [file] = event.target.files;
             if (file) {
                 document.getElementById('profile-img-preview').src = URL.createObjectURL(file);

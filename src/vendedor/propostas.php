@@ -81,143 +81,12 @@ function formatarStatus($status) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Propostas Recebidas - Vendedor</title>
-    <link rel="stylesheet" href="../css/vendedor/dashboard.css">
+    <link rel="stylesheet" href="../css/vendedor/propostas.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
-    <style>
-    /* Estilos da Listagem de Propostas */
-    .propostas-container {
-        margin-top: 80px;
-        padding: 20px;
-        max-width: 1200px; /* Alterado de 1100px para 1200px para igualar ao dashboard */
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .proposta-card {
-        background-color: var(--white);
-        border-left: 5px solid var(--secondary-color);
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-        display: flex;
-        flex-direction: column;
-        width: 100%; /* Garante que ocupe toda a largura disponível */
-    }
-    
-    .proposta-card.status-accepted { border-left-color: var(--primary-color); }
-    .proposta-card.status-rejected { border-left-color: #E53935; }
-    .proposta-card.status-negotiation { border-left-color: #2196F3; }
-    .proposta-card.status-pending { border-left-color: #FF9800; }
-
-    .proposta-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px dashed #eee;
-        padding-bottom: 15px;
-        margin-bottom: 15px;
-    }
-
-    .proposta-header h3 {
-        margin: 0;
-        color: var(--dark-color);
-        font-size: 1.5em;
-    }
-
-    .proposta-info {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-    }
-    
-    .info-group p {
-        margin-bottom: 5px;
-        font-size: 0.95em;
-    }
-
-    .info-group p strong {
-        display: block;
-        font-weight: bold;
-        color: var(--text-color);
-        margin-bottom: 3px;
-        font-size: 1.05em;
-    }
-    
-    .info-group p span {
-        color: var(--secondary-color);
-        font-weight: 600;
-    }
-    
-    /* Status Badges */
-    .status-badge {
-        font-weight: bold;
-        padding: 8px 15px;
-        border-radius: 20px;
-        font-size: 0.9em;
-        text-transform: uppercase;
-    }
-
-    .status-pending { background-color: #FFF3E0; color: #FF9800; border: 1px solid #FF9800; }
-    .status-accepted { background-color: #E8F5E9; color: #4CAF50; border: 1px solid #4CAF50; }
-    .status-rejected { background-color: #FFEBEE; color: #F44336; border: 1px solid #F44336; }
-    .status-negotiation { background-color: #E3F2FD; color: #2196F3; border: 1px solid #2196F3; }
-
-    .proposta-actions {
-        text-align: right;
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 1px solid #f0f0f0;
-    }
-    
-    .btn-action {
-        background-color: var(--primary-color);
-        color: white;
-        padding: 10px 15px;
-        border-radius: 5px;
-        text-decoration: none;
-        font-weight: bold;
-        transition: background-color 0.3s;
-        margin-left: 10px;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
-    
-    .btn-action:hover {
-        background-color: var(--primary-dark);
-    }
-    
-    .empty-state {
-        text-align: center;
-        padding: 50px;
-        background-color: var(--white);
-        border-radius: 8px;
-        border: 1px dashed #ccc;
-        margin-top: 30px;
-    }
-
-    @media (max-width: 768px) {
-        .proposta-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-        }
-        .proposta-info {
-            grid-template-columns: 1fr;
-        }
-        .proposta-actions {
-            text-align: center;
-        }
-        .btn-action {
-            display: block;
-            width: 100%;
-            margin: 5px 0 0;
-        }
-    }
-</style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -235,13 +104,35 @@ function formatarStatus($status) {
                         <a href="../../index.php" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="" class="nav-link active">Painel</a>
+                        <a href="dashboard.php" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">
                         <a href="perfil.php" class="nav-link">Meu Perfil</a>
                     </li>
+                    <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
-                        <a href="../logout.php" class="nav-link exit-button no-underline"> Sair </a>
+                        <a href="../notificacoes.php" class="nav-link no-underline">
+                            <i class="fas fa-bell"></i>
+                            <?php
+                            // Contar notificações não lidas
+                            if (isset($_SESSION['usuario_id'])) {
+                                $database = new Database();
+                                $conn = $database->getConnection();
+                                $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
+                                $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
+                                $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
+                                $stmt_nao_lidas->execute();
+                                $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
+                                if ($total_nao_lidas > 0) {
+                                    echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
+                                }
+                            }
+                            ?>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    <li class="nav-item">
+                        <a href="../logout.php" class="nav-link exit-button no-underline">Sair</a>
                     </li>
                 </ul>
                 <div class="hamburger">
@@ -254,11 +145,13 @@ function formatarStatus($status) {
     </header>
     <br>
 
-    <main class="propostas-container">
-        <header class="header">
-            <h1>Propostas de Negociação Recebidas</h1>
-            <p>Gerencie as propostas de compra enviadas para os seus produtos anunciados.</p>
-        </header>
+    <main class="main-content">
+        <center>
+            <header class="header">
+                <h1>Propostas de Negociação Recebidas</h1>
+                <p>Gerencie as propostas de compra enviadas para os seus produtos anunciados.</p>
+            </header>
+        </center>
 
         <?php if (empty($propostas)): ?>
             <div class="empty-state">
@@ -273,10 +166,10 @@ function formatarStatus($status) {
                     <div class="proposta-card <?php echo $status_info['class']; ?>">
                         <div class="proposta-header">
                             <h3>
-                                Proposta de **<?php echo htmlspecialchars($proposta['nome_comprador']); ?>**
+                                Proposta de <?php echo htmlspecialchars($proposta['nome_comprador']); ?>
                             </h3>
-                            <span class="status-badge <?php echo $status_info['class']; ?>">
-                                <?php echo $status_info['text']; ?>
+                            <span class="status-badge <?php echo $status_info['class']."-btn" ?>">
+                                <?php echo $status_info['text'] ?>
                             </span>
                         </div>
                         
@@ -297,13 +190,13 @@ function formatarStatus($status) {
                         <div class="proposta-actions">
                             <?php if ($proposta['status'] == 'aceita' || $proposta['status'] == 'recusada'): ?>
                                 <!-- Para propostas aceitas ou recusadas - apenas Ver Detalhes -->
-                                <a href="detalhes_proposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn-action">
+                                <a href="detalhes_proposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn-action <?= $status_info['class'] ?>">
                                     <i class="fas fa-eye"></i>
                                     Ver Detalhes
                                 </a>
                             <?php else: ?>
                                 <!-- Para propostas pendentes ou em negociação - Ver Detalhes / Negociar -->
-                                <a href="detalhes_proposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn-action">
+                                <a href="detalhes_proposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn-action <?= $status_info['class'] ?>">
                                     <i class="fas fa-search"></i>
                                     Ver Detalhes / Negociar
                                 </a>

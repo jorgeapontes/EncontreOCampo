@@ -25,7 +25,7 @@ $total_anuncios = count($anuncios);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meus Anúncios - Vendedor</title>
-    <link rel="stylesheet" href="../css/vendedor/dashboard.css">
+    <link rel="stylesheet" href="../css/vendedor/anuncios.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,13 +48,35 @@ $total_anuncios = count($anuncios);
                         <a href="../../index.php" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="" class="nav-link active">Painel</a>
+                        <a href="dashboard.php" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">
                         <a href="perfil.php" class="nav-link">Meu Perfil</a>
                     </li>
+                    <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
-                        <a href="../logout.php" class="nav-link exit-button no-underline"> Sair </a>
+                        <a href="../notificacoes.php" class="nav-link no-underline">
+                            <i class="fas fa-bell"></i>
+                            <?php
+                            // Contar notificações não lidas
+                            if (isset($_SESSION['usuario_id'])) {
+                                $database = new Database();
+                                $conn = $database->getConnection();
+                                $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
+                                $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
+                                $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
+                                $stmt_nao_lidas->execute();
+                                $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
+                                if ($total_nao_lidas > 0) {
+                                    echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
+                                }
+                            }
+                            ?>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    <li class="nav-item">
+                        <a href="../logout.php" class="nav-link exit-button no-underline">Sair</a>
                     </li>
                 </ul>
                 <div class="hamburger">

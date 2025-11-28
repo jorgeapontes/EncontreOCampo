@@ -42,6 +42,8 @@ try {
     die("Erro ao buscar ID do comprador: " . $e->getMessage());
 }
 
+// ... código anterior ...
+
 // 3. BUSCA DOS TOTAIS DAS PROPOSTAS POR STATUS
 try {
     $sql_propostas = "SELECT status, COUNT(id) AS total FROM propostas_negociacao 
@@ -62,9 +64,26 @@ try {
     }
 
 } catch (PDOException $e) {
-    // Apenas registra o erro, mas permite que o restante da página carregue
     error_log("Erro ao carregar totais de propostas: " . $e->getMessage());
 }
+
+// 4. BUSCA DO TOTAL DE FAVORITOS
+try {
+    $sql_favoritos = "SELECT COUNT(id) AS total_favoritos FROM favoritos 
+                      WHERE usuario_id = :usuario_id";
+    
+    $stmt_favoritos = $conn->prepare($sql_favoritos);
+    $stmt_favoritos->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt_favoritos->execute();
+    $resultado_favoritos = $stmt_favoritos->fetch(PDO::FETCH_ASSOC);
+
+    $dashboard_data['favoritos'] = $resultado_favoritos ? $resultado_favoritos['total_favoritos'] : 0;
+
+} catch (PDOException $e) {
+    error_log("Erro ao carregar total de favoritos: " . $e->getMessage());
+    $dashboard_data['favoritos'] = 0;
+}
+
 
 ?>
 
@@ -383,7 +402,7 @@ try {
             <a href="favoritos.php" class="stat-card card-rejected">
                 <div class="icon"><i class="fas fa-heart"></i></div>
                 <div class="details">
-                    <h2><?php echo $dashboard_data['recusada']; ?></h2>
+                    <h2><?php echo $dashboard_data['favoritos']; ?></h2>
                     <p>Produtos favoritos</p>
                 </div>
             </a>

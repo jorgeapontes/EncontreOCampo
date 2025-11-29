@@ -274,7 +274,7 @@ $condicoes_vendedor = empty($proposta['observacoes_vendedor']) ? 'Nenhuma condiÃ
                     <i class="<?php echo $status_info['icon']; ?>"></i> 
                     <?php echo $status_info['text']; ?>
                 </span>
-            </div>
+            </div><br>
             
             <div class="info-section">
                 <div class="info-card">
@@ -319,8 +319,7 @@ $condicoes_vendedor = empty($proposta['observacoes_vendedor']) ? 'Nenhuma condiÃ
                 // O vendedor sÃ³ pode agir se o status for 'pendente' (primeira proposta do comprador) ou 'negociacao' (contraproposta do comprador)
                 ?>
                 <?php if ($proposta['status'] === 'negociacao'): // Resposta a uma contraproposta do Comprador ?>
-                    <p>O Comprador enviou uma **nova Contraproposta**. VocÃª deve **Aceitar**, **Recusar** ou enviar uma **nova Contraproposta**.</p>
-                    
+                    <p style="font-size: 0.9em; color: #666;">O Comprador enviou uma <strong>Nova Contraproposta</strong>. VocÃª deve <strong>Aceitar</strong>, <strong>Recusar</strong> ou enviar uma <strong>Nova Contraproposta</strong>.</p>                    
                     <div class="action-buttons">
                         <a href="processar_decisao.php?id=<?php echo $proposta_id; ?>&action=aceitar" 
                            class="btn btn-success" 

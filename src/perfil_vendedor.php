@@ -131,8 +131,8 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
         <div class="section-perfil">
             <div class="forms-area">
                 <!-- Informações do Vendedor -->
-                <div class="foto-perfil-display">
-                    <center>
+                <center>
+                <div class="foto-perfil-display">                  
                         <?php if (!empty($foto_perfil_url)): 
                             $foto_path = $foto_perfil_url;
                             if (strpos($foto_path, '../') === 0) {
@@ -150,9 +150,9 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                             <div class="default-avatar">
                                 <i class="fas fa-user-tie"></i>
                             </div>
-                        <?php endif; ?>
-                    </center>
+                        <?php endif; ?>                   
                 </div>
+                </center>
                     <div style="text-align: center;">
                         <h3><?php echo htmlspecialchars($vendedor_info['nome_comercial'] ?? $vendedor_info['nome_vendedor']); ?></h3>
                         <p style="color: var(--text-light); margin-bottom: 10px;">

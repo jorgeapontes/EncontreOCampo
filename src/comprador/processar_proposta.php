@@ -3,7 +3,7 @@
 
 session_start();
 require_once __DIR__ . '/../conexao.php'; 
-require_once 'funcoes_notificacoes.php';
+require_once __DIR__ . 'funcoes_notificacoes.php';
 
 $database = new Database();
 $conn = $database->getConnection();

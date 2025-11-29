@@ -217,8 +217,11 @@ $condicoes_vendedor = empty($proposta['observacoes_vendedor']) ? 'Nenhuma condi√
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <h1>ENCONTRE</h1>
-                    <h2>O CAMPO</h2>
+                    <img src="../../img/logo-nova.png" alt="Logo">
+                    <div>
+                        <h1>ENCONTRE</h1>
+                        <h2>O CAMPO</h2>
+                    </div>
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">

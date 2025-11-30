@@ -166,12 +166,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Garante que o preço formatado exista, mesmo se o POST falhar.
 $preco_formatado = number_format($anuncio['preco'], 2, ',', ''); 
 
-// Categorias disponíveis
+// Categorias disponíveis - LISTA EXPANDIDA
 $categorias_disponiveis = [
-    'Frutas Cítricas', 
-    'Frutas Tropicais', 
-    'Frutas de Caroço', 
-    'Outras'
+    // Frutas
+    'Frutas Cítricas',
+    'Frutas Tropicais',
+    'Frutas de Caroço',
+    'Frutas Vermelhas',
+    'Frutas Secas',
+    'Frutas Exóticas',
+    
+    // Legumes
+    'Legumes Frutíferos',
+    'Legumes de Raiz',
+    'Legumes de Folha',
+    'Legumes de Bulbo',
+    
+    // Verduras e Folhosas
+    'Verduras',
+    'Folhosas',
+    'Temperos Frescos',
+    
+    // Grãos e Cereais
+    'Grãos',
+    'Cereais',
+    'Leguminosas',
+    
+    // Raízes e Tubérculos
+    'Raízes',
+    'Tubérculos',
+    
+    // Oleaginosas
+    'Oleaginosas',
+    'Castanhas e Nozes',
+    
+    // Produtos Processados
+    'Polpas de Fruta',
+    'Geleias e Doces',
+    'Conservas',
+    
+    // Orgânicos
+    'Produtos Orgânicos',
+    
+    // Outros
+    'Plantas e Mudas',
+    'Flores Comestíveis',
+    'Ervas Medicinais',
+    'Outros'
 ];
 
 ?>
@@ -242,9 +283,74 @@ $categorias_disponiveis = [
                 <h3>Informações Principais</h3>
                 
                 <div class="form-group">
-                    <label for="nome" class="required">Nome da Fruta/Produto</label>
-                    <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($anuncio['nome']); ?>" required>
-                </div>
+                <label for="nome" class="required">Nome da Fruta/Produto</label>
+                <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($anuncio['nome']); ?>" list="produtos-sugestoes" required>
+                <datalist id="produtos-sugestoes">
+                    <!-- Frutas -->
+                    <option value="Abacate">
+                    <option value="Abacaxi">
+                    <option value="Açaí">
+                    <option value="Acerola">
+                    <option value="Amora">
+                    <option value="Banana">
+                    <option value="Caju">
+                    <option value="Coco">
+                    <option value="Figo">
+                    <option value="Framboesa">
+                    <option value="Goiaba">
+                    <option value="Jabuticaba">
+                    <option value="Jaca">
+                    <option value="Kiwi">
+                    <option value="Laranja">
+                    <option value="Limão">
+                    <option value="Maçã">
+                    <option value="Mamão">
+                    <option value="Manga">
+                    <option value="Maracujá">
+                    <option value="Melancia">
+                    <option value="Melão">
+                    <option value="Morango">
+                    <option value="Pêra">
+                    <option value="Pêssego">
+                    <option value="Uva">
+                    
+                    <!-- Legumes -->
+                    <option value="Abóbora">
+                    <option value="Berinjela">
+                    <option value="Beterraba">
+                    <option value="Cenoura">
+                    <option value="Chuchu">
+                    <option value="Ervilha">
+                    <option value="Milho">
+                    <option value="Pepino">
+                    <option value="Pimentão">
+                    <option value="Quiabo">
+                    <option value="Tomate">
+                    
+                    <!-- Verduras -->
+                    <option value="Alface">
+                    <option value="Couve">
+                    <option value="Espinafre">
+                    <option value="Rúcula">
+                    <option value="Agrião">
+                    <option value="Salsinha">
+                    <option value="Cebolinha">
+                    <option value="Manjericão">
+                    
+                    <!-- Grãos e Cereais -->
+                    <option value="Arroz">
+                    <option value="Feijão">
+                    <option value="Soja">
+                    <option value="Trigo">
+                    <option value="Milho Seco">
+                    
+                    <!-- Outros -->
+                    <option value="Batata">
+                    <option value="Cebola">
+                    <option value="Alho">
+                    <option value="Gengibre">
+                </datalist>
+            </div>
                 
                 <div class="form-group">
                     <label for="categoria">Categoria</label>

@@ -283,9 +283,18 @@ body {
     color: var(--dark-color);
 }
 
+/* Limitação de texto da descrição do produto - ADICIONAR/MODIFICAR */
 .product-info p {
     color: var(--text-light);
     margin-bottom: 15px;
+    /* Adicionar estas propriedades para limitar o texto */
+    display: -webkit-box;
+    -webkit-line-clamp: 1; /* Número de linhas que você quer mostrar */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    max-height: 2.8em; /* 2 linhas * 1.4 de line-height = 2.8em */
 }
 
 .price {

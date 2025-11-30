@@ -103,7 +103,7 @@ require_once 'src/conexao.php';
 
     <section id="comprar" class="section bg-light">
     <div class="container">
-        <h2 class="section-title">Compre Frutas Frescas</h2>
+        <h2 class="section-title">Compre Frutas</h2>
         
         <!-- Carrossel melhorado -->
         <div class="carousel-container">
@@ -238,7 +238,6 @@ require_once 'src/conexao.php';
                                 <option value="comprador">Comprador</option>
                                 <option value="vendedor">Vendedor</option>
                                 <option value="transportador">Transportador</option>
-                                <option value="outro">Outro</option>
                             </select>
                         </div>
 

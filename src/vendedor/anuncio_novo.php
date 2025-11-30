@@ -378,49 +378,6 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
                                         <option value="Frutas Secas" <?php echo ($categoria === 'Frutas Secas') ? 'selected' : ''; ?>>Frutas Secas</option>
                                         <option value="Frutas Exóticas" <?php echo ($categoria === 'Frutas Exóticas') ? 'selected' : ''; ?>>Frutas Exóticas</option>
                                     </optgroup>
-
-                                    <optgroup label="Legumes">
-                                        <option value="Legumes Frutíferos" <?php echo ($categoria === 'Legumes Frutíferos') ? 'selected' : ''; ?>>Legumes Frutíferos</option>
-                                        <option value="Legumes de Raiz" <?php echo ($categoria === 'Legumes de Raiz') ? 'selected' : ''; ?>>Legumes de Raiz</option>
-                                        <option value="Legumes de Folha" <?php echo ($categoria === 'Legumes de Folha') ? 'selected' : ''; ?>>Legumes de Folha</option>
-                                        <option value="Legumes de Bulbo" <?php echo ($categoria === 'Legumes de Bulbo') ? 'selected' : ''; ?>>Legumes de Bulbo</option>
-                                    </optgroup>
-
-                                    <optgroup label="Verduras">
-                                        <option value="Verduras" <?php echo ($categoria === 'Verduras') ? 'selected' : ''; ?>>Verduras</option>
-                                        <option value="Folhosas" <?php echo ($categoria === 'Folhosas') ? 'selected' : ''; ?>>Folhosas</option>
-                                        <option value="Temperos Frescos" <?php echo ($categoria === 'Temperos Frescos') ? 'selected' : ''; ?>>Temperos Frescos</option>
-                                    </optgroup>
-
-                                    <optgroup label="Grãos e Cereais">
-                                        <option value="Grãos" <?php echo ($categoria === 'Grãos') ? 'selected' : ''; ?>>Grãos</option>
-                                        <option value="Cereais" <?php echo ($categoria === 'Cereais') ? 'selected' : ''; ?>>Cereais</option>
-                                        <option value="Leguminosas" <?php echo ($categoria === 'Leguminosas') ? 'selected' : ''; ?>>Leguminosas</option>
-                                    </optgroup>
-
-                                    <optgroup label="Raízes e Tubérculos">
-                                        <option value="Raízes" <?php echo ($categoria === 'Raízes') ? 'selected' : ''; ?>>Raízes</option>
-                                        <option value="Tubérculos" <?php echo ($categoria === 'Tubérculos') ? 'selected' : ''; ?>>Tubérculos</option>
-                                    </optgroup>
-
-                                    <optgroup label="Oleaginosas">
-                                        <option value="Oleaginosas" <?php echo ($categoria === 'Oleaginosas') ? 'selected' : ''; ?>>Oleaginosas</option>
-                                        <option value="Castanhas e Nozes" <?php echo ($categoria === 'Castanhas e Nozes') ? 'selected' : ''; ?>>Castanhas e Nozes</option>
-                                    </optgroup>
-
-                                    <optgroup label="Produtos Processados">
-                                        <option value="Polpas de Fruta" <?php echo ($categoria === 'Polpas de Fruta') ? 'selected' : ''; ?>>Polpas de Fruta</option>
-                                        <option value="Geleias e Doces" <?php echo ($categoria === 'Geleias e Doces') ? 'selected' : ''; ?>>Geleias e Doces</option>
-                                        <option value="Conservas" <?php echo ($categoria === 'Conservas') ? 'selected' : ''; ?>>Conservas</option>
-                                    </optgroup>
-
-                                    <optgroup label="Especiais">
-                                        <option value="Produtos Orgânicos" <?php echo ($categoria === 'Produtos Orgânicos') ? 'selected' : ''; ?>>Produtos Orgânicos</option>
-                                        <option value="Plantas e Mudas" <?php echo ($categoria === 'Plantas e Mudas') ? 'selected' : ''; ?>>Plantas e Mudas</option>
-                                        <option value="Flores Comestíveis" <?php echo ($categoria === 'Flores Comestíveis') ? 'selected' : ''; ?>>Flores Comestíveis</option>
-                                        <option value="Ervas Medicinais" <?php echo ($categoria === 'Ervas Medicinais') ? 'selected' : ''; ?>>Ervas Medicinais</option>
-                                        <option value="Outros" <?php echo ($categoria === 'Outros') ? 'selected' : ''; ?>>Outros</option>
-                                    </optgroup>
                                 </select>
                             </div>
                         </div>

@@ -14,12 +14,53 @@ $categoria = 'Frutas Cítricas';
 $estoque = '';
 $status = 'ativo';
 
-// Categorias disponíveis
+// Categorias disponíveis - LISTA EXPANDIDA
 $categorias_disponiveis = [
-    'Frutas Cítricas', 
-    'Frutas Tropicais', 
-    'Frutas de Caroço', 
-    'Outras'
+    // Frutas
+    'Frutas Cítricas',
+    'Frutas Tropicais',
+    'Frutas de Caroço',
+    'Frutas Vermelhas',
+    'Frutas Secas',
+    'Frutas Exóticas',
+    
+    // Legumes
+    'Legumes Frutíferos',
+    'Legumes de Raiz',
+    'Legumes de Folha',
+    'Legumes de Bulbo',
+    
+    // Verduras e Folhosas
+    'Verduras',
+    'Folhosas',
+    'Temperos Frescos',
+    
+    // Grãos e Cereais
+    'Grãos',
+    'Cereais',
+    'Leguminosas',
+    
+    // Raízes e Tubérculos
+    'Raízes',
+    'Tubérculos',
+    
+    // Oleaginosas
+    'Oleaginosas',
+    'Castanhas e Nozes',
+    
+    // Produtos Processados
+    'Polpas de Fruta',
+    'Geleias e Doces',
+    'Conservas',
+    
+    // Orgânicos
+    'Produtos Orgânicos',
+    
+    // Outros
+    'Plantas e Mudas',
+    'Flores Comestíveis',
+    'Ervas Medicinais',
+    'Outros'
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -190,19 +231,130 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
 
                 <div class="form-group">
                     <label for="nome" class="required">Nome da Fruta/Produto</label>
-                    <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($nome); ?>" required>
+                    <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($nome); ?>" list="produtos-sugestoes" required>
+                    <datalist id="produtos-sugestoes">
+                        <!-- Frutas -->
+                        <option value="Abacate">
+                        <option value="Abacaxi">
+                        <option value="Açaí">
+                        <option value="Acerola">
+                        <option value="Amora">
+                        <option value="Banana">
+                        <option value="Caju">
+                        <option value="Coco">
+                        <option value="Figo">
+                        <option value="Framboesa">
+                        <option value="Goiaba">
+                        <option value="Jabuticaba">
+                        <option value="Jaca">
+                        <option value="Kiwi">
+                        <option value="Laranja">
+                        <option value="Limão">
+                        <option value="Maçã">
+                        <option value="Mamão">
+                        <option value="Manga">
+                        <option value="Maracujá">
+                        <option value="Melancia">
+                        <option value="Melão">
+                        <option value="Morango">
+                        <option value="Pêra">
+                        <option value="Pêssego">
+                        <option value="Uva">
+                        
+                        <!-- Legumes -->
+                        <option value="Abóbora">
+                        <option value="Berinjela">
+                        <option value="Beterraba">
+                        <option value="Cenoura">
+                        <option value="Chuchu">
+                        <option value="Ervilha">
+                        <option value="Milho">
+                        <option value="Pepino">
+                        <option value="Pimentão">
+                        <option value="Quiabo">
+                        <option value="Tomate">
+                        
+                        <!-- Verduras -->
+                        <option value="Alface">
+                        <option value="Couve">
+                        <option value="Espinafre">
+                        <option value="Rúcula">
+                        <option value="Agrião">
+                        <option value="Salsinha">
+                        <option value="Cebolinha">
+                        <option value="Manjericão">
+                        
+                        <!-- Grãos e Cereais -->
+                        <option value="Arroz">
+                        <option value="Feijão">
+                        <option value="Soja">
+                        <option value="Trigo">
+                        <option value="Milho Seco">
+                        
+                        <!-- Outros -->
+                        <option value="Batata">
+                        <option value="Cebola">
+                        <option value="Alho">
+                        <option value="Gengibre">
+                    </datalist>
                 </div>
                 
                 <div class="form-group">
-                    <label for="categoria">Categoria</label>
-                    <select id="categoria" name="categoria">
-                        <?php foreach ($categorias_disponiveis as $cat): ?>
-                            <option value="<?php echo $cat; ?>" <?php echo ($categoria === $cat) ? 'selected' : ''; ?>>
-                                <?php echo $cat; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+                <label for="categoria">Categoria</label>
+                <select id="categoria" name="categoria">
+                    <optgroup label="Frutas">
+                        <option value="Frutas Cítricas" <?php echo ($categoria === 'Frutas Cítricas') ? 'selected' : ''; ?>>Frutas Cítricas</option>
+                        <option value="Frutas Tropicais" <?php echo ($categoria === 'Frutas Tropicais') ? 'selected' : ''; ?>>Frutas Tropicais</option>
+                        <option value="Frutas de Caroço" <?php echo ($categoria === 'Frutas de Caroço') ? 'selected' : ''; ?>>Frutas de Caroço</option>
+                        <option value="Frutas Vermelhas" <?php echo ($categoria === 'Frutas Vermelhas') ? 'selected' : ''; ?>>Frutas Vermelhas</option>
+                        <option value="Frutas Secas" <?php echo ($categoria === 'Frutas Secas') ? 'selected' : ''; ?>>Frutas Secas</option>
+                        <option value="Frutas Exóticas" <?php echo ($categoria === 'Frutas Exóticas') ? 'selected' : ''; ?>>Frutas Exóticas</option>
+                    </optgroup>
+                    
+                    <optgroup label="Legumes">
+                        <option value="Legumes Frutíferos" <?php echo ($categoria === 'Legumes Frutíferos') ? 'selected' : ''; ?>>Legumes Frutíferos</option>
+                        <option value="Legumes de Raiz" <?php echo ($categoria === 'Legumes de Raiz') ? 'selected' : ''; ?>>Legumes de Raiz</option>
+                        <option value="Legumes de Folha" <?php echo ($categoria === 'Legumes de Folha') ? 'selected' : ''; ?>>Legumes de Folha</option>
+                        <option value="Legumes de Bulbo" <?php echo ($categoria === 'Legumes de Bulbo') ? 'selected' : ''; ?>>Legumes de Bulbo</option>
+                    </optgroup>
+                    
+                    <optgroup label="Verduras">
+                        <option value="Verduras" <?php echo ($categoria === 'Verduras') ? 'selected' : ''; ?>>Verduras</option>
+                        <option value="Folhosas" <?php echo ($categoria === 'Folhosas') ? 'selected' : ''; ?>>Folhosas</option>
+                        <option value="Temperos Frescos" <?php echo ($categoria === 'Temperos Frescos') ? 'selected' : ''; ?>>Temperos Frescos</option>
+                    </optgroup>
+                    
+                    <optgroup label="Grãos e Cereais">
+                        <option value="Grãos" <?php echo ($categoria === 'Grãos') ? 'selected' : ''; ?>>Grãos</option>
+                        <option value="Cereais" <?php echo ($categoria === 'Cereais') ? 'selected' : ''; ?>>Cereais</option>
+                        <option value="Leguminosas" <?php echo ($categoria === 'Leguminosas') ? 'selected' : ''; ?>>Leguminosas</option>
+                    </optgroup>
+                    
+                    <optgroup label="Raízes e Tubérculos">
+                        <option value="Raízes" <?php echo ($categoria === 'Raízes') ? 'selected' : ''; ?>>Raízes</option>
+                        <option value="Tubérculos" <?php echo ($categoria === 'Tubérculos') ? 'selected' : ''; ?>>Tubérculos</option>
+                    </optgroup>
+                    
+                    <optgroup label="Oleaginosas">
+                        <option value="Oleaginosas" <?php echo ($categoria === 'Oleaginosas') ? 'selected' : ''; ?>>Oleaginosas</option>
+                        <option value="Castanhas e Nozes" <?php echo ($categoria === 'Castanhas e Nozes') ? 'selected' : ''; ?>>Castanhas e Nozes</option>
+                    </optgroup>
+                    
+                    <optgroup label="Produtos Processados">
+                        <option value="Polpas de Fruta" <?php echo ($categoria === 'Polpas de Fruta') ? 'selected' : ''; ?>>Polpas de Fruta</option>
+                        <option value="Geleias e Doces" <?php echo ($categoria === 'Geleias e Doces') ? 'selected' : ''; ?>>Geleias e Doces</option>
+                        <option value="Conservas" <?php echo ($categoria === 'Conservas') ? 'selected' : ''; ?>>Conservas</option>
+                    </optgroup>
+                    
+                    <optgroup label="Especiais">
+                        <option value="Produtos Orgânicos" <?php echo ($categoria === 'Produtos Orgânicos') ? 'selected' : ''; ?>>Produtos Orgânicos</option>
+                        <option value="Plantas e Mudas" <?php echo ($categoria === 'Plantas e Mudas') ? 'selected' : ''; ?>>Plantas e Mudas</option>
+                        <option value="Flores Comestíveis" <?php echo ($categoria === 'Flores Comestíveis') ? 'selected' : ''; ?>>Flores Comestíveis</option>
+                        <option value="Ervas Medicinais" <?php echo ($categoria === 'Ervas Medicinais') ? 'selected' : ''; ?>>Ervas Medicinais</option>
+                        <option value="Outros" <?php echo ($categoria === 'Outros') ? 'selected' : ''; ?>>Outros</option>
+                    </optgroup>
+                </select>
+            </div>
                 
                 <div class="form-group">
                     <label for="imagem_upload" class="required">Imagem de Capa (Upload)</label>

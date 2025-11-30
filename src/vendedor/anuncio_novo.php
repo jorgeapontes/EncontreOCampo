@@ -300,71 +300,7 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
                             <div class="form-group">
                                 <label for="nome" class="required">Nome do Produto</label>
                                 <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($nome); ?>" list="produtos-sugestoes" required>
-                                <datalist id="produtos-sugestoes">
-                                    <!-- Frutas -->
-                                    <option value="Abacate">
-                                    <option value="Abacaxi">
-                                    <option value="Açaí">
-                                    <option value="Acerola">
-                                    <option value="Amora">
-                                    <option value="Banana">
-                                    <option value="Caju">
-                                    <option value="Coco">
-                                    <option value="Figo">
-                                    <option value="Framboesa">
-                                    <option value="Goiaba">
-                                    <option value="Jabuticaba">
-                                    <option value="Jaca">
-                                    <option value="Kiwi">
-                                    <option value="Laranja">
-                                    <option value="Limão">
-                                    <option value="Maçã">
-                                    <option value="Mamão">
-                                    <option value="Manga">
-                                    <option value="Maracujá">
-                                    <option value="Melancia">
-                                    <option value="Melão">
-                                    <option value="Morango">
-                                    <option value="Pêra">
-                                    <option value="Pêssego">
-                                    <option value="Uva">
-
-                                        <!-- Legumes -->
-                                    <option value="Abóbora">
-                                    <option value="Berinjela">
-                                    <option value="Beterraba">
-                                    <option value="Cenoura">
-                                    <option value="Chuchu">
-                                    <option value="Ervilha">
-                                    <option value="Milho">
-                                    <option value="Pepino">
-                                    <option value="Pimentão">
-                                    <option value="Quiabo">
-                                    <option value="Tomate">
-
-                                        <!-- Verduras -->
-                                    <option value="Alface">
-                                    <option value="Couve">
-                                    <option value="Espinafre">
-                                    <option value="Rúcula">
-                                    <option value="Agrião">
-                                    <option value="Salsinha">
-                                    <option value="Cebolinha">
-                                    <option value="Manjericão">
-
-                                        <!-- Grãos e Cereais -->
-                                    <option value="Arroz">
-                                    <option value="Feijão">
-                                    <option value="Soja">
-                                    <option value="Trigo">
-                                    <option value="Milho Seco">
-
-                                        <!-- Outros -->
-                                    <option value="Batata">
-                                    <option value="Cebola">
-                                    <option value="Alho">
-                                    <option value="Gengibre">
-                                </datalist>
+                                
                             </div>
 
                             <div class="form-group">

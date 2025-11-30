@@ -283,18 +283,19 @@ body {
     color: var(--dark-color);
 }
 
-/* Limitação de texto da descrição do produto - ADICIONAR/MODIFICAR */
+/* Limitação de texto da descrição do produto - VERSÃO CORRIGIDA */
 .product-info p {
     color: var(--text-light);
     margin-bottom: 15px;
-    /* Adicionar estas propriedades para limitar o texto */
+    /* Propriedades para limitar o texto */
     display: -webkit-box;
-    -webkit-line-clamp: 1; /* Número de linhas que você quer mostrar */
+    -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
+    line-clamp: 1; /* Propriedade padrão adicionada */
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.4;
-    max-height: 2.8em; /* 2 linhas * 1.4 de line-height = 2.8em */
+    max-height: 2.8em;
 }
 
 .price {

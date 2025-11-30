@@ -176,11 +176,11 @@ body {
 }
 
 /* --- Seção de Perfil --- */
-.section-perfil {
+.form-section {
     margin-bottom: 30px;
 }
 
-.section-perfil h2 {
+.form-section h2 {
     color: var(--dark-color);
     padding-bottom: 10px;
     display: inline-block;
@@ -190,12 +190,11 @@ body {
 .forms-area {
     background-color: var(--white);
     padding: 30px;
-    padding-top: 60px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.perfil-form {
+.anuncio-form {
     display: grid;
 }
 
@@ -259,11 +258,11 @@ body {
 }
 
 .foto-overlay i {
-    color: white;
+    color: var(--primary-dark);
     font-size: 2rem;
 }
 
-.perfil-form h3 {
+.anuncio-form h3 {
     color: var(--dark-color);
     margin: 25px 0 15px 0;
     padding-bottom: 8px;
@@ -378,6 +377,19 @@ body {
     background-color: #ffebee;
     color: #c62828;
     border: 1px solid #ffcdd2;
+}
+
+#estoque {
+    padding: 12px 15px;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-family: "Montserrat", sans-serif;
+    border: 1px solid #ddd;
+    width: 100%;
+}
+
+.back-link {
+    text-decoration: none;
 }
 
 /* --- Media Queries --- */

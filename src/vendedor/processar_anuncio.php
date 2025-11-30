@@ -54,18 +54,18 @@ try {
     switch ($acao) {
         case 'ativar':
             $query = "UPDATE produtos SET status = 'ativo', data_atualizacao = NOW() WHERE id = :anuncio_id AND vendedor_id = :vendedor_id";
-            $mensagem_sucesso = "O anúncio '**{$nome_anuncio}**' foi ativado com sucesso!";
+            $mensagem_sucesso = "O anúncio '{$nome_anuncio}' foi ativado com sucesso!";
             break;
             
         case 'inativar':
             $query = "UPDATE produtos SET status = 'inativo', data_atualizacao = NOW() WHERE id = :anuncio_id AND vendedor_id = :vendedor_id";
-            $mensagem_sucesso = "O anúncio '**{$nome_anuncio}**' foi inativado (pausado) com sucesso.";
+            $mensagem_sucesso = "O anúncio '{$nome_anuncio}' foi inativado (pausado) com sucesso.";
             break;
 
         case 'deletar':
             // Excluir o registro permanentemente
             $query = "DELETE FROM produtos WHERE id = :anuncio_id AND vendedor_id = :vendedor_id";
-            $mensagem_sucesso = "O anúncio '**{$nome_anuncio}**' foi DELETADO permanentemente.";
+            $mensagem_sucesso = "O anúncio '{$nome_anuncio}' foi DELETADO permanentemente.";
             break;
 
         default:

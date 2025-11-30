@@ -175,12 +175,12 @@ body {
     font-style: normal;
 }
 
-/* --- Seção de Perfil --- */
-.section-perfil {
+/* --- Seção de Formulário --- */
+.form-section {
     margin-bottom: 30px;
 }
 
-.section-perfil h2 {
+.form-section h2 {
     color: var(--dark-color);
     padding-bottom: 10px;
     display: inline-block;
@@ -190,63 +190,61 @@ body {
 .forms-area {
     background-color: var(--white);
     padding: 30px;
-    padding-top: 60px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.perfil-form {
+.anuncio-form {
     display: grid;
 }
 
-.perfil-header-info {
-    justify-items: center;
-    margin-bottom: -8%;
-    z-index: 2;
-}
-
-.foto-perfil-display img {
-    width: 180px;
-    height: 180px;
-    border-radius: 100%;
-    object-fit: cover;
-    border: 3px solid var(--primary-color);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.foto-perfil-container {
-    position: relative;
-    display: inline-block;
-}
-
-.foto-perfil-display {
+/* Container da imagem do produto */
+.foto-produto-container {
     position: relative;
     display: inline-block;
     cursor: pointer;
 }
 
-.default-avatar {
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
+.foto-produto-display {
+    position: relative;
+    display: inline-block;
+}
+
+.foto-produto-display img {
+    width: 300px;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.default-image {
+    width: 300px;
+    height: 250px;
+    border-radius: 5px;
     background-color: #f0f0f0;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 48px;
     color: #666;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 2px dashed #ddd;
     margin: 0 auto;
+}
+
+.default-image i {
+    font-size: 3rem;
+    color: var(--primary-light);
 }
 
 .foto-overlay {
     position: absolute;
     top: 0;
     left: 0;
-    width: 180px;
-    height: 180px;
+    width: 300px;
+    height: 250px;
     background: rgba(0, 116, 16, 0.2);
-    border-radius: 50%;
+    border-radius: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -254,7 +252,7 @@ body {
     transition: opacity 0.3s ease;
 }
 
-.foto-perfil-display:hover .foto-overlay {
+.foto-produto-container:hover .foto-overlay {
     opacity: 1;
 }
 
@@ -263,12 +261,14 @@ body {
     font-size: 2rem;
 }
 
-.perfil-form h3 {
-    color: var(--dark-color);
-    margin: 25px 0 15px 0;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--primary-light);
-    font-size: 1.3rem;
+.prod-info {
+    width: 100%;
+}
+
+.top-info {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
 }
 
 .form-group {
@@ -290,6 +290,7 @@ body {
 .form-group input[type="email"],
 .form-group input[type="password"],
 .form-group input[type="file"],
+.form-group input[type="number"],
 .form-group select,
 .form-group textarea {
     width: 100%;
@@ -308,18 +309,12 @@ body {
     border-color: var(--primary-color);
 }
 
-.form-group input:disabled {
-    background-color: var(--gray);
-    color: #666;
-    cursor: not-allowed;
-}
-
-.form-group-row {
+.form-row {
     display: flex;
     gap: 15px;
 }
 
-.form-group-row .form-group {
+.form-row .form-group {
     flex: 1;
 }
 
@@ -327,7 +322,7 @@ body {
     display: block;
     margin-top: 5px;
     font-size: 0.85rem;
-    color: var(--text-light);
+    color: #666;
 }
 
 /* Botão de salvar */
@@ -420,20 +415,20 @@ body {
         margin: 16px 0;
     }
 
-    .form-group-row {
+    .top-info {
+        flex-direction: column;
+    }
+    
+    .foto-produto-display img,
+    .default-image,
+    .foto-overlay {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .form-row {
         flex-direction: column;
         gap: 0;
-    }
-    
-    .perfil-header-info {
-        flex-direction: column;
-        text-align: center;
-        gap: 20px;
-    }
-    
-    .foto-perfil-display img {
-        width: 100px;
-        height: 100px;
     }
 }
 
@@ -442,11 +437,7 @@ body {
         padding: 15px;
     }
     
-    .section-perfil h2 {
-        font-size: 1.3rem;
-    }
-    
-    .perfil-form h3 {
-        font-size: 1.1rem;
+    .header h1 {
+        font-size: 1.8rem;
     }
 }

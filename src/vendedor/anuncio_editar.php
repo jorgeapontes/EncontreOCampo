@@ -166,53 +166,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Garante que o preço formatado exista, mesmo se o POST falhar.
 $preco_formatado = number_format($anuncio['preco'], 2, ',', ''); 
 
-// Categorias disponíveis - LISTA EXPANDIDA
+// Categorias disponíveis
 $categorias_disponiveis = [
-    // Frutas
-    'Frutas Cítricas',
-    'Frutas Tropicais',
-    'Frutas de Caroço',
-    'Frutas Vermelhas',
-    'Frutas Secas',
-    'Frutas Exóticas',
-    
-    // Legumes
-    'Legumes Frutíferos',
-    'Legumes de Raiz',
-    'Legumes de Folha',
-    'Legumes de Bulbo',
-    
-    // Verduras e Folhosas
-    'Verduras',
-    'Folhosas',
-    'Temperos Frescos',
-    
-    // Grãos e Cereais
-    'Grãos',
-    'Cereais',
-    'Leguminosas',
-    
-    // Raízes e Tubérculos
-    'Raízes',
-    'Tubérculos',
-    
-    // Oleaginosas
-    'Oleaginosas',
-    'Castanhas e Nozes',
-    
-    // Produtos Processados
-    'Polpas de Fruta',
-    'Geleias e Doces',
-    'Conservas',
-    
-    // Orgânicos
-    'Produtos Orgânicos',
-    
-    // Outros
-    'Plantas e Mudas',
-    'Flores Comestíveis',
-    'Ervas Medicinais',
-    'Outros'
+    'Frutas Cítricas', 
+    'Frutas Tropicais', 
+    'Frutas de Caroço', 
+    'Outras'
 ];
 
 ?>
@@ -222,10 +181,13 @@ $categorias_disponiveis = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Anúncio - Vendedor</title>
-    <link rel="stylesheet" href="../css/vendedor/dashboard.css">
+    <link rel="stylesheet" href="../css/vendedor/anuncio_editar.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
-    </head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+</head>
 <body>
     <header>
         <nav class="navbar">
@@ -242,11 +204,33 @@ $categorias_disponiveis = [
                         <a href="../../index.php" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="" class="nav-link active">Painel</a>
+                        <a href="dashboard.php" class="nav-link active">Painel</a>
                     </li>
                     <li class="nav-item">
                         <a href="perfil.php" class="nav-link">Meu Perfil</a>
                     </li>
+                    <?php if (isset($_SESSION['usuario_id'])): ?>
+                    <li class="nav-item">
+                        <a href="../notificacoes.php" class="nav-link no-underline">
+                            <i class="fas fa-bell"></i>
+                            <?php
+                            // Contar notificações não lidas
+                            if (isset($_SESSION['usuario_id'])) {
+                                $database = new Database();
+                                $conn = $database->getConnection();
+                                $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
+                                $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
+                                $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
+                                $stmt_nao_lidas->execute();
+                                $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
+                                if ($total_nao_lidas > 0) {
+                                    echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
+                                }
+                            }
+                            ?>
+                        </a>
+                    </li>
+                    <?php endif; ?>
                     <li class="nav-item">
                         <a href="../logout.php" class="nav-link exit-button no-underline"> Sair </a>
                     </li>
@@ -262,13 +246,13 @@ $categorias_disponiveis = [
     <br>
 
     <div class="main-content">
-        <header class="header">
-            <h1>Editar Anúncio: <?php echo htmlspecialchars($anuncio['nome']); ?> (ID: <?php echo $anuncio['id']; ?>)</h1>
-        </header>
+        <center>
+            <header class="header">
+                <h1>Editar: <?php echo htmlspecialchars($anuncio['nome']); ?> (ID: <?php echo $anuncio['id']; ?>)</h1>
+            </header>
+        </center>
 
-                <section class="form-section">
-            <a href="anuncios.php" class="back-link"><i class="fas fa-arrow-left"></i> Voltar para Meus Anúncios</a>
-
+        <section class="form-section">
             <?php if (!empty($mensagem_sucesso)): ?>
                 <div class="alert success-alert"><i class="fas fa-check-circle"></i> <?php echo $mensagem_sucesso; ?></div>
             <?php endif; ?>
@@ -278,134 +262,79 @@ $categorias_disponiveis = [
             <?php endif; ?>
 
             <form method="POST" action="anuncio_editar.php" class="anuncio-form" enctype="multipart/form-data">
-                <input type="hidden" name="anuncio_id" value="<?php echo $anuncio['id']; ?>">
-                
-                <h3>Informações Principais</h3>
-                
-                <div class="form-group">
-                <label for="nome" class="required">Nome da Fruta/Produto</label>
-                <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($anuncio['nome']); ?>" list="produtos-sugestoes" required>
-                <datalist id="produtos-sugestoes">
-                    <!-- Frutas -->
-                    <option value="Abacate">
-                    <option value="Abacaxi">
-                    <option value="Açaí">
-                    <option value="Acerola">
-                    <option value="Amora">
-                    <option value="Banana">
-                    <option value="Caju">
-                    <option value="Coco">
-                    <option value="Figo">
-                    <option value="Framboesa">
-                    <option value="Goiaba">
-                    <option value="Jabuticaba">
-                    <option value="Jaca">
-                    <option value="Kiwi">
-                    <option value="Laranja">
-                    <option value="Limão">
-                    <option value="Maçã">
-                    <option value="Mamão">
-                    <option value="Manga">
-                    <option value="Maracujá">
-                    <option value="Melancia">
-                    <option value="Melão">
-                    <option value="Morango">
-                    <option value="Pêra">
-                    <option value="Pêssego">
-                    <option value="Uva">
+                <div class="forms-area">
+                    <input type="hidden" name="anuncio_id" value="<?php echo $anuncio['id']; ?>">
                     
-                    <!-- Legumes -->
-                    <option value="Abóbora">
-                    <option value="Berinjela">
-                    <option value="Beterraba">
-                    <option value="Cenoura">
-                    <option value="Chuchu">
-                    <option value="Ervilha">
-                    <option value="Milho">
-                    <option value="Pepino">
-                    <option value="Pimentão">
-                    <option value="Quiabo">
-                    <option value="Tomate">
+                    <div class="top-info">
+                        <div class="form-group">
+                            <div class="foto-produto-container">
+                                <div class="foto-produto-display">
+                                    <?php if (!empty($anuncio['imagem_url']) && file_exists($anuncio['imagem_url'])): ?>
+                                        <img src="<?php echo htmlspecialchars($anuncio['imagem_url']); ?>" alt="Imagem do Anúncio">
+                                    <?php else: ?>
+                                        <div class="default-image">
+                                            <i class="fas fa-image"></i>
+                                        </div>
+                                    <?php endif; ?>
+                                    <div class="foto-overlay">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="prod-info">
+                            <h2>Informações do Produto</h2>
+                            <div class="form-group">
+                                <label for="nome" class="required">Nome da Fruta/Produto</label>
+                                <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($anuncio['nome']); ?>" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="categoria">Categoria</label>
+                                <select id="categoria" name="categoria">
+                                    <?php foreach ($categorias_disponiveis as $cat): ?>
+                                        <option value="<?php echo $cat; ?>" <?php echo ($anuncio['categoria'] === $cat) ? 'selected' : ''; ?>>
+                                            <?php echo $cat; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <!-- Verduras -->
-                    <option value="Alface">
-                    <option value="Couve">
-                    <option value="Espinafre">
-                    <option value="Rúcula">
-                    <option value="Agrião">
-                    <option value="Salsinha">
-                    <option value="Cebolinha">
-                    <option value="Manjericão">
-                    
-                    <!-- Grãos e Cereais -->
-                    <option value="Arroz">
-                    <option value="Feijão">
-                    <option value="Soja">
-                    <option value="Trigo">
-                    <option value="Milho Seco">
-                    
-                    <!-- Outros -->
-                    <option value="Batata">
-                    <option value="Cebola">
-                    <option value="Alho">
-                    <option value="Gengibre">
-                </datalist>
-            </div>
-                
-                <div class="form-group">
-                    <label for="categoria">Categoria</label>
-                    <select id="categoria" name="categoria">
-                        <?php foreach ($categorias_disponiveis as $cat): ?>
-                            <option value="<?php echo $cat; ?>" <?php echo ($anuncio['categoria'] === $cat) ? 'selected' : ''; ?>>
-                                <?php echo $cat; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+                    <div class="form-group" style="display: none;">
+                        <input type="file" id="imagem_upload" name="imagem_upload" accept="image/jpeg, image/png">
+                    </div>
 
-                <div class="form-group">
-                    <label>Imagem Atual de Capa</label>
-                    <?php if (!empty($anuncio['imagem_url']) && file_exists($anuncio['imagem_url'])): ?>
-                        <img src="<?php echo htmlspecialchars($anuncio['imagem_url']); ?>" alt="Imagem do Anúncio" style="max-width: 150px; height: auto; display: block; margin-bottom: 10px;">
-                    <?php else: ?>
-                        <p>Nenhuma imagem cadastrada.</p>
-                    <?php endif; ?>
-                </div>
-                
-                <div class="form-group">
-                    <label for="imagem_upload">Substituir Imagem de Capa (Opcional)</label>
-                    <input type="file" id="imagem_upload" name="imagem_upload" accept="image/jpeg, image/png">
-                    <small class="help-text">Máximo 2MB. Formatos: JPG, PNG. Se um arquivo for selecionado, ele substituirá o atual.</small>
-                </div>
+                    <h2>Preço e Estoque</h2>
 
-                <h3>Preço e Estoque</h3>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="preco" class="required">Preço por Kg (R$)</label>
-                        <input type="text" id="preco" name="preco" value="<?php echo htmlspecialchars($preco_formatado); ?>" placeholder="Ex: 5,50" required>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="preco" class="required">Preço por Kg (R$)</label>
+                            <input type="text" id="preco" name="preco" value="<?php echo htmlspecialchars($preco_formatado); ?>" placeholder="Ex: 5,50" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="estoque" class="required">Estoque em Kg</label>
+                            <input type="number" id="estoque" name="estoque" value="<?php echo htmlspecialchars($anuncio['estoque']); ?>" min="0" required>
+                        </div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="estoque" class="required">Estoque em Kg</label>
-                        <input type="number" id="estoque" name="estoque" value="<?php echo htmlspecialchars($anuncio['estoque']); ?>" min="0" required>
+                        <label for="status" class="required">Status do Anúncio</label>
+                        <select id="status" name="status" required>
+                            <option value="ativo" <?php echo ($anuncio['status'] === 'ativo') ? 'selected' : ''; ?>>Ativo (Visível)</option>
+                            <option value="inativo" <?php echo ($anuncio['status'] === 'inativo') ? 'selected' : ''; ?>>Inativo (Pausado)</option>
+                        </select>
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="status" class="required">Status do Anúncio</label>
-                    <select id="status" name="status" required>
-                        <option value="ativo" <?php echo ($anuncio['status'] === 'ativo') ? 'selected' : ''; ?>>Ativo (Visível)</option>
-                        <option value="inativo" <?php echo ($anuncio['status'] === 'inativo') ? 'selected' : ''; ?>>Inativo (Pausado)</option>
-                    </select>
-                </div>
 
-                <div class="form-group">
-                    <label for="descricao">Descrição Detalhada do Produto (Opcional)</label>
-                    <textarea id="descricao" name="descricao" rows="4"><?php echo htmlspecialchars($anuncio['descricao'] ?? ''); ?></textarea>
+                    <div class="form-group">
+                        <label for="descricao">Descrição Detalhada do Produto (Opcional)</label>
+                        <textarea id="descricao" name="descricao" rows="4"><?php echo htmlspecialchars($anuncio['descricao'] ?? ''); ?></textarea>
+                    </div>
+                    
+                    <button type="submit" class="big-button"><i class="fas fa-save"></i> Salvar Alterações</button>
                 </div>
-                
-                <button type="submit" class="big-button"><i class="fas fa-save"></i> Salvar Alterações</button>
             </form>
         </section>
         
@@ -440,6 +369,45 @@ $categorias_disponiveis = [
                     value = value.replace('.', ',');
                 }
                 e.target.value = value;
+            });
+
+            // Script para clicar na imagem abrir o seletor de arquivos
+            const fotoContainer = document.querySelector('.foto-produto-container');
+            const fileInput = document.getElementById('imagem_upload');
+            
+            if (fotoContainer && fileInput) {
+                fotoContainer.addEventListener('click', function() {
+                    fileInput.click();
+                });
+            }
+            
+            // Mostrar preview da nova imagem selecionada
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    const imgElement = document.querySelector('.foto-produto-display img');
+                    const defaultImage = document.querySelector('.default-image');
+                    
+                    reader.onload = function(e) {
+                        if (imgElement) {
+                            imgElement.src = e.target.result;
+                        } else if (defaultImage) {
+                            // Substitui a imagem padrão por uma imagem real
+                            const newImg = document.createElement('img');
+                            newImg.src = e.target.result;
+                            newImg.alt = "Imagem do Anúncio";
+                            newImg.style.width = '300px';
+                            newImg.style.height = '250px';
+                            newImg.style.objectFit = 'cover';
+                            newImg.style.borderRadius = '5px';
+                            newImg.style.border = '2px solid #C8E6C9';
+                            
+                            defaultImage.parentNode.replaceChild(newImg, defaultImage);
+                        }
+                    }
+                    
+                    reader.readAsDataURL(e.target.files[0]);
+                }
             });
         });
     </script>

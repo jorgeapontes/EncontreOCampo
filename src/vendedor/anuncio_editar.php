@@ -175,44 +175,6 @@ $categorias_disponiveis = [
     'Frutas Vermelhas',
     'Frutas Secas',
     'Frutas Exóticas',
-    
-    // Legumes
-    'Legumes Frutíferos',
-    'Legumes de Raiz',
-    'Legumes de Folha',
-    'Legumes de Bulbo',
-    
-    // Verduras e Folhosas
-    'Verduras',
-    'Folhosas',
-    'Temperos Frescos',
-    
-    // Grãos e Cereais
-    'Grãos',
-    'Cereais',
-    'Leguminosas',
-    
-    // Raízes e Tubérculos
-    'Raízes',
-    'Tubérculos',
-    
-    // Oleaginosas
-    'Oleaginosas',
-    'Castanhas e Nozes',
-    
-    // Produtos Processados
-    'Polpas de Fruta',
-    'Geleias e Doces',
-    'Conservas',
-    
-    // Orgânicos
-    'Produtos Orgânicos',
-    
-    // Outros
-    'Plantas e Mudas',
-    'Flores Comestíveis',
-    'Ervas Medicinais',
-    'Outros'
 ];
 
 ?>

@@ -493,107 +493,148 @@ function initializeTransportadorMasks() {
 // CORREÇÃO FINAL: LÓGICA DE SUBMISSÃO AJAX
 // ===============================================
 
+// script.js - função submitForm corrigida
+
 async function submitForm(e) {
     e.preventDefault();
     
+    console.log('Iniciando envio do formulário...');
+    
     const mainForm = document.getElementById('mainForm');
     const subject = document.getElementById('subject').value;
+    
+    if (!subject) {
+        alert('Por favor, selecione o tipo de cadastro.');
+        return;
+    }
+    
     let isValid = true;
     let submitButton = e.target;
     
     // 1. Validação Final
-    let fieldsToValidate = [];
-    if (subject === 'comprador') {
-        fieldsToValidate = mainForm.querySelectorAll('#compradorFields [required]');
-        if (currentSteps.comprador !== 3) {
-            isValid = false;
-        }
-    } else if (subject === 'vendedor') {
-        fieldsToValidate = mainForm.querySelectorAll('#vendedorFields [required]');
-        if (currentSteps.vendedor !== 3) {
-            isValid = false;
-        }
-    } else if (subject === 'transportador') {
-        fieldsToValidate = mainForm.querySelectorAll('#transportadorFields [required]');
-        if (currentSteps.transportador !== 3) {
-            isValid = false;
-        }
-    } else if (subject === 'outro') {
-        fieldsToValidate = mainForm.querySelectorAll('#messageGroup [required]');
-    } else {
-        isValid = false; // Tipo de usuário não selecionado
-    }
-
-    // Valida campos obrigatórios da última etapa/seção
-    fieldsToValidate.forEach(field => {
-        if (!field.value.trim()) {
-            isValid = false;
-            field.style.borderColor = '#ff6b6b';
-            field.reportValidity(); // Mostra o erro do navegador
-        } else {
-            field.style.borderColor = '';
-        }
-    });
-    
-    if (!isValid) {
-        if (subject && (subject === 'comprador' || subject === 'vendedor' || subject === 'transportador')) {
-            alert('Por favor, preencha todos os campos obrigatórios da última etapa.');
-        } else {
-            alert('Por favor, selecione e preencha o tipo de cadastro.');
-        }
+    if (subject === 'comprador' && currentSteps.comprador !== 3) {
+        alert('Por favor, complete todas as etapas do formulário de comprador.');
+        return;
+    } else if (subject === 'vendedor' && currentSteps.vendedor !== 3) {
+        alert('Por favor, complete todas as etapas do formulário de vendedor.');
+        return;
+    } else if (subject === 'transportador' && currentSteps.transportador !== 3) {
+        alert('Por favor, complete todas as etapas do formulário de transportador.');
         return;
     }
-
-    // 2. Coleta de Dados
-    const formData = new FormData();
     
-    // Adiciona os campos gerais (Nome, Email, Tipo)
-    formData.append('name', document.getElementById('name').value);
-    formData.append('email', document.getElementById('email').value);
-    formData.append('subject', subject);
+    // 2. Validar senhas
+    const senha = document.getElementById('senha').value;
+    const confirmaSenha = document.getElementById('confirma_senha').value;
+    if (senha !== confirmaSenha) {
+        alert('As senhas não coincidem!');
+        document.getElementById('senha').style.borderColor = '#ff6b6b';
+        document.getElementById('confirma_senha').style.borderColor = '#ff6b6b';
+        return;
+    }
     
-    // Adiciona todos os campos do formulário (incluindo os específicos do tipo)
-    // O backend PHP vai filtrar o que é relevante
-    const allFormFields = mainForm.querySelectorAll('input, select, textarea');
-    allFormFields.forEach(field => {
-        // Ignora campos vazios opcionais, mas inclui todos os campos nomeados
-        if (field.name && field.value) {
-             // Limpeza especial para telefones: remove máscara antes de enviar
-            if (field.name.includes('telefone')) {
-                const cleanedValue = field.value.replace(/\D/g, '');
-                formData.append(field.name, cleanedValue);
-            } else {
-                formData.append(field.name, field.value);
-            }
-        }
-    });
+    if (senha.length < 8) {
+        alert('A senha deve ter no mínimo 8 caracteres!');
+        document.getElementById('senha').style.borderColor = '#ff6b6b';
+        return;
+    }
     
-    // 3. Envio AJAX (Fetch API)
+    // 3. Desabilitar botão e mostrar carregamento
+    const originalText = submitButton.textContent;
     submitButton.textContent = 'Enviando...';
     submitButton.disabled = true;
-
+    submitButton.style.opacity = '0.7';
+    
     try {
+        console.log('Coletando dados do formulário...');
+        
+        // Coletar todos os dados do formulário
+        const formData = new FormData(mainForm);
+        
+        // Log para debug
+        console.log('Dados a serem enviados:');
+        for (let [key, value] of formData.entries()) {
+            console.log(`${key}: ${value}`);
+        }
+        
+        // Enviar via fetch
+        console.log('Enviando para:', mainForm.action);
         const response = await fetch(mainForm.action, {
             method: 'POST',
-            body: formData, 
+            body: formData,
+            headers: {
+                'Accept': 'application/json'
+            }
         });
-
-        const result = await response.json(); 
-
-        if (response.ok && result.success) {
-            alert('✅ Solicitação de Cadastro enviada com sucesso! Aguarde a aprovação do administrador.');
-            mainForm.reset();
-            toggleAdditionalFields(); // Reseta a exibição dos campos
-        } else {
-            // Se houver erro de validação ou BD retornado pelo PHP
-            alert('❌ Erro ao enviar a solicitação: ' + (result.message || 'Erro desconhecido.'));
+        
+        console.log('Resposta recebida, status:', response.status);
+        
+        // Tentar parsear como JSON
+        let result;
+        try {
+            result = await response.json();
+            console.log('Resposta JSON:', result);
+        } catch (jsonError) {
+            console.error('Erro ao parsear JSON:', jsonError);
+            const text = await response.text();
+            console.error('Resposta em texto:', text);
+            throw new Error('Resposta do servidor inválida');
         }
+        
+        if (response.ok && result.success) {
+            // Sucesso
+            alert('✅ Solicitação de Cadastro enviada com sucesso!\n\nEm breve você receberá um email com as instruções.\nSua conta será ativada após aprovação do administrador.');
+            
+            // Reset do formulário
+            mainForm.reset();
+            
+            // Reset dos passos
+            currentSteps.comprador = 1;
+            currentSteps.vendedor = 1;
+            currentSteps.transportador = 1;
+            
+            // Reset da exibição
+            toggleAdditionalFields();
+            
+            // Feedback visual
+            submitButton.textContent = '✅ Enviado!';
+            submitButton.style.backgroundColor = '#4CAF50';
+            
+            setTimeout(() => {
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+                submitButton.style.opacity = '1';
+                submitButton.style.backgroundColor = '';
+            }, 3000);
+            
+        } else {
+            // Erro do servidor
+            const errorMsg = result.message || result.error || 'Erro desconhecido ao enviar solicitação.';
+            alert(`❌ ${errorMsg}`);
+            
+            submitButton.textContent = 'Tentar Novamente';
+            submitButton.disabled = false;
+            submitButton.style.opacity = '1';
+        }
+        
     } catch (error) {
         console.error('Erro de rede ou processamento:', error);
-        alert('❌ Ocorreu um erro de comunicação. Tente novamente.');
-    } finally {
-        submitButton.textContent = submitButton.classList.contains('btn-ajax-submit') ? 'Finalizar Cadastro' : 'Enviar solicitação';
+        
+        // Mensagem mais específica baseada no tipo de erro
+        let userMessage = '❌ Erro de conexão: ';
+        if (error.message.includes('Failed to fetch')) {
+            userMessage += 'Não foi possível conectar ao servidor. Verifique sua conexão com a internet.';
+        } else if (error.message.includes('Resposta do servidor inválida')) {
+            userMessage += 'O servidor retornou uma resposta inválida. O arquivo processar_solicitacao.php pode estar com problemas.';
+        } else {
+            userMessage += error.message;
+        }
+        
+        alert(userMessage + '\n\nVerifique o console do navegador (F12) para mais detalhes.');
+        
+        submitButton.textContent = originalText;
         submitButton.disabled = false;
+        submitButton.style.opacity = '1';
     }
 }
 

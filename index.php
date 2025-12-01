@@ -6,7 +6,7 @@ require_once 'src/conexao.php';
         session_start();
     }
 
-    $button_text = 'Não está funcionando';
+    $button_text = 'Login';
 
     if (isset($_SESSION['usuario_nome'])) {
         $button_text = 'Olá, '.$_SESSION['usuario_nome'];
@@ -216,23 +216,24 @@ require_once 'src/conexao.php';
                 <div class="contact-form">
                     <form id="mainForm" action="src/processar_solicitacao.php" method="POST">
                         <div class="form-group">
-                            <label for="name" class="required">Nome</label>
-                            <input type="text" id="name" name="name" required>
+                            <label for="name" class="required">Nome *</label>
+                            <input type="text" id="name" name="name" required placeholder="Seu nome completo">
                         </div>
                         <div class="form-group">
-                            <label for="email" class="required">Email</label>
-                            <input type="email" id="email" name="email" required>
+                            <label for="email" class="required">Email *</label>
+                            <input type="email" id="email" name="email" required placeholder="seu@email.com">
                         </div>
                         <div class="form-group">
-    <label for="senha" class="required">Senha</label>
-    <input type="password" id="senha" name="senha" required minlength="8" placeholder="Mínimo 8 caracteres">
-</div>
-<div class="form-group">
-    <label for="confirma_senha" class="required">Confirme a Senha</label>
-    <input type="password" id="confirma_senha" name="confirma_senha" required>
-</div>
+                            <label for="senha" class="required">Senha *</label>
+                            <input type="password" id="senha" name="senha" required minlength="8" placeholder="Mínimo 8 caracteres">
+                            <small class="form-help">Use pelo menos 8 caracteres com letras e números</small>
+                        </div>
                         <div class="form-group">
-                            <label for="subject" class="required">Quero me tornar:</label>
+                            <label for="confirma_senha" class="required">Confirme a Senha *</label>
+                            <input type="password" id="confirma_senha" name="confirma_senha" required placeholder="Digite a senha novamente">
+                        </div>
+                        <div class="form-group">
+                            <label for="subject" class="required">Quero me tornar: *</label>
                             <select id="subject" name="subject" onchange="toggleAdditionalFields()" required>
                                 <option value="">Selecione...</option>
                                 <option value="comprador">Comprador</option>
@@ -254,15 +255,16 @@ require_once 'src/conexao.php';
                                     
                                     <div class="form-group">
                                         <label for="nomeComercialComprador">Nome Comercial</label>
-                                        <input type="text" id="nomeComercialComprador" name="nomeComercialComprador">
+                                        <input type="text" id="nomeComercialComprador" name="nomeComercialComprador" placeholder="Nome da sua empresa (opcional)">
                                     </div>
                                     <div class="form-group">
-                                        <label for="cpfCnpjComprador" class="required">CPF/CNPJ</label>
-                                        <input type="text" id="cpfCnpjComprador" name="cpfCnpjComprador" required>
+                                        <label for="cpfCnpjComprador" class="required">CPF/CNPJ *</label>
+                                        <input type="text" id="cpfCnpjComprador" name="cpfCnpjComprador" required placeholder="000.000.000-00 ou 00.000.000/0000-00">
+                                        <small class="form-help">Digite apenas números, a máscara será aplicada automaticamente</small>
                                     </div>
                                     <div class="form-group">
                                         <label for="cipComprador">CIP</label>
-                                        <input type="text" id="cipComprador" name="cipComprador">
+                                        <input type="text" id="cipComprador" name="cipComprador" placeholder="Código de Identificação do Produtor">
                                     </div>
                                     
                                     <div class="step-navigation">
@@ -280,29 +282,29 @@ require_once 'src/conexao.php';
                                         <label for="cepComprador">CEP</label>
                                         <div style="display: flex; gap: 10px; align-items: flex-start;">
                                             <input type="text" id="cepComprador" name="cepComprador" maxlength="9" placeholder="00000-000" style="flex: 1;">
-                                            <button type="button" onclick="buscarCEPComprador()">Buscar CEP</button>
+                                            <button type="button" class="cep-btn" onclick="buscarCEPComprador()">Buscar CEP</button>
                                         </div>
                                     </div>
                                     
                                     <div class="form-group">
-                                        <label for="ruaComprador" class="required">Rua</label>
-                                        <input type="text" id="ruaComprador" name="ruaComprador" required>
+                                        <label for="ruaComprador" class="required">Rua *</label>
+                                        <input type="text" id="ruaComprador" name="ruaComprador" required placeholder="Nome da rua">
                                     </div>
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
-                                            <label for="numeroComprador" class="required">Número</label>
-                                            <input type="text" id="numeroComprador" name="numeroComprador" required>
+                                            <label for="numeroComprador" class="required">Número *</label>
+                                            <input type="text" id="numeroComprador" name="numeroComprador" required placeholder="Número">
                                         </div>
                                         <div class="form-group">
                                             <label for="complementoComprador">Complemento</label>
-                                            <input type="text" id="complementoComprador" name="complementoComprador">
+                                            <input type="text" id="complementoComprador" name="complementoComprador" placeholder="Apto, Sala, etc.">
                                         </div>
                                     </div>
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
-                                            <label for="estadoComprador" class="required">Estado</label>
+                                            <label for="estadoComprador" class="required">Estado *</label>
                                             <select id="estadoComprador" name="estadoComprador" required>
                                                 <option value="">Selecione...</option>
                                                 <option value="AC">Acre</option>
@@ -335,8 +337,8 @@ require_once 'src/conexao.php';
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label for="cidadeComprador" class="required">Cidade</label>
-                                            <input type="text" id="cidadeComprador" name="cidadeComprador" required>
+                                            <label for="cidadeComprador" class="required">Cidade *</label>
+                                            <input type="text" id="cidadeComprador" name="cidadeComprador" required placeholder="Nome da cidade">
                                         </div>
                                     </div>
                                     
@@ -355,12 +357,12 @@ require_once 'src/conexao.php';
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
-                                            <label for="telefone1Comprador" class="required">Telefone/Celular</label>
-                                            <input type="text" id="telefone1Comprador" name="telefone1Comprador" maxlength="15" required>
+                                            <label for="telefone1Comprador" class="required">Telefone/Celular *</label>
+                                            <input type="text" id="telefone1Comprador" name="telefone1Comprador" maxlength="15" required placeholder="(11) 99999-9999">
                                         </div>
                                         <div class="form-group">
                                             <label for="telefone2Comprador">Telefone/Celular (opcional)</label>
-                                            <input type="text" id="telefone2Comprador" name="telefone2Comprador" maxlength="15">
+                                            <input type="text" id="telefone2Comprador" name="telefone2Comprador" maxlength="15" placeholder="(11) 99999-9999">
                                         </div>
                                     </div>
                                     
@@ -372,6 +374,7 @@ require_once 'src/conexao.php';
                                             <option value="premium">Premium</option>
                                             <option value="empresarial">Empresarial</option>
                                         </select>
+                                        <small class="form-help">Você poderá alterar o plano posteriormente</small>
                                     </div>
                                     
                                     <div class="step-navigation">
@@ -399,15 +402,16 @@ require_once 'src/conexao.php';
                                     
                                     <div class="form-group">
                                         <label for="nomeComercialVendedor">Nome Comercial</label>
-                                        <input type="text" id="nomeComercialVendedor" name="nomeComercialVendedor">
+                                        <input type="text" id="nomeComercialVendedor" name="nomeComercialVendedor" placeholder="Nome da sua empresa/fazenda">
                                     </div>
                                     <div class="form-group">
-                                        <label for="cpfCnpjVendedor" class="required">CPF/CNPJ</label>
-                                        <input type="text" id="cpfCnpjVendedor" name="cpfCnpjVendedor" required>
+                                        <label for="cpfCnpjVendedor" class="required">CPF/CNPJ *</label>
+                                        <input type="text" id="cpfCnpjVendedor" name="cpfCnpjVendedor" required placeholder="000.000.000-00 ou 00.000.000/0000-00">
+                                        <small class="form-help">Digite apenas números, a máscara será aplicada automaticamente</small>
                                     </div>
                                     <div class="form-group">
                                         <label for="cipVendedor">CIP</label>
-                                        <input type="text" id="cipVendedor" name="cipVendedor">
+                                        <input type="text" id="cipVendedor" name="cipVendedor" placeholder="Código de Identificação do Produtor">
                                     </div>
                                     
                                     <div class="step-navigation">
@@ -425,29 +429,29 @@ require_once 'src/conexao.php';
                                         <label for="cepVendedor">CEP</label>
                                         <div style="display: flex; gap: 10px; align-items: flex-start;">
                                             <input type="text" id="cepVendedor" name="cepVendedor" maxlength="9" placeholder="00000-000" style="flex: 1;">
-                                            <button type="button" onclick="buscarCEPVendedor()">Buscar CEP</button>
+                                            <button type="button" class="cep-btn" onclick="buscarCEPVendedor()">Buscar CEP</button>
                                         </div>
                                     </div>
                                     
                                     <div class="form-group">
-                                        <label for="ruaVendedor" class="required">Rua</label>
-                                        <input type="text" id="ruaVendedor" name="ruaVendedor" required>
+                                        <label for="ruaVendedor" class="required">Rua *</label>
+                                        <input type="text" id="ruaVendedor" name="ruaVendedor" required placeholder="Nome da rua">
                                     </div>
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
-                                            <label for="numeroVendedor" class="required">Número</label>
-                                            <input type="text" id="numeroVendedor" name="numeroVendedor" required>
+                                            <label for="numeroVendedor" class="required">Número *</label>
+                                            <input type="text" id="numeroVendedor" name="numeroVendedor" required placeholder="Número">
                                         </div>
                                         <div class="form-group">
                                             <label for="complementoVendedor">Complemento</label>
-                                            <input type="text" id="complementoVendedor" name="complementoVendedor">
+                                            <input type="text" id="complementoVendedor" name="complementoVendedor" placeholder="Apto, Sala, etc.">
                                         </div>
                                     </div>
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
-                                            <label for="estadoVendedor" class="required">Estado</label>
+                                            <label for="estadoVendedor" class="required">Estado *</label>
                                             <select id="estadoVendedor" name="estadoVendedor" required>
                                                 <option value="">Selecione...</option>
                                                 <option value="AC">Acre</option>
@@ -480,8 +484,8 @@ require_once 'src/conexao.php';
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label for="cidadeVendedor" class="required">Cidade</label>
-                                            <input type="text" id="cidadeVendedor" name="cidadeVendedor" required>
+                                            <label for="cidadeVendedor" class="required">Cidade *</label>
+                                            <input type="text" id="cidadeVendedor" name="cidadeVendedor" required placeholder="Nome da cidade">
                                         </div>
                                     </div>
                                     
@@ -500,12 +504,12 @@ require_once 'src/conexao.php';
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
-                                            <label for="telefone1Vendedor" class="required">Telefone/Celular</label>
-                                            <input type="text" id="telefone1Vendedor" name="telefone1Vendedor" maxlength="15" required>
+                                            <label for="telefone1Vendedor" class="required">Telefone/Celular *</label>
+                                            <input type="text" id="telefone1Vendedor" name="telefone1Vendedor" maxlength="15" required placeholder="(11) 99999-9999">
                                         </div>
                                         <div class="form-group">
                                             <label for="telefone2Vendedor">Telefone/Celular (opcional)</label>
-                                            <input type="text" id="telefone2Vendedor" name="telefone2Vendedor" maxlength="15">
+                                            <input type="text" id="telefone2Vendedor" name="telefone2Vendedor" maxlength="15" placeholder="(11) 99999-9999">
                                         </div>
                                     </div>
                                     
@@ -517,6 +521,7 @@ require_once 'src/conexao.php';
                                             <option value="premium">Premium</option>
                                             <option value="empresarial">Empresarial</option>
                                         </select>
+                                        <small class="form-help">Você poderá alterar o plano posteriormente</small>
                                     </div>
                                     
                                     <div class="step-navigation">
@@ -543,18 +548,18 @@ require_once 'src/conexao.php';
                                     <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
                                     
                                     <div class="form-group">
-                                        <label for="telefoneTransportador" class="required">Telefone/Celular</label>
-                                        <input type="text" id="telefoneTransportador" name="telefoneTransportador" maxlength="15" required>
+                                        <label for="telefoneTransportador" class="required">Telefone/Celular *</label>
+                                        <input type="text" id="telefoneTransportador" name="telefoneTransportador" maxlength="15" required placeholder="(11) 99999-9999">
                                     </div>
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
                                             <label for="ANTT">ANTT</label>
-                                            <input type="text" id="ANTT" name="ANTT">
+                                            <input type="text" id="ANTT" name="ANTT" placeholder="Agência Nacional de Transportes Terrestres">
                                         </div>
                                         <div class="form-group">
-                                            <label for="numeroANTT" class="required">Número ANTT</label>
-                                            <input type="text" id="numeroANTT" name="numeroANTT" required>
+                                            <label for="numeroANTT" class="required">Número ANTT *</label>
+                                            <input type="text" id="numeroANTT" name="numeroANTT" required placeholder="Número de registro na ANTT">
                                         </div>
                                     </div>
                                     
@@ -570,20 +575,20 @@ require_once 'src/conexao.php';
                                     <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados do Veículo</h4>
                                     
                                     <div class="form-group">
-                                        <label for="placaVeiculo" class="required">Placa do Veículo</label>
+                                        <label for="placaVeiculo" class="required">Placa do Veículo *</label>
                                         <input type="text" id="placaVeiculo" name="placaVeiculo" required 
                                                placeholder="AAA-0A00" maxlength="8">
                                     </div>
                                     
                                     <div class="form-group">
-                                        <label for="modeloVeiculo" class="required">Modelo do Veículo</label>
-                                        <input type="text" id="modeloVeiculo" name="modeloVeiculo" required>
+                                        <label for="modeloVeiculo" class="required">Modelo do Veículo *</label>
+                                        <input type="text" id="modeloVeiculo" name="modeloVeiculo" required placeholder="Ex: Mercedes-Benz Actros">
                                     </div>
                                     
                                     <div class="form-group">
-                                        <label for="descricaoVeiculo" class="required">Descrição do Veículo</label>
+                                        <label for="descricaoVeiculo" class="required">Descrição do Veículo *</label>
                                         <textarea id="descricaoVeiculo" name="descricaoVeiculo" rows="3" required 
-                                                  placeholder="Ex: Caminhão baú, Carreta, etc."></textarea>
+                                                  placeholder="Ex: Caminhão baú refrigerado, capacidade 20 toneladas"></textarea>
                                     </div>
                                     
                                     <div class="step-navigation">
@@ -605,13 +610,13 @@ require_once 'src/conexao.php';
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
-                                            <label for="estadoTransportador" class="required">Estado</label>
+                                            <label for="estadoTransportador" class="required">Estado *</label>
                                             <select id="estadoTransportador" name="estadoTransportador" required>
                                                 <option value="">Selecione o estado...</option>
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label for="cidadeTransportador" class="required">Cidade</label>
+                                            <label for="cidadeTransportador" class="required">Cidade *</label>
                                             <select id="cidadeTransportador" name="cidadeTransportador" required>
                                                 <option value="">Selecione a cidade...</option>
                                             </select>
@@ -630,12 +635,20 @@ require_once 'src/conexao.php';
                             </div>
                         </div>
 
-                        <div class="form-group" id="messageGroup">
-                            <label for="message" class="required">Mensagem</label>
-                            <textarea id="message" name="message" rows="5" required></textarea>
+                        <!-- Mensagem (opcional) -->
+                        <div class="form-group" id="messageGroup" style="display: none; margin-top: 20px;">
+                            <label for="message">Mensagem (opcional)</label>
+                            <textarea id="message" name="message" rows="4" placeholder="Conte-nos mais sobre o que você precisa..."></textarea>
                         </div>
-                        <div class="end">
-                            <button type="button" id="submitOther" class="step-btn btn-ajax-submit">Enviar solicitação</button>
+                        
+                        <!-- Botão de envio genérico (para quando não há formulário específico selecionado) -->
+                        <div class="end" style="margin-top: 30px;">
+                            <button type="button" id="submitOther" class="cta-button" style="width: 100%; padding: 15px; font-size: 1.1em;">
+                                Enviar Solicitação de Cadastro
+                            </button>
+                            <small class="form-help" style="text-align: center; display: block; margin-top: 10px; color: #666;">
+                                * Campos obrigatórios
+                            </small>
                         </div>
                     </form>
                 </div>
@@ -686,26 +699,7 @@ require_once 'src/conexao.php';
         </div>
     </footer>
 
-    <div id="loginModal" class="modal" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
-        <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 400px; border-radius: 10px;">
-            <span class="close" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
-            <h2 style="color: var(--dark-color); margin-bottom: 20px;">Login</h2>
-
-            <form action="login.php" method="POST">
-                <div class="form-group">
-                    <label for="email" class="required">Email</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="senha" class="required">Senha</label>
-                    <input type="password" id="senha" name="senha" required>
-                </div>
-                <button type="submit" class="cta-button" style="width: 100%;">Entrar</button>
-            </form>
-        </div>
-    </div>
-    
     <script src="script.js"></script>
     
-    </body>
+</body>
 </html>

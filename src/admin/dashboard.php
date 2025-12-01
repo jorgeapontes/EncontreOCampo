@@ -96,31 +96,26 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
     <div class="section-header">
         <h2>Solicitações de Cadastro Pendentes</h2>
 
-
-        <!-- BOTÕES DE FILTRO E ORDENAÇÃO (IGUAIS A TODOS_USUARIOS.PHP) -->
+        <!-- BOTÕES DE FILTRO E ORDENAÇÃO -->
         <div class="table-controls">
+            <!-- FILTRO -->
+            <select id="filtro-tipo" class="filter-select">
+                <option value="todos">Todos</option>
+                <option value="admin">Administrador</option>
+                <option value="comprador">Comprador</option>
+                <option value="vendedor">Vendedor</option>
+                <option value="transportador">Transportador</option>
+            </select>
 
-        <!-- FILTRO -->
-        <select id="filtro-tipo" class="filter-select">
-            <option value="todos">Todos</option>
-            <option value="admin">Administrador</option>
-            <option value="comprador">Comprador</option>
-            <option value="vendedor">Vendedor</option>
-            <option value="transportador">Transportador</option>
-        </select>
-
-        <!-- ORDENAR -->
-        <select id="ordenar-por" class="filter-select">
-            <option value="recente">Mais recente</option>
-            <option value="antigo">Mais antigo</option>
-            <option value="az">Nome A-Z</option>
-            <option value="za">Nome Z-A</option>
-        </select>
-
+            <!-- ORDENAR -->
+            <select id="ordenar-por" class="filter-select">
+                <option value="recente">Mais recente</option>
+                <option value="antigo">Mais antigo</option>
+                <option value="az">Nome A-Z</option>
+                <option value="za">Nome Z-A</option>
+            </select>
+        </div>
     </div>
-    </div>
-
-    
 
     <?php if (count($solicitacoes) > 0): ?>
     <div class="table-responsive">
@@ -177,13 +172,14 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
 <!-- MODAL -->
 <div id="detalhesModal" class="modal">
     <div class="modal-content">
-        <span class="close-button">&times;</span>
-        <h3 id="modal-titulo">Detalhes da Solicitação</h3>
-        <p><strong>Nome:</strong> <span id="modal-nome"></span></p>
-        <p><strong>Tipo de Cadastro:</strong> <span id="modal-tipo"></span></p>
-        <hr>
-        <h4>Dados Adicionais:</h4>
-        <div id="modal-corpo-json"></div>
+        <div class="modal-header">
+            <h3 id="modal-titulo">Detalhes da Solicitação</h3>
+            <span class="user-type-badge" id="modal-tipo-badge"></span>
+            <span class="close-button">&times;</span>
+        </div>
+        <div class="modal-body" id="modal-corpo-completo">
+            <!-- Conteúdo será preenchido dinamicamente -->
+        </div>
     </div>
 </div>
 
@@ -225,25 +221,168 @@ document.getElementById("ordenar-por").addEventListener("change", function () {
 });
 
 // ==========================
-// MODAL DETALHES
+// MODAL DETALHES - MELHORADO
 // ==========================
 document.addEventListener("DOMContentLoaded", function () {
     const modal = document.getElementById("detalhesModal");
     const closeBtn = document.querySelector(".close-button");
 
+    // Mapeamento de campos em português
+    const camposMap = {
+        // Campos comuns
+        'nome': 'Nome Completo',
+        'email': 'E-mail',
+        'telefone': 'Telefone',
+        'cpf': 'CPF',
+        'cnpj': 'CNPJ',
+        'data_nascimento': 'Data de Nascimento',
+        
+        // Endereço
+        'cep': 'CEP',
+        'rua': 'Rua',
+        'numero': 'Número',
+        'complemento': 'Complemento',
+        'bairro': 'Bairro',
+        'cidade': 'Cidade',
+        'estado': 'Estado',
+        
+        // Comprador
+        'preferencias_compra': 'Preferências de Compra',
+        'forma_pagamento': 'Forma de Pagamento',
+        
+        // Vendedor
+        'nome_propriedade': 'Nome da Propriedade',
+        'tamanho_propriedade': 'Tamanho da Propriedade',
+        'tipos_produtos': 'Tipos de Produtos',
+        'certificacoes': 'Certificações',
+        'capacidade_producao': 'Capacidade de Produção',
+        
+        // Transportador
+        'nome_empresa': 'Nome da Empresa',
+        'tipo_veiculo': 'Tipo de Veículo',
+        'capacidade_carga': 'Capacidade de Carga',
+        'regioes_atendidas': 'Regiões Atendidas',
+        'licencas': 'Licenças'
+    };
+
+    // Categorias de informações
+    const categorias = {
+        'pessoal': ['nome', 'email', 'telefone', 'cpf', 'cnpj', 'data_nascimento'],
+        'endereco': ['cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado'],
+        'comprador': ['preferencias_compra', 'forma_pagamento'],
+        'vendedor': ['nome_propriedade', 'tamanho_propriedade', 'tipos_produtos', 'certificacoes', 'capacidade_producao'],
+        'transportador': ['nome_empresa', 'tipo_veiculo', 'capacidade_carga', 'regioes_atendidas', 'licencas']
+    };
+
+    const titulosCategorias = {
+        'pessoal': 'Informações Pessoais',
+        'endereco': 'Endereço',
+        'comprador': 'Dados do Comprador',
+        'vendedor': 'Dados do Vendedor',
+        'transportador': 'Dados do Transportador'
+    };
+
     document.querySelectorAll(".btn-ver-detalhes").forEach(btn => {
         btn.addEventListener("click", function () {
-            document.getElementById("modal-nome").innerText = this.getAttribute("data-nome");
-            document.getElementById("modal-tipo").innerText = this.getAttribute("data-tipo");
-
+            const nome = this.getAttribute("data-nome");
+            const tipo = this.getAttribute("data-tipo");
             const json = JSON.parse(this.getAttribute("data-json"));
-            const corpo = document.getElementById("modal-corpo-json");
+
+            // Atualiza header
+            document.getElementById("modal-titulo").innerText = nome;
+            document.getElementById("modal-tipo-badge").innerText = tipo;
+
+            // Limpa corpo
+            const corpo = document.getElementById("modal-corpo-completo");
             corpo.innerHTML = "";
 
-            for (const chave in json) {
-                if (json[chave].trim() !== "") {
-                    corpo.innerHTML += `<p><strong>${chave}:</strong> ${json[chave]}</p>`;
+            // Campos a ignorar
+            const camposIgnorar = ['senha', 'senha_hash', 'confirmar_senha', 'password'];
+
+            // Organiza dados por categoria
+            for (const [categoria, campos] of Object.entries(categorias)) {
+                const dadosCategoria = {};
+                
+                for (const campo of campos) {
+                    // Procura o campo no JSON (case-insensitive)
+                    const chaveEncontrada = Object.keys(json).find(k => 
+                        k.toLowerCase().replace(/\s+/g, '_') === campo.toLowerCase()
+                    );
+                    
+                    if (chaveEncontrada && json[chaveEncontrada] && json[chaveEncontrada].trim() !== "") {
+                        dadosCategoria[campo] = json[chaveEncontrada];
+                    }
                 }
+
+                // Se tem dados nesta categoria, cria a seção
+                if (Object.keys(dadosCategoria).length > 0) {
+                    const secao = document.createElement('div');
+                    secao.className = 'info-section';
+                    
+                    const titulo = document.createElement('h4');
+                    titulo.textContent = titulosCategorias[categoria];
+                    secao.appendChild(titulo);
+
+                    for (const [campo, valor] of Object.entries(dadosCategoria)) {
+                        const item = document.createElement('div');
+                        item.className = 'info-item';
+                        
+                        const label = document.createElement('div');
+                        label.className = 'info-label';
+                        label.textContent = camposMap[campo] || campo;
+                        
+                        const value = document.createElement('div');
+                        value.className = 'info-value';
+                        value.textContent = valor;
+                        
+                        item.appendChild(label);
+                        item.appendChild(value);
+                        secao.appendChild(item);
+                    }
+
+                    corpo.appendChild(secao);
+                }
+            }
+
+            // Adiciona campos extras que não estão mapeados
+            const camposMapeados = new Set(Object.values(categorias).flat());
+            const camposExtras = {};
+            
+            for (const [chave, valor] of Object.entries(json)) {
+                const chaveLimpa = chave.toLowerCase().replace(/\s+/g, '_');
+                const ignorar = camposIgnorar.some(ig => chaveLimpa.includes(ig.toLowerCase()));
+                
+                if (!ignorar && !camposMapeados.has(chaveLimpa) && valor && valor.trim() !== "") {
+                    camposExtras[chave] = valor;
+                }
+            }
+
+            if (Object.keys(camposExtras).length > 0) {
+                const secao = document.createElement('div');
+                secao.className = 'info-section';
+                
+                const titulo = document.createElement('h4');
+                titulo.textContent = 'Outras Informações';
+                secao.appendChild(titulo);
+
+                for (const [chave, valor] of Object.entries(camposExtras)) {
+                    const item = document.createElement('div');
+                    item.className = 'info-item';
+                    
+                    const label = document.createElement('div');
+                    label.className = 'info-label';
+                    label.textContent = chave;
+                    
+                    const value = document.createElement('div');
+                    value.className = 'info-value';
+                    value.textContent = valor;
+                    
+                    item.appendChild(label);
+                    item.appendChild(value);
+                    secao.appendChild(item);
+                }
+
+                corpo.appendChild(secao);
             }
 
             modal.style.display = "block";

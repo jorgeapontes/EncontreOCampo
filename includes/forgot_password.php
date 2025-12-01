@@ -173,7 +173,7 @@ session_start();
         </form>
         
         <div class="back-link">
-            <a href="login.php">← Voltar para o Login</a>
+            <a href="../src/login.php">← Voltar para o Login</a>
         </div>
     </div>
 </body>

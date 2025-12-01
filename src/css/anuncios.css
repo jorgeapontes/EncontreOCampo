@@ -11,9 +11,9 @@
     --white: #ffffff;
     --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     --radius: 12px;
-    --desconto-color: #e74c3c;
+    --desconto-color: #3498db;
     --desconto-bg: #ffeaea;
-    --desconto-dark: #c0392b;
+    --desconto-dark: #3498db;
 }
 
 /* Configurações Globais */
@@ -575,7 +575,7 @@
 }
 
 .price.price-desconto {
-    color: var(--desconto-color);
+    color: var(--primary-color);
     font-size: 1.6rem;
 }
 
@@ -591,12 +591,13 @@
     align-items: center;
     gap: 6px;
     font-size: 0.8rem;
-    color: var(--desconto-color);
-    background: var(--desconto-bg);
+    color: black;
+    background: #e4e2e2;
     padding: 4px 8px;
     border-radius: 4px;
-    font-weight: 600;
+    /* font-weight: 600; */
     margin-top: 5px;
+    max-width: fit-content;
 }
 
 .economia-info i {
@@ -686,7 +687,6 @@
 }
 
 .anuncio-card.card-desconto:hover {
-    border-color: var(--desconto-color);
     box-shadow: 0 8px 25px rgba(231, 76, 60, 0.15);
 }
 

@@ -1,5 +1,5 @@
 <?php
-// src/anuncios.php (Versão Simplificada)
+// src/anuncios.php (COM LÓGICA DE DESCONTO APLICADA)
 session_start();
 require_once 'conexao.php'; 
 
@@ -55,10 +55,11 @@ if (!empty($filtro_categoria)) {
 $order_by = '';
 switch ($ordenacao) {
     case 'preco_menor':
-        $order_by = 'p.preco ASC';
+        // Ordena pelo preço real (considerando desconto se houver)
+        $order_by = 'COALESCE(NULLIF(p.preco_desconto, 0), p.preco) ASC';
         break;
     case 'preco_maior':
-        $order_by = 'p.preco DESC';
+        $order_by = 'COALESCE(NULLIF(p.preco_desconto, 0), p.preco) DESC';
         break;
     case 'nome':
         $order_by = 'p.nome ASC';
@@ -82,11 +83,16 @@ $categorias_disponiveis = [
 ];
 
 try {
-    // Consulta SQL que inclui 'p.imagem_url'
+    // ATUALIZAÇÃO SQL: Adicionados campos de desconto
     $sql = "SELECT 
                 p.id, 
                 p.nome AS produto, 
                 p.preco, 
+                p.preco_desconto,
+                p.desconto_percentual,
+                p.desconto_ativo,
+                p.desconto_data_inicio,
+                p.desconto_data_fim,
                 p.estoque AS quantidade_disponivel, 
                 p.unidade_medida, 
                 p.descricao, 
@@ -138,7 +144,6 @@ try {
                     </div>
                 </div>
 
-                <!-- Barra de Pesquisa -->
                 <div class="search-container">
                     <form action="anuncios.php" method="GET" class="search-form">
                         <div class="search-box">
@@ -207,10 +212,8 @@ try {
             <?php endif; ?>
         </div>
 
-        <!-- Botões Simples de Filtro e Ordenação -->
         <div class="filtros-simples">
             <div class="filtros-botoes">
-                <!-- Filtro por Categoria -->
                 <div class="dropdown">
                     <button class="filtro-btn">
                         <i class="fas fa-filter"></i>
@@ -249,7 +252,6 @@ try {
                     </div>
                 </div>
 
-                <!-- Ordenação -->
                 <div class="dropdown">
                     <button class="filtro-btn">
                         <i class="fas fa-sort"></i>
@@ -301,7 +303,6 @@ try {
                 </div>
             </div>
 
-            <!-- Indicador de filtro ativo -->
             <?php if (!empty($filtro_categoria)): ?>
                 <div class="filtro-info">
                     <span class="filtro-ativo-texto">
@@ -320,41 +321,49 @@ try {
                     <div class="empty-search">
                         <i class="fas fa-search fa-3x" style="color: var(--text-light); margin-bottom: 20px;"></i>
                         <h3>Nenhum resultado encontrado</h3>
-                        <p>
-                            <?php if (!empty($termo_pesquisa) && !empty($filtro_categoria)): ?>
-                                Não encontramos anúncios para "<?php echo htmlspecialchars($termo_pesquisa); ?>" na categoria "<?php echo htmlspecialchars($filtro_categoria); ?>"
-                            <?php elseif (!empty($termo_pesquisa)): ?>
-                                Não encontramos anúncios para "<?php echo htmlspecialchars($termo_pesquisa); ?>"
-                            <?php else: ?>
-                                Não encontramos anúncios na categoria "<?php echo htmlspecialchars($filtro_categoria); ?>"
-                            <?php endif; ?>
-                        </p>
                         <p>Tente outros termos ou <a href="anuncios.php">veja todos os anúncios</a></p>
                     </div>
                 <?php else: ?>
                     <p>Nenhum anúncio ativo encontrado no momento.</p>
-                    <p>Volte mais tarde ou <a href="../index.php#contato">registre-se</a> para receber notificações.</p>
                 <?php endif; ?>
             </div>
         <?php else: ?>
             <div class="anuncios-grid">
                 <?php foreach ($anuncios as $anuncio): ?>
-                    <div class="anuncio-card">
+                    <?php
+                        // LÓGICA DE VERIFICAÇÃO DO DESCONTO
+                        $tem_desconto = false;
+                        $preco_final = $anuncio['preco'];
+                        $percentual_off = 0;
+
+                        if ($anuncio['desconto_ativo'] == 1) {
+                            $agora = date('Y-m-d H:i:s');
+                            $inicio = $anuncio['desconto_data_inicio'];
+                            $fim = $anuncio['desconto_data_fim'];
+                            
+                            // Verifica se as datas são válidas (ou se são nulas/permanentes)
+                            $data_valida = true;
+                            if ($inicio && $agora < $inicio) $data_valida = false;
+                            if ($fim && $agora > $fim) $data_valida = false;
+
+                            if ($data_valida && $anuncio['preco_desconto'] > 0 && $anuncio['preco_desconto'] < $anuncio['preco']) {
+                                $tem_desconto = true;
+                                $preco_final = $anuncio['preco_desconto'];
+                                $percentual_off = intval($anuncio['desconto_percentual']);
+                            }
+                        }
+                    ?>
+
+                    <div class="anuncio-card <?php echo $tem_desconto ? 'card-desconto' : ''; ?>">
                         <div class="card-image">
+                            <?php if ($tem_desconto): ?>
+                                <div class="badge-desconto">-<?php echo $percentual_off; ?>%</div>
+                            <?php endif; ?>
+
                             <?php 
-                                // Corrigir o caminho da imagem
                                 $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) : '../img/placeholder.png';
-                                
-                                // Remover o '../' do início do caminho se existir
-                                if (strpos($imagePath, '../') === 0) {
-                                    $imagePath = substr($imagePath, 3);
-                                }
-                                
-                                // Verificar se a imagem existe, senão usar placeholder
-                                $fullImagePath = $imagePath;
-                                if ($anuncio['imagem_url'] && !file_exists($fullImagePath)) {
-                                    $imagePath = '../img/placeholder.png';
-                                }
+                                if (strpos($imagePath, '../') === 0) $imagePath = substr($imagePath, 3);
+                                if ($anuncio['imagem_url'] && !file_exists($imagePath)) $imagePath = '../img/placeholder.png';
                             ?>
                             <img src="<?php echo $imagePath; ?>" alt="Imagem de <?php echo htmlspecialchars($anuncio['produto']); ?>" 
                                 onerror="this.src='../img/placeholder.png'">
@@ -367,39 +376,46 @@ try {
                                     <?php echo htmlspecialchars($anuncio['nome_vendedor']); ?>   </a>   </span>
                                 <span class="categoria-badge"><?php echo htmlspecialchars($anuncio['categoria']); ?></span>
                             </div>
+                            
                             <div class="card-body">
-                                <p class="price">
-                                    R$ <?php echo number_format($anuncio['preco'], 2, ',', '.'); ?>
-                                    <span>/<?php echo htmlspecialchars($anuncio['unidade_medida']); ?></span>
-                                </p>
+                                <div class="price-container">
+                                    <?php if ($tem_desconto): ?>
+                                        <div class="preco-original">R$ <?php echo number_format($anuncio['preco'], 2, ',', '.'); ?></div>
+                                        <div class="price price-desconto">
+                                            R$ <?php echo number_format($preco_final, 2, ',', '.'); ?>
+                                            <span>/<?php echo htmlspecialchars($anuncio['unidade_medida']); ?></span>
+                                        </div>
+                                        <div class="economia-info">
+                                            <i class="fas fa-tag"></i> Economia de R$ <?php echo number_format($anuncio['preco'] - $preco_final, 2, ',', '.'); ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <p class="price">
+                                            R$ <?php echo number_format($anuncio['preco'], 2, ',', '.'); ?>
+                                            <span>/<?php echo htmlspecialchars($anuncio['unidade_medida']); ?></span>
+                                        </p>
+                                    <?php endif; ?>
+                                </div>
+
                                 <p class="estoque">
                                     <i class="fas fa-box"></i>
                                     <?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?> disponíveis
                                 </p>
+                                
                                 <p class="descricao">
                                     <?php 
-                                    $descricao = $anuncio['descricao'] ?? 'Sem descrição.';
-                                    $descricao = htmlspecialchars($descricao);
-                                    
-                                    // Definir limite de caracteres
+                                    $descricao = htmlspecialchars($anuncio['descricao'] ?? 'Sem descrição.');
                                     $limite = 120;
-                                    
                                     if (strlen($descricao) > $limite) {
-                                        // Encontrar o último espaço dentro do limite para não cortar palavras
                                         $descricao_curta = substr($descricao, 0, $limite);
                                         $ultimo_espaco = strrpos($descricao_curta, ' ');
-                                        
-                                        if ($ultimo_espaco !== false) {
-                                            echo substr($descricao_curta, 0, $ultimo_espaco) . '...';
-                                        } else {
-                                            echo $descricao_curta . '...';
-                                        }
+                                        echo ($ultimo_espaco !== false) ? substr($descricao_curta, 0, $ultimo_espaco) . '...' : $descricao_curta . '...';
                                     } else {
                                         echo $descricao;
                                     }
                                     ?>
                                 </p>
                             </div>
+                            
                             <div class="card-actions">
                                 <?php if ($is_comprador): ?>
                                     <a href="comprador/proposta_nova.php?anuncio_id=<?php echo $anuncio['id']; ?>" class="btn btn-primary">
@@ -425,7 +441,6 @@ try {
             <p>
                 É necessário estar logado como Comprador para fazer uma proposta.
             </p>
-            
             <form action="login.php" method="POST">
                 <div class="form-group">
                     <label for="modal-email">Email</label>
@@ -443,7 +458,6 @@ try {
         </div>
     </div>
 
-    <!-- Footer -->
     <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-content">
@@ -455,7 +469,6 @@ try {
                         <li><a href="comprador/favoritos.php">Meus Favoritos</a></li>
                     </ul>
                 </div>
-                
                 <div class="footer-section">
                     <h4>Suporte</h4>
                     <ul>
@@ -464,7 +477,6 @@ try {
                         <li><a href="sobre.php">Sobre Nós</a></li>
                     </ul>
                 </div>
-                
                 <div class="footer-section">
                     <h4>Legal</h4>
                     <ul>
@@ -473,7 +485,6 @@ try {
                         <li><a href="privacidade.php">Política de Privacidade</a></li>
                     </ul>
                 </div>
-                
                 <div class="footer-section">
                     <h4>Contato</h4>
                     <div class="contact-info">
@@ -487,7 +498,6 @@ try {
                     </div>
                 </div>
             </div>
-            
             <div class="footer-bottom">
                 <p>&copy; Encontre o Campo. Todos os direitos reservados.</p>
             </div>
@@ -496,31 +506,16 @@ try {
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Modal Logic
         const modal = document.getElementById('loginModal');
         const closeButton = document.querySelector('.modal-close');
         
-        function openModal(e) {
-            e.preventDefault();
-            modal.style.display = 'block';
-        }
-
-        document.querySelectorAll('.open-login-modal').forEach(element => {
-            element.addEventListener('click', openModal);
-        });
-
-        if (closeButton) {
-            closeButton.onclick = function() {
-                modal.style.display = 'none';
-            }
-        }
-
-        window.onclick = function(event) {
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        }
+        function openModal(e) { e.preventDefault(); modal.style.display = 'block'; }
+        document.querySelectorAll('.open-login-modal').forEach(e => e.addEventListener('click', openModal));
+        if (closeButton) closeButton.onclick = () => modal.style.display = 'none';
+        window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; }
         
-        // Navbar scroll behavior 
+        // Navbar Scroll
         window.addEventListener('scroll', function() {
             const navbar = document.querySelector('.navbar');
             if (navbar && window.scrollY > 50) {
@@ -534,10 +529,9 @@ try {
             }
         });
 
-        // Foco na barra de pesquisa quando clicar no ícone de lupa (mobile)
+        // Search Focus
         const searchBtn = document.querySelector('.search-btn');
         const searchInput = document.querySelector('.search-input');
-        
         if (searchBtn && searchInput) {
             searchBtn.addEventListener('click', function(e) {
                 if (window.innerWidth <= 768) {

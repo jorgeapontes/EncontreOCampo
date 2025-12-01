@@ -1,4 +1,4 @@
-/* src/css/anuncios.css (VERSÃO CORRIGIDA) */
+/* src/css/anuncios.css (VERSÃO COMPLETA E CORRIGIDA - DESCONTO FUNCIONANDO) */
 
 :root {
     --primary-color: #2ecc71;
@@ -11,6 +11,9 @@
     --white: #ffffff;
     --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     --radius: 12px;
+    --desconto-color: #e74c3c;
+    --desconto-bg: #ffeaea;
+    --desconto-dark: #c0392b;
 }
 
 /* Configurações Globais */
@@ -452,6 +455,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    position: relative;
 }
 
 .anuncio-card:hover {
@@ -464,6 +468,7 @@
     height: auto;
     max-height:260px;
     overflow: hidden;
+    position: relative;
 }
 
 .card-image img {
@@ -475,6 +480,34 @@
 
 .anuncio-card:hover .card-image img {
     transform: scale(1.05);
+}
+
+/* Badge de Desconto - ESTILOS CORRIGIDOS */
+.badge-desconto {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: linear-gradient(135deg, var(--desconto-color), var(--desconto-dark));
+    color: var(--white);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 .card-content {
@@ -521,6 +554,19 @@
     margin-bottom: 20px;
 }
 
+/* Container de Preços - ESTILOS CORRIGIDOS */
+.price-container {
+    margin-bottom: 10px;
+}
+
+.preco-original {
+    font-size: 1rem;
+    color: var(--text-light);
+    text-decoration: line-through;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
 .price {
     font-size: 1.5rem;
     font-weight: 700;
@@ -528,10 +574,33 @@
     margin-bottom: 10px;
 }
 
+.price.price-desconto {
+    color: var(--desconto-color);
+    font-size: 1.6rem;
+}
+
 .price span {
     font-size: 0.9rem;
     color: var(--text-light);
     font-weight: 500;
+}
+
+/* Informação de Economia - ESTILOS CORRIGIDOS */
+.economia-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--desconto-color);
+    background: var(--desconto-bg);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-top: 5px;
+}
+
+.economia-info i {
+    font-size: 0.7rem;
 }
 
 .estoque {
@@ -596,6 +665,29 @@
 .btn-primary:hover {
     background-color: var(--primary-dark);
     transform: translateY(-2px);
+}
+
+/* Efeito especial para cards com desconto - ESTILOS CORRIGIDOS */
+.anuncio-card.card-desconto {
+    border: 2px solid transparent;
+    background: linear-gradient(135deg, var(--white), #f8f9fa);
+    position: relative;
+    overflow: hidden;
+}
+
+.anuncio-card.card-desconto::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--desconto-color), var(--desconto-dark));
+}
+
+.anuncio-card.card-desconto:hover {
+    border-color: var(--desconto-color);
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.15);
 }
 
 /* Empty State */
@@ -873,6 +965,15 @@
         margin: 20% auto;
         padding: 25px 20px;
     }
+    
+    .badge-desconto {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+    }
+    
+    .price.price-desconto {
+        font-size: 1.4rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -896,5 +997,9 @@
     .filtro-btn {
         flex: 1;
         justify-content: center;
+    }
+    
+    .economia-info {
+        font-size: 0.75rem;
     }
 }

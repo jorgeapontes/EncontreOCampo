@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 01/12/2025 às 00:15
+-- Tempo de geração: 01/12/2025 às 02:39
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -132,6 +132,7 @@ CREATE TABLE `produtos` (
   `nome` varchar(255) NOT NULL,
   `descricao` text DEFAULT NULL,
   `preco` decimal(10,2) NOT NULL,
+  `preco_desconto` decimal(10,2) DEFAULT NULL,
   `desconto_percentual` decimal(5,2) DEFAULT 0.00,
   `desconto_ativo` tinyint(1) DEFAULT 0,
   `desconto_data_inicio` datetime DEFAULT NULL,
@@ -149,13 +150,13 @@ CREATE TABLE `produtos` (
 -- Despejando dados para a tabela `produtos`
 --
 
-INSERT INTO `produtos` (`id`, `vendedor_id`, `nome`, `descricao`, `preco`, `desconto_percentual`, `desconto_ativo`, `desconto_data_inicio`, `desconto_data_fim`, `categoria`, `imagem_url`, `estoque`, `unidade_medida`, `status`, `data_criacao`, `data_atualizacao`) VALUES
-(2, 1, 'uvas', 'uvas verdes', 3.33, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_691527af8dea16.84286255.jpg', 10, NULL, 'ativo', '2025-11-13 00:34:55', NULL),
-(6, 1, 'Limão', 'teste', 5.00, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_691d2b4d8c5da3.53661953.jpeg', 90, NULL, 'ativo', '2025-11-19 02:28:29', '2025-11-19 03:12:54'),
-(7, 1, 'Teste esgotar estoque', '', 5.00, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_691d3821c54958.39837631.jpeg', 0, NULL, 'ativo', '2025-11-19 03:23:13', '2025-11-20 22:10:44'),
-(8, 2, 'banana', 'bananas amarelas', 2.22, 0.00, 0, NULL, NULL, 'Frutas Tropicais', '../uploads/produtos/prod_691f52c5b25cb6.01137275.jpeg', 12, NULL, 'ativo', '2025-11-20 17:41:25', NULL),
-(9, 2, 'melancia', 'melancias', 1.11, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_691f52db2a3106.65007213.jpg', 1, NULL, 'ativo', '2025-11-20 17:41:47', NULL),
-(10, 1, 'teste', '', 0.01, 0.00, 0, NULL, NULL, 'Frutas Tropicais', '../uploads/produtos/prod_691f534d824138.23504568.jpg', 1, NULL, 'ativo', '2025-11-20 17:43:41', '2025-11-30 19:47:31');
+INSERT INTO `produtos` (`id`, `vendedor_id`, `nome`, `descricao`, `preco`, `preco_desconto`, `desconto_percentual`, `desconto_ativo`, `desconto_data_inicio`, `desconto_data_fim`, `categoria`, `imagem_url`, `estoque`, `unidade_medida`, `status`, `data_criacao`, `data_atualizacao`) VALUES
+(2, 1, 'uvas', 'uvas verdes', 3.33, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_691527af8dea16.84286255.jpg', 10, NULL, 'ativo', '2025-11-13 00:34:55', NULL),
+(6, 1, 'Limão', 'teste', 5.00, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_691d2b4d8c5da3.53661953.jpeg', 90, NULL, 'ativo', '2025-11-19 02:28:29', '2025-11-19 03:12:54'),
+(7, 1, 'Teste esgotar estoque', '', 5.00, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_691d3821c54958.39837631.jpeg', 0, NULL, 'ativo', '2025-11-19 03:23:13', '2025-11-20 22:10:44'),
+(8, 2, 'banana', 'bananas amarelas', 2.22, NULL, 0.00, 0, NULL, NULL, 'Frutas Tropicais', '../uploads/produtos/prod_691f52c5b25cb6.01137275.jpeg', 12, NULL, 'ativo', '2025-11-20 17:41:25', NULL),
+(9, 2, 'melancia', 'melancias', 1.11, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_691f52db2a3106.65007213.jpg', 1, NULL, 'ativo', '2025-11-20 17:41:47', NULL),
+(10, 1, 'teste', '', 20.00, 19.60, 2.00, 1, NULL, NULL, 'Frutas Tropicais', '../uploads/produtos/prod_692ce592138434.75940422.jpeg', 1, NULL, 'ativo', '2025-11-20 17:43:41', '2025-12-01 01:18:31');
 
 -- --------------------------------------------------------
 

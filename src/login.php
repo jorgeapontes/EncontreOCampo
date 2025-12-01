@@ -78,6 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <section class="login-section">
@@ -119,7 +120,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     Não tem uma conta? <a href="../index.php#contato">Registre-se</a>
                 </div>
                 <div class="register-link">
-                    <a href="../index.php">Home</a>
+                    <a href="../index.php">
+                        <i class="fas fa-home"></i> Home
+                    </a>
                 </div>
 
             </form>

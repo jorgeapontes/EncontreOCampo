@@ -302,7 +302,7 @@ body {
     gap: 8px;
     padding: 10px 16px;
     background: var(--white);
-    border: 2px solid var(--light-color);
+    border: none;
     border-radius: 8px;
     color: var(--text-color);
     font-weight: 600;
@@ -311,11 +311,12 @@ body {
     transition: all 0.3s ease;
     position: relative;
     font-family: "Montserrat", sans-serif;
+    box-shadow: 0 1px 15px #55555533;
 }
 
 .filtro-btn:hover {
-    border-color: var(--primary-color);
     color: var(--primary-color);
+    transform: translateY(-2px);
 }
 
 .filtro-btn i {
@@ -347,7 +348,7 @@ body {
     background: var(--white);
     min-width: 220px;
     box-shadow: var(--shadow);
-    border-radius: var(--radius);
+    border-radius: 10px;
     z-index: 100;
     border: 1px solid var(--light-color);
 }
@@ -382,6 +383,7 @@ body {
     color: var(--dark-color);
     border-bottom: 1px solid var(--light-color);
     font-size: 0.9rem;
+    border-radius: 10px 10px 0 0;
 }
 
 .categoria-option, .ordenacao-option {
@@ -458,8 +460,8 @@ body {
     color: var(--text-light);
     text-decoration: none;
     font-size: 0.8rem;
-    padding: 5px;
-    border-radius: 2px;
+    padding: 7px 20px;
+    border-radius: 4px;
     transition: color 0.3s ease;
 }
 
@@ -520,8 +522,8 @@ body {
 
 .badge-desconto {
     position: absolute;
-    top: 5px;
-    right: 5px;
+    top: 10px;
+    right: 10px;
     background: var(--primary-color);
     color: var(--white);
     padding: 6px 12px;
@@ -531,7 +533,7 @@ body {
 
 
 .card-content {
-    padding: 20px;
+    padding: 15px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -555,13 +557,12 @@ body {
     font-size: 0.9rem;
     font-weight: 500;
     display: block;
-    margin-bottom: 8px;
 }
 
 .categoria-badge {
     position: absolute;
-    top: 5px;
-    left: 5px;
+    top: 10px;
+    left: 10px;
     background: var(--primary-color);
     color: var(--white);
     padding: 6px 12px;
@@ -571,7 +572,7 @@ body {
 
 .card-body {
     flex-grow: 1;
-    margin-bottom: 20px;
+    margin-bottom: 0px;
 }
 
 .price-container {
@@ -590,7 +591,6 @@ body {
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--primary-color);
-    margin-bottom: 10px;
 }
 
 .price.price-desconto {
@@ -653,14 +653,16 @@ body {
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-bottom: 10px;
 }
 
 .card-actions {
-    margin-top: auto;
+    display: inline-flex;
+    width: 100%;
 }
 
 .btn {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
@@ -672,7 +674,7 @@ body {
     border: none;
     cursor: pointer;
     justify-content: center;
-    width: 85%;
+    width: 100%;
     font-family: "Montserrat", sans-serif;
 }
 
@@ -692,26 +694,10 @@ body {
     overflow: hidden;
 }
 
-.anuncio-card.card-desconto::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--secondary-color), #4a4fdb);
-}
-
-.anuncio-card.card-desconto:hover {
-    box-shadow: 0 8px 10px rgba(97, 103, 234, 0.15);
-}
-
 /* Estado vazio */
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    background-color: var(--white);
-    border-radius: var(--radius);
     margin-top: 40px;
 }
 

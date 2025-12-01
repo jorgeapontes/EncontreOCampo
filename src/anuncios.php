@@ -198,7 +198,7 @@ try {
                 <?php if (!empty($termo_pesquisa)): ?>
                     <?php echo count($anuncios); ?> anúncio(s) encontrado(s)
                 <?php else: ?>
-                    Explore as ofertas de frutas e legumes dos nossos vendedores
+                    Explore as ofertas dos nossos vendedores
                 <?php endif; ?>
             </p>
             
@@ -438,7 +438,7 @@ try {
             <span class="modal-close">&times;</span>
             <h3>Acesso Negociador</h3>
             <p>
-                É necessário estar logado como Comprador para fazer uma proposta.
+                É necessário estar logado para comprar ou para fazer uma proposta.
             </p>
             <form action="login.php" method="POST">
                 <div class="form-group">

@@ -1114,3 +1114,75 @@ input:invalid:not(:focus):not(:placeholder-shown) {
     top: -5px;
     right: -5px;
 }
+
+
+/* Estilos para o formulário de registro */
+.form-help {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.85em;
+    color: #666;
+}
+
+.cep-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    white-space: nowrap;
+}
+
+.cep-btn:hover {
+    background-color: #218838;
+}
+
+.step-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+.step-btn:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+}
+
+.btn-prev {
+    background-color: #6c757d;
+}
+
+.btn-prev:hover {
+    background-color: #5a6268;
+}
+
+.required::after {
+    content: " *";
+    color: #dc3545;
+}
+
+/* Validação visual */
+input:invalid, select:invalid, textarea:invalid {
+    border-color: #ff6b6b !important;
+}
+
+input:valid, select:valid, textarea:valid {
+    border-color: #28a745 !important;
+}
+
+/* Animações para as etapas */
+.step-content {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

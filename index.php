@@ -216,24 +216,24 @@ require_once 'src/conexao.php';
                 <div class="contact-form">
                     <form id="mainForm" action="src/processar_solicitacao.php" method="POST">
                         <div class="form-group">
-                            <label for="name" class="required">Nome *</label>
+                            <label for="name" class="required">Nome </label>
                             <input type="text" id="name" name="name" required placeholder="Seu nome completo">
                         </div>
                         <div class="form-group">
-                            <label for="email" class="required">Email *</label>
+                            <label for="email" class="required">Email </label>
                             <input type="email" id="email" name="email" required placeholder="seu@email.com">
                         </div>
                         <div class="form-group">
-                            <label for="senha" class="required">Senha *</label>
+                            <label for="senha" class="required">Senha </label>
                             <input type="password" id="senha" name="senha" required minlength="8" placeholder="Mínimo 8 caracteres">
                             <small class="form-help">Use pelo menos 8 caracteres com letras e números</small>
                         </div>
                         <div class="form-group">
-                            <label for="confirma_senha" class="required">Confirme a Senha *</label>
+                            <label for="confirma_senha" class="required">Confirme a Senha </label>
                             <input type="password" id="confirma_senha" name="confirma_senha" required placeholder="Digite a senha novamente">
                         </div>
                         <div class="form-group">
-                            <label for="subject" class="required">Quero me tornar: *</label>
+                            <label for="subject" class="required">Quero me tornar: </label>
                             <select id="subject" name="subject" onchange="toggleAdditionalFields()" required>
                                 <option value="">Selecione...</option>
                                 <option value="comprador">Comprador</option>
@@ -258,7 +258,7 @@ require_once 'src/conexao.php';
                                         <input type="text" id="nomeComercialComprador" name="nomeComercialComprador" placeholder="Nome da sua empresa (opcional)">
                                     </div>
                                     <div class="form-group">
-                                        <label for="cpfCnpjComprador" class="required">CPF/CNPJ *</label>
+                                        <label for="cpfCnpjComprador" class="required">CPF/CNPJ </label>
                                         <input type="text" id="cpfCnpjComprador" name="cpfCnpjComprador" required placeholder="000.000.000-00 ou 00.000.000/0000-00">
                                         <small class="form-help">Digite apenas números, a máscara será aplicada automaticamente</small>
                                     </div>
@@ -287,13 +287,13 @@ require_once 'src/conexao.php';
                                     </div>
                                     
                                     <div class="form-group">
-                                        <label for="ruaComprador" class="required">Rua *</label>
+                                        <label for="ruaComprador" class="required">Rua </label>
                                         <input type="text" id="ruaComprador" name="ruaComprador" required placeholder="Nome da rua">
                                     </div>
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
-                                            <label for="numeroComprador" class="required">Número *</label>
+                                            <label for="numeroComprador" class="required">Número </label>
                                             <input type="text" id="numeroComprador" name="numeroComprador" required placeholder="Número">
                                         </div>
                                         <div class="form-group">
@@ -304,7 +304,7 @@ require_once 'src/conexao.php';
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
-                                            <label for="estadoComprador" class="required">Estado *</label>
+                                            <label for="estadoComprador" class="required">Estado </label>
                                             <select id="estadoComprador" name="estadoComprador" required>
                                                 <option value="">Selecione...</option>
                                                 <option value="AC">Acre</option>
@@ -337,7 +337,7 @@ require_once 'src/conexao.php';
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label for="cidadeComprador" class="required">Cidade *</label>
+                                            <label for="cidadeComprador" class="required">Cidade </label>
                                             <input type="text" id="cidadeComprador" name="cidadeComprador" required placeholder="Nome da cidade">
                                         </div>
                                     </div>
@@ -357,7 +357,7 @@ require_once 'src/conexao.php';
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
-                                            <label for="telefone1Comprador" class="required">Telefone/Celular *</label>
+                                            <label for="telefone1Comprador" class="required">Telefone/Celular </label>
                                             <input type="text" id="telefone1Comprador" name="telefone1Comprador" maxlength="15" required placeholder="(11) 99999-9999">
                                         </div>
                                         <div class="form-group">
@@ -405,7 +405,7 @@ require_once 'src/conexao.php';
                                         <input type="text" id="nomeComercialVendedor" name="nomeComercialVendedor" placeholder="Nome da sua empresa/fazenda">
                                     </div>
                                     <div class="form-group">
-                                        <label for="cpfCnpjVendedor" class="required">CPF/CNPJ *</label>
+                                        <label for="cpfCnpjVendedor" class="required">CPF/CNPJ </label>
                                         <input type="text" id="cpfCnpjVendedor" name="cpfCnpjVendedor" required placeholder="000.000.000-00 ou 00.000.000/0000-00">
                                         <small class="form-help">Digite apenas números, a máscara será aplicada automaticamente</small>
                                     </div>
@@ -434,13 +434,13 @@ require_once 'src/conexao.php';
                                     </div>
                                     
                                     <div class="form-group">
-                                        <label for="ruaVendedor" class="required">Rua *</label>
+                                        <label for="ruaVendedor" class="required">Rua </label>
                                         <input type="text" id="ruaVendedor" name="ruaVendedor" required placeholder="Nome da rua">
                                     </div>
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
-                                            <label for="numeroVendedor" class="required">Número *</label>
+                                            <label for="numeroVendedor" class="required">Número </label>
                                             <input type="text" id="numeroVendedor" name="numeroVendedor" required placeholder="Número">
                                         </div>
                                         <div class="form-group">
@@ -451,7 +451,7 @@ require_once 'src/conexao.php';
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
-                                            <label for="estadoVendedor" class="required">Estado *</label>
+                                            <label for="estadoVendedor" class="required">Estado </label>
                                             <select id="estadoVendedor" name="estadoVendedor" required>
                                                 <option value="">Selecione...</option>
                                                 <option value="AC">Acre</option>
@@ -484,7 +484,7 @@ require_once 'src/conexao.php';
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label for="cidadeVendedor" class="required">Cidade *</label>
+                                            <label for="cidadeVendedor" class="required">Cidade </label>
                                             <input type="text" id="cidadeVendedor" name="cidadeVendedor" required placeholder="Nome da cidade">
                                         </div>
                                     </div>
@@ -504,7 +504,7 @@ require_once 'src/conexao.php';
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
-                                            <label for="telefone1Vendedor" class="required">Telefone/Celular *</label>
+                                            <label for="telefone1Vendedor" class="required">Telefone/Celular </label>
                                             <input type="text" id="telefone1Vendedor" name="telefone1Vendedor" maxlength="15" required placeholder="(11) 99999-9999">
                                         </div>
                                         <div class="form-group">
@@ -548,7 +548,7 @@ require_once 'src/conexao.php';
                                     <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
                                     
                                     <div class="form-group">
-                                        <label for="telefoneTransportador" class="required">Telefone/Celular *</label>
+                                        <label for="telefoneTransportador" class="required">Telefone/Celular </label>
                                         <input type="text" id="telefoneTransportador" name="telefoneTransportador" maxlength="15" required placeholder="(11) 99999-9999">
                                     </div>
                                     
@@ -558,7 +558,7 @@ require_once 'src/conexao.php';
                                             <input type="text" id="ANTT" name="ANTT" placeholder="Agência Nacional de Transportes Terrestres">
                                         </div>
                                         <div class="form-group">
-                                            <label for="numeroANTT" class="required">Número ANTT *</label>
+                                            <label for="numeroANTT" class="required">Número ANTT </label>
                                             <input type="text" id="numeroANTT" name="numeroANTT" required placeholder="Número de registro na ANTT">
                                         </div>
                                     </div>
@@ -575,18 +575,18 @@ require_once 'src/conexao.php';
                                     <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados do Veículo</h4>
                                     
                                     <div class="form-group">
-                                        <label for="placaVeiculo" class="required">Placa do Veículo *</label>
+                                        <label for="placaVeiculo" class="required">Placa do Veículo </label>
                                         <input type="text" id="placaVeiculo" name="placaVeiculo" required 
                                                placeholder="AAA-0A00" maxlength="8">
                                     </div>
                                     
                                     <div class="form-group">
-                                        <label for="modeloVeiculo" class="required">Modelo do Veículo *</label>
+                                        <label for="modeloVeiculo" class="required">Modelo do Veículo </label>
                                         <input type="text" id="modeloVeiculo" name="modeloVeiculo" required placeholder="Ex: Mercedes-Benz Actros">
                                     </div>
                                     
                                     <div class="form-group">
-                                        <label for="descricaoVeiculo" class="required">Descrição do Veículo *</label>
+                                        <label for="descricaoVeiculo" class="required">Descrição do Veículo </label>
                                         <textarea id="descricaoVeiculo" name="descricaoVeiculo" rows="3" required 
                                                   placeholder="Ex: Caminhão baú refrigerado, capacidade 20 toneladas"></textarea>
                                     </div>
@@ -610,13 +610,13 @@ require_once 'src/conexao.php';
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
-                                            <label for="estadoTransportador" class="required">Estado *</label>
+                                            <label for="estadoTransportador" class="required">Estado </label>
                                             <select id="estadoTransportador" name="estadoTransportador" required>
                                                 <option value="">Selecione o estado...</option>
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label for="cidadeTransportador" class="required">Cidade *</label>
+                                            <label for="cidadeTransportador" class="required">Cidade </label>
                                             <select id="cidadeTransportador" name="cidadeTransportador" required>
                                                 <option value="">Selecione a cidade...</option>
                                             </select>

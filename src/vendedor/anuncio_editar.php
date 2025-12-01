@@ -1,11 +1,11 @@
 <?php
-// src/vendedor/anuncio_editar.php (CÓDIGO CORRIGIDO E REFORÇADO)
+// src/vendedor/anuncio_editar.php (ATUALIZADO COM DESCONTO)
 require_once 'auth.php'; 
 
 $mensagem_sucesso = '';
 $mensagem_erro = '';
 $vendedor_id_fk = $vendedor['id'];
-$anuncio = null; // Inicializa a variável para evitar erro caso a busca falhe
+$anuncio = null;
 
 // O ID pode vir da URL (GET) ou do formulário (POST)
 $anuncio_id = sanitizeInput($_REQUEST['id'] ?? $_POST['anuncio_id'] ?? null);
@@ -28,7 +28,6 @@ try {
     $stmt_anuncio->execute();
     $anuncio = $stmt_anuncio->fetch(PDO::FETCH_ASSOC);
 
-    // Se o anúncio não for encontrado (ID inválido ou não pertence ao vendedor)
     if (!$anuncio) {
         $_SESSION['mensagem_anuncio_erro'] = "Anúncio não encontrado ou você não tem permissão para editá-lo.";
         header("Location: anuncios.php");
@@ -41,13 +40,12 @@ try {
     exit();
 }
 
-
 // --------------------------------------------------------
 // 2. Lógica de Atualização (POST)
 // --------------------------------------------------------
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Coleta e sanitização dos dados
+    // Coleta e sanitização dos dados básicos
     $nome = sanitizeInput($_POST['nome']);
     $descricao = sanitizeInput($_POST['descricao']);
     $preco = sanitizeInput($_POST['preco']);
@@ -55,44 +53,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $estoque = sanitizeInput($_POST['estoque']);
     $status = sanitizeInput($_POST['status']);
     
+    // Dados de desconto
+    $desconto_ativo = isset($_POST['desconto_ativo']) ? 1 : 0;
+    $tipo_desconto = sanitizeInput($_POST['tipo_desconto'] ?? 'percentual');
+    $desconto_valor = sanitizeInput($_POST['desconto_valor'] ?? 0);
+    $desconto_data_inicio = sanitizeInput($_POST['desconto_data_inicio'] ?? null);
+    $desconto_data_fim = sanitizeInput($_POST['desconto_data_fim'] ?? null);
+    
     // A variável $anuncio já foi carregada acima, então usamos $anuncio['imagem_url'] como backup
     $imagem_url_antiga = $anuncio['imagem_url']; 
-    $imagem_url_nova = $imagem_url_antiga; // Mantém a antiga por padrão
+    $imagem_url_nova = $imagem_url_antiga;
 
     // Conversão de tipos
     $preco_db = str_replace(',', '.', $preco);
     $estoque_db = (int)$estoque;
+    $desconto_valor_db = str_replace(',', '.', $desconto_valor);
+
+    // Validação do desconto
+    if ($desconto_ativo) {
+        if ($tipo_desconto === 'percentual' && ($desconto_valor_db <= 0 || $desconto_valor_db > 100)) {
+            $mensagem_erro = "O desconto percentual deve ser entre 0.01% e 100%.";
+        } elseif ($tipo_desconto === 'valor' && ($desconto_valor_db <= 0 || $desconto_valor_db >= $preco_db)) {
+            $mensagem_erro = "O desconto em valor deve ser maior que zero e menor que o preço original.";
+        }
+        
+        // Validação das datas
+        if ($desconto_data_inicio && $desconto_data_fim) {
+            $inicio = DateTime::createFromFormat('Y-m-d', $desconto_data_inicio);
+            $fim = DateTime::createFromFormat('Y-m-d', $desconto_data_fim);
+            
+            if ($inicio > $fim) {
+                $mensagem_erro = "A data de início do desconto não pode ser posterior à data de fim.";
+            }
+        }
+    }
 
     // ----------------------------------------------------
     // Lógica de Upload/Substituição de Imagem
     // ----------------------------------------------------
     $upload_dir = '../uploads/produtos/'; 
     
-    if (isset($_FILES['imagem_upload']) && $_FILES['imagem_upload']['error'] === UPLOAD_ERR_OK) {
-        // Lógica de validação e upload que fornecemos antes...
+    if (isset($_FILES['imagem_upload']) && $_FILES['imagem_upload']['error'] === UPLOAD_ERR_OK && empty($mensagem_erro)) {
         $file_name = $_FILES['imagem_upload']['name'];
         $file_tmp = $_FILES['imagem_upload']['tmp_name'];
         $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
         
         $allowed_extensions = ['jpg', 'jpeg', 'png'];
-        $max_file_size = 2097152; // 2MB
+        $max_file_size = 2097152;
 
-        // Validação do arquivo
         if (!in_array($file_ext, $allowed_extensions)) {
             $mensagem_erro = "Formato de arquivo inválido. Apenas JPG, JPEG e PNG são permitidos.";
         } elseif ($_FILES['imagem_upload']['size'] > $max_file_size) {
             $mensagem_erro = "O arquivo é muito grande. O tamanho máximo é 2MB.";
         } else {
-            // Gera um nome de arquivo único
             $novo_nome = uniqid('prod_', true) . '.' . $file_ext;
             $destino_servidor = $upload_dir . $novo_nome;
 
             if (move_uploaded_file($file_tmp, $destino_servidor)) {
                 $imagem_url_nova = $destino_servidor; 
 
-                // Deleta a imagem antiga se não for a imagem padrão e se a nova foi salva
                 if (!empty($imagem_url_antiga) && file_exists($imagem_url_antiga) && strpos($imagem_url_antiga, 'default_image') === false) {
-                    @unlink($imagem_url_antiga); // @ para suprimir warnings caso o arquivo não exista mais
+                    @unlink($imagem_url_antiga);
                 }
             } else {
                 $mensagem_erro = "Erro ao mover o novo arquivo para o destino.";
@@ -101,16 +122,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     // ----------------------------------------------------
 
-    // Validação
-    if (empty($nome) || empty($preco) || empty($estoque)) {
-        $mensagem_erro = "Por favor, preencha os campos obrigatórios: Nome, Preço e Estoque.";
-    } elseif (!is_numeric($preco_db) || $preco_db <= 0) {
-        $mensagem_erro = "O preço deve ser um valor numérico positivo.";
-    } elseif ($estoque_db <= 0 && $status === 'ativo') {
-        $mensagem_erro = "Anúncios ativos devem ter estoque maior que zero, ou mude o status para 'inativo'.";
-    } else {
+    // Validação básica
+    if (empty($mensagem_erro)) {
+        if (empty($nome) || empty($preco) || empty($estoque)) {
+            $mensagem_erro = "Por favor, preencha os campos obrigatórios: Nome, Preço e Estoque.";
+        } elseif (!is_numeric($preco_db) || $preco_db <= 0) {
+            $mensagem_erro = "O preço deve ser um valor numérico positivo.";
+        } elseif ($estoque_db <= 0 && $status === 'ativo') {
+            $mensagem_erro = "Anúncios ativos devem ter estoque maior que zero, ou mude o status para 'inativo'.";
+        }
+    }
+
+    if (empty($mensagem_erro)) {
         try {
             $db->beginTransaction();
+            
+            // Preparar dados de desconto
+            $desconto_percentual = ($tipo_desconto === 'percentual') ? $desconto_valor_db : 0;
+            
+            // Converter datas para formato MySQL
+            $desconto_data_inicio_db = $desconto_data_inicio ? $desconto_data_inicio . ' 00:00:00' : null;
+            $desconto_data_fim_db = $desconto_data_fim ? $desconto_data_fim . ' 23:59:59' : null;
             
             $query = "UPDATE produtos SET 
                         nome = :nome, 
@@ -120,6 +152,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         estoque = :estoque, 
                         status = :status,
                         imagem_url = :imagem_url_nova,
+                        desconto_ativo = :desconto_ativo,
+                        desconto_percentual = :desconto_percentual,
+                        desconto_data_inicio = :desconto_data_inicio,
+                        desconto_data_fim = :desconto_data_fim,
                         data_atualizacao = NOW()
                       WHERE id = :anuncio_id AND vendedor_id = :vendedor_id";
                       
@@ -133,20 +169,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindParam(':estoque', $estoque_db, PDO::PARAM_INT);
             $stmt->bindParam(':status', $status);
             $stmt->bindParam(':imagem_url_nova', $imagem_url_nova);
+            $stmt->bindParam(':desconto_ativo', $desconto_ativo, PDO::PARAM_INT);
+            $stmt->bindParam(':desconto_percentual', $desconto_percentual);
+            $stmt->bindParam(':desconto_data_inicio', $desconto_data_inicio_db);
+            $stmt->bindParam(':desconto_data_fim', $desconto_data_fim_db);
             $stmt->bindParam(':anuncio_id', $anuncio_id);
             $stmt->bindParam(':vendedor_id', $vendedor_id_fk);
             
             if ($stmt->execute()) {
                 $db->commit();
                 
-                // IMPORTANTE: Atualiza a variável $anuncio com os NOVOS DADOS
+                // Atualiza a variável $anuncio com os NOVOS DADOS
                 $anuncio['nome'] = $nome;
                 $anuncio['descricao'] = $descricao;
                 $anuncio['preco'] = $preco_db;
                 $anuncio['categoria'] = $categoria;
                 $anuncio['estoque'] = $estoque_db;
                 $anuncio['status'] = $status;
-                $anuncio['imagem_url'] = $imagem_url_nova; 
+                $anuncio['imagem_url'] = $imagem_url_nova;
+                $anuncio['desconto_ativo'] = $desconto_ativo;
+                $anuncio['desconto_percentual'] = $desconto_percentual;
+                $anuncio['desconto_data_inicio'] = $desconto_data_inicio_db;
+                $anuncio['desconto_data_fim'] = $desconto_data_fim_db;
                 
                 $mensagem_sucesso = "Anúncio **{$nome}** atualizado com sucesso!";
             } else {
@@ -166,9 +210,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Garante que o preço formatado exista, mesmo se o POST falhar.
 $preco_formatado = number_format($anuncio['preco'], 2, ',', ''); 
 
-// Categorias disponíveis - LISTA EXPANDIDA
+// Formatar dados de desconto para exibição
+$desconto_valor_formatado = $anuncio['desconto_percentual'] ? number_format($anuncio['desconto_percentual'], 2, ',', '') : '';
+$desconto_data_inicio_formatada = $anuncio['desconto_data_inicio'] ? date('Y-m-d', strtotime($anuncio['desconto_data_inicio'])) : '';
+$desconto_data_fim_formatada = $anuncio['desconto_data_fim'] ? date('Y-m-d', strtotime($anuncio['desconto_data_fim'])) : '';
+
+// Calcular preço com desconto para exibição
+$preco_com_desconto = $anuncio['preco'];
+if ($anuncio['desconto_ativo'] && $anuncio['desconto_percentual'] > 0) {
+    $preco_com_desconto = $anuncio['preco'] * (1 - ($anuncio['desconto_percentual'] / 100));
+}
+
+// Categorias disponíveis
 $categorias_disponiveis = [
-    // Frutas
     'Frutas Cítricas',
     'Frutas Tropicais',
     'Frutas de Caroço',
@@ -180,7 +234,7 @@ $categorias_disponiveis = [
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
-    <head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Anúncio - Vendedor</title>
@@ -265,9 +319,9 @@ $categorias_disponiveis = [
             <?php endif; ?>
 
             <form method="POST" action="anuncio_editar.php" class="anuncio-form" enctype="multipart/form-data">
+                <input type="hidden" name="anuncio_id" value="<?php echo $anuncio['id']; ?>">
+                
                 <div class="forms-area">
-                    <input type="hidden" name="anuncio_id" value="<?php echo $anuncio['id']; ?>">
-                    
                     <div class="top-info">
                         <div class="form-group">
                             <div class="foto-produto-container">
@@ -380,11 +434,79 @@ $categorias_disponiveis = [
                         <div class="form-group">
                             <label for="preco" class="required">Preço por Kg (R$)</label>
                             <input type="text" id="preco" name="preco" value="<?php echo htmlspecialchars($preco_formatado); ?>" placeholder="Ex: 5,50" required>
+                            <?php if ($anuncio['desconto_ativo'] && $anuncio['desconto_percentual'] > 0): ?>
+                                <div class="preco-com-desconto">
+                                    Preço com desconto: R$ <?php echo number_format($preco_com_desconto, 2, ',', ''); ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
                         
                         <div class="form-group">
                             <label for="estoque" class="required">Estoque em Kg</label>
                             <input type="number" id="estoque" name="estoque" value="<?php echo htmlspecialchars($anuncio['estoque']); ?>" min="0" required>
+                        </div>
+                    </div>
+                    
+                    <!-- SEÇÃO DE DESCONTO -->
+                    <div class="desconto-section">
+                        <h2>Configuração de Desconto</h2>
+                        
+                        <div class="desconto-toggle">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="desconto_ativo" name="desconto_ativo" value="1" <?php echo $anuncio['desconto_ativo'] ? 'checked' : ''; ?>>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <label for="desconto_ativo">Ativar desconto para este produto</label>
+                        </div>
+
+                        <div id="campos-desconto" style="<?php echo $anuncio['desconto_ativo'] ? '' : 'display: none;'; ?>">
+                            <div class="tipo-desconto">
+                                <label>
+                                    <input type="radio" name="tipo_desconto" value="percentual" <?php echo ($anuncio['desconto_percentual'] > 0) ? 'checked' : ''; ?>>
+                                    Desconto Percentual
+                                </label>
+                                <label>
+                                    <input type="radio" name="tipo_desconto" value="valor" <?php echo ($anuncio['desconto_percentual'] == 0 && $anuncio['desconto_ativo']) ? 'checked' : ''; ?>>
+                                    Desconto em Valor
+                                </label>
+                            </div>
+
+                            <div class="desconto-fields">
+                                <div class="form-group">
+                                    <label for="desconto_valor" class="required">Valor do Desconto</label>
+                                    <input type="text" id="desconto_valor" name="desconto_valor" value="<?php echo htmlspecialchars($desconto_valor_formatado); ?>" placeholder="<?php echo ($anuncio['desconto_percentual'] > 0) ? 'Ex: 15,00' : 'Ex: 2,50'; ?>">
+                                    <span class="help-text" id="desconto-help">
+                                        <?php echo ($anuncio['desconto_percentual'] > 0) ? 'Porcentagem (Ex: 15,00 = 15%)' : 'Valor em reais (Ex: 2,50 = R$ 2,50)'; ?>
+                                    </span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Desconto Calculado</label>
+                                    <div id="desconto-calculado" class="preco-com-desconto">
+                                        <?php if ($anuncio['desconto_ativo'] && $anuncio['desconto_percentual'] > 0): ?>
+                                            Preço final: R$ <?php echo number_format($preco_com_desconto, 2, ',', ''); ?>
+                                        <?php else: ?>
+                                            Insira os valores para calcular
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="data-fields">
+                                <div class="form-group">
+                                    <label for="desconto_data_inicio">Data de Início</label>
+                                    <input type="date" id="desconto_data_inicio" name="desconto_data_inicio" value="<?php echo htmlspecialchars($desconto_data_inicio_formatada); ?>">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="desconto_data_fim">Data de Fim</label>
+                                    <input type="date" id="desconto_data_fim" name="desconto_data_fim" value="<?php echo htmlspecialchars($desconto_data_fim_formatada); ?>">
+                                </div>
+                            </div>
+                            
+                            <div class="help-text">
+                                <i class="fas fa-info-circle"></i> Deixe as datas em branco para desconto permanente.
+                            </div>
                         </div>
                     </div>
                     
@@ -405,7 +527,6 @@ $categorias_disponiveis = [
                 </div>
             </form>
         </section>
-        
     </div>
 
     <script>
@@ -418,7 +539,6 @@ $categorias_disponiveis = [
             navMenu.classList.toggle("active");
         });
 
-        // Fechar menu mobile ao clicar em um link
         document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
             hamburger.classList.remove("active");
             navMenu.classList.remove("active");
@@ -427,17 +547,100 @@ $categorias_disponiveis = [
         // Máscara de preço
         document.addEventListener('DOMContentLoaded', function() {
             const precoInput = document.getElementById('preco');
-            
+            const descontoValorInput = document.getElementById('desconto_valor');
+            const descontoAtivoCheckbox = document.getElementById('desconto_ativo');
+            const camposDesconto = document.getElementById('campos-desconto');
+            const tipoDescontoRadios = document.querySelectorAll('input[name="tipo_desconto"]');
+            const descontoHelp = document.getElementById('desconto-help');
+            const descontoCalculado = document.getElementById('desconto-calculado');
+
+            // Máscara para preço
             precoInput.addEventListener('input', function(e) {
                 let value = e.target.value;
-                value = value.replace(/\D/g, ''); // Remove tudo que não é dígito
+                value = value.replace(/\D/g, '');
                 
                 if (value) {
                     value = (parseInt(value) / 100).toFixed(2);
                     value = value.replace('.', ',');
                 }
                 e.target.value = value;
+                calcularDesconto();
             });
+
+            // Máscara para valor do desconto
+            descontoValorInput.addEventListener('input', function(e) {
+                let value = e.target.value;
+                value = value.replace(/\D/g, '');
+                
+                if (value) {
+                    const isPercentual = document.querySelector('input[name="tipo_desconto"]:checked').value === 'percentual';
+                    if (isPercentual) {
+                        // Para percentual, permite até 100,00
+                        value = (parseInt(value) / 100).toFixed(2);
+                    } else {
+                        // Para valor, formata normalmente
+                        value = (parseInt(value) / 100).toFixed(2);
+                    }
+                    value = value.replace('.', ',');
+                }
+                e.target.value = value;
+                calcularDesconto();
+            });
+
+            // Mostrar/ocultar campos de desconto
+            descontoAtivoCheckbox.addEventListener('change', function() {
+                camposDesconto.style.display = this.checked ? 'block' : 'none';
+                if (!this.checked) {
+                    descontoCalculado.innerHTML = 'Insira os valores para calcular';
+                } else {
+                    calcularDesconto();
+                }
+            });
+
+            // Alterar tipo de desconto
+            tipoDescontoRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'percentual') {
+                        descontoHelp.textContent = 'Porcentagem (Ex: 15,00 = 15%)';
+                        descontoValorInput.placeholder = 'Ex: 15,00';
+                    } else {
+                        descontoHelp.textContent = 'Valor em reais (Ex: 2,50 = R$ 2,50)';
+                        descontoValorInput.placeholder = 'Ex: 2,50';
+                    }
+                    calcularDesconto();
+                });
+            });
+
+            // Função para calcular desconto em tempo real
+            function calcularDesconto() {
+                if (!descontoAtivoCheckbox.checked) return;
+
+                const preco = parseFloat(precoInput.value.replace(',', '.')) || 0;
+                const descontoValor = parseFloat(descontoValorInput.value.replace(',', '.')) || 0;
+                const tipoDesconto = document.querySelector('input[name="tipo_desconto"]:checked').value;
+
+                if (preco > 0 && descontoValor > 0) {
+                    let precoFinal = preco;
+                    
+                    if (tipoDesconto === 'percentual') {
+                        if (descontoValor <= 100) {
+                            precoFinal = preco * (1 - (descontoValor / 100));
+                            descontoCalculado.innerHTML = `Preço final: R$ ${precoFinal.toFixed(2).replace('.', ',')} (${descontoValor}% off)`;
+                        } else {
+                            descontoCalculado.innerHTML = 'Percentual máximo é 100%';
+                        }
+                    } else {
+                        if (descontoValor < preco) {
+                            precoFinal = preco - descontoValor;
+                            descontoCalculado.innerHTML = `Preço final: R$ ${precoFinal.toFixed(2).replace('.', ',')} (R$ ${descontoValor.toFixed(2).replace('.', ',')} off)`;
+                        } else {
+                            descontoCalculado.innerHTML = 'Desconto deve ser menor que o preço';
+                        }
+                    }
+                } else {
+                    descontoCalculado.innerHTML = 'Insira os valores para calcular';
+                }
+            }
 
             // Script para clicar na imagem abrir o seletor de arquivos
             const fotoContainer = document.querySelector('.foto-produto-container');
@@ -460,7 +663,6 @@ $categorias_disponiveis = [
                         if (imgElement) {
                             imgElement.src = e.target.result;
                         } else if (defaultImage) {
-                            // Substitui a imagem padrão por uma imagem real
                             const newImg = document.createElement('img');
                             newImg.src = e.target.result;
                             newImg.alt = "Imagem do Anúncio";
@@ -477,6 +679,9 @@ $categorias_disponiveis = [
                     reader.readAsDataURL(e.target.files[0]);
                 }
             });
+
+            // Calcular desconto inicial
+            calcularDesconto();
         });
     </script>
 </body>

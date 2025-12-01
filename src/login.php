@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="checkbox" id="remember" name="remember">
                         <label for="remember">Lembrar-me</label>
                     </div>
-                    <a href="#" class="forgot-password">Esqueceu a senha?</a>
+                    <a href="../includes/forgot_password.php" class="forgot-password">Esqueceu a senha?</a>
                 </div>
 
                 <button type="submit" class="login-button">Entrar</button>

@@ -412,7 +412,7 @@ try {
             <h2>Ações Rápidas</h2>
             <div class="actions-grid">
                 <a href="../anuncios.php" class="action-link">
-                    <i class="fas fa-leaf"></i>
+                    <i class="fa-solid fa-dollar-sign"></i>
                     <span>Ver Anúncios</span>
                 </a>
                 <a href="minhas_propostas.php" class="action-link">

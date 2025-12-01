@@ -222,7 +222,7 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
         <?php if (!empty($produtos_relacionados)): ?>
         <div class="produtos-relacionados">
             <div class="relacionados-header">
-                <h3><i class="fas fa-star"></i> Podem te interessar</h3>
+                <h3><i class="fas fa-star"></i> Outros anúncios</h3>
                 <p>Descubra outros produtos disponíveis</p>
             </div>
             <div class="relacionados-grid">

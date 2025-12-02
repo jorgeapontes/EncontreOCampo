@@ -98,7 +98,7 @@ require_once 'src/conexao.php';
             <p class="hero-text">Conectamos produtores e compradores com qualidade e agilidade, por todo o Brasil</p>
             <div class="hero-buttons">
                 <a href="#comprar" id="btn-comprar" class="cta-button">Compre agora</a>
-                <a href="#vender" id="btn-vender" class="cta-button secondary">Venda conosco</a>
+                <a href="#vender" id="btn-vender" class="cta-button.secondary">Venda conosco</a>
             </div>
         </div>
     </section>

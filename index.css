@@ -215,14 +215,27 @@ body {
 
 .cta-button:hover {
     background-color: transparent;
-    color: var(--primary-color);
     cursor: pointer;
 }
 
-.cta-button.secondary {
+#btn-vender{
+    display: inline-block;
     background-color: transparent;
-    border: 2px solid var(--white);
     color: var(--white);
+    padding: 12px 30px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 2px solid white;
+    text-align: center;
+    justify-content: center;
+}
+
+#btn-vender:hover {
+    background-color: var(--white);
+    color: var(--text-color);
+    cursor: pointer;
 }
 
 .cta-button.secondary:hover {

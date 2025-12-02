@@ -1023,11 +1023,12 @@ input:invalid:not(:focus):not(:placeholder-shown) {
         padding: 0 15px;
     }
     
-    .hero-buttons .cta-button {
-        width: 95%;
-        max-width: 300px;
-        padding: 12px 20px;
-        font-size: 0.95rem;
+    .hero-buttons .cta-button,
+    #btn-vender {
+        width: 100%;
+        max-width: 280px;
+        padding: 12px 15px;
+        font-size: 0.9rem;
     }
 
     .transport-image {
@@ -1185,14 +1186,18 @@ input:invalid:not(:focus):not(:placeholder-shown) {
         flex-direction: column;
         align-items: center;
         width: 100%;
-        gap: 10px;
+        gap: 15px;
     }
     
-    .hero-buttons .cta-button {
+    .hero-buttons .cta-button,
+    #btn-vender {
         width: 90%;
         max-width: 280px;
-        margin: 0 !important;
+        margin: 0 auto;
         text-align: center;
+        display: block;
+        padding: 14px 20px;
+        font-size: 1rem;
     }
 
     .hero-content h1 {
@@ -1297,6 +1302,23 @@ input:invalid:not(:focus):not(:placeholder-shown) {
         max-width: 200px;
     }
     
+    .sell-text,
+    .transport-text {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .sell-text .cta-button,
+    .transport-text .cta-button {
+        margin: 20px auto 0;
+        display: inline-block;
+        width: auto;
+        min-width: 220px;
+        text-align: center;
+    }
+
     .sell-content,
     .transport-content,
     .contact-content {

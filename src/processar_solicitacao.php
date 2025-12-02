@@ -3,8 +3,16 @@
 
 require_once 'conexao.php';
 
-session_start();
-header('Content-Type: application/json');
+// Iniciar sessão de forma segura
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Configurar cabeçalhos para AJAX/JSON
+header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Headers: Content-Type');
 
 function validarCPF($cpf) {
     // Remove caracteres não numéricos
@@ -99,68 +107,84 @@ function validarCPFouCNPJ($documento, $tipo) {
     return false;
 }
 
+// Função para enviar resposta JSON de forma consistente
+function sendJsonResponse($success, $message, $additionalData = []) {
+    $response = array_merge([
+        'success' => $success,
+        'message' => $message
+    ], $additionalData);
+    
+    echo json_encode($response, JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 // Validação básica
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Método não permitido']);
-    exit;
+    sendJsonResponse(false, 'Método não permitido');
 }
 
 // Obter dados do formulário
 $dados = $_POST;
 
+// Log dos dados recebidos (apenas para debug)
+error_log("Dados recebidos: " . print_r($dados, true));
+
 // Validações obrigatórias
 $camposObrigatorios = ['name', 'email', 'senha', 'confirma_senha', 'subject'];
 foreach ($camposObrigatorios as $campo) {
     if (empty($dados[$campo])) {
-        echo json_encode(['success' => false, 'message' => "O campo '{$campo}' é obrigatório."]);
-        exit;
+        sendJsonResponse(false, "O campo '{$campo}' é obrigatório.");
     }
 }
 
 // Validar email
 if (!filter_var($dados['email'], FILTER_VALIDATE_EMAIL)) {
-    echo json_encode(['success' => false, 'message' => 'Email inválido.']);
-    exit;
+    sendJsonResponse(false, 'Email inválido.');
 }
 
 // Validar senha
 if ($dados['senha'] !== $dados['confirma_senha']) {
-    echo json_encode(['success' => false, 'message' => 'As senhas não coincidem.']);
-    exit;
+    sendJsonResponse(false, 'As senhas não coincidem.');
 }
 
 if (strlen($dados['senha']) < 8) {
-    echo json_encode(['success' => false, 'message' => 'A senha deve ter no mínimo 8 caracteres.']);
-    exit;
+    sendJsonResponse(false, 'A senha deve ter no mínimo 8 caracteres.');
 }
 
-$database = new Database();
-$conn = $database->getConnection();
+// Conectar ao banco de dados
+try {
+    $database = new Database();
+    $conn = $database->getConnection();
+} catch (Exception $e) {
+    sendJsonResponse(false, 'Erro de conexão com o banco de dados: ' . $e->getMessage());
+}
 
 // Verificar se email já existe
-$sqlCheckEmail = "SELECT id FROM usuarios WHERE email = :email";
-$stmtCheckEmail = $conn->prepare($sqlCheckEmail);
-$stmtCheckEmail->bindParam(':email', $dados['email']);
-$stmtCheckEmail->execute();
-
-if ($stmtCheckEmail->rowCount() > 0) {
-    echo json_encode(['success' => false, 'message' => 'Este email já está cadastrado.']);
-    exit;
+try {
+    $sqlCheckEmail = "SELECT id FROM usuarios WHERE email = :email";
+    $stmtCheckEmail = $conn->prepare($sqlCheckEmail);
+    $stmtCheckEmail->bindParam(':email', $dados['email']);
+    $stmtCheckEmail->execute();
+    
+    if ($stmtCheckEmail->rowCount() > 0) {
+        sendJsonResponse(false, 'Este email já está cadastrado.');
+    }
+} catch (Exception $e) {
+    sendJsonResponse(false, 'Erro ao verificar email: ' . $e->getMessage());
 }
 
 // Preparar dados comuns
 $nome = $dados['name'];
 $email = $dados['email'];
 $senhaHash = password_hash($dados['senha'], PASSWORD_DEFAULT);
-$tipoUsuario = $dados['subject']; // comprador, vendedor ou transportador
+$tipoUsuario = $dados['subject'];
 
 // Validações específicas por tipo
 if ($tipoUsuario === 'comprador') {
     // Verificar tipo de pessoa
     if (empty($dados['tipo_pessoa_comprador'])) {
-        echo json_encode(['success' => false, 'message' => 'Selecione o tipo de pessoa (CPF ou CNPJ).']);
-        exit;
+        sendJsonResponse(false, 'Selecione o tipo de pessoa (CPF ou CNPJ).');
     }
     
     $tipoPessoa = $dados['tipo_pessoa_comprador'];
@@ -168,25 +192,26 @@ if ($tipoUsuario === 'comprador') {
     
     // Validar CPF/CNPJ
     if (!validarCPFouCNPJ($cpfCnpj, $tipoPessoa)) {
-        echo json_encode(['success' => false, 'message' => ($tipoPessoa === 'cpf' ? 'CPF' : 'CNPJ') . ' inválido.']);
-        exit;
+        sendJsonResponse(false, ($tipoPessoa === 'cpf' ? 'CPF' : 'CNPJ') . ' inválido.');
     }
     
     // Verificar se CPF/CNPJ já existe para comprador
-    $sqlCheckDoc = "SELECT id FROM compradores WHERE cpf_cnpj = :cpf_cnpj";
-    $stmtCheckDoc = $conn->prepare($sqlCheckDoc);
-    $stmtCheckDoc->bindParam(':cpf_cnpj', $cpfCnpj);
-    $stmtCheckDoc->execute();
-    
-    if ($stmtCheckDoc->rowCount() > 0) {
-        echo json_encode(['success' => false, 'message' => ($tipoPessoa === 'cpf' ? 'CPF' : 'CNPJ') . ' já cadastrado.']);
-        exit;
+    try {
+        $sqlCheckDoc = "SELECT id FROM compradores WHERE cpf_cnpj = :cpf_cnpj";
+        $stmtCheckDoc = $conn->prepare($sqlCheckDoc);
+        $stmtCheckDoc->bindParam(':cpf_cnpj', $cpfCnpj);
+        $stmtCheckDoc->execute();
+        
+        if ($stmtCheckDoc->rowCount() > 0) {
+            sendJsonResponse(false, ($tipoPessoa === 'cpf' ? 'CPF' : 'CNPJ') . ' já cadastrado.');
+        }
+    } catch (Exception $e) {
+        sendJsonResponse(false, 'Erro ao verificar documento: ' . $e->getMessage());
     }
     
     // Verificar nome comercial
     if (empty($dados['nomeComercialComprador'])) {
-        echo json_encode(['success' => false, 'message' => 'Nome de exibição/empresa é obrigatório.']);
-        exit;
+        sendJsonResponse(false, 'Nome de exibição/empresa é obrigatório.');
     }
     
 } elseif ($tipoUsuario === 'vendedor') {
@@ -195,56 +220,53 @@ if ($tipoUsuario === 'comprador') {
     
     // Validar CNPJ (14 dígitos)
     if (strlen($cpfCnpj) !== 14) {
-        echo json_encode(['success' => false, 'message' => 'CNPJ deve ter 14 dígitos.']);
-        exit;
+        sendJsonResponse(false, 'CNPJ deve ter 14 dígitos.');
     }
     
     if (!validarCNPJ($cpfCnpj)) {
-        echo json_encode(['success' => false, 'message' => 'CNPJ inválido.']);
-        exit;
+        sendJsonResponse(false, 'CNPJ inválido.');
     }
     
     // Verificar se CNPJ já existe para vendedor
-    $sqlCheckDoc = "SELECT id FROM vendedores WHERE cpf_cnpj = :cpf_cnpj";
-    $stmtCheckDoc = $conn->prepare($sqlCheckDoc);
-    $stmtCheckDoc->bindParam(':cpf_cnpj', $cpfCnpj);
-    $stmtCheckDoc->execute();
-    
-    if ($stmtCheckDoc->rowCount() > 0) {
-        echo json_encode(['success' => false, 'message' => 'CNPJ já cadastrado.']);
-        exit;
+    try {
+        $sqlCheckDoc = "SELECT id FROM vendedores WHERE cpf_cnpj = :cpf_cnpj";
+        $stmtCheckDoc = $conn->prepare($sqlCheckDoc);
+        $stmtCheckDoc->bindParam(':cpf_cnpj', $cpfCnpj);
+        $stmtCheckDoc->execute();
+        
+        if ($stmtCheckDoc->rowCount() > 0) {
+            sendJsonResponse(false, 'CNPJ já cadastrado.');
+        }
+    } catch (Exception $e) {
+        sendJsonResponse(false, 'Erro ao verificar CNPJ: ' . $e->getMessage());
     }
     
     // Verificar nome comercial
     if (empty($dados['nomeComercialVendedor'])) {
-        echo json_encode(['success' => false, 'message' => 'Nome comercial é obrigatório.']);
-        exit;
+        sendJsonResponse(false, 'Nome comercial é obrigatório.');
     }
     
 } elseif ($tipoUsuario === 'transportador') {
     // Para transportador, validar número ANTT
     if (empty($dados['numeroANTT'])) {
-        echo json_encode(['success' => false, 'message' => 'Número ANTT é obrigatório.']);
-        exit;
+        sendJsonResponse(false, 'Número ANTT é obrigatório.');
     }
     
     // Validar placa do veículo (formato brasileiro)
     if (empty($dados['placaVeiculo'])) {
-        echo json_encode(['success' => false, 'message' => 'Placa do veículo é obrigatória.']);
-        exit;
+        sendJsonResponse(false, 'Placa do veículo é obrigatória.');
     }
     
     // Validar modelo do veículo
     if (empty($dados['modeloVeiculo'])) {
-        echo json_encode(['success' => false, 'message' => 'Modelo do veículo é obrigatório.']);
-        exit;
+        sendJsonResponse(false, 'Modelo do veículo é obrigatório.');
     }
 }
 
 // Iniciar transação
-$conn->beginTransaction();
-
 try {
+    $conn->beginTransaction();
+    
     // 1. Inserir na tabela usuarios
     $sqlUsuario = "INSERT INTO usuarios (email, senha, tipo, nome, status) 
                    VALUES (:email, :senha, :tipo, :nome, 'pendente')";
@@ -280,7 +302,7 @@ try {
             $cpfCnpjFormatado = preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $cpfCnpjNumerico);
         }
         
-        $plano = 'free'; // Sempre free inicialmente
+        $plano = 'free';
         
         $stmtComprador->execute([
             ':usuario_id' => $usuarioId,
@@ -309,11 +331,11 @@ try {
         $cpfCnpjNumerico = preg_replace('/[^0-9]/', '', $dados['cpfCnpjVendedor']);
         $cpfCnpjFormatado = preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $cpfCnpjNumerico);
         
-        $plano = 'free'; // Sempre free inicialmente
+        $plano = 'free';
         
         $stmtVendedor->execute([
             ':usuario_id' => $usuarioId,
-            ':tipo_pessoa' => 'cnpj', // Sempre CNPJ para vendedor
+            ':tipo_pessoa' => 'cnpj',
             ':nome_comercial' => $dados['nomeComercialVendedor'],
             ':cpf_cnpj' => $cpfCnpjFormatado,
             ':cip' => $dados['cipVendedor'] ?? null,
@@ -334,11 +356,11 @@ try {
                              VALUES (:usuario_id, :nome_comercial, :telefone, :numero_antt, :placa_veiculo, :modelo_veiculo, :descricao_veiculo, :estado, :cidade, :plano)";
         $stmtTransportador = $conn->prepare($sqlTransportador);
         
-        $plano = 'free'; // Sempre free inicialmente
+        $plano = 'free';
         
         $stmtTransportador->execute([
             ':usuario_id' => $usuarioId,
-            ':nome_comercial' => $nome, // Usar nome normal como nome_comercial para transportador
+            ':nome_comercial' => $nome,
             ':telefone' => $dados['telefoneTransportador'] ?? null,
             ':numero_antt' => $dados['numeroANTT'] ?? null,
             ':placa_veiculo' => $dados['placaVeiculo'] ?? null,
@@ -399,17 +421,16 @@ try {
     // Confirmar transação
     $conn->commit();
     
-    echo json_encode([
-        'success' => true, 
-        'message' => 'Solicitação de cadastro enviada com sucesso! Em breve você receberá um email com as instruções. Sua conta será ativada após aprovação do administrador.'
-    ]);
+    sendJsonResponse(
+        true, 
+        'Solicitação de cadastro enviada com sucesso! Em breve você receberá um email com as instruções. Sua conta será ativada após aprovação do administrador.'
+    );
     
 } catch (Exception $e) {
-    $conn->rollBack();
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
     
-    error_log("Erro ao processar solicitação: " . $e->getMessage());
-    echo json_encode([
-        'success' => false, 
-        'message' => 'Erro ao processar solicitação: ' . $e->getMessage()
-    ]);
+    error_log("Erro ao processar solicitação: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+    sendJsonResponse(false, 'Erro ao processar solicitação: ' . $e->getMessage());
 }

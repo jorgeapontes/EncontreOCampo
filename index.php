@@ -263,12 +263,12 @@ require_once 'src/conexao.php';
                                         <label class="radio-label">
                                             <input type="radio" name="tipoPessoaComprador" value="cpf" required checked>
                                             <span class="radio-custom"></span>
-                                            <span class="radio-text">Pessoa Física (CPF)</span>
+                                            <span class="radio-text">CPF</span>
                                         </label>
                                         <label class="radio-label">
                                             <input type="radio" name="tipoPessoaComprador" value="cnpj" required>
                                             <span class="radio-custom"></span>
-                                            <span class="radio-text">Pessoa Jurídica (CNPJ)</span>
+                                            <span class="radio-text">CNPJ</span>
                                         </label>
                                     </div>
                                     <small class="form-help">CPF selecionado por padrão. Clique em CNPJ se for uma empresa.</small>

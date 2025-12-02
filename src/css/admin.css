@@ -355,7 +355,22 @@ body {
     border: 1px solid #f5c6cb;
 }
 
-/* Modal - Estilo Melhorado */
+
+
+
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* MODAL - Estilo Melhorado */
 .modal {
     display: none;
     position: fixed;
@@ -375,7 +390,7 @@ body {
     padding: 0;
     border-radius: 12px;
     width: 90%;
-    max-width: 700px;
+    max-width: 800px;
     position: relative;
     box-shadow: 0 10px 40px rgba(0,0,0,0.3);
     animation: modalSlideIn 0.3s ease;
@@ -404,17 +419,24 @@ body {
     margin: 0;
     font-size: 1.5rem;
     font-weight: 600;
+    color: white;
 }
 
 .modal-header .user-type-badge {
     display: inline-block;
-    margin-top: 8px;
     padding: 6px 14px;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 20px;
     font-size: 0.85rem;
     font-weight: 500;
     backdrop-filter: blur(10px);
+}
+
+.modal-subtitle {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    margin-top: 5px;
+    display: block;
 }
 
 .close-button {
@@ -438,6 +460,313 @@ body {
     max-height: 70vh;
     overflow-y: auto;
 }
+
+/* Sistema de abas para organizar por tipo de usuário */
+.tabs-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 10px;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    background: #f5f5f5;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.tab-button:hover {
+    background: #e8f5e8;
+    color: #2E7D32;
+}
+
+.tab-button.active {
+    background: #2E7D32;
+    color: white;
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Layout de detalhes aprimorado */
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.details-section {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    border-left: 4px solid #2E7D32;
+}
+
+.details-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.details-section-icon {
+    font-size: 1.2rem;
+    color: #2E7D32;
+}
+
+.details-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2E7D32;
+    margin: 0;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.detail-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #555;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    text-transform: capitalize;
+}
+
+.detail-value {
+    color: #333;
+    font-size: 1rem;
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+.detail-value.empty {
+    color: #999;
+    font-style: italic;
+}
+
+/* Cartão de informações principais */
+.primary-info-card {
+    background: linear-gradient(135deg, #e8f5e8 0%, #f8f9fa 100%);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border: 1px solid #2E7D32;
+}
+
+.primary-info-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.primary-info-icon {
+    width: 40px;
+    height: 40px;
+    background: #2E7D32;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.primary-info-content {
+    flex: 1;
+}
+
+.primary-info-label {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 2px;
+}
+
+.primary-info-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Estados diferentes para tipos de usuário */
+.user-type-comprador .details-section {
+    border-left-color: #1976d2;
+}
+
+.user-type-vendedor .details-section {
+    border-left-color: #2e7d32;
+}
+
+.user-type-transportador .details-section {
+    border-left-color: #f57c00;
+}
+
+.user-type-admin .details-section {
+    border-left-color: #c2185b;
+}
+
+/* Badge de status aprimorado */
+.user-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-left: auto;
+}
+
+.status-pendente {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.status-ativo {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.status-inativo {
+    background: #ffebee;
+    color: #c62828;
+}
+
+/* Scrollbar personalizada para o modal */
+.modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: #2E7D32;
+    border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #1b5e20;
+}
+
+/* Responsividade para o modal */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 5% auto;
+    }
+    
+    .modal-header {
+        padding: 20px;
+    }
+    
+    .modal-body {
+        padding: 20px;
+    }
+    
+    .details-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .details-section {
+        padding: 15px;
+    }
+    
+    .tabs-container {
+        gap: 5px;
+    }
+    
+    .tab-button {
+        padding: 8px 15px;
+        font-size: 0.85rem;
+    }
+    
+    .primary-info-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .primary-info-icon {
+        width: 35px;
+        height: 35px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-header h3 {
+        font-size: 1.2rem;
+    }
+    
+    .modal-subtitle {
+        font-size: 0.85rem;
+    }
+    
+    .detail-item {
+        flex-direction: column;
+        gap: 5px;
+    }
+}
+
+
+
+
+.close-button {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 28px;
+    cursor: pointer;
+    color: white;
+    transition: transform 0.2s ease;
+    font-weight: 300;
+    line-height: 1;
+}
+
+.close-button:hover {
+    transform: scale(1.2) rotate(90deg);
+}
+
+
 
 .info-section {
     margin-bottom: 25px;

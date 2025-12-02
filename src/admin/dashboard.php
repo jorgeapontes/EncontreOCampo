@@ -40,6 +40,45 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
     <title>Dashboard Admin - Encontre O Campo</title>
     <link rel="stylesheet" href="../css/admin.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
+    <style>
+        /* Correções específicas para o modal */
+        .modal-header h3 {
+            color: white !important;
+            font-size: 1.5rem;
+            margin: 0;
+            flex: 1;
+        }
+        
+        .modal-header .user-type-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            white-space: nowrap;
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 25px 30px !important;
+        }
+        
+        .modal-header-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+        
+        .close-button {
+            position: static !important;
+            margin-left: auto;
+        }
+    </style>
 </head>
 <body>
 
@@ -173,8 +212,10 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
 <div id="detalhesModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 id="modal-titulo">Detalhes da Solicitação</h3>
-            <span class="user-type-badge" id="modal-tipo-badge"></span>
+            <div class="modal-header-content">
+                <h3 id="modal-titulo">Detalhes da Solicitação</h3>
+                <span class="user-type-badge" id="modal-tipo-badge"></span>
+            </div>
             <span class="close-button">&times;</span>
         </div>
         <div class="modal-body" id="modal-corpo-completo">
@@ -221,176 +262,227 @@ document.getElementById("ordenar-por").addEventListener("change", function () {
 });
 
 // ==========================
-// MODAL DETALHES - MELHORADO
+// MODAL DETALHES - VERSÃO CORRIGIDA E SIMPLIFICADA
 // ==========================
 document.addEventListener("DOMContentLoaded", function () {
     const modal = document.getElementById("detalhesModal");
     const closeBtn = document.querySelector(".close-button");
+    const modalCorpo = document.getElementById("modal-corpo-completo");
+    const modalTitulo = document.getElementById("modal-titulo");
+    const modalTipoBadge = document.getElementById("modal-tipo-badge");
 
-    // Mapeamento de campos em português
-    const camposMap = {
-        // Campos comuns
-        'nome': 'Nome Completo',
-        'email': 'E-mail',
-        'telefone': 'Telefone',
-        'cpf': 'CPF',
-        'cnpj': 'CNPJ',
-        'data_nascimento': 'Data de Nascimento',
-        
-        // Endereço
-        'cep': 'CEP',
-        'rua': 'Rua',
-        'numero': 'Número',
-        'complemento': 'Complemento',
-        'bairro': 'Bairro',
-        'cidade': 'Cidade',
-        'estado': 'Estado',
-        
-        // Comprador
-        'preferencias_compra': 'Preferências de Compra',
-        'forma_pagamento': 'Forma de Pagamento',
-        
-        // Vendedor
-        'nome_propriedade': 'Nome da Propriedade',
-        'tamanho_propriedade': 'Tamanho da Propriedade',
-        'tipos_produtos': 'Tipos de Produtos',
-        'certificacoes': 'Certificações',
-        'capacidade_producao': 'Capacidade de Produção',
-        
-        // Transportador
-        'nome_empresa': 'Nome da Empresa',
-        'tipo_veiculo': 'Tipo de Veículo',
-        'capacidade_carga': 'Capacidade de Carga',
-        'regioes_atendidas': 'Regiões Atendidas',
-        'licencas': 'Licenças'
-    };
-
-    // Categorias de informações
-    const categorias = {
-        'pessoal': ['nome', 'email', 'telefone', 'cpf', 'cnpj', 'data_nascimento'],
-        'endereco': ['cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado'],
-        'comprador': ['preferencias_compra', 'forma_pagamento'],
-        'vendedor': ['nome_propriedade', 'tamanho_propriedade', 'tipos_produtos', 'certificacoes', 'capacidade_producao'],
-        'transportador': ['nome_empresa', 'tipo_veiculo', 'capacidade_carga', 'regioes_atendidas', 'licencas']
-    };
-
-    const titulosCategorias = {
-        'pessoal': 'Informações Pessoais',
-        'endereco': 'Endereço',
-        'comprador': 'Dados do Comprador',
-        'vendedor': 'Dados do Vendedor',
-        'transportador': 'Dados do Transportador'
-    };
-
+    // Adiciona event listener a todos os botões "Ver Detalhes"
     document.querySelectorAll(".btn-ver-detalhes").forEach(btn => {
         btn.addEventListener("click", function () {
             const nome = this.getAttribute("data-nome");
             const tipo = this.getAttribute("data-tipo");
-            const json = JSON.parse(this.getAttribute("data-json"));
-
-            // Atualiza header
-            document.getElementById("modal-titulo").innerText = nome;
-            document.getElementById("modal-tipo-badge").innerText = tipo;
-
-            // Limpa corpo
-            const corpo = document.getElementById("modal-corpo-completo");
-            corpo.innerHTML = "";
-
-            // Campos a ignorar
-            const camposIgnorar = ['senha', 'senha_hash', 'confirmar_senha', 'password'];
-
-            // Organiza dados por categoria
-            for (const [categoria, campos] of Object.entries(categorias)) {
-                const dadosCategoria = {};
-                
-                for (const campo of campos) {
-                    // Procura o campo no JSON (case-insensitive)
-                    const chaveEncontrada = Object.keys(json).find(k => 
-                        k.toLowerCase().replace(/\s+/g, '_') === campo.toLowerCase()
-                    );
-                    
-                    if (chaveEncontrada && json[chaveEncontrada] && json[chaveEncontrada].trim() !== "") {
-                        dadosCategoria[campo] = json[chaveEncontrada];
-                    }
-                }
-
-                // Se tem dados nesta categoria, cria a seção
-                if (Object.keys(dadosCategoria).length > 0) {
-                    const secao = document.createElement('div');
-                    secao.className = 'info-section';
-                    
-                    const titulo = document.createElement('h4');
-                    titulo.textContent = titulosCategorias[categoria];
-                    secao.appendChild(titulo);
-
-                    for (const [campo, valor] of Object.entries(dadosCategoria)) {
-                        const item = document.createElement('div');
-                        item.className = 'info-item';
-                        
-                        const label = document.createElement('div');
-                        label.className = 'info-label';
-                        label.textContent = camposMap[campo] || campo;
-                        
-                        const value = document.createElement('div');
-                        value.className = 'info-value';
-                        value.textContent = valor;
-                        
-                        item.appendChild(label);
-                        item.appendChild(value);
-                        secao.appendChild(item);
-                    }
-
-                    corpo.appendChild(secao);
-                }
-            }
-
-            // Adiciona campos extras que não estão mapeados
-            const camposMapeados = new Set(Object.values(categorias).flat());
-            const camposExtras = {};
+            const jsonData = this.getAttribute("data-json");
             
-            for (const [chave, valor] of Object.entries(json)) {
-                const chaveLimpa = chave.toLowerCase().replace(/\s+/g, '_');
-                const ignorar = camposIgnorar.some(ig => chaveLimpa.includes(ig.toLowerCase()));
+            // Atualiza título do modal
+            modalTitulo.innerText = `Detalhes da Solicitação`;
+            modalTipoBadge.innerText = tipo.charAt(0).toUpperCase() + tipo.slice(1);
+            
+            // Tenta parsear o JSON
+            try {
+                const dados = JSON.parse(jsonData);
+                let html = '';
                 
-                if (!ignorar && !camposMapeados.has(chaveLimpa) && valor && valor.trim() !== "") {
-                    camposExtras[chave] = valor;
-                }
-            }
-
-            if (Object.keys(camposExtras).length > 0) {
-                const secao = document.createElement('div');
-                secao.className = 'info-section';
+                // Cabeçalho com informações principais
+                html += `
+                    <div class="info-header">
+                        <div class="user-summary">
+                            <h3>${nome}</h3>
+                            <div class="user-type-tag user-type-${tipo.toLowerCase()}">
+                                ${tipo}
+                            </div>
+                            <div class="user-status-badge status-pendente">
+                                <span>●</span> Pendente
+                            </div>
+                        </div>
+                        <p class="user-email">${dados.email || 'Email não informado'}</p>
+                    </div>
+                    <hr>
+                    <div class="info-details">
+                        <h4>Informações ${tipo === 'Transportador' ? 'do Transportador' : tipo === 'Vendedor' ? 'do Vendedor' : 'do Comprador'}</h4>
+                `;
                 
-                const titulo = document.createElement('h4');
-                titulo.textContent = 'Outras Informações';
-                secao.appendChild(titulo);
-
-                for (const [chave, valor] of Object.entries(camposExtras)) {
-                    const item = document.createElement('div');
-                    item.className = 'info-item';
+                // Mapeamento de campos por tipo
+                const camposPorTipo = {
+                    'Comprador': ['tipoPessoaComprador', 'cpfCnpjComprador', 'nomeComercialComprador', 
+                                  'cipComprador', 'telefone1Comprador', 'telefone2Comprador',
+                                  'cepComprador', 'ruaComprador', 'numeroComprador', 'complementoComprador',
+                                  'estadoComprador', 'cidadeComprador', 'planoComprador'],
+                    'Vendedor': ['nomeComercialVendedor', 'cpfCnpjVendedor', 'cipVendedor',
+                                 'telefone1Vendedor', 'telefone2Vendedor', 'cepVendedor',
+                                 'ruaVendedor', 'numeroVendedor', 'complementoVendedor',
+                                 'estadoVendedor', 'cidadeVendedor', 'planoVendedor'],
+                    'Transportador': ['telefoneTransportador', 'numeroANTT', 'placaVeiculo',
+                                      'modeloVeiculo', 'descricaoVeiculo', 'estadoTransportador',
+                                      'cidadeTransportador']
+                };
+                
+                // Nomes amigáveis
+                const nomesCampos = {
+                    'tipoPessoaComprador': 'Tipo de Pessoa',
+                    'cpfCnpjComprador': 'CPF/CNPJ',
+                    'nomeComercialComprador': 'Nome Comercial',
+                    'cipComprador': 'CIP',
+                    'telefone1Comprador': 'Telefone Principal',
+                    'telefone2Comprador': 'Telefone Secundário',
+                    'cepComprador': 'CEP',
+                    'ruaComprador': 'Rua',
+                    'numeroComprador': 'Número',
+                    'complementoComprador': 'Complemento',
+                    'estadoComprador': 'Estado',
+                    'cidadeComprador': 'Cidade',
+                    'planoComprador': 'Plano',
                     
-                    const label = document.createElement('div');
-                    label.className = 'info-label';
-                    label.textContent = chave;
+                    'nomeComercialVendedor': 'Nome Comercial',
+                    'cpfCnpjVendedor': 'CNPJ',
+                    'cipVendedor': 'CIP',
+                    'telefone1Vendedor': 'Telefone Principal',
+                    'telefone2Vendedor': 'Telefone Secundário',
+                    'cepVendedor': 'CEP',
+                    'ruaVendedor': 'Rua',
+                    'numeroVendedor': 'Número',
+                    'complementoVendedor': 'Complemento',
+                    'estadoVendedor': 'Estado',
+                    'cidadeVendedor': 'Cidade',
+                    'planoVendedor': 'Plano',
                     
-                    const value = document.createElement('div');
-                    value.className = 'info-value';
-                    value.textContent = valor;
+                    'telefoneTransportador': 'Telefone',
+                    'numeroANTT': 'Número ANTT',
+                    'placaVeiculo': 'Placa do Veículo',
+                    'modeloVeiculo': 'Modelo do Veículo',
+                    'descricaoVeiculo': 'Descrição do Veículo',
+                    'estadoTransportador': 'Estado',
+                    'cidadeTransportador': 'Cidade'
+                };
+                
+                // Função para formatar
+                function formatarValor(campo, valor) {
+                    if (!valor || valor.toString().trim() === '') {
+                        return '<span class="detail-value empty">Não informado</span>';
+                    }
                     
-                    item.appendChild(label);
-                    item.appendChild(value);
-                    secao.appendChild(item);
+                    // CPF/CNPJ
+                    if ((campo.includes('cpf') || campo.includes('cnpj')) && valor.replace(/\D/g, '').length === 11) {
+                        valor = valor.replace(/\D/g, '');
+                        return valor.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                    }
+                    if ((campo.includes('cpf') || campo.includes('cnpj')) && valor.replace(/\D/g, '').length === 14) {
+                        valor = valor.replace(/\D/g, '');
+                        return valor.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+                    }
+                    
+                    // CEP
+                    if (campo.includes('cep') && valor.replace(/\D/g, '').length === 8) {
+                        valor = valor.replace(/\D/g, '');
+                        return valor.replace(/(\d{5})(\d{3})/, '$1-$2');
+                    }
+                    
+                    // Telefone
+                    if (campo.includes('telefone') && valor.replace(/\D/g, '').length >= 10) {
+                        valor = valor.replace(/\D/g, '');
+                        if (valor.length === 11) {
+                            return valor.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                        } else if (valor.length === 10) {
+                            return valor.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+                        }
+                    }
+                    
+                    return valor.toString().trim();
                 }
-
-                corpo.appendChild(secao);
+                
+                // Mostra campos específicos do tipo
+                const camposExibir = camposPorTipo[tipo] || [];
+                let camposMostrados = 0;
+                
+                for (const campo of camposExibir) {
+                    if (dados[campo]) {
+                        const valor = dados[campo];
+                        const valorFormatado = formatarValor(campo, valor);
+                        const nomeCampo = nomesCampos[campo] || campo;
+                        
+                        html += `
+                            <div class="detail-row">
+                                <span class="detail-label">${nomeCampo}:</span>
+                                <span class="detail-value">${valorFormatado}</span>
+                            </div>
+                        `;
+                        camposMostrados++;
+                    }
+                }
+                
+                // Se não encontrou campos específicos, mostra todos
+                if (camposMostrados === 0) {
+                    for (const [chave, valor] of Object.entries(dados)) {
+                        if (chave !== 'nome' && chave !== 'email' && valor) {
+                            const valorFormatado = formatarValor(chave, valor);
+                            const nomeCampo = chave.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                            
+                            html += `
+                                <div class="detail-row">
+                                    <span class="detail-label">${nomeCampo}:</span>
+                                    <span class="detail-value">${valorFormatado}</span>
+                                </div>
+                            `;
+                        }
+                    }
+                }
+                
+                // Mensagem adicional se houver
+                if (dados.message && dados.message.trim() !== '') {
+                    html += `
+                        <div class="detail-row-full" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                            <span class="detail-label">Mensagem:</span>
+                            <div class="detail-value" style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 5px;">
+                                ${dados.message}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                html += `
+                    </div>
+                    <div class="modal-footer">
+                        <p><em>Clique fora do modal ou no X para fechar</em></p>
+                    </div>
+                `;
+                
+                modalCorpo.innerHTML = html;
+            } catch (e) {
+                modalCorpo.innerHTML = `
+                    <div class="error-message">
+                        <h4>Erro ao carregar dados</h4>
+                        <p>${e.message}</p>
+                    </div>
+                `;
             }
-
+            
+            // Mostra o modal
             modal.style.display = "block";
         });
     });
 
-    closeBtn.addEventListener("click", () => modal.style.display = "none");
-    window.addEventListener("click", e => { if (e.target === modal) modal.style.display = "none"; });
+    // Fecha o modal ao clicar no X
+    closeBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+    });
+    
+    // Fecha o modal ao clicar fora dele
+    window.addEventListener("click", e => { 
+        if (e.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+    
+    // Adiciona também suporte para tecla ESC
+    document.addEventListener("keydown", e => {
+        if (e.key === "Escape" && modal.style.display === "block") {
+            modal.style.display = "none";
+        }
+    });
 });
 </script>
 

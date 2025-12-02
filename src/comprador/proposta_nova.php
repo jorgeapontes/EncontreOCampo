@@ -56,7 +56,7 @@ try {
                 p.imagem_url, 
                 v.id AS vendedor_sistema_id, 
                 u.id AS vendedor_usuario_id, 
-                u.nome AS nome_vendedor
+                v.nome_comercial AS nome_vendedor
             FROM produtos p
             JOIN vendedores v ON p.vendedor_id = v.id 
             JOIN usuarios u ON v.usuario_id = u.id
@@ -89,7 +89,7 @@ try {
                             p.desconto_data_fim,    -- NOVO
                             p.imagem_url,
                             p.unidade_medida,
-                            u.nome AS nome_vendedor
+                            v.nome_comercial AS nome_vendedor
                          FROM produtos p
                          JOIN vendedores v ON p.vendedor_id = v.id 
                          JOIN usuarios u ON v.usuario_id = u.id

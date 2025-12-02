@@ -95,7 +95,7 @@ try {
                 p.descricao, 
                 p.imagem_url, 
                 p.categoria,
-                u.nome AS nome_vendedor, 
+                v.nome_comercial AS nome_vendedor, 
                 u.id AS vendedor_usuario_id 
             FROM produtos p
             JOIN vendedores v ON p.vendedor_id = v.id 

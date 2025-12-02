@@ -23,7 +23,7 @@ if (!$conn) {
 
 // 1. COLETAR E VALIDAR DADOS
 $solicitacao_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
-$acao = filter_input(INPUT_GET, 'acao', FILTER_SANITIZE_STRING);
+$acao = filter_input(INPUT_GET, 'acao', );
 $admin_id = $_SESSION['usuario_id'] ?? 1; 
 
 if ($solicitacao_id === null || $solicitacao_id === false || !in_array($acao, ['aprovar', 'rejeitar'])) {
@@ -33,48 +33,64 @@ if ($solicitacao_id === null || $solicitacao_id === false || !in_array($acao, ['
 
 $novo_status = ($acao === 'aprovar') ? 'aprovado' : 'rejeitado';
 
-
-// 2. FUNÇÃO DE LIMPEZA E MAPEAMENTO (Com correção para ANTT)
+// 2. FUNÇÃO DE LIMPEZA E MAPEAMENTO (Corrigida)
 function map_data_to_columns($data, $tipo_usuario) {
     $map = [];
-    $prefix = ['Comprador', 'Vendedor', 'Transportador'];
-    $exclude_keys = ['senha_hash', 'message']; 
-
+    $exclude_keys = ['senha_hash', 'message', 'nome', 'email', 'tipo_solicitacao']; 
+    
+    // Mapeamento específico de campos baseado no tipo de usuário
+    $prefix_map = [
+        'comprador' => 'Comprador',
+        'vendedor' => 'Vendedor',
+        'transportador' => 'Transportador'
+    ];
+    
+    $prefix = $prefix_map[$tipo_usuario] ?? '';
+    
     foreach ($data as $key => $value) {
         if (in_array($key, $exclude_keys) || empty($value)) {
             continue;
         }
 
-        // 1. Remove prefixos (Ex: 'ruaComprador' -> 'rua')
+        // Remove apenas o prefixo específico do tipo de usuário
         $cleaned_key = $key;
-        foreach ($prefix as $p) {
-            // Usa str_ireplace para ser insensível a maiúsculas/minúsculas no prefixo
-            $cleaned_key = str_ireplace($p, '', $cleaned_key);
+        if (!empty($prefix) && strpos($cleaned_key, $prefix) !== false) {
+            $cleaned_key = str_replace($prefix, '', $cleaned_key);
         }
         
-        // 2. Converte de camelCase para snake_case
+        // Remove outros prefixos conhecidos
+        $prefixes_to_remove = ['Comprador', 'Vendedor', 'Transportador'];
+        foreach ($prefixes_to_remove as $p) {
+            if (strpos($cleaned_key, $p) !== false) {
+                $cleaned_key = str_replace($p, '', $cleaned_key);
+            }
+        }
+        
+        // Converte de camelCase para snake_case
         $cleaned_key = preg_replace('/(?<!^)([A-Z])/', '_$1', $cleaned_key);
         $cleaned_key = strtolower($cleaned_key);
         
-        // 🎯 CORREÇÃO ANTT: Força a coluna a ter o nome correto, assumindo 'numero_antt' no BD.
-        if (strpos($cleaned_key, 'a_n_t_t') !== false || strpos($cleaned_key, 'antt') !== false) {
-             // O campo é relacionado à ANTT. Assumimos o nome de coluna 'numero_antt'.
-             // Se sua coluna for apenas 'antt', você deve mudar para $cleaned_key = 'antt';
-             $cleaned_key = 'numero_antt'; 
+        // Tratamento especial para campos conhecidos
+        if ($cleaned_key === 'a_n_t_t' || $cleaned_key === 'antt') {
+            $cleaned_key = 'numero_antt';
         }
-
+        
+        // Garante que cpfCnpj seja mapeado para cpf_cnpj
+        if ($cleaned_key === 'cpf_cnpj') {
+            $cleaned_key = 'cpf_cnpj';
+        }
+        
         $map[$cleaned_key] = $value;
     }
     
     return $map;
 }
 
-
 // 3. INÍCIO DA TRANSAÇÃO
 try {
     $conn->beginTransaction();
 
-    // ... (Código para REJEITAR permanece o mesmo) ...
+    // Código para REJEITAR
     if ($acao === 'rejeitar') {
         $sql_update = "UPDATE solicitacoes_cadastro SET status = :status, data_analise = NOW() WHERE id = :id AND status = 'pendente'";
         $stmt_update = $conn->prepare($sql_update);
@@ -87,11 +103,10 @@ try {
         exit;
     }
 
-
     // 3.2. Se for APROVAR:
 
     // 3.2.1. Busca os dados da solicitação
-    $sql_fetch = "SELECT nome, email, tipo_solicitacao, dados_json FROM solicitacoes_cadastro WHERE id = :id";
+    $sql_fetch = "SELECT nome, email, tipo_solicitacao, dados_json FROM solicitacoes_cadastro WHERE id = :id AND status = 'pendente'";
     $stmt_fetch = $conn->prepare($sql_fetch);
     $stmt_fetch->bindParam(':id', $solicitacao_id, PDO::PARAM_INT);
     $stmt_fetch->execute();
@@ -117,12 +132,14 @@ try {
     $stmt_user->bindParam(':email', $solicitacao['email']);
     $stmt_user->bindParam(':senha', $senha_hash);
     $stmt_user->bindParam(':tipo', $tipo_usuario);
-    $stmt_user->execute();
+    
+    if (!$stmt_user->execute()) {
+        throw new Exception("Erro ao criar usuário: " . implode(", ", $stmt_user->errorInfo()));
+    }
     
     $novo_usuario_id = $conn->lastInsertId();
 
-
-    // 3.2.3. INSERIR NAS TABELAS ESPECÍFICAS (Com Pluralização Correta)
+    // 3.2.3. INSERIR NAS TABELAS ESPECÍFICAS
     $plural_mapping = [
         'comprador' => 'compradores',
         'vendedor' => 'vendedores',
@@ -134,29 +151,58 @@ try {
     }
     
     $tabela_especifica = $plural_mapping[$tipo_usuario];
-
     $dados_para_inserir = map_data_to_columns($dados_json, $tipo_usuario);
     $dados_para_inserir['usuario_id'] = $novo_usuario_id;
     
+    // DEBUG: Log dos dados mapeados
+    error_log("Dados mapeados para $tipo_usuario: " . print_r($dados_para_inserir, true));
+    
+    // Validação de campos obrigatórios
+    if ($tipo_usuario === 'vendedor') {
+        if (!isset($dados_para_inserir['cpf_cnpj']) || empty($dados_para_inserir['cpf_cnpj'])) {
+            // Tenta encontrar o campo com nomes alternativos
+            $cpf_cnpj_keys = ['cpfCnpjVendedor', 'cpfCnpj', 'cpf_cnpj'];
+            foreach ($cpf_cnpj_keys as $key) {
+                if (isset($dados_json[$key]) && !empty($dados_json[$key])) {
+                    $dados_para_inserir['cpf_cnpj'] = $dados_json[$key];
+                    break;
+                }
+            }
+            
+            if (!isset($dados_para_inserir['cpf_cnpj']) || empty($dados_para_inserir['cpf_cnpj'])) {
+                throw new Exception("Campo obrigatório 'cpf_cnpj' não encontrado para vendedor.");
+            }
+        }
+    }
+    
     // Constrói a query de forma dinâmica
     $colunas = implode(', ', array_keys($dados_para_inserir));
-    $placeholders = implode(', ', array_fill(0, count($dados_para_inserir), '?'));
-    $valores = array_values($dados_para_inserir);
+    $placeholders = ':' . implode(', :', array_keys($dados_para_inserir));
     
     $sql_especifico = "INSERT INTO {$tabela_especifica} ({$colunas}) VALUES ({$placeholders})";
     $stmt_especifico = $conn->prepare($sql_especifico);
-    $stmt_especifico->execute($valores);
-
+    
+    // Bind dos parâmetros
+    foreach ($dados_para_inserir as $key => $value) {
+        $stmt_especifico->bindValue(':' . $key, $value);
+    }
+    
+    if (!$stmt_especifico->execute()) {
+        $errorInfo = $stmt_especifico->errorInfo();
+        throw new Exception("Erro ao inserir na tabela $tabela_especifica: " . $errorInfo[2]);
+    }
 
     // 3.2.4. ATUALIZAR STATUS DA SOLICITAÇÃO
     $sql_update_sol = "UPDATE solicitacoes_cadastro SET status = :status, data_analise = NOW(), usuario_id = :usuario_id 
-                       WHERE id = :id AND status = 'pendente'";
+                       WHERE id = :id";
     $stmt_update_sol = $conn->prepare($sql_update_sol);
     $stmt_update_sol->bindParam(':status', $novo_status);
     $stmt_update_sol->bindParam(':usuario_id', $novo_usuario_id, PDO::PARAM_INT);
     $stmt_update_sol->bindParam(':id', $solicitacao_id, PDO::PARAM_INT);
-    $stmt_update_sol->execute();
     
+    if (!$stmt_update_sol->execute()) {
+        throw new Exception("Erro ao atualizar status da solicitação.");
+    }
     
     // 3.2.5. REGISTRAR AÇÃO DO ADMIN 
     $acao_desc = "Aprovou cadastro de $tipo_usuario (ID: $novo_usuario_id)";
@@ -166,21 +212,22 @@ try {
     $stmt_acao->bindParam(':admin_id', $admin_id, PDO::PARAM_INT);
     $stmt_acao->bindParam(':acao', $acao_desc);
     $stmt_acao->bindParam(':registro_id', $novo_usuario_id, PDO::PARAM_INT);
-    $stmt_acao->execute();
-
+    
+    if (!$stmt_acao->execute()) {
+        throw new Exception("Erro ao registrar ação do admin.");
+    }
 
     // 3.2.6. FINALIZAR TRANSAÇÃO
     $conn->commit();
     header('Location: dashboard.php?msg=' . urlencode('Solicitação aprovada e usuário criado com sucesso!'));
-
 
 } catch (Exception $e) {
     // 4. EM CASO DE ERRO, REVERTER TUDO
     if ($conn->inTransaction()) {
         $conn->rollBack();
     }
-    $erro_msg = "Erro ao processar aprovação: " . $e->getMessage();
-    header('Location: dashboard.php?msg=' . urlencode('erro_processamento: ' . $erro_msg));
+    error_log("Erro em processar_admin_acao: " . $e->getMessage());
+    header('Location: dashboard.php?msg=' . urlencode('Erro: ' . $e->getMessage()));
 }
 
 exit;

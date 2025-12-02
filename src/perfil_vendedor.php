@@ -1,5 +1,5 @@
 <?php
-// perfil_vendedor.php
+// perfil_vendedor.php (Atualizado com Lógica de Descontos)
 session_start();
 require_once 'conexao.php';
 
@@ -26,14 +26,14 @@ if ($is_logged_in) {
     } elseif ($usuario_tipo == 'vendedor') {
         $button_action = 'vendedor/dashboard.php';
     } else {
-        $button_action = '#'; // Fallback
+        $button_action = '#'; 
     }
 } else {
     $button_text = 'Login';
-    $button_action = '#'; // Abrirá o modal de login
+    $button_action = '#'; 
 }
 
-// Conexão e busca dos dados do vendedor
+// Conexão e busca dos dados
 $database = new Database();
 $conn = $database->getConnection();
 
@@ -41,8 +41,34 @@ $vendedor_info = [];
 $anuncios_vendedor = [];
 $total_anuncios = 0;
 
+// Função auxiliar para calcular desconto
+function getPrecoEfetivo($anuncio) {
+    if (isset($anuncio['preco_desconto']) && $anuncio['preco_desconto'] > 0) {
+        $is_valid_discount = !isset($anuncio['desconto_data_fim']) || 
+                             empty($anuncio['desconto_data_fim']) ||
+                             strtotime($anuncio['desconto_data_fim']) > time();
+        
+        if ($is_valid_discount) {
+            $preco_original = (float)$anuncio['preco'];
+            $preco_promocional = (float)$anuncio['preco_desconto'];
+            $desconto_percentual = ($preco_original > 0) ? round((($preco_original - $preco_promocional) / $preco_original) * 100) : 0;
+
+            return [
+                'efetivo' => $preco_promocional,
+                'original' => $preco_original,
+                'percentual' => $desconto_percentual
+            ];
+        }
+    }
+    return [
+        'efetivo' => (float)$anuncio['preco'],
+        'original' => null,
+        'percentual' => 0
+    ];
+}
+
 try {
-    // Buscar informações do vendedor (CORRIGIDO)
+    // Buscar informações do vendedor
     $sql_vendedor = "SELECT u.nome AS nome_vendedor, v.cidade, v.estado, v.nome_comercial, v.foto_perfil_url 
                      FROM usuarios u 
                      JOIN vendedores v ON u.id = v.usuario_id 
@@ -56,8 +82,12 @@ try {
         die("Vendedor não encontrado ou inativo.");
     }
 
-    // Buscar anúncios do vendedor
-    $sql_anuncios = "SELECT p.id, p.nome AS produto, p.preco, p.estoque AS quantidade_disponivel, 
+    // Buscar anúncios do vendedor (Incluindo colunas de desconto)
+    $sql_anuncios = "SELECT p.id, p.nome AS produto, 
+                            p.preco, 
+                            p.preco_desconto,             -- NOVO
+                            p.desconto_data_fim,    -- NOVO
+                            p.estoque AS quantidade_disponivel, 
                             p.unidade_medida, p.descricao, p.imagem_url 
                      FROM produtos p 
                      WHERE p.vendedor_id IN (SELECT id FROM vendedores WHERE usuario_id = ?) 
@@ -70,7 +100,7 @@ try {
     $total_anuncios = count($anuncios_vendedor);
 
 } catch (PDOException $e) {
-    die("Erro ao carregar informações do vendedor: " . $e->getMessage());
+    die("Erro ao carregar informações: " . $e->getMessage());
 }
 
 $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
@@ -83,7 +113,8 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil do Vendedor - Encontre Ocampo</title>
     <link rel="stylesheet" href="../index.css">
-    <link rel="stylesheet" href="css/anuncios.css">
+    <!-- Reutiliza o CSS de anúncios para os cards com desconto -->
+    <link rel="stylesheet" href="css/anuncios.css?v=1.1"> 
     <link rel="stylesheet" href="css/vendedor/perfil.css">
     <link rel="shortcut icon" href="../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -176,19 +207,25 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                         </div>
                     <?php else: ?>
                         <div class="anuncios-grid">
-                            <?php foreach ($anuncios_vendedor as $anuncio): ?>
-                                <div class="anuncio-card">
+                            <?php foreach ($anuncios_vendedor as $anuncio): 
+                                // Calcular desconto para o card
+                                $info_preco = getPrecoEfetivo($anuncio);
+                                $has_discount = $info_preco['original'] !== null;
+                            ?>
+                                <div class="anuncio-card <?php echo $has_discount ? 'discount-active-card' : ''; ?>">
+                                    
+                                    <?php if ($has_discount): ?>
+                                        <!-- SELO DE DESCONTO -->
+                                        <div class="discount-badge">
+                                            -<?php echo $info_preco['percentual']; ?>%
+                                        </div>
+                                    <?php endif; ?>
+
                                     <div class="card-image">
                                         <?php 
                                             $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) : '../img/placeholder.png';
-                                            
                                             if (strpos($imagePath, '../') === 0) {
                                                 $imagePath = substr($imagePath, 3);
-                                            }
-                                            
-                                            $fullImagePath = $imagePath;
-                                            if ($anuncio['imagem_url'] && !file_exists($fullImagePath)) {
-                                                $imagePath = '../img/placeholder.png';
                                             }
                                         ?>
                                         <img src="<?php echo $imagePath; ?>" 
@@ -200,33 +237,30 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                                             <h3><?php echo htmlspecialchars($anuncio['produto']); ?></h3>
                                         </div>
                                         <div class="card-body">
-                                            <p class="price">
-                                                R$ <?php echo number_format($anuncio['preco'], 2, ',', '.'); ?>
-                                                <span>/<?php echo htmlspecialchars($anuncio['unidade_medida']); ?></span>
-                                            </p>
+                                            <!-- Exibição de Preço com Lógica de Desconto -->
+                                            <div class="card-price-container">
+                                                <?php if ($has_discount): ?>
+                                                    <span class="price-original">R$ <?php echo number_format($info_preco['original'], 2, ',', '.'); ?></span>
+                                                    <span class="price-desconto">R$ <?php echo number_format($info_preco['efetivo'], 2, ',', '.'); ?></span>
+                                                    <span style="font-size: 0.9rem; color: #7f8c8d;">/<?php echo htmlspecialchars($anuncio['unidade_medida']); ?></span>
+                                                <?php else: ?>
+                                                    <span class="price-normal">
+                                                        R$ <?php echo number_format($info_preco['efetivo'], 2, ',', '.'); ?>
+                                                        <span style="font-size: 0.9rem; color: #7f8c8d; font-weight: normal;">/<?php echo htmlspecialchars($anuncio['unidade_medida']); ?></span>
+                                                    </span>
+                                                <?php endif; ?>
+                                            </div>
+
                                             <p class="estoque">
                                                 <i class="fas fa-box"></i>
                                                 <?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?> disponíveis
                                             </p>
+                                            
+                                            <!-- Descrição cortada -->
                                             <p class="descricao">
                                                 <?php 
                                                 $descricao = $anuncio['descricao'] ?? 'Sem descrição.';
-                                                $descricao = htmlspecialchars($descricao);
-                                                
-                                                $limite = 120;
-                                                
-                                                if (strlen($descricao) > $limite) {
-                                                    $descricao_curta = substr($descricao, 0, $limite);
-                                                    $ultimo_espaco = strrpos($descricao_curta, ' ');
-                                                    
-                                                    if ($ultimo_espaco !== false) {
-                                                        echo substr($descricao_curta, 0, $ultimo_espaco) . '...';
-                                                    } else {
-                                                        echo $descricao_curta . '...';
-                                                    }
-                                                } else {
-                                                    echo $descricao;
-                                                }
+                                                echo htmlspecialchars(strlen($descricao) > 120 ? substr($descricao, 0, 120) . '...' : $descricao);
                                                 ?>
                                             </p>
                                         </div>
@@ -251,15 +285,12 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
         </div>
     </main>
 
-    <!-- Modal de Login (reutilizado da página de anúncios) -->
+    <!-- Modal de Login (reutilizado) -->
     <div id="loginModal" class="modal">
         <div class="modal-content">
             <span class="modal-close">&times;</span>
             <h3>Acesso Negociador</h3>
-            <p>
-                É necessário estar logado como Comprador para fazer uma proposta.
-            </p>
-            
+            <p>É necessário estar logado como Comprador para fazer uma proposta.</p>
             <form action="login.php" method="POST">
                 <div class="form-group">
                     <label for="modal-email">Email</label>
@@ -282,26 +313,10 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
         const modal = document.getElementById('loginModal');
         const closeButton = document.querySelector('.modal-close');
         
-        function openModal(e) {
-            e.preventDefault();
-            modal.style.display = 'block';
-        }
-
-        document.querySelectorAll('.open-login-modal').forEach(element => {
-            element.addEventListener('click', openModal);
-        });
-
-        if (closeButton) {
-            closeButton.onclick = function() {
-                modal.style.display = 'none';
-            }
-        }
-
-        window.onclick = function(event) {
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        }
+        function openModal(e) { e.preventDefault(); modal.style.display = 'block'; }
+        document.querySelectorAll('.open-login-modal').forEach(el => el.addEventListener('click', openModal));
+        if (closeButton) closeButton.onclick = function() { modal.style.display = 'none'; }
+        window.onclick = function(event) { if (event.target === modal) modal.style.display = 'none'; }
     });
     </script>
 </body>

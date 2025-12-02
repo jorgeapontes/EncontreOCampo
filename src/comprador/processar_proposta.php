@@ -1,9 +1,9 @@
 <?php
-// src/comprador/processar_proposta.php - CORRIGIDO
+// src/comprador/processar_proposta.php - ATUALIZADO
 
 session_start();
 require_once __DIR__ . '/../conexao.php'; 
-require_once __DIR__ . 'funcoes_notificacoes.php';
+// require_once __DIR__ . 'funcoes_notificacoes.php'; // Comente se não existir
 
 $database = new Database();
 $conn = $database->getConnection();
@@ -13,7 +13,6 @@ function redirecionar($tipo, $mensagem, $anuncio_id = null) {
     if ($tipo === 'sucesso') {
         header("Location: minhas_propostas.php?sucesso=" . urlencode($mensagem));
     } else {
-        // Em caso de erro, volta para a página do anúncio
         $url = $anuncio_id ? "proposta_nova.php?anuncio_id={$anuncio_id}&erro=" . urlencode($mensagem) 
                            : "../anuncios.php?erro=" . urlencode($mensagem);
         header("Location: {$url}");
@@ -42,8 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirecionar('erro', "Dados inválidos. Verifique preço e quantidade.", $produto_id);
     }
     
-    // 3. BUSCAR ID DO COMPRADOR
     try {
+        // 3. BUSCAR ID DO COMPRADOR
         $sql_comprador = "SELECT id FROM compradores WHERE usuario_id = :usuario_id";
         $stmt_comprador = $conn->prepare($sql_comprador);
         $stmt_comprador->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
@@ -57,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $comprador_id = $comprador['id'];
         
         // 4. VERIFICAR SE O PRODUTO EXISTE E ESTÁ ATIVO
-        $sql_produto = "SELECT id, estoque FROM produtos WHERE id = :produto_id AND status = 'ativo'";
+        $sql_produto = "SELECT id, estoque, vendedor_id FROM produtos WHERE id = :produto_id AND status = 'ativo'";
         $stmt_produto = $conn->prepare($sql_produto);
         $stmt_produto->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
         $stmt_produto->execute();
@@ -72,14 +71,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirecionar('erro', "Quantidade solicitada maior que estoque disponível.", $produto_id);
         }
         
-        // 5. INSERIR NOVA PROPOSTA
-        $sql_inserir = "INSERT INTO propostas_negociacao 
-                        (produto_id, comprador_id, preco_proposto, quantidade_proposta, condicoes_comprador, status) 
-                        VALUES 
-                        (:produto_id, :comprador_id, :preco_proposto, :quantidade_proposta, :condicoes_comprador, 'pendente')";
+        // 5. INSERIR NOVA PROPOSTA NA TABELA propostas_comprador
+        $sql_inserir_proposta = "INSERT INTO propostas_comprador 
+                                (comprador_id, preco_proposto, quantidade_proposta, condicoes_compra, status) 
+                                VALUES 
+                                (:comprador_id, :preco_proposto, :quantidade_proposta, :condicoes_comprador, 'enviada')";
         
-        $stmt_inserir = $conn->prepare($sql_inserir);
-        $stmt_inserir->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+        $stmt_inserir = $conn->prepare($sql_inserir_proposta);
         $stmt_inserir->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
         $stmt_inserir->bindParam(':preco_proposto', $preco_proposto);
         $stmt_inserir->bindParam(':quantidade_proposta', $quantidade_proposta, PDO::PARAM_INT);
@@ -91,25 +89,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt_inserir->bindParam(':condicoes_comprador', $condicoes_comprador, PDO::PARAM_STR);
         }
         
-        if ($stmt_inserir->execute()) {
-            redirecionar('sucesso', "Proposta enviada com sucesso! Aguarde a resposta do vendedor.");
-            // Notificar o vendedor
-            $sql_vendedor = "SELECT v.usuario_id, p.nome as produto_nome 
-                            FROM produtos p 
-                            JOIN vendedores v ON p.vendedor_id = v.id 
-                            WHERE p.id = :produto_id";
-            $stmt_vendedor = $conn->prepare($sql_vendedor);
-            $stmt_vendedor->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
-            $stmt_vendedor->execute();
-            $vendedor = $stmt_vendedor->fetch(PDO::FETCH_ASSOC);
-
-            if ($vendedor) {
-                $comprador_nome = $_SESSION['usuario_nome'];
-                notificarNovaProposta($vendedor['usuario_id'], $vendedor['produto_nome'], $comprador_nome, $proposta_id);
-            }
-        } else {
-            redirecionar('erro', "Erro ao enviar proposta. Tente novamente.", $produto_id);
+        $stmt_inserir->execute();
+        $proposta_comprador_id = $conn->lastInsertId();
+        
+        // 6. CRIAR REGISTRO NA TABELA propostas_negociacao
+        $sql_inserir_negociacao = "INSERT INTO propostas_negociacao 
+                                  (produto_id, proposta_comprador_id, status) 
+                                  VALUES 
+                                  (:produto_id, :proposta_comprador_id, 'negociacao')";
+        
+        $stmt_negociacao = $conn->prepare($sql_inserir_negociacao);
+        $stmt_negociacao->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+        $stmt_negociacao->bindParam(':proposta_comprador_id', $proposta_comprador_id, PDO::PARAM_INT);
+        $stmt_negociacao->execute();
+        $negociacao_id = $conn->lastInsertId();
+        
+        // 7. NOTIFICAR O VENDEDOR (opcional - se tiver função de notificação)
+        /*
+        $sql_vendedor = "SELECT v.usuario_id, p.nome as produto_nome 
+                        FROM produtos p 
+                        JOIN vendedores v ON p.vendedor_id = v.id 
+                        WHERE p.id = :produto_id";
+        $stmt_vendedor = $conn->prepare($sql_vendedor);
+        $stmt_vendedor->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+        $stmt_vendedor->execute();
+        $vendedor = $stmt_vendedor->fetch(PDO::FETCH_ASSOC);
+        
+        if ($vendedor) {
+            $comprador_nome = $_SESSION['usuario_nome'];
+            notificarNovaProposta($vendedor['usuario_id'], $vendedor['produto_nome'], $comprador_nome, $negociacao_id);
         }
+        */
+        
+        redirecionar('sucesso', "Proposta enviada com sucesso! Aguarde a resposta do vendedor.");
         
     } catch (PDOException $e) {
         error_log("Erro ao processar nova proposta: " . $e->getMessage());

@@ -87,7 +87,7 @@ try {
                     <a href="perfil.php" class="nav-link">Perfil</a>
                 </li>
                 <li class="nav-item">
-                    <a href="../../logout.php" class="nav-link exit-button no-underline">Sair</a>
+                    <a href="../logout.php" class="nav-link exit-button no-underline">Sair</a>
                 </li>
             </ul>
 

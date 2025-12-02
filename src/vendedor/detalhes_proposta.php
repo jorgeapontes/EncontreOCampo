@@ -1,5 +1,5 @@
 <?php
-// src/vendedor/detalhes_proposta.php - CORRIGIDO
+// src/vendedor/detalhes_proposta.php - ATUALIZADO
 
 session_start();
 require_once __DIR__ . '/../conexao.php'; 
@@ -12,20 +12,19 @@ if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor
 
 // 2. OBTENÇÃO DO ID DA PROPOSTA
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    // CORRIGIDO: Redireciona para propostas.php
     header("Location: propostas.php?erro=" . urlencode("Proposta não especificada ou inválida."));
     exit();
 }
 
-$proposta_id = (int)$_GET['id'];
-$usuario_id = $_SESSION['usuario_id']; // ID do vendedor logado
+$proposta_comprador_id = (int)$_GET['id'];
+$usuario_id = $_SESSION['usuario_id'];
 $database = new Database();
 $conn = $database->getConnection();
 $proposta = null;
 $vendedor_id = null;
+$ultima_proposta_vendedor = null;
 
-
-// 3. OBTENDO ID DO VENDEDOR E DETALHES DA PROPOSTA
+// 3. OBTENDO ID DO VENDEDOR E DETALHES DA PROPOSTA - ATUALIZADO
 try {
     // Primeiro, obtém o ID do vendedor
     $sql_vendedor = "SELECT id FROM vendedores WHERE usuario_id = :usuario_id";
@@ -39,23 +38,27 @@ try {
     }
     $vendedor_id = $resultado_vendedor['id'];
 
-    // Agora, busca os detalhes da proposta, verificando se o produto pertence a ESTE vendedor
+    // Buscar detalhes da proposta do comprador - ATUALIZADA para trazer status da negociação
     $sql = "SELECT 
-                pn.*,
+                pc.*,
+                pn.id AS negociacao_id,
+                pn.status AS negociacao_status,  -- Status da tabela propostas_negociacao
+                pn.produto_id,
                 p.nome AS produto_nome,
                 p.unidade_medida,
                 p.preco AS preco_anuncio_original,
                 u.nome AS nome_comprador,
-                c.nome_comercial AS loja_comprador
-            FROM propostas_negociacao pn
+                c.nome_comercial AS loja_comprador,
+                pc.condicoes_compra AS condicoes_comprador
+            FROM propostas_comprador pc
+            JOIN propostas_negociacao pn ON pc.id = pn.proposta_comprador_id
             JOIN produtos p ON pn.produto_id = p.id
-            JOIN vendedores v ON p.vendedor_id = v.id
-            JOIN compradores c ON pn.comprador_id = c.id
+            JOIN compradores c ON pc.comprador_id = c.id
             JOIN usuarios u ON c.usuario_id = u.id
-            WHERE pn.id = :proposta_id AND v.id = :vendedor_id"; // CLÁUSULA DE SEGURANÇA!
+            WHERE pc.id = :proposta_comprador_id AND p.vendedor_id = :vendedor_id";
             
     $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
+    $stmt->bindParam(':proposta_comprador_id', $proposta_comprador_id, PDO::PARAM_INT);
     $stmt->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
     $stmt->execute();
     $proposta = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -65,28 +68,59 @@ try {
         exit();
     }
 
+    // Buscar a última proposta do vendedor (se existir)
+    $sql_vendedor_proposta = "SELECT * FROM propostas_vendedor 
+                             WHERE proposta_comprador_id = :proposta_comprador_id 
+                             ORDER BY data_contra_proposta DESC LIMIT 1";
+    $stmt_vendedor_proposta = $conn->prepare($sql_vendedor_proposta);
+    $stmt_vendedor_proposta->bindParam(':proposta_comprador_id', $proposta_comprador_id, PDO::PARAM_INT);
+    $stmt_vendedor_proposta->execute();
+    $ultima_proposta_vendedor = $stmt_vendedor_proposta->fetch(PDO::FETCH_ASSOC);
+
 } catch (PDOException $e) {
     die("Erro ao carregar detalhes: " . $e->getMessage()); 
 }
 
-// Função para traduzir o status
-function formatarStatus($status) {
-    $map = [
-        'pendente' => ['text' => 'Pendente', 'class' => 'status-pending', 'icon' => 'fas fa-clock'],
-        'aceita' => ['text' => 'Aceita', 'class' => 'status-accepted', 'icon' => 'fas fa-check-circle'],
-        'recusada' => ['text' => 'Recusada', 'class' => 'status-rejected', 'icon' => 'fas fa-times-circle'],
-        'negociacao' => ['text' => 'Em Negociação', 'class' => 'status-negotiation', 'icon' => 'fas fa-exchange-alt'],
-    ];
-    return $map[$status] ?? ['text' => ucfirst($status), 'class' => 'status-default', 'icon' => 'fas fa-question-circle'];
+// Função para traduzir o status - ATUALIZADA para vendedor
+function formatarStatusVendedor($status_negociacao, $status_comprador = null) {
+    // Se o status da negociação for 'aceita' ou 'recusada', usa esses status
+    if (in_array($status_negociacao, ['aceita', 'recusada'])) {
+        $map = [
+            'aceita' => ['text' => 'Aceita', 'class' => 'status-accepted', 'icon' => 'fas fa-check-circle'],
+            'recusada' => ['text' => 'Recusada', 'class' => 'status-rejected', 'icon' => 'fas fa-times-circle']
+        ];
+        return $map[$status_negociacao] ?? ['text' => ucfirst($status_negociacao), 'class' => 'status-default', 'icon' => 'fas fa-question-circle'];
+    }
+    
+    // Se o status da negociação for 'negociacao', verifica o status do comprador
+    if ($status_negociacao === 'negociacao') {
+        if ($status_comprador === 'enviada') {
+            return ['text' => 'Aguardando Resposta', 'class' => 'status-pending', 'icon' => 'fas fa-clock']; // Laranja
+        } elseif ($status_comprador === 'pendente') {
+            return ['text' => 'Aguardando Cliente', 'class' => 'status-negotiation', 'icon' => 'fas fa-exchange-alt']; // Azul
+        }
+    }
+    
+    // Fallback para outros status
+    return ['text' => ucfirst($status_negociacao), 'class' => 'status-default', 'icon' => 'fas fa-question-circle'];
 }
 
-$status_info = formatarStatus($proposta['status']);
+$status_negociacao = $proposta['negociacao_status'];
+$status_comprador = $proposta['status'];
+$status_info = formatarStatusVendedor($status_negociacao, $status_comprador);
 
-// Verifica qual é a última condição válida
-$valor_atual_negociacao = $proposta['preco_proposto'];
-$quantidade_atual_negociacao = $proposta['quantidade_proposta'];
-// CORRIGIDO: condicoes_vendedor -> observacoes_vendedor
-$condicoes_vendedor = empty($proposta['observacoes_vendedor']) ? 'Nenhuma condição especial informada.' : nl2br(htmlspecialchars($proposta['observacoes_vendedor']));
+// Definir valores atuais da negociação
+if ($ultima_proposta_vendedor) {
+    // Se há proposta do vendedor, usar esses valores
+    $valor_atual_negociacao = $ultima_proposta_vendedor['preco_proposto'];
+    $quantidade_atual_negociacao = $ultima_proposta_vendedor['quantidade_proposta'];
+    $condicoes_vendedor = $ultima_proposta_vendedor['condicoes_venda'];
+} else {
+    // Senão, usar os valores da proposta original do comprador
+    $valor_atual_negociacao = $proposta['preco_proposto'];
+    $quantidade_atual_negociacao = $proposta['quantidade_proposta'];
+    $condicoes_vendedor = null;
+}
 ?>
 
 <!DOCTYPE html>
@@ -209,6 +243,27 @@ $condicoes_vendedor = empty($proposta['observacoes_vendedor']) ? 'Nenhuma condi�
             border-radius: 5px;
             box-sizing: border-box;
         }
+        /* ... outros estilos ... */
+        
+        .btn-warning { 
+            background-color: #dc3545; 
+            color: white; 
+        }
+        
+        .btn-warning:hover { 
+            background-color: #c82333;
+            transform: translateY(-2px);
+        }
+        
+        .btn-edit { 
+            background-color: #FF9800; 
+            color: white; 
+        }
+        
+        .btn-edit:hover { 
+            background-color: #e68900; 
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -303,91 +358,45 @@ $condicoes_vendedor = empty($proposta['observacoes_vendedor']) ? 'Nenhuma condi�
             </div>
             
             <?php // CORRIGIDO: condicoes_vendedor -> observacoes_vendedor ?>
-            <?php if (!empty($proposta['observacoes_vendedor'])): ?>
+            <?php if ($ultima_proposta_vendedor && !empty($ultima_proposta_vendedor['condicoes_venda'])): ?>
                 <div class="condicoes-section vendedor">
                     <h3>Sua Última Contraproposta (Condições de Venda)</h3>
-                    <p>
-                        <?php // CORRIGIDO: condicoes_vendedor -> observacoes_vendedor ?>
-                        <?php echo nl2br(htmlspecialchars($proposta['observacoes_vendedor'])); ?>
-                    </p>
+                    <p><?php echo nl2br(htmlspecialchars($ultima_proposta_vendedor['condicoes_venda'])); ?></p>
+                    <p><small>Enviada em: <?php echo date('d/m/Y H:i', strtotime($ultima_proposta_vendedor['data_contra_proposta'])); ?></small></p>
                 </div>
             <?php endif; ?>
 
-            
             <div class="actions-section">
                 <h2>Ações do Vendedor</h2>
                 
                 <?php 
-                // CORRIGIDO: O if/elseif/else usará a sintaxe alternativa com ':'
-                // O vendedor só pode agir se o status for 'pendente' (primeira proposta do comprador) ou 'negociacao' (contraproposta do comprador)
+                // Lógica de exibição dos botões conforme as regras
                 ?>
-                <?php if ($proposta['status'] === 'negociacao'): // Resposta a uma contraproposta do Comprador ?>
-                    <p style="font-size: 0.9em; color: #666;">O Comprador enviou uma <strong>Nova Contraproposta</strong>. Você deve <strong>Aceitar</strong>, <strong>Recusar</strong> ou enviar uma <strong>Nova Contraproposta</strong>.</p>                    
-                    <div class="action-buttons">
-                        <a href="processar_decisao.php?id=<?php echo $proposta_id; ?>&action=aceitar" 
-                           class="btn btn-success" 
-                           onclick="return confirm('ATENÇÃO: Você está prestes a ACEITAR a Contraproposta do Comprador e concluir a negociação. Confirma?')">
-                            <i class="fas fa-check"></i> 
-                            Aceitar e Concluir
-                        </a>
-                        
-                        <a href="processar_decisao.php?id=<?php echo $proposta_id; ?>&action=recusar" 
-                           class="btn btn-danger"
-                           onclick="return confirm('Você está prestes a RECUSAR a Contraproposta do Comprador. Isso encerrará a negociação. Confirma?')">
-                            <i class="fas fa-times"></i> 
-                            Recusar e Encerrar
-                        </a>
-                    </div>
+                
+                <?php if (in_array($status_negociacao, ['aceita', 'recusada'])): ?>
+                    <!-- Status finalizado - apenas visualização -->
+                    <p style="font-size: 1.1em; font-style: italic; color: var(--text-light);">
+                        Esta negociação está encerrada com o status "<?php echo $status_info['text']; ?>".
+                        <br><small>Data da conclusão: <?php echo date('d/m/Y H:i', strtotime($proposta['data_atualizacao'] ?? $proposta['data_proposta'])); ?></small>
+                    </p>
                     
-                    <h3>Ou Envie uma Nova Contraproposta:</h3>
-                    
-                    <div class="contraproposta-form">
-                        <form action="processar_decisao.php?action=contraproposta" method="POST">
-                            <input type="hidden" name="proposta_id" value="<?php echo $proposta_id; ?>">
-                            <input type="hidden" name="action" value="contraproposta">
-                            
-                            <div class="info-section">
-                                <div class="form-group">
-                                    <label for="novo_preco">Novo Preço (por <?php echo htmlspecialchars($proposta['unidade_medida']); ?>)</label>
-                                    <input type="number" step="0.01" id="novo_preco" name="novo_preco" 
-                                           value="<?php echo htmlspecialchars($valor_atual_negociacao); ?>" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="nova_quantidade">Nova Quantidade (<?php echo htmlspecialchars($proposta['unidade_medida']); ?>)</label>
-                                    <input type="number" step="0.01" id="nova_quantidade" name="nova_quantidade" 
-                                           value="<?php echo htmlspecialchars($quantidade_atual_negociacao); ?>" required>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="novas_condicoes">Novas Condições de Pagamento/Entrega (Opcional)</label>
-                                <textarea id="novas_condicoes" name="novas_condicoes" rows="3" 
-                                          placeholder="Ex: Novo prazo de entrega, frete por conta do comprador, etc."></textarea>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-info">
-                                <i class="fas fa-reply"></i> 
-                                Enviar Contraproposta
-                            </button>
-                        </form>
-                    </div>
-
-                <?php elseif ($proposta['status'] === 'pendente'): // Se for a PRIMEIRA proposta do Comprador ?>
-                    <p>Esta é a proposta inicial do Comprador. Escolha uma opção:</p>
+                <?php elseif ($status_negociacao === 'negociacao' && $status_comprador === 'enviada'): ?>
+                    <!-- Comprador enviou proposta inicial, vendedor deve responder -->
+                    <p>O Comprador enviou uma <strong>nova proposta</strong>. Escolha uma opção:</p>
                     
                     <div class="action-buttons">
-                        <a href="processar_decisao.php?id=<?php echo $proposta_id; ?>&action=aceitar" 
-                           class="btn btn-success" 
-                           onclick="return confirm('ATENÇÃO: Você está prestes a ACEITAR a proposta e concluir a negociação. Confirma?')">
+                        <a href="processar_decisao.php?id=<?php echo $proposta_comprador_id; ?>&action=aceitar" 
+                        class="btn btn-success" 
+                        onclick="return confirm('ATENÇÃO: Você está prestes a ACEITAR a proposta e concluir a negociação. Confirma?')">
                             <i class="fas fa-check"></i> 
-                            Aceitar
+                            Aceitar Proposta
                         </a>
                         
-                        <a href="processar_decisao.php?id=<?php echo $proposta_id; ?>&action=recusar" 
-                           class="btn btn-danger"
-                           onclick="return confirm('Você está prestes a RECUSAR a proposta. Isso encerrará a negociação. Confirma?')">
+                        <a href="processar_decisao.php?id=<?php echo $proposta_comprador_id; ?>&action=recusar" 
+                        class="btn btn-danger"
+                        onclick="return confirm('Você está prestes a RECUSAR a proposta. Isso encerrará a negociação. Confirma?')">
                             <i class="fas fa-times"></i> 
-                            Recusar
+                            Recusar Proposta
                         </a>
                         
                         <a href="#" class="btn btn-info" onclick="document.getElementById('contraproposta-form-initial').style.display='block'; this.style.display='none'; return false;">
@@ -398,27 +407,26 @@ $condicoes_vendedor = empty($proposta['observacoes_vendedor']) ? 'Nenhuma condi�
                     
                     <div id="contraproposta-form-initial" class="contraproposta-form" style="display:none;">
                         <h3>Sua Contraproposta (Condições de Venda)</h3>
-                        <form action="processar_decisao.php?action=contraproposta" method="POST">
-                            <input type="hidden" name="proposta_id" value="<?php echo $proposta_id; ?>">
-                            <input type="hidden" name="action" value="contraproposta">
+                        <form action="processar_decisao.php?id=<?php echo $proposta_comprador_id; ?>&action=contraproposta" method="POST">
+                        <input type="hidden" name="proposta_id" value="<?php echo $proposta_comprador_id; ?>">
                             
                             <div class="info-section">
                                 <div class="form-group">
                                     <label for="novo_preco_initial">Novo Preço (por <?php echo htmlspecialchars($proposta['unidade_medida']); ?>)</label>
                                     <input type="number" step="0.01" id="novo_preco_initial" name="novo_preco" 
-                                           value="<?php echo htmlspecialchars($valor_atual_negociacao); ?>" required>
+                                        value="<?php echo htmlspecialchars($valor_atual_negociacao); ?>" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="nova_quantidade_initial">Nova Quantidade (<?php echo htmlspecialchars($proposta['unidade_medida']); ?>)</label>
                                     <input type="number" step="0.01" id="nova_quantidade_initial" name="nova_quantidade" 
-                                           value="<?php echo htmlspecialchars($quantidade_atual_negociacao); ?>" required>
+                                        value="<?php echo htmlspecialchars($quantidade_atual_negociacao); ?>" required>
                                 </div>
                             </div>
                             
                             <div class="form-group">
                                 <label for="novas_condicoes_initial">Novas Condições de Pagamento/Entrega (Opcional)</label>
                                 <textarea id="novas_condicoes_initial" name="novas_condicoes" rows="3" 
-                                          placeholder="Ex: Novo prazo de entrega, frete por conta do comprador, etc."></textarea>
+                                        placeholder="Ex: Novo prazo de entrega, frete por conta do comprador, etc."></textarea>
                             </div>
                             
                             <button type="submit" class="btn btn-info">
@@ -427,12 +435,43 @@ $condicoes_vendedor = empty($proposta['observacoes_vendedor']) ? 'Nenhuma condi�
                             </button>
                         </form>
                     </div>
-
-                <?php else: // Status "aceita" ou "recusada" ?>
+                    
+                <?php elseif ($status_negociacao === 'negociacao' && $status_comprador === 'pendente'): ?>
+                    <!-- Vendedor já fez contraproposta, aguardando resposta do comprador -->
+                    <p>Você enviou uma <strong>contraproposta</strong> e aguarda a resposta do comprador.</p>
+                    
+                    <?php if ($ultima_proposta_vendedor): ?>
+                        <div class="condicoes-section vendedor" style="margin-bottom: 20px;">
+                            <h3>Sua Última Contraproposta (Enviada em: <?php echo date('d/m/Y H:i', strtotime($ultima_proposta_vendedor['data_contra_proposta'])); ?>)</h3>
+                            <p><strong>Preço:</strong> R$ <?php echo number_format($ultima_proposta_vendedor['preco_proposto'], 2, ',', '.'); ?> / <?php echo htmlspecialchars($proposta['unidade_medida']); ?></p>
+                            <p><strong>Quantidade:</strong> <?php echo $ultima_proposta_vendedor['quantidade_proposta']; ?> <?php echo htmlspecialchars($proposta['unidade_medida']); ?></p>
+                            <?php if (!empty($ultima_proposta_vendedor['condicoes_venda'])): ?>
+                                <p><strong>Condições:</strong> <?php echo nl2br(htmlspecialchars($ultima_proposta_vendedor['condicoes_venda'])); ?></p>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <div class="action-buttons">
+                        <a href="editar_contraproposta.php?id=<?php echo $proposta_comprador_id; ?>" class="btn btn-edit">
+                            <i class="fas fa-edit"></i> 
+                            Editar Contraproposta
+                        </a>
+                        
+                        <a href="desfazer_contraproposta.php?id=<?php echo $proposta_comprador_id; ?>" 
+                        class="btn btn-warning"
+                        onclick="return confirm('ATENÇÃO: Você está prestes a DESFAZER sua contraproposta.\n\n• A contraproposta será removida\n• A proposta voltará ao estado inicial\n• O comprador verá que você ainda não respondeu\n\nConfirma esta ação?')">
+                        <i class="fas fa-undo"></i> 
+                            Desfazer Contraproposta
+                        </a>
+                    </div>
+                    
+                <?php else: ?>
+                    <!-- Status não identificado -->
                     <p style="font-size: 1.1em; font-style: italic; color: var(--text-light);">
-                        Esta negociação está encerrada com o status "<?php echo $status_info['text']; ?>".
+                        Status da negociação não identificado. Entre em contato com o suporte.
+                        <br><small>Negociação: <?php echo $status_negociacao; ?> | Comprador: <?php echo $status_comprador; ?></small>
                     </p>
-                <?php endif; // Fecha o bloco condicional principal ?>
+                <?php endif; ?>
                 
                 <a href="propostas.php" class="btn btn-back" style="margin-top: 20px;">
                     <i class="fas fa-arrow-left"></i> 

@@ -11,21 +11,20 @@ if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprado
 }
 
 $usuario_nome = htmlspecialchars($_SESSION['usuario_nome'] ?? 'Comprador');
-$usuario_id = $_SESSION['usuario_id']; // ID do usuário logado na tabela 'usuarios'
+$usuario_id = $_SESSION['usuario_id'];
 
 $database = new Database();
 $conn = $database->getConnection();
 $dashboard_data = [
     'total_propostas' => 0,
-    'pendente' => 0,
+    'enviada' => 0,     // Nova proposta
+    'pendente' => 0,    // Aguardando resposta
     'aceita' => 0,
-    'recusada' => 0,
-    'negociacao' => 0
+    'recusada' => 0
 ];
 $comprador_id = null;
 
-
-// 2. OBTENDO O ID DO COMPRADOR (ID da tabela 'compradores')
+// 2. OBTENDO O ID DO COMPRADOR
 try {
     $sql_comprador = "SELECT id FROM compradores WHERE usuario_id = :usuario_id";
     $stmt_comprador = $conn->prepare($sql_comprador);
@@ -42,11 +41,10 @@ try {
     die("Erro ao buscar ID do comprador: " . $e->getMessage());
 }
 
-// ... código anterior ...
-
-// 3. BUSCA DOS TOTAIS DAS PROPOSTAS POR STATUS
+// 3. BUSCA DOS TOTAIS DAS PROPOSTAS POR STATUS - ATUALIZADA
 try {
-    $sql_propostas = "SELECT status, COUNT(id) AS total FROM propostas_negociacao 
+    // Contar propostas por status na tabela propostas_comprador
+    $sql_propostas = "SELECT status, COUNT(id) AS total FROM propostas_comprador 
                       WHERE comprador_id = :comprador_id
                       GROUP BY status";
             
@@ -62,6 +60,19 @@ try {
             $dashboard_data[$status_key] = $item['total'];
         }
     }
+
+    // Contar propostas aceitas na tabela de negociação
+    $sql_aceitas = "SELECT COUNT(pn.id) as aceitas
+                    FROM propostas_negociacao pn
+                    JOIN propostas_comprador pc ON pn.proposta_comprador_id = pc.id
+                    WHERE pc.comprador_id = :comprador_id AND pn.status = 'aceita'";
+    
+    $stmt_aceitas = $conn->prepare($sql_aceitas);
+    $stmt_aceitas->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
+    $stmt_aceitas->execute();
+    $aceitas = $stmt_aceitas->fetch(PDO::FETCH_ASSOC);
+    
+    $dashboard_data['aceita'] = $aceitas['aceitas'] ?? 0;
 
 } catch (PDOException $e) {
     error_log("Erro ao carregar totais de propostas: " . $e->getMessage());
@@ -83,8 +94,6 @@ try {
     error_log("Erro ao carregar total de favoritos: " . $e->getMessage());
     $dashboard_data['favoritos'] = 0;
 }
-
-
 ?>
 
 <!DOCTYPE html>

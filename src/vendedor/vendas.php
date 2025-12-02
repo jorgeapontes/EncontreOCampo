@@ -2,28 +2,31 @@
 // src/vendedor/vendas.php
 require_once 'auth.php';
 
-// Consulta para obter as vendas (propostas aceitas) do vendedor
+// Consulta para obter as vendas (propostas aceitas) do vendedor - ATUALIZADA
 $vendas = [];
 $total_vendas = 0;
 $valor_total_vendas = 0;
 
+// Consulta para obter as vendas - CORRIGIDA
 try {
     $query_vendas = "SELECT 
                         pn.id,
+                        pn.proposta_comprador_id,
                         pn.produto_id,
                         p.nome as produto_nome,
                         c.nome_comercial as comprador_nome,
-                        pn.quantidade_proposta,
-                        pn.preco_proposto,
-                        (pn.quantidade_proposta * pn.preco_proposto) as valor_total,
-                        pn.data_proposta,
+                        pn.quantidade_final as quantidade_vendida,
+                        pn.preco_final as preco_unitario,
+                        (pn.quantidade_final * pn.preco_final) as valor_total,
+                        pn.data_criacao as data_venda,
                         pn.status
                     FROM propostas_negociacao pn
                     INNER JOIN produtos p ON pn.produto_id = p.id
-                    INNER JOIN compradores c ON pn.comprador_id = c.id
+                    INNER JOIN propostas_comprador pc ON pn.proposta_comprador_id = pc.id
+                    INNER JOIN compradores c ON pc.comprador_id = c.id
                     WHERE p.vendedor_id = :vendedor_id 
                     AND pn.status IN ('aceita', 'finalizada')
-                    ORDER BY pn.data_proposta DESC";
+                    ORDER BY pn.data_criacao DESC";
     
     $stmt_vendas = $db->prepare($query_vendas);
     $stmt_vendas->bindParam(':vendedor_id', $vendedor['id']);
@@ -148,6 +151,7 @@ try {
             
             <div class="tabela-anuncios">
                 <?php if ($total_vendas > 0): ?>
+                    <!-- Na seção da tabela, atualize as colunas: -->
                     <table>
                         <thead>
                             <tr>
@@ -167,10 +171,10 @@ try {
                                 <td><?php echo $venda['id']; ?></td>
                                 <td><?php echo htmlspecialchars($venda['produto_nome']); ?></td>
                                 <td><?php echo htmlspecialchars($venda['comprador_nome']); ?></td>
-                                <td><?php echo number_format($venda['quantidade_proposta'], 0, ',', '.'); ?> Kg</td>
-                                <td>R$ <?php echo number_format($venda['preco_proposto'], 2, ',', '.'); ?></td>
+                                <td><?php echo number_format($venda['quantidade_vendida'], 0, ',', '.'); ?> Kg</td>
+                                <td>R$ <?php echo number_format($venda['preco_unitario'], 2, ',', '.'); ?></td>
                                 <td>R$ <?php echo number_format($venda['valor_total'], 2, ',', '.'); ?></td>
-                                <td><?php echo date('d/m/Y H:i', strtotime($venda['data_proposta'])); ?></td>
+                                <td><?php echo date('d/m/Y H:i', strtotime($venda['data_venda'])); ?></td>
                                 <td>
                                     <span class="status <?php echo $venda['status']; ?>">
                                         <?php 

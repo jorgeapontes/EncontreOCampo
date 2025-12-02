@@ -30,12 +30,28 @@ function notificarNovaProposta($vendedor_id, $produto_nome, $comprador_nome, $pr
     return criarNotificacao($vendedor_id, $mensagem, 'info', $url);
 }
 
-// Função para notificar comprador sobre resposta da proposta
-function notificarRespostaProposta($comprador_id, $produto_nome, $status, $proposta_id) {
-    $status_text = $status == 'aceita' ? 'aceita' : ($status == 'recusada' ? 'recusada' : 'em negociação');
+// Função para notificar comprador sobre resposta da proposta - ATUALIZADA
+function notificarRespostaProposta($comprador_usuario_id, $produto_nome, $status, $proposta_comprador_id) {
+    // Mapear ações para textos amigáveis
+    $status_text = match($status) {
+        'aceitar' => 'aceita',
+        'recusar' => 'recusada', 
+        'contraproposta' => 'recebeu uma contraproposta',
+        default => 'atualizada'
+    };
+    
     $mensagem = "Sua proposta para '{$produto_nome}' foi {$status_text}";
     $url = "src/comprador/minhas_propostas.php";
-    return criarNotificacao($comprador_id, $mensagem, $status == 'aceita' ? 'sucesso' : 'info', $url);
+    
+    // Definir tipo de notificação baseado na ação
+    $tipo = match($status) {
+        'aceitar' => 'sucesso',
+        'recusar' => 'alerta',
+        'contraproposta' => 'info',
+        default => 'info'
+    };
+    
+    return criarNotificacao($comprador_usuario_id, $mensagem, $tipo, $url);
 }
 
 // Função para notificar sobre aprovação de cadastro

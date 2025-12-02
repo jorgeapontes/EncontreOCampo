@@ -201,6 +201,13 @@
     border: 1px solid #2196F3;
 }
 
+/* Status Enviada (Azul) - Quando comprador enviou e aguarda resposta */
+.status-negotiation {
+    background-color: #E3F2FD;
+    color: #2196F3;
+    border: 1px solid #2196F3;
+}
+
 /* Alertas */
 .alert {
     padding: 15px;

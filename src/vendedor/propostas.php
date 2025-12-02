@@ -1,5 +1,5 @@
 <?php
-// src/vendedor/propostas.php
+// src/vendedor/propostas.php - ATUALIZADO
 
 session_start();
 require_once __DIR__ . '/../conexao.php'; 
@@ -10,14 +10,13 @@ if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor
     exit();
 }
 
-$usuario_id = $_SESSION['usuario_id']; // ID do usuário logado na tabela 'usuarios'
+$usuario_id = $_SESSION['usuario_id'];
 $database = new Database();
 $conn = $database->getConnection();
 $propostas = [];
 $vendedor_id = null;
 
-
-// 2. OBTENDO O ID DO VENDEDOR (ID da tabela 'vendedores')
+// 2. OBTENDO O ID DO VENDEDOR
 try {
     $sql_vendedor = "SELECT id FROM vendedores WHERE usuario_id = :usuario_id";
     $stmt_vendedor = $conn->prepare($sql_vendedor);
@@ -34,44 +33,66 @@ try {
     die("Erro ao buscar ID do vendedor: " . $e->getMessage());
 }
 
-// 3. BUSCA DAS PROPOSTAS RECEBIDAS
+// 3. BUSCA DAS PROPOSTAS RECEBIDAS - ATUALIZADA COM DEBUG
 try {
-    // Busca todas as propostas para os produtos DESTE vendedor
     $sql = "SELECT 
-                pn.id AS proposta_id,
-                pn.data_proposta,
-                pn.preco_proposto,
-                pn.quantidade_proposta,
-                pn.status,
+                pc.id AS proposta_id,
+                pc.data_proposta,
+                pc.preco_proposto,
+                pc.quantidade_proposta,
+                pc.status AS proposta_status,  -- Renomeado para evitar conflito
+                pc.condicoes_compra,
+                pn.id AS negociacao_id,  -- ADICIONADO: ID da negociação
+                pn.status AS negociacao_status,  -- ADICIONADO: Status da negociação
+                pn.produto_id,
                 p.nome AS produto_nome,
                 p.unidade_medida,
                 p.preco AS preco_anuncio_original,
+                p.vendedor_id,  -- ADICIONADO: Para debug
                 u.nome AS nome_comprador
-            FROM propostas_negociacao pn
+            FROM propostas_comprador pc
+            JOIN propostas_negociacao pn ON pc.id = pn.proposta_comprador_id
             JOIN produtos p ON pn.produto_id = p.id
-            JOIN vendedores v ON p.vendedor_id = v.id
-            JOIN compradores c ON pn.comprador_id = c.id
+            JOIN compradores c ON pc.comprador_id = c.id
             JOIN usuarios u ON c.usuario_id = u.id
-            WHERE v.id = :vendedor_id
-            ORDER BY pn.data_proposta DESC";
+            WHERE p.vendedor_id = :vendedor_id
+            ORDER BY pc.data_proposta DESC";
             
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
     $stmt->execute();
     $propostas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // DEBUG: Verificar dados retornados
+    error_log("DEBUG propostas.php - Total de propostas: " . count($propostas));
+    error_log("DEBUG propostas.php - Vendedor ID: " . $vendedor_id);
+    
 } catch (PDOException $e) {
     die("Erro ao carregar propostas: " . $e->getMessage()); 
 }
 
-// Função para traduzir o status
-function formatarStatus($status) {
-    $map = [
-        'pendente' => ['text' => 'Pendente', 'class' => 'status-pending'],
-        'aceita' => ['text' => 'Aceita', 'class' => 'status-accepted'],
-        'recusada' => ['text' => 'Recusada', 'class' => 'status-rejected'],
-        'negociacao' => ['text' => 'Em Negociação', 'class' => 'status-negotiation'],
-    ];
-    return $map[$status] ?? ['text' => ucfirst($status), 'class' => 'status-default'];
+// Função para traduzir o status - ATUALIZADA para considerar ambos os status
+function formatarStatusVendedor($status_negociacao, $status_comprador = null) {
+    // Se o status da negociação for 'aceita' ou 'recusada', usa esses status
+    if (in_array($status_negociacao, ['aceita', 'recusada'])) {
+        $map = [
+            'aceita' => ['text' => 'Aceita', 'class' => 'status-accepted'],
+            'recusada' => ['text' => 'Recusada', 'class' => 'status-rejected']
+        ];
+        return $map[$status_negociacao] ?? ['text' => ucfirst($status_negociacao), 'class' => 'status-default'];
+    }
+    
+    // Se o status da negociação for 'negociacao', verifica o status do comprador
+    if ($status_negociacao === 'negociacao') {
+        if ($status_comprador === 'enviada') {
+            return ['text' => 'Nova Proposta', 'class' => 'status-pending'];
+        } elseif ($status_comprador === 'pendente') {
+            return ['text' => 'Aguardando Cliente', 'class' => 'status-negotiation'];
+        }
+    }
+    
+    // Fallback
+    return ['text' => ucfirst($status_negociacao), 'class' => 'status-default'];
 }
 ?>
 
@@ -161,7 +182,7 @@ function formatarStatus($status) {
         <?php else: ?>
             <div class="propostas-list">
                 <?php foreach ($propostas as $proposta): 
-                    $status_info = formatarStatus($proposta['status']);
+                    $status_info = formatarStatusVendedor($proposta['negociacao_status'], $proposta['proposta_status']);
                 ?>
                     <div class="proposta-card <?php echo $status_info['class']; ?>">
                         <div class="proposta-header">
@@ -187,15 +208,14 @@ function formatarStatus($status) {
                             </div>
                         </div>
                         
+                        <!-- No loop das propostas, atualize os links: -->
                         <div class="proposta-actions">
-                            <?php if ($proposta['status'] == 'aceita' || $proposta['status'] == 'recusada'): ?>
-                                <!-- Para propostas aceitas ou recusadas - apenas Ver Detalhes -->
+                            <?php if ($proposta['negociacao_status'] == 'aceita' || $proposta['negociacao_status'] == 'recusada'): ?>
                                 <a href="detalhes_proposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn-action <?= $status_info['class'] ?>">
                                     <i class="fas fa-eye"></i>
                                     Ver Detalhes
                                 </a>
                             <?php else: ?>
-                                <!-- Para propostas pendentes ou em negociação - Ver Detalhes / Negociar -->
                                 <a href="detalhes_proposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn-action <?= $status_info['class'] ?>">
                                     <i class="fas fa-search"></i>
                                     Ver Detalhes / Negociar

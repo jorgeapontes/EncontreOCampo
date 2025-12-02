@@ -1,5 +1,7 @@
+[file name]: minhas_propostas.php
+[file content begin]
 <?php
-// src/comprador/minhas_propostas.php
+// src/comprador/minhas_propostas.php - ATUALIZADO
 
 session_start();
 require_once __DIR__ . '/../conexao.php'; 
@@ -10,8 +12,7 @@ if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprado
     exit();
 }
 
-$usuario_id = $_SESSION['usuario_id']; // ID do usuário logado
-
+$usuario_id = $_SESSION['usuario_id'];
 $database = new Database();
 $conn = $database->getConnection();
 $propostas = [];
@@ -19,7 +20,7 @@ $comprador_id = null;
 $mensagem_sucesso = isset($_GET['sucesso']) ? htmlspecialchars($_GET['sucesso']) : null;
 $mensagem_erro = isset($_GET['erro']) ? htmlspecialchars($_GET['erro']) : null;
 
-// 2. OBTENDO O ID DO COMPRADOR (ID da tabela 'compradores')
+// 2. OBTENDO O ID DO COMPRADOR
 try {
     $sql_comprador = "SELECT id FROM compradores WHERE usuario_id = :usuario_id";
     $stmt_comprador = $conn->prepare($sql_comprador);
@@ -36,58 +37,112 @@ try {
     die("Erro ao buscar ID do comprador: " . $e->getMessage());
 }
 
-// 3. BUSCA DAS PROPOSTAS E CONTRAPROPOSTAS
+// 3. BUSCA DAS PROPOSTAS - ATUALIZADA
 try {
     $sql = "SELECT 
-                pn.id AS proposta_id,
-                pn.data_proposta,
-                pn.preco_proposto,
-                pn.quantidade_proposta,
-                pn.condicoes_comprador,
-                pn.status,
+                pn.id AS negociacao_id,
+                pn.status AS negociacao_status,  -- Status da tabela propostas_negociacao
+                pn.data_criacao,
+                pn.data_atualizacao,
+                pc.id AS proposta_comprador_id,
+                pc.preco_proposto,
+                pc.quantidade_proposta,
+                pc.condicoes_compra AS condicoes_comprador,
+                pc.data_proposta,
+                pc.status AS status_comprador,  -- Status da tabela propostas_comprador (IMPORTANTE!)
+                pv.id AS proposta_vendedor_id,
+                pv.preco_proposto AS preco_vendedor,
+                pv.quantidade_proposta AS quantidade_vendedor,
+                pv.condicoes_venda AS condicoes_vendedor,
+                pv.observacao AS observacoes_vendedor,
+                pv.data_contra_proposta,
                 p.nome AS produto_nome,
                 p.unidade_medida,
                 p.preco AS preco_anuncio_original,
                 u.nome AS nome_vendedor,
-                pn.observacoes_vendedor,
-                pn.data_resposta
+                p.id AS produto_id
             FROM propostas_negociacao pn
+            JOIN propostas_comprador pc ON pn.proposta_comprador_id = pc.id
             JOIN produtos p ON pn.produto_id = p.id
             JOIN vendedores v ON p.vendedor_id = v.id
             JOIN usuarios u ON v.usuario_id = u.id
-            WHERE pn.comprador_id = :comprador_id
-            ORDER BY pn.data_proposta DESC";
+            LEFT JOIN propostas_vendedor pv ON pn.proposta_vendedor_id = pv.id
+            WHERE pc.comprador_id = :comprador_id
+            ORDER BY 
+                CASE 
+                    WHEN pc.status = 'pendente' THEN 1  -- Prioridade para propostas com resposta do vendedor
+                    WHEN pc.status = 'enviada' THEN 2   -- Depois propostas aguardando resposta
+                    ELSE 3                             -- Por último as finalizadas
+                END,
+                pn.data_criacao DESC";
             
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
     $stmt->execute();
     $propostas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // DEBUG: Verificar dados retornados
+    error_log("DEBUG minhas_propostas.php - Total de propostas: " . count($propostas));
+    foreach ($propostas as $index => $proposta) {
+        error_log("DEBUG Proposta {$index}: Negociação=" . $proposta['negociacao_status'] . 
+                 ", Comprador=" . $proposta['status_comprador'] . 
+                 ", Tem contraproposta=" . (!empty($proposta['proposta_vendedor_id']) ? 'SIM' : 'NÃO'));
+    }
+    
 } catch (PDOException $e) {
     die("Erro ao carregar propostas: " . $e->getMessage()); 
 }
 
-// Função para traduzir o status para um texto amigável e classe CSS
-function formatarStatus($status) {
-    $map = [
-        'pendente' => ['text' => 'Pendente', 'class' => 'status-pending'],
-        'aceita' => ['text' => 'Aceita', 'class' => 'status-accepted'],
-        'recusada' => ['text' => 'Recusada', 'class' => 'status-rejected'],
-        'negociacao' => ['text' => 'Em Negociação', 'class' => 'status-negotiation'],
-    ];
-    return $map[$status] ?? ['text' => ucfirst($status), 'class' => 'status-default'];
+// Função para traduzir o status - ATUALIZADA
+function formatarStatusComprador($status_negociacao, $status_comprador = null) {
+    // Se o status da negociação for 'aceita' ou 'recusada', usa esses status
+    if (in_array($status_negociacao, ['aceita', 'recusada'])) {
+        $map = [
+            'aceita' => ['text' => 'Aceita', 'class' => 'status-accepted'],
+            'recusada' => ['text' => 'Recusada', 'class' => 'status-rejected'],
+        ];
+        return $map[$status_negociacao] ?? ['text' => ucfirst($status_negociacao), 'class' => 'status-default'];
+    }
+    
+    // Se o status da negociação for 'negociacao', verifica o status do comprador
+    if ($status_negociacao === 'negociacao') {
+        if ($status_comprador === 'enviada') {
+            return ['text' => 'Enviada', 'class' => 'status-negotiation']; // Azul - aguardando vendedor
+        } elseif ($status_comprador === 'pendente') {
+            return ['text' => 'Pendente', 'class' => 'status-pending']; // Laranja - vendedor respondeu
+        } elseif (in_array($status_comprador, ['aceita', 'recusada'])) {
+            // Fallback
+            $map = [
+                'aceita' => ['text' => 'Aceita', 'class' => 'status-accepted'],
+                'recusada' => ['text' => 'Recusada', 'class' => 'status-rejected'],
+            ];
+            return $map[$status_comprador] ?? ['text' => ucfirst($status_comprador), 'class' => 'status-default'];
+        }
+    }
+    
+    // Fallback
+    return ['text' => ucfirst($status_negociacao), 'class' => 'status-default'];
+}
+
+// Verificar se há contraproposta do vendedor - ATUALIZADA
+function temContrapropostaVendedor($proposta) {
+    // Verifica se há proposta do vendedor OU condições do vendedor
+    return !empty($proposta['proposta_vendedor_id']) || 
+           !empty($proposta['condicoes_vendedor']) || 
+           !empty($proposta['observacoes_vendedor']);
 }
 ?>
 
 <script>
-function confirmarExclusao(propostaId) {
+function confirmarExclusao(negociacaoId) {
     if (confirm('Tem certeza que deseja excluir esta proposta?\n\nEsta ação não pode ser desfeita.')) {
-        window.location.href = 'excluir_proposta.php?id=' + propostaId;
+        window.location.href = 'excluir_proposta.php?id=' + negociacaoId;
     }
 }
 
-function responderContraproposta(propostaId, acao) {
+function responderContraproposta(negociacaoId, acao) {
     if (confirm('Tem certeza que deseja ' + acao + ' esta contraproposta?')) {
-        window.location.href = 'responder_contraproposta.php?id=' + propostaId + '&acao=' + acao;
+        window.location.href = 'processar_resposta.php?id=' + negociacaoId + '&action=' + acao;
     }
 }
 </script>
@@ -149,10 +204,20 @@ function responderContraproposta(propostaId, acao) {
         <?php else: ?>
             <div class="propostas-list">
                 <?php foreach ($propostas as $proposta): 
-                    $status_info = formatarStatus($proposta['status']);
-                    $tem_contraproposta = !empty($proposta['observacoes_vendedor']);
+                    $status_negociacao = $proposta['negociacao_status'];
+                    $status_comprador = $proposta['status_comprador'];
+                    $status_info = formatarStatusComprador($status_negociacao, $status_comprador);
+                    $tem_contraproposta = temContrapropostaVendedor($proposta);
+                    
+                    // DEBUG no card (pode remover depois)
+                    $debug_info = "N: {$status_negociacao}, C: {$status_comprador}";
                 ?>
                     <div class="proposta-card">
+                        <!-- DEBUG - remover depois -->
+                        <div class="debug-info" style="display: none;">
+                            <?php echo $debug_info; ?>
+                        </div>
+                        
                         <div class="proposta-header">
                             <h3>
                                 Proposta para: <?php echo htmlspecialchars($proposta['produto_nome']); ?>
@@ -166,8 +231,8 @@ function responderContraproposta(propostaId, acao) {
                             <div class="info-group">
                                 <p><strong>Vendedor:</strong> <?php echo htmlspecialchars($proposta['nome_vendedor']); ?></p>
                                 <p><strong>Data da Proposta:</strong> <?php echo date('d/m/Y H:i', strtotime($proposta['data_proposta'])); ?></p>
-                                <?php if ($proposta['data_resposta']): ?>
-                                    <p><strong>Data da Resposta:</strong> <?php echo date('d/m/Y H:i', strtotime($proposta['data_resposta'])); ?></p>
+                                <?php if ($proposta['data_atualizacao']): ?>
+                                    <p><strong>Última Atualização:</strong> <?php echo date('d/m/Y H:i', strtotime($proposta['data_atualizacao'])); ?></p>
                                 <?php endif; ?>
                             </div>
                             <div class="info-group">
@@ -188,41 +253,57 @@ function responderContraproposta(propostaId, acao) {
 
                         <?php if ($tem_contraproposta): ?>
                             <div class="contraproposta-section">
-                                <strong>Contraproposta do Vendedor:</strong>
+                                <strong>Contraproposta do Vendedor (Enviada em: <?php echo date('d/m/Y H:i', strtotime($proposta['data_contra_proposta'])); ?>):</strong>
                                 <div class="contraproposta-content">
-                                    <?php echo nl2br(htmlspecialchars($proposta['observacoes_vendedor'])); ?>
+                                    <?php if (!empty($proposta['observacoes_vendedor'])): ?>
+                                        <p><strong>Observações:</strong> <?php echo nl2br(htmlspecialchars($proposta['observacoes_vendedor'])); ?></p>
+                                    <?php endif; ?>
+                                    
+                                    <?php if ($proposta['preco_vendedor']): ?>
+                                        <p><strong>Preço Proposto pelo Vendedor:</strong> R$ <?php echo number_format($proposta['preco_vendedor'], 2, ',', '.'); ?> / <?php echo htmlspecialchars($proposta['unidade_medida']); ?></p>
+                                    <?php endif; ?>
+                                    
+                                    <?php if ($proposta['quantidade_vendedor']): ?>
+                                        <p><strong>Quantidade Proposta:</strong> <?php echo $proposta['quantidade_vendedor']; ?> <?php echo htmlspecialchars($proposta['unidade_medida']); ?></p>
+                                    <?php endif; ?>
+                                    
+                                    <?php if (!empty($proposta['condicoes_vendedor'])): ?>
+                                        <p><strong>Condições do Vendedor:</strong> <?php echo nl2br(htmlspecialchars($proposta['condicoes_vendedor'])); ?></p>
+                                    <?php endif; ?>
                                 </div>
-                                
-                                <!-- BOTÕES PARA RESPONDER À CONTRAPROPOSTA - SEMPRE VISÍVEIS QUANDO HÁ CONTRAPROPOSTA -->
-                                <div class="contraproposta-actions">
-                                    <button onclick="responderContraproposta(<?php echo $proposta['proposta_id']; ?>, 'aceitar')" class="btn btn-success">
-                                        <i class="fas fa-check"></i>
-                                        Aceitar Contraproposta
-                                    </button>
-                                    <button onclick="responderContraproposta(<?php echo $proposta['proposta_id']; ?>, 'recusar')" class="btn btn-danger">
-                                        <i class="fas fa-times"></i>
-                                        Recusar Contraproposta
-                                    </button>
-                                    <a href="fazer_contraproposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn btn-secondary">
-                                        <i class="fas fa-edit"></i>
-                                        Fazer Contraproposta
-                                    </a>
                                 </div>
-                            </div>
                         <?php endif; ?>
 
-                        <!-- BOTÕES DE AÇÃO PRINCIPAIS - CORRIGIDOS PARA SEMPRE APARECEREM -->
+                        <!-- BOTÕES DE AÇÃO PRINCIPAIS -->
                         <div class="proposta-actions">
-                            <?php if ($proposta['status'] === 'pendente' || $proposta['status'] === 'negociacao'): ?>
-                                <!-- Botões sempre disponíveis para propostas ativas -->
-                                <a href="editar_proposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn btn-edit">
-                                    <i class="fas fa-edit"></i>
-                                    <?php echo $tem_contraproposta ? 'Alterar Minha Proposta' : 'Alterar Detalhes'; ?>
-                                </a>
-                                <button onclick="confirmarExclusao(<?php echo $proposta['proposta_id']; ?>)" class="btn btn-delete">
-                                    <i class="fas fa-trash"></i>
-                                    Excluir Proposta
-                                </button>
+                            <?php if ($status_negociacao === 'negociacao'): ?>
+                                <?php if ($status_comprador === 'enviada'): ?>
+                                    <!-- Comprador aguardando resposta do vendedor -->
+                                    <a href="editar_proposta.php?id=<?php echo $proposta['negociacao_id']; ?>" class="btn btn-edit">
+                                        <i class="fas fa-edit"></i>
+                                        Alterar Detalhes
+                                    </a>
+                                    <button onclick="confirmarExclusao(<?php echo $proposta['negociacao_id']; ?>)" class="btn btn-delete">
+                                        <i class="fas fa-trash"></i>
+                                        Excluir Proposta
+                                    </button>
+                                <?php elseif ($status_comprador === 'pendente' && $tem_contraproposta): ?>
+                                    <!-- Comprador precisa responder à contraproposta do vendedor -->
+                                    <div class="contraproposta-actions">
+                                        <button onclick="responderContraproposta(<?php echo $proposta['negociacao_id']; ?>, 'aceitar')" class="btn btn-success">
+                                            <i class="fas fa-check"></i>
+                                            Aceitar Contraproposta
+                                        </button>
+                                        <button onclick="responderContraproposta(<?php echo $proposta['negociacao_id']; ?>, 'recusar')" class="btn btn-danger">
+                                            <i class="fas fa-times"></i>
+                                            Recusar Contraproposta
+                                        </button>
+                                        <a href="fazer_contraproposta.php?id=<?php echo $proposta['negociacao_id']; ?>" class="btn btn-secondary">
+                                            <i class="fas fa-edit"></i>
+                                            Fazer Contraproposta
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -232,3 +313,4 @@ function responderContraproposta(propostaId, acao) {
     </main>
 </body>
 </html>
+[file content end]

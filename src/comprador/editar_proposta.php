@@ -14,7 +14,7 @@ if (!isset($_GET['id'])) {
     exit();
 }
 
-$proposta_id = $_GET['id'];
+$negociacao_id = $_GET['id'];
 $usuario_id = $_SESSION['usuario_id'];
 
 $database = new Database();
@@ -22,15 +22,25 @@ $conn = $database->getConnection();
 
 // Buscar dados da proposta
 try {
-    $sql = "SELECT pn.*, p.nome AS produto_nome, p.preco AS preco_original, p.unidade_medida,
-                   pn.observacoes_vendedor AS contraproposta_vendedor
+    $sql = "SELECT 
+                pc.*,
+                pc.status AS status_comprador,
+                pn.id AS negociacao_id,
+                pn.status AS negociacao_status,
+                pn.produto_id,
+                p.nome AS produto_nome, 
+                p.preco AS preco_original, 
+                p.unidade_medida,
+                pv.condicoes_venda
             FROM propostas_negociacao pn
+            JOIN propostas_comprador pc ON pn.proposta_comprador_id = pc.id
+            LEFT JOIN propostas_vendedor pv ON pn.proposta_vendedor_id = pv.id
             JOIN produtos p ON pn.produto_id = p.id
-            JOIN compradores c ON pn.comprador_id = c.id
-            WHERE pn.id = :proposta_id AND c.usuario_id = :usuario_id";
+            JOIN compradores c ON pc.comprador_id = c.id
+            WHERE pn.id = :negociacao_id AND c.usuario_id = :usuario_id";
     
     $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
+    $stmt->bindParam(':negociacao_id', $negociacao_id, PDO::PARAM_INT);
     $stmt->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
     $stmt->execute();
     
@@ -42,8 +52,11 @@ try {
     }
     
     // Verificar se a proposta pode ser editada
-    if ($proposta['status'] !== 'pendente' && $proposta['status'] !== 'negociacao') {
-        header("Location: minhas_propostas.php?erro=" . urlencode("Esta proposta não pode ser editada."));
+    // 1. Status na negociação deve ser 'negociacao'
+    // 2. Status na proposta do comprador deve ser 'enviada'
+    if ($proposta['negociacao_status'] !== 'negociacao' || $proposta['status_comprador'] !== 'enviada') {
+        $status_msg = "Negociação: {$proposta['negociacao_status']}, Proposta: {$proposta['status_comprador']}";
+        header("Location: minhas_propostas.php?erro=" . urlencode("Esta proposta não pode ser editada. " . $status_msg));
         exit();
     }
     
@@ -58,19 +71,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $condicoes = $_POST['condicoes'];
     
     try {
-        $sql_update = "UPDATE propostas_negociacao 
+        // Atualizar a proposta do comprador
+        $sql_update = "UPDATE propostas_comprador 
                       SET preco_proposto = :preco, 
                           quantidade_proposta = :quantidade, 
-                          condicoes_comprador = :condicoes,
-                          status = 'pendente', // Volta para pendente quando o comprador edita
-                          data_atualizacao = NOW()
-                      WHERE id = :proposta_id";
+                          condicoes_compra = :condicoes
+                      WHERE id = :proposta_comprador_id";
         
         $stmt_update = $conn->prepare($sql_update);
         $stmt_update->bindParam(':preco', $preco_proposto);
         $stmt_update->bindParam(':quantidade', $quantidade);
         $stmt_update->bindParam(':condicoes', $condicoes);
-        $stmt_update->bindParam(':proposta_id', $proposta_id);
+        $stmt_update->bindParam(':proposta_comprador_id', $proposta['id']);
         $stmt_update->execute();
         
         header("Location: minhas_propostas.php?sucesso=" . urlencode("Proposta atualizada com sucesso!"));
@@ -130,11 +142,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
 
-            <?php if (!empty($proposta['contraproposta_vendedor'])): ?>
+            <?php if (!empty($proposta['condicoes_venda'])): ?>
                 <div class="contraproposta-section">
                     <strong>Contraproposta do Vendedor:</strong>
                     <div class="contraproposta-content">
-                        <?php echo nl2br(htmlspecialchars($proposta['contraproposta_vendedor'])); ?>
+                        <?php echo nl2br(htmlspecialchars($proposta['condicoes_venda'])); ?>
                     </div>
                     <p><em>Ao editar sua proposta, você está respondendo à contraproposta do vendedor.</em></p>
                 </div>
@@ -155,7 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <div class="form-group">
                     <label for="condicoes">Condições de Compra (opcional):</label>
-                    <textarea id="condicoes" name="condicoes" rows="4"><?php echo htmlspecialchars($proposta['condicoes_comprador']); ?></textarea>
+                    <textarea id="condicoes" name="condicoes" rows="4"><?php echo htmlspecialchars($proposta['condicoes_compra']); ?></textarea>
                 </div>
 
                 <div class="form-actions">

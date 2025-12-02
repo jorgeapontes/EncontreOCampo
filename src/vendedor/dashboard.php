@@ -1,11 +1,10 @@
 <?php
 // src/vendedor/dashboard.php
-require_once 'auth.php'; // Inclui a proteção de acesso e carrega os dados do vendedor
+require_once 'auth.php';
 
 // Lógica para buscar os anúncios ATIVOS do vendedor
 $anuncios = [];
 
-// CORREÇÃO: 'fruta' foi substituído por 'nome' e 'quantidade' por 'estoque'
 $query_anuncios = "SELECT id, nome, estoque, preco, status, data_criacao 
                    FROM produtos 
                    WHERE vendedor_id = :vendedor_id 
@@ -13,21 +12,23 @@ $query_anuncios = "SELECT id, nome, estoque, preco, status, data_criacao
                    ORDER BY data_criacao DESC";
                    
 $stmt_anuncios = $db->prepare($query_anuncios);
-$stmt_anuncios->bindParam(':vendedor_id', $vendedor['id']); // Usa o ID da tabela 'vendedores'
-$stmt_anuncios->execute(); // A linha 14 que causava o erro agora está correta.
+$stmt_anuncios->bindParam(':vendedor_id', $vendedor['id']);
+$stmt_anuncios->execute();
 $anuncios = $stmt_anuncios->fetchAll(PDO::FETCH_ASSOC);
 
 $total_anuncios = count($anuncios);
 
-// NOVO: CONTADOR DE PROPOSTAS PENDENTES
+// CONTADOR DE PROPOSTAS PENDENTES - ATUALIZADO PARA NOVA ESTRUTURA
 $total_propostas_pendentes = 0;
 
+// CONTADOR DE PROPOSTAS PENDENTES - CORRIGIDA
 try {
-    $query_propostas = "SELECT COUNT(pn.id) as total_pendentes
-                        FROM propostas_negociacao pn
+    $query_propostas = "SELECT COUNT(pc.id) as total_pendentes
+                        FROM propostas_comprador pc
+                        JOIN propostas_negociacao pn ON pc.id = pn.proposta_comprador_id
                         JOIN produtos p ON pn.produto_id = p.id
                         WHERE p.vendedor_id = :vendedor_id 
-                        AND pn.status = 'pendente'";
+                        AND pc.status = 'pendente'"; // Agora usa status da propostas_comprador
                         
     $stmt_propostas = $db->prepare($query_propostas);
     $stmt_propostas->bindParam(':vendedor_id', $vendedor['id']);
@@ -37,7 +38,6 @@ try {
     $total_propostas_pendentes = $resultado['total_pendentes'] ?? 0;
     
 } catch (PDOException $e) {
-    // Em caso de erro, mantém o valor 0 e loga o erro
     error_log("Erro ao contar propostas pendentes: " . $e->getMessage());
     $total_propostas_pendentes = 0;
 }

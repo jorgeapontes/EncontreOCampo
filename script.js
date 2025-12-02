@@ -1,8 +1,7 @@
-// script.js
+// script.js - VERSÃO COMPLETA E CORRIGIDA
 
 // script.js - VERIFICAÇÃO DE CARREGAMENTO
 console.log('=== SCRIPT.JS CARREGADO ===');
-
 
 // Navbar toggle for mobile
 const hamburger = document.querySelector(".hamburger");
@@ -29,7 +28,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         
         const targetElement = document.querySelector(targetId);
         if (targetElement) {
-            // Animação de scroll suave
             window.scrollTo({
                 top: targetElement.offsetTop - 70,
                 behavior: 'smooth'
@@ -50,21 +48,21 @@ window.addEventListener('scroll', function() {
     }
 });
 
-// Variáveis para controle das etapas (MANTIDO)
+// Variáveis para controle das etapas
 let currentSteps = {
     comprador: 1,
     vendedor: 1,
     transportador: 1
 };
 
-// Função para mostrar/ocultar campos adicionais (MANTIDO)
+// Função para mostrar/ocultar campos adicionais
 function toggleAdditionalFields() {
     const subject = document.getElementById('subject');
     const compradorFields = document.getElementById('compradorFields');
     const vendedorFields = document.getElementById('vendedorFields');
     const transportadorFields = document.getElementById('transportadorFields');
     const messageGroup = document.getElementById('messageGroup');
-    const submitOther = document.getElementById('submitOther'); // Novo botão para 'Outro'
+    const submitOther = document.getElementById('submitOther');
     
     // Reset para primeira etapa de todos os formulários
     currentSteps.comprador = 1;
@@ -79,7 +77,7 @@ function toggleAdditionalFields() {
     vendedorFields.style.display = 'none';
     transportadorFields.style.display = 'none';
     messageGroup.style.display = 'none';
-    submitOther.style.display = 'none'; // Esconde o botão genérico
+    submitOther.style.display = 'none';
     
     // Mostrar campos específicos baseado na seleção
     if (subject.value === 'comprador') {
@@ -94,28 +92,31 @@ function toggleAdditionalFields() {
         loadEstados();
     } else if (subject.value === 'outro') {
         messageGroup.style.display = 'block';
-        submitOther.style.display = 'block'; // Mostra o botão genérico para 'Outro'
+        submitOther.style.display = 'block';
     } else {
          messageGroup.style.display = 'none';
          submitOther.style.display = 'none';
     }
 }
 
-// Função genérica para mostrar etapas (MANTIDO)
+// Função genérica para mostrar etapas
 function showStep(type, step) {
+    // Esconder todos os steps do tipo
     document.querySelectorAll(`[id^="${type}Step"]`).forEach(el => {
         el.style.display = 'none';
     });
     
+    // Mostrar o step atual
     const currentStepElement = document.getElementById(`${type}Step${step}`);
     if (currentStepElement) {
         currentStepElement.style.display = 'block';
+        currentStepElement.classList.add('active');
     }
     
     updateProgressIndicator(type, step);
 }
 
-// Função para atualizar o indicador de progresso (MANTIDO)
+// Função para atualizar o indicador de progresso
 function updateProgressIndicator(type, step) {
     const stepsContainer = document.querySelector(`#${type}Fields .progress-indicator`);
     if (!stepsContainer) return;
@@ -130,33 +131,166 @@ function updateProgressIndicator(type, step) {
     });
 }
 
-// Função genérica para próxima etapa (MANTIDO)
+// Função para mostrar/esconder campos de nome comercial para comprador
+function toggleNomeComercialComprador() {
+    const tipoPessoa = document.querySelector('input[name="tipoPessoaComprador"]:checked');
+    const nomeComercialGroup = document.getElementById('nomeComercialGroup');
+    const cpfCnpjInput = document.getElementById('cpfCnpjComprador');
+    const labelNomeComercial = document.getElementById('labelNomeComercialComprador');
+    const inputNomeComercial = document.getElementById('nomeComercialComprador');
+    
+    if (tipoPessoa) {
+        nomeComercialGroup.style.display = 'block';
+        
+        if (tipoPessoa.value === 'cpf') {
+            labelNomeComercial.textContent = 'Nome de Exibição ';
+            inputNomeComercial.placeholder = 'Como você quer ser chamado na plataforma';
+            cpfCnpjInput.placeholder = '000.000.000-00';
+            
+            // Limpar e reaplicar máscara para CPF
+            if (cpfCnpjInput.value) {
+                let value = cpfCnpjInput.value.replace(/\D/g, '');
+                if (value.length > 11) {
+                    value = value.substring(0, 11);
+                }
+                cpfCnpjInput.value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+            }
+        } else {
+            labelNomeComercial.textContent = 'Nome da Empresa ';
+            inputNomeComercial.placeholder = 'Razão Social da empresa';
+            cpfCnpjInput.placeholder = '00.000.000/0000-00';
+            
+            // Limpar e reaplicar máscara para CNPJ
+            if (cpfCnpjInput.value) {
+                let value = cpfCnpjInput.value.replace(/\D/g, '');
+                if (value.length > 14) {
+                    value = value.substring(0, 14);
+                }
+                cpfCnpjInput.value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+            }
+        }
+    } else {
+        nomeComercialGroup.style.display = 'none';
+    }
+}
+
+// Função genérica para próxima etapa
 function nextStep(type) {
+    console.log(`Tentando ir para próxima etapa de ${type}, etapa atual: ${currentSteps[type]}`);
+    
     const currentStepFields = document.getElementById(`${type}Step${currentSteps[type]}`);
+    if (!currentStepFields) {
+        console.error(`Elemento ${type}Step${currentSteps[type]} não encontrado!`);
+        return;
+    }
+    
     const inputs = currentStepFields.querySelectorAll('input[required], select[required], textarea[required]');
     let isValid = true;
 
     // Validar campos obrigatórios
     inputs.forEach(input => {
-        // CORREÇÃO VISUAL: Se inválido, muda a borda
         if (!input.value.trim()) {
             isValid = false;
             input.style.borderColor = '#ff6b6b';
+            console.log(`Campo inválido: ${input.name || input.id}`);
         } else {
             input.style.borderColor = '';
         }
     });
 
+    // Validações específicas por tipo
+    if (type === 'comprador' && currentSteps[type] === 1) {
+        const tipoPessoa = document.querySelector('input[name="tipoPessoaComprador"]:checked');
+        const cpfCnpjInput = document.getElementById('cpfCnpjComprador');
+        const nomeComercialInput = document.getElementById('nomeComercialComprador');
+        
+        if (!tipoPessoa) {
+            isValid = false;
+            alert('Por favor, selecione o tipo de pessoa (CPF ou CNPJ).');
+            return;
+        }
+        
+        const cpfCnpjValue = cpfCnpjInput.value.replace(/\D/g, '');
+        
+        // Validar tamanho baseado no tipo
+        if (tipoPessoa.value === 'cpf' && cpfCnpjValue.length !== 11) {
+            isValid = false;
+            cpfCnpjInput.style.borderColor = '#ff6b6b';
+            alert('CPF deve ter 11 dígitos!');
+            return;
+        }
+        
+        if (tipoPessoa.value === 'cnpj' && cpfCnpjValue.length !== 14) {
+            isValid = false;
+            cpfCnpjInput.style.borderColor = '#ff6b6b';
+            alert('CNPJ deve ter 14 dígitos!');
+            return;
+        }
+        
+        // Validar nome comercial
+        if (!nomeComercialInput.value.trim()) {
+            isValid = false;
+            nomeComercialInput.style.borderColor = '#ff6b6b';
+            alert('Por favor, preencha o nome de exibição/empresa!');
+            return;
+        }
+    }
+    
+    if (type === 'vendedor' && currentSteps[type] === 1) {
+        const cpfCnpjInput = document.getElementById('cpfCnpjVendedor');
+        const cpfCnpjValue = cpfCnpjInput.value.replace(/\D/g, '');
+        
+        if (cpfCnpjValue.length !== 14) {
+            isValid = false;
+            cpfCnpjInput.style.borderColor = '#ff6b6b';
+            alert('Para vendedor, é obrigatório CNPJ com 14 dígitos!');
+            return;
+        }
+        
+        const nomeComercialInput = document.getElementById('nomeComercialVendedor');
+        if (!nomeComercialInput.value.trim()) {
+            isValid = false;
+            nomeComercialInput.style.borderColor = '#ff6b6b';
+            alert('Nome comercial é obrigatório para vendedor!');
+            return;
+        }
+    }
+    
+    if (type === 'transportador' && currentSteps[type] === 2) {
+        const placaVeiculo = document.getElementById('placaVeiculo');
+        const modeloVeiculo = document.getElementById('modeloVeiculo');
+        
+        if (placaVeiculo && !placaVeiculo.value.trim()) {
+            isValid = false;
+            placaVeiculo.style.borderColor = '#ff6b6b';
+        }
+        
+        if (modeloVeiculo && !modeloVeiculo.value.trim()) {
+            isValid = false;
+            modeloVeiculo.style.borderColor = '#ff6b6b';
+        }
+        
+        if (placaVeiculo.value.trim()) {
+            const placaLimpa = placaVeiculo.value.replace(/[^A-Z0-9]/gi, '');
+            if (placaLimpa.length !== 7) {
+                isValid = false;
+                placaVeiculo.style.borderColor = '#ff6b6b';
+                alert('Placa inválida! Deve ter 7 caracteres (ex: ABC-1234 ou ABC1D23).');
+                return;
+            }
+        }
+    }
+
     if (!isValid) {
-        alert('Por favor, preencha todos os campos obrigatórios.');
+        alert('Por favor, preencha todos os campos obrigatórios corretamente.');
         return;
     }
 
     if (currentSteps[type] < 3) {
         currentSteps[type]++;
+        console.log(`Indo para etapa ${currentSteps[type]} de ${type}`);
         showStep(type, currentSteps[type]);
         
-        // Se for transportador na etapa 3, carregar cidades
         if (type === 'transportador' && currentSteps[type] === 3) {
             const estadoSelect = document.getElementById('estadoTransportador');
             if (estadoSelect.value) {
@@ -166,7 +300,7 @@ function nextStep(type) {
     }
 }
 
-// Função genérica para etapa anterior (MANTIDO)
+// Função genérica para etapa anterior
 function prevStep(type) {
     if (currentSteps[type] > 1) {
         currentSteps[type]--;
@@ -174,10 +308,8 @@ function prevStep(type) {
     }
 }
 
-// Funções para buscar CEP (MANTIDO)
-// Funções para buscar CEP - VERSÃO CORRIGIDA
+// Função para buscar CEP - COMPRADOR
 function buscarCEPComprador() {
-    
     const cepInput = document.getElementById('cepComprador');
     if (!cepInput) {
         console.error('❌ cepComprador não encontrado');
@@ -188,11 +320,10 @@ function buscarCEPComprador() {
     const cep = cepInput.value.replace(/\D/g, '');
     
     if (cep.length !== 8) {
-        alert('❌ CEP inválido! Digite 8 números.\nCEP atual: ' + cep + ' (' + cep.length + ' dígitos)');
+        alert('❌ CEP inválido! Digite 8 números.');
         return;
     }
     
-    // CORREÇÃO: Encontra o botão de forma segura
     const btnBuscar = cepInput.parentElement.querySelector('button');
     let originalText = 'Buscar CEP';
     if (btnBuscar) {
@@ -201,7 +332,6 @@ function buscarCEPComprador() {
         btnBuscar.disabled = true;
     }
         
-    // Fazer a busca
     fetch(`https://viacep.com.br/ws/${cep}/json/`)
         .then(response => response.json())
         .then(data => {
@@ -209,7 +339,6 @@ function buscarCEPComprador() {
             
             if (data.erro) {
                 alert('CEP não encontrado na base de dados!');
-                // Restaura botão em caso de erro
                 if (btnBuscar) {
                     btnBuscar.textContent = originalText;
                     btnBuscar.disabled = false;
@@ -217,12 +346,10 @@ function buscarCEPComprador() {
                 return;
             }
             
-            // Preencher campos
             document.getElementById('ruaComprador').value = data.logradouro || '';
             document.getElementById('cidadeComprador').value = data.localidade || '';
             document.getElementById('estadoComprador').value = data.uf || '';
             
-            // Restaura botão em caso de sucesso
             if (btnBuscar) {
                 btnBuscar.textContent = '✓ Encontrado';
                 btnBuscar.style.backgroundColor = '#4CAF50';
@@ -236,7 +363,6 @@ function buscarCEPComprador() {
         .catch(error => {
             console.error('Erro:', error);
             alert('Erro na busca. Verifique sua conexão.');
-            // Restaura botão em caso de erro
             if (btnBuscar) {
                 btnBuscar.textContent = originalText;
                 btnBuscar.disabled = false;
@@ -244,8 +370,8 @@ function buscarCEPComprador() {
         });
 }
 
+// Função para buscar CEP - VENDEDOR
 function buscarCEPVendedor() {
-    
     const cepInput = document.getElementById('cepVendedor');
     if (!cepInput) {
         console.error('❌ cepVendedor não encontrado');
@@ -256,11 +382,10 @@ function buscarCEPVendedor() {
     const cep = cepInput.value.replace(/\D/g, '');
     
     if (cep.length !== 8) {
-        alert('❌ CEP inválido! Digite 8 números.\nCEP atual: ' + cep + ' (' + cep.length + ' dígitos)');
+        alert('❌ CEP inválido! Digite 8 números.');
         return;
     }
     
-    // CORREÇÃO: Encontra o botão de forma segura
     const btnBuscar = cepInput.parentElement.querySelector('button');
     let originalText = 'Buscar CEP';
     if (btnBuscar) {
@@ -269,7 +394,6 @@ function buscarCEPVendedor() {
         btnBuscar.disabled = true;
     }
         
-    // Fazer a busca
     fetch(`https://viacep.com.br/ws/${cep}/json/`)
         .then(response => response.json())
         .then(data => {
@@ -277,7 +401,6 @@ function buscarCEPVendedor() {
             
             if (data.erro) {
                 alert('CEP não encontrado na base de dados!');
-                // Restaura botão em caso de erro
                 if (btnBuscar) {
                     btnBuscar.textContent = originalText;
                     btnBuscar.disabled = false;
@@ -285,12 +408,10 @@ function buscarCEPVendedor() {
                 return;
             }
             
-            // Preencher campos
             document.getElementById('ruaVendedor').value = data.logradouro || '';
             document.getElementById('cidadeVendedor').value = data.localidade || '';
             document.getElementById('estadoVendedor').value = data.uf || '';
             
-            // Restaura botão em caso de sucesso
             if (btnBuscar) {
                 btnBuscar.textContent = '✓ Encontrado';
                 btnBuscar.style.backgroundColor = '#4CAF50';
@@ -304,7 +425,6 @@ function buscarCEPVendedor() {
         .catch(error => {
             console.error('Erro:', error);
             alert('Erro na busca. Verifique sua conexão.');
-            // Restaura botão em caso de erro
             if (btnBuscar) {
                 btnBuscar.textContent = originalText;
                 btnBuscar.disabled = false;
@@ -312,6 +432,104 @@ function buscarCEPVendedor() {
         });
 }
 
+// Função para buscar informações da placa do veículo
+async function buscarPlacaVeiculo() {
+    const placaInput = document.getElementById('placaVeiculo');
+    const modeloInput = document.getElementById('modeloVeiculo');
+    
+    if (!placaInput || !modeloInput) {
+        alert('Campos não encontrados!');
+        return;
+    }
+    
+    const placa = placaInput.value.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+    
+    console.log('Placa formatada para consulta:', placa);
+    
+    if (placa.length !== 7) {
+        alert('Placa inválida! Digite 7 caracteres.');
+        return;
+    }
+    
+    const buscarBtn = document.querySelector('.placa-btn');
+    const originalText = buscarBtn.textContent;
+    buscarBtn.textContent = 'Buscando...';
+    buscarBtn.disabled = true;
+    buscarBtn.style.backgroundColor = '#ff9800';
+    
+    try {
+        console.log('Consultando placa:', placa);
+        
+        const response = await fetch(`https://brasilapi.com.br/api/veiculo/v1/placas/${placa}`);
+        
+        console.log('Status da resposta:', response.status);
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error('Placa não encontrada na base de dados.');
+            }
+            throw new Error(`Erro na consulta: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Dados retornados:', data);
+        
+        let modeloCompleto = '';
+        
+        if (data.marca && data.modelo) {
+            modeloCompleto = `${data.marca} ${data.modelo}`;
+            
+            if (data.ano) {
+                modeloCompleto += ` (${data.ano})`;
+            }
+            
+            modeloInput.value = modeloCompleto;
+            
+            buscarBtn.textContent = '✓ Encontrado';
+            buscarBtn.style.backgroundColor = '#4CAF50';
+            
+            setTimeout(() => {
+                buscarBtn.textContent = originalText;
+                buscarBtn.disabled = false;
+                buscarBtn.style.backgroundColor = '';
+            }, 2000);
+            
+        } else {
+            if (data.tipo) {
+                modeloInput.value = data.tipo;
+            } else if (data.especie) {
+                modeloInput.value = data.especie;
+            } else {
+                modeloInput.value = 'Veículo identificado';
+            }
+            
+            buscarBtn.textContent = '⚠️ Info limitada';
+            buscarBtn.style.backgroundColor = '#ff9800';
+            
+            setTimeout(() => {
+                buscarBtn.textContent = originalText;
+                buscarBtn.disabled = false;
+                buscarBtn.style.backgroundColor = '';
+            }, 2000);
+            
+            alert('Placa encontrada, mas informações detalhadas não estão disponíveis.');
+        }
+        
+    } catch (error) {
+        console.error('Erro na consulta da placa:', error);
+        
+        buscarBtn.textContent = '✗ Erro';
+        buscarBtn.style.backgroundColor = '#f44336';
+        
+        setTimeout(() => {
+            buscarBtn.textContent = originalText;
+            buscarBtn.disabled = false;
+            buscarBtn.style.backgroundColor = '';
+        }, 2000);
+        
+        alert(`Erro ao consultar a placa: ${error.message}\nPreencha o modelo manualmente.`);
+    }
+}
 
 // MÁSCARA SIMPLES E EFICIENTE PARA CEP
 function aplicarMascaraCEP(cepInput, tipo) {
@@ -320,7 +538,6 @@ function aplicarMascaraCEP(cepInput, tipo) {
     cepInput.addEventListener('input', function(e) {
         let value = e.target.value.replace(/\D/g, '');
         
-        // Aplica máscara simples: 00000-000
         if (value.length > 5) {
             value = value.substring(0, 5) + '-' + value.substring(5, 8);
         }
@@ -328,16 +545,19 @@ function aplicarMascaraCEP(cepInput, tipo) {
         e.target.value = value;
     });
     
-    // Enter para buscar automaticamente
     cepInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
-            buscarCEP(tipo);
+            if (tipo === 'comprador') {
+                buscarCEPComprador();
+            } else if (tipo === 'vendedor') {
+                buscarCEPVendedor();
+            }
         }
     });
 }
 
-// Funções para carregar estados e cidades (MANTIDO)
+// Funções para carregar estados e cidades
 function loadEstados() {
     const estados = [
         "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", 
@@ -362,7 +582,6 @@ function loadCidades(estado) {
         "RJ": ["Rio de Janeiro", "Niterói", "Duque de Caxias", "Nova Iguaçu", "São Gonçalo"],
         "MG": ["Belo Horizonte", "Uberlândia", "Contagem", "Juiz de Fora", "Betim"],
         "RS": ["Porto Alegre", "Caxias do Sul", "Pelotas", "Canoas", "Santa Maria"],
-        // Adicione mais cidades para outros estados conforme necessário
     };
     
     const cidadeSelect = document.getElementById('cidadeTransportador');
@@ -378,19 +597,17 @@ function loadCidades(estado) {
     });
 }
 
-// LÓGICA DE MÁSCARAS (MANTIDO E CENTRALIZADO)
+// LÓGICA DE MÁSCARAS
 function aplicarMascaraTelefone(input) {
     if (input) {
         input.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
             
-            // Limita a 11 dígitos (DDD + 9º dígito + 8)
             if (value.length > 11) {
                 value = value.substring(0, 11);
             }
 
             if (value.length <= 10) {
-                // (XX) XXXX-XXXX (10 dígitos)
                 if (value.length > 2) {
                     value = '(' + value.substring(0, 2) + ') ' + value.substring(2);
                 }
@@ -398,7 +615,6 @@ function aplicarMascaraTelefone(input) {
                     value = value.substring(0, 9) + '-' + value.substring(9, 13);
                 }
             } else {
-                // (XX) XXXXX-XXXX (11 dígitos)
                 if (value.length > 2) {
                     value = '(' + value.substring(0, 2) + ') ' + value.substring(2);
                 }
@@ -412,75 +628,98 @@ function aplicarMascaraTelefone(input) {
     }
 }
 
-// Funções de inicialização de máscaras (MANTIDO)
+// Funções de inicialização de máscaras
 function initializeCompradorMasks() {
-    // Máscaras de telefone
     aplicarMascaraTelefone(document.getElementById('telefone1Comprador'));
     aplicarMascaraTelefone(document.getElementById('telefone2Comprador'));
     
-    // Máscara para CEP - CORRIGIDA
     aplicarMascaraCEP(document.getElementById('cepComprador'), 'comprador');
-
-
-    // Máscara para CPF/CNPJ (MANTIDO O CÓDIGO DO USUÁRIO)
-    // ... Código de máscaras para cepComprador e cpfCnpjComprador ...
 
     const cpfCnpjInput = document.getElementById('cpfCnpjComprador');
     if (cpfCnpjInput) {
         cpfCnpjInput.addEventListener('input', function(e) {
+            const tipoPessoa = document.querySelector('input[name="tipoPessoaComprador"]:checked');
             let value = e.target.value.replace(/\D/g, '');
-            if (value.length <= 11) { // CPF
-                value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
-            } else { // CNPJ
-                value = value.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+            
+            if (tipoPessoa && tipoPessoa.value === 'cnpj') {
+                if (value.length > 14) {
+                    value = value.substring(0, 14);
+                }
+                value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+            } else {
+                if (value.length > 11) {
+                    value = value.substring(0, 11);
+                }
+                value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
             }
+            
             e.target.value = value;
         });
+    }
+    
+    document.querySelectorAll('input[name="tipoPessoaComprador"]').forEach(radio => {
+        radio.addEventListener('change', toggleNomeComercialComprador);
+    });
+    
+    const radioCPF = document.querySelector('input[name="tipoPessoaComprador"][value="cpf"]');
+    if (radioCPF) {
+        radioCPF.checked = true;
+        toggleNomeComercialComprador();
     }
 }
 
 function initializeVendedorMasks() {
-    // Máscaras de telefone
     aplicarMascaraTelefone(document.getElementById('telefone1Vendedor'));
     aplicarMascaraTelefone(document.getElementById('telefone2Vendedor'));
 
-    // Máscara para CEP - CORRIGIDA
     aplicarMascaraCEP(document.getElementById('cepVendedor'), 'vendedor');
-
-    // Máscara para CPF/CNPJ (MANTIDO O CÓDIGO DO USUÁRIO)
-    // ... Código de máscaras para cepVendedor e cpfCnpjVendedor ...
 
     const cpfCnpjInput = document.getElementById('cpfCnpjVendedor');
     if (cpfCnpjInput) {
         cpfCnpjInput.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
-            if (value.length <= 11) { // CPF
-                value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
-            } else { // CNPJ
-                value = value.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
-            }
+            value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
             e.target.value = value;
+            
+            if (value.length > 18) {
+                e.target.value = value.substring(0, 18);
+            }
         });
     }
 }
 
 function initializeTransportadorMasks() {
-    // Máscara de telefone
     aplicarMascaraTelefone(document.getElementById('telefoneTransportador'));
 
-    // Máscara para placa do veículo (MANTIDO O CÓDIGO DO USUÁRIO)
     const placaVeiculo = document.getElementById('placaVeiculo');
     if (placaVeiculo) {
         placaVeiculo.addEventListener('input', function(e) {
             let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            
             if (value.length > 3) {
-                value = value.substring(0, 3) + '-' + value.substring(3, 7);
+                const parteNumerica = value.substring(3);
+                const temLetrasNaParteNumerica = /[A-Z]/.test(parteNumerica);
+                
+                if (temLetrasNaParteNumerica) {
+                    if (value.length > 4) {
+                        value = value.substring(0, 4) + '-' + value.substring(4, 7);
+                    }
+                } else {
+                    value = value.substring(0, 3) + '-' + value.substring(3, 7);
+                }
             }
+            
             e.target.value = value;
+        });
+        
+        placaVeiculo.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                buscarPlacaVeiculo();
+            }
         });
     }
 
-    // Máscara para número ANTT (MANTIDO O CÓDIGO DO USUÁRIO)
     const numeroANTT = document.getElementById('numeroANTT');
     if (numeroANTT) {
         numeroANTT.addEventListener('input', function(e) {
@@ -490,10 +729,8 @@ function initializeTransportadorMasks() {
 }
 
 // ===============================================
-// CORREÇÃO FINAL: LÓGICA DE SUBMISSÃO AJAX
+// LÓGICA DE SUBMISSÃO AJAX
 // ===============================================
-
-// script.js - função submitForm corrigida
 
 async function submitForm(e) {
     e.preventDefault();
@@ -539,7 +776,26 @@ async function submitForm(e) {
         return;
     }
     
-    // 3. Desabilitar botão e mostrar carregamento
+    // 3. Validações específicas
+    if (subject === 'comprador') {
+        const tipoPessoa = document.querySelector('input[name="tipoPessoaComprador"]:checked');
+        if (!tipoPessoa) {
+            alert('Por favor, selecione se é Pessoa Física ou Jurídica.');
+            return;
+        }
+    }
+    
+    if (subject === 'vendedor') {
+        const cpfCnpjInput = document.getElementById('cpfCnpjVendedor');
+        const cpfCnpjValue = cpfCnpjInput.value.replace(/\D/g, '');
+        if (cpfCnpjValue.length !== 14) {
+            alert('Para vendedor, é obrigatório CNPJ válido com 14 dígitos!');
+            cpfCnpjInput.style.borderColor = '#ff6b6b';
+            return;
+        }
+    }
+
+    // 4. Desabilitar botão e mostrar carregamento
     const originalText = submitButton.textContent;
     submitButton.textContent = 'Enviando...';
     submitButton.disabled = true;
@@ -548,16 +804,20 @@ async function submitForm(e) {
     try {
         console.log('Coletando dados do formulário...');
         
-        // Coletar todos os dados do formulário
         const formData = new FormData(mainForm);
         
-        // Log para debug
+        if (subject === 'comprador') {
+            const tipoPessoa = document.querySelector('input[name="tipoPessoaComprador"]:checked');
+            if (tipoPessoa) {
+                formData.append('tipo_pessoa_comprador', tipoPessoa.value);
+            }
+        }
+        
         console.log('Dados a serem enviados:');
         for (let [key, value] of formData.entries()) {
             console.log(`${key}: ${value}`);
         }
         
-        // Enviar via fetch
         console.log('Enviando para:', mainForm.action);
         const response = await fetch(mainForm.action, {
             method: 'POST',
@@ -569,7 +829,6 @@ async function submitForm(e) {
         
         console.log('Resposta recebida, status:', response.status);
         
-        // Tentar parsear como JSON
         let result;
         try {
             result = await response.json();
@@ -582,21 +841,16 @@ async function submitForm(e) {
         }
         
         if (response.ok && result.success) {
-            // Sucesso
             alert('✅ Solicitação de Cadastro enviada com sucesso!\n\nEm breve você receberá um email com as instruções.\nSua conta será ativada após aprovação do administrador.');
             
-            // Reset do formulário
             mainForm.reset();
             
-            // Reset dos passos
             currentSteps.comprador = 1;
             currentSteps.vendedor = 1;
             currentSteps.transportador = 1;
             
-            // Reset da exibição
             toggleAdditionalFields();
             
-            // Feedback visual
             submitButton.textContent = '✅ Enviado!';
             submitButton.style.backgroundColor = '#4CAF50';
             
@@ -608,7 +862,6 @@ async function submitForm(e) {
             }, 3000);
             
         } else {
-            // Erro do servidor
             const errorMsg = result.message || result.error || 'Erro desconhecido ao enviar solicitação.';
             alert(`❌ ${errorMsg}`);
             
@@ -620,7 +873,6 @@ async function submitForm(e) {
     } catch (error) {
         console.error('Erro de rede ou processamento:', error);
         
-        // Mensagem mais específica baseada no tipo de erro
         let userMessage = '❌ Erro de conexão: ';
         if (error.message.includes('Failed to fetch')) {
             userMessage += 'Não foi possível conectar ao servidor. Verifique sua conexão com a internet.';
@@ -639,7 +891,7 @@ async function submitForm(e) {
 }
 
 // =============================================== 
-// CARROSSEL CORRIGIDO - TODOS OS ANÚNCIOS VISÍVEIS
+// CARROSSEL (mantido igual)
 // ===============================================
 
 let anuncios = [];
@@ -647,7 +899,6 @@ let currentSlide = 0;
 let slidesToShow = 4;
 let autoSlideInterval;
 
-// Função principal para carregar anúncios
 async function loadAnuncios() {
     console.log('🔄 Carregando anúncios...');
     
@@ -683,7 +934,6 @@ async function loadAnuncios() {
     }
 }
 
-// Função para renderizar o carrossel com produtos reais
 function renderCarousel() {
     const carousel = document.getElementById('anunciosCarousel');
     if (!carousel) {
@@ -706,16 +956,13 @@ function renderCarousel() {
         const card = document.createElement('div');
         card.className = 'product-card';
         
-        // Formatar preço
         const precoFormatado = parseFloat(produto.preco).toLocaleString('pt-BR', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
 
-        // Usar a imagem do banco - agora corrigida
         let imagemUrl = produto.imagem_url;
         
-        // Log para debug das imagens
         console.log(`🖼️ Imagem do produto ${produto.id}:`, imagemUrl);
 
         card.innerHTML = `
@@ -733,7 +980,6 @@ function renderCarousel() {
             </div>
         `;
 
-        // Animação de entrada
         card.style.animationDelay = `${index * 0.1}s`;
         carousel.appendChild(card);
     });
@@ -742,7 +988,6 @@ function renderCarousel() {
     updateCarouselPosition();
 }
 
-// Função para produtos estáticos (fallback)
 function renderStaticProducts() {
     const carousel = document.getElementById('anunciosCarousel');
     if (!carousel) return;
@@ -827,12 +1072,10 @@ function renderStaticProducts() {
     setupCarouselControls();
 }
 
-// Configurar controles do carrossel
 function setupCarouselControls() {
     updateDots();
 }
 
-// Atualizar pontos de navegação
 function updateDots() {
     const dotsContainer = document.getElementById('carouselDots');
     if (!dotsContainer) return;
@@ -849,7 +1092,6 @@ function updateDots() {
     }
 }
 
-// Navegação entre slides
 function nextSlide() {
     const totalSlides = Math.ceil(anuncios.length / slidesToShow);
     if (currentSlide < totalSlides - 1) {
@@ -874,7 +1116,6 @@ function goToSlide(slideIndex) {
     resetAutoSlide();
 }
 
-// Atualizar posição do carrossel - CORRIGIDO SEM CORTES
 function updateCarouselPosition() {
     const carousel = document.getElementById('anunciosCarousel');
     if (!carousel) return;
@@ -882,14 +1123,13 @@ function updateCarouselPosition() {
     const cards = carousel.querySelectorAll('.product-card');
     if (cards.length === 0) return;
 
-    const cardWidth = cards[0].offsetWidth + 25; // width + gap
+    const cardWidth = cards[0].offsetWidth + 25;
     const translateX = -currentSlide * cardWidth * slidesToShow;
     
     carousel.style.transform = `translateX(${translateX}px)`;
     updateDots();
 }
 
-// Atualizar quantidade de slides a mostrar
 function updateSlidesToShow() {
     const width = window.innerWidth;
     
@@ -907,7 +1147,6 @@ function updateSlidesToShow() {
     updateCarouselPosition();
 }
 
-// Auto slide
 function startAutoSlide() {
     stopAutoSlide();
     autoSlideInterval = setInterval(() => {
@@ -915,7 +1154,7 @@ function startAutoSlide() {
         if (currentSlide < totalSlides - 1) {
             nextSlide();
         } else {
-            goToSlide(0); // Volta ao início
+            goToSlide(0);
         }
     }, 5000);
 }
@@ -931,7 +1170,6 @@ function resetAutoSlide() {
     startAutoSlide();
 }
 
-// Função para ver anúncio
 function verAnuncio(id) {
     window.location.href = `src/anuncios.php?produto=${id}`;
 }
@@ -943,22 +1181,18 @@ function verAnuncio(id) {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Página carregada - inicializando carrossel...');
     
-    // Carregar anúncios
     setTimeout(loadAnuncios, 500);
     
-    // Atualizar responsividade ao redimensionar
     window.addEventListener('resize', function() {
         updateSlidesToShow();
     });
     
-    // Pausar auto slide quando o mouse estiver sobre o carrossel
     const carousel = document.getElementById('anunciosCarousel');
     if (carousel) {
         carousel.addEventListener('mouseenter', stopAutoSlide);
         carousel.addEventListener('mouseleave', startAutoSlide);
     }
     
-    // Swipe para dispositivos móveis
     let startX = 0;
     let endX = 0;
     
@@ -979,13 +1213,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (Math.abs(diff) > swipeThreshold) {
             if (diff > 0) {
-                nextSlide(); // Swipe para esquerda
+                nextSlide();
             } else {
-                prevSlide(); // Swipe para direita
+                prevSlide();
             }
         }
     }
 });
+
 // ===============================================
 // INICIALIZAÇÃO E LISTENERS
 // ===============================================
@@ -993,18 +1228,15 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Página carregada - script.js inicializado');
     
-    // Listener para o botão genérico de "Outro"
     const submitOtherButton = document.getElementById('submitOther');
     if (submitOtherButton) {
         submitOtherButton.addEventListener('click', submitForm);
     }
     
-    // Listener para os botões de submissão dentro dos Multi-Steps
     document.querySelectorAll('.btn-ajax-submit').forEach(button => {
         button.addEventListener('click', submitForm);
     });
     
-    // Verificar se já está em alguma opção e mostrar campos
     const subject = document.getElementById('subject');
     if (subject) {
         subject.addEventListener('change', toggleAdditionalFields);
@@ -1013,7 +1245,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Event listener para mudança de estado do transportador (MANTIDO)
     const estadoTransportador = document.getElementById('estadoTransportador');
     if (estadoTransportador) {
         estadoTransportador.addEventListener('change', function() {
@@ -1023,7 +1254,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Lógica de modal de login (REMOVIDO DO HTML E ADICIONADO AQUI)
     const modal = document.getElementById('loginModal');
     const btnLogin = document.getElementById('openLoginModal'); 
     const span = document.getElementsByClassName('close')[0];
@@ -1047,7 +1277,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Adicionar scroll suave para todos os botões que levam a seções (MANTIDO)
     document.querySelectorAll('.cta-button, .buy-btn, #accesbtn').forEach(button => {
         if (button.getAttribute('href') && button.getAttribute('href').startsWith('#')) {
             button.addEventListener('click', function(e) {
@@ -1089,8 +1318,5 @@ function verificarNotificacoes() {
     }
 }
 
-// Verificar notificações a cada 30 segundos
 setInterval(verificarNotificacoes, 30000);
-
-// Verificar ao carregar a página
 document.addEventListener('DOMContentLoaded', verificarNotificacoes);

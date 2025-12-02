@@ -193,470 +193,511 @@ require_once 'src/conexao.php';
         </div>
     </section>
 
-    <section id="contato" class="section">
-        <div class="container">
-            <h2 class="section-title">Registre-se</h2>
-            <div class="contact-content">
-                <div class="contact-info">
-                    <h3>Fale Conosco</h3>
-                    <p>Estamos aqui para ajudar produtores e compradores a se conectarem.</p>
-                    <div class="contact-details">
-                        <div class="contact-item">
-                            <h4>Email</h4>
-                            <p>contato@encontreocampo.com.br</p>
-                        </div>
-                        <div class="contact-item">
-                            <h4>Telefone</h4>
-                            <p>(11) 3456-7890</p>
-                        </div>
-                        <div class="contact-item">
-                            <h4>Endereço</h4>
-                            <p>Rua das Frutas, 123 - Centro, São Paulo - SP</p>
-                        </div>
+  <section id="contato" class="section">
+    <div class="container">
+        <h2 class="section-title">Registre-se</h2>
+        <div class="contact-content">
+            <div class="contact-info">
+                <h3>Fale Conosco</h3>
+                <p>Estamos aqui para ajudar produtores e compradores a se conectarem.</p>
+                <div class="contact-details">
+                    <div class="contact-item">
+                        <h4>Email</h4>
+                        <p>contato@encontreocampo.com.br</p>
+                    </div>
+                    <div class="contact-item">
+                        <h4>Telefone</h4>
+                        <p>(11) 3456-7890</p>
+                    </div>
+                    <div class="contact-item">
+                        <h4>Endereço</h4>
+                        <p>Rua das Frutas, 123 - Centro, São Paulo - SP</p>
                     </div>
                 </div>
-                <div class="contact-form">
-                    <form id="mainForm" action="src/processar_solicitacao.php" method="POST">
-                        <div class="form-group">
-                            <label for="name" class="required">Nome </label>
-                            <input type="text" id="name" name="name" required placeholder="Seu nome completo">
-                        </div>
-                        <div class="form-group">
-                            <label for="email" class="required">Email </label>
-                            <input type="email" id="email" name="email" required placeholder="seu@email.com">
-                        </div>
-                        <div class="form-group">
-                            <label for="senha" class="required">Senha </label>
-                            <input type="password" id="senha" name="senha" required minlength="8" placeholder="Mínimo 8 caracteres">
-                            <small class="form-help">Use pelo menos 8 caracteres com letras e números</small>
-                        </div>
-                        <div class="form-group">
-                            <label for="confirma_senha" class="required">Confirme a Senha </label>
-                            <input type="password" id="confirma_senha" name="confirma_senha" required placeholder="Digite a senha novamente">
-                        </div>
-                        <div class="form-group">
-                            <label for="subject" class="required">Quero me tornar: </label>
-                            <select id="subject" name="subject" onchange="toggleAdditionalFields()" required>
-                                <option value="">Selecione...</option>
-                                <option value="comprador">Comprador</option>
-                                <option value="vendedor">Vendedor</option>
-                                <option value="transportador">Transportador</option>
-                            </select>
-                        </div>
+            </div>
+            <div class="contact-form">
+                <form id="mainForm" action="src/processar_solicitacao.php" method="POST">
+                    <div class="form-group">
+                        <label for="name" class="required">Nome </label>
+                        <input type="text" id="name" name="name" required placeholder="Seu nome completo">
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="required">Email </label>
+                        <input type="email" id="email" name="email" required placeholder="seu@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="senha" class="required">Senha </label>
+                        <input type="password" id="senha" name="senha" required minlength="8" placeholder="Mínimo 8 caracteres">
+                        <small class="form-help">Use pelo menos 8 caracteres com letras e números</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirma_senha" class="required">Confirme a Senha </label>
+                        <input type="password" id="confirma_senha" name="confirma_senha" required placeholder="Digite a senha novamente">
+                    </div>
+                    <div class="form-group">
+                        <label for="subject" class="required">Quero me tornar: </label>
+                        <select id="subject" name="subject" onchange="toggleAdditionalFields()" required>
+                            <option value="">Selecione...</option>
+                            <option value="comprador">Comprador</option>
+                            <option value="vendedor">Vendedor</option>
+                            <option value="transportador">Transportador</option>
+                        </select>
+                    </div>
 
-                        <div id="compradorFields" style="display: none;">
-                            <div class="multi-step-form">
-                                <div class="progress-indicator">
-                                    <div class="progress-step active" data-step="1">1</div>
-                                    <div class="progress-step" data-step="2">2</div>
-                                    <div class="progress-step" data-step="3">3</div>
+                    <!-- FORMULÁRIO DO COMPRADOR -->
+                    <div id="compradorFields" style="display: none;">
+                        <div class="multi-step-form">
+                            <div class="progress-indicator">
+                                <div class="progress-step active" data-step="1">1</div>
+                                <div class="progress-step" data-step="2">2</div>
+                                <div class="progress-step" data-step="3">3</div>
+                            </div>
+
+                            <!-- PASSO 1: Dados Pessoais -->
+                            <div id="compradorStep1" class="step-content active">
+                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
+                                
+                                <div class="form-group">
+                                    <label class="required">Tipo de Pessoa:</label>
+                                    <div class="radio-group">
+                                        <label class="radio-label">
+                                            <input type="radio" name="tipoPessoaComprador" value="cpf" required checked>
+                                            <span class="radio-custom"></span>
+                                            <span class="radio-text">Pessoa Física (CPF)</span>
+                                        </label>
+                                        <label class="radio-label">
+                                            <input type="radio" name="tipoPessoaComprador" value="cnpj" required>
+                                            <span class="radio-custom"></span>
+                                            <span class="radio-text">Pessoa Jurídica (CNPJ)</span>
+                                        </label>
+                                    </div>
+                                    <small class="form-help">CPF selecionado por padrão. Clique em CNPJ se for uma empresa.</small>
                                 </div>
-
-                                <div id="compradorStep1" class="step-content active">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
-                                    
-                                    <div class="form-group">
-                                        <label for="nomeComercialComprador">Nome Comercial</label>
-                                        <input type="text" id="nomeComercialComprador" name="nomeComercialComprador" placeholder="Nome da sua empresa (opcional)">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="cpfCnpjComprador" class="required">CPF/CNPJ </label>
-                                        <input type="text" id="cpfCnpjComprador" name="cpfCnpjComprador" required placeholder="000.000.000-00 ou 00.000.000/0000-00">
-                                        <small class="form-help">Digite apenas números, a máscara será aplicada automaticamente</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="cipComprador">CIP</label>
-                                        <input type="text" id="cipComprador" name="cipComprador" placeholder="Código de Identificação do Produtor">
-                                    </div>
-                                    
-                                    <div class="step-navigation">
-                                        <div></div>
-                                        <button type="button" class="step-btn btn-next" onclick="nextStep('comprador')">
-                                            Próximo →
-                                        </button>
-                                    </div>
+                                
+                                <div class="form-group">
+                                    <label for="cpfCnpjComprador" class="required">CPF/CNPJ </label>
+                                    <input type="text" id="cpfCnpjComprador" name="cpfCnpjComprador" required placeholder="000.000.000-00">
+                                    <small class="form-help">Digite apenas números, a máscara será aplicada automaticamente</small>
                                 </div>
+                                
+                                <div class="form-group" id="nomeComercialGroup">
+                                    <label id="labelNomeComercialComprador" for="nomeComercialComprador" class="required">Nome de Exibição </label>
+                                    <input type="text" id="nomeComercialComprador" name="nomeComercialComprador" required placeholder="Como você quer ser chamado na plataforma">
+                                    <small class="form-help">Salvo na coluna nome_comercial do banco de dados</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="cipComprador">CIP (opcional)</label>
+                                    <input type="text" id="cipComprador" name="cipComprador" placeholder="Código de Identificação do Produtor">
+                                    <small class="form-help">Apenas para produtores rurais cadastrados</small>
+                                </div>
+                                
+                                <div class="step-navigation">
+                                    <div></div>
+                                    <button type="button" class="step-btn btn-next" onclick="nextStep('comprador')">
+                                        Próximo →
+                                    </button>
+                                </div>
+                            </div>
 
-                                <div id="compradorStep2" class="step-content">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
-                                    
-                                    <div class="form-group">
-                                        <label for="cepComprador">CEP</label>
-                                        <div style="display: flex; gap: 10px; align-items: flex-start;">
-                                            <input type="text" id="cepComprador" name="cepComprador" maxlength="9" placeholder="00000-000" style="flex: 1;">
-                                            <button type="button" class="cep-btn" onclick="buscarCEPComprador()">Buscar CEP</button>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="ruaComprador" class="required">Rua </label>
-                                        <input type="text" id="ruaComprador" name="ruaComprador" required placeholder="Nome da rua">
-                                    </div>
-                                    
-                                    <div class="form-group-row">
-                                        <div class="form-group">
-                                            <label for="numeroComprador" class="required">Número </label>
-                                            <input type="text" id="numeroComprador" name="numeroComprador" required placeholder="Número">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="complementoComprador">Complemento</label>
-                                            <input type="text" id="complementoComprador" name="complementoComprador" placeholder="Apto, Sala, etc.">
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="form-group-row">
-                                        <div class="form-group">
-                                            <label for="estadoComprador" class="required">Estado </label>
-                                            <select id="estadoComprador" name="estadoComprador" required>
-                                                <option value="">Selecione...</option>
-                                                <option value="AC">Acre</option>
-                                                <option value="AL">Alagoas</option>
-                                                <option value="AP">Amapá</option>
-                                                <option value="AM">Amazonas</option>
-                                                <option value="BA">Bahia</option>
-                                                <option value="CE">Ceará</option>
-                                                <option value="DF">Distrito Federal</option>
-                                                <option value="ES">Espírito Santo</option>
-                                                <option value="GO">Goiás</option>
-                                                <option value="MA">Maranhão</option>
-                                                <option value="MT">Mato Grosso</option>
-                                                <option value="MS">Mato Grosso do Sul</option>
-                                                <option value="MG">Minas Gerais</option>
-                                                <option value="PA">Pará</option>
-                                                <option value="PB">Paraíba</option>
-                                                <option value="PR">Paraná</option>
-                                                <option value="PE">Pernambuco</option>
-                                                <option value="PI">Piauí</option>
-                                                <option value="RJ">Rio de Janeiro</option>
-                                                <option value="RN">Rio Grande do Norte</option>
-                                                <option value="RS">Rio Grande do Sul</option>
-                                                <option value="RO">Rondônia</option>
-                                                <option value="RR">Roraima</option>
-                                                <option value="SC">Santa Catarina</option>
-                                                <option value="SP">São Paulo</option>
-                                                <option value="SE">Sergipe</option>
-                                                <option value="TO">Tocantins</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="cidadeComprador" class="required">Cidade </label>
-                                            <input type="text" id="cidadeComprador" name="cidadeComprador" required placeholder="Nome da cidade">
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="step-navigation">
-                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('comprador')">
-                                            ← Voltar
-                                        </button>
-                                        <button type="button" class="step-btn btn-next" onclick="nextStep('comprador')">
-                                            Próximo →
-                                        </button>
+                            <!-- PASSO 2: Endereço -->
+                            <div id="compradorStep2" class="step-content" style="display: none;">
+                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
+                                
+                                <div class="form-group">
+                                    <label for="cepComprador">CEP (opcional)</label>
+                                    <div class="cep-container">
+                                        <input type="text" id="cepComprador" name="cepComprador" maxlength="9" placeholder="00000-000">
+                                        <button type="button" class="cep-btn" onclick="buscarCEPComprador()">Buscar CEP</button>
                                     </div>
                                 </div>
-
-                                <div id="compradorStep3" class="step-content">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Contato e Plano</h4>
-                                    
-                                    <div class="form-group-row">
-                                        <div class="form-group">
-                                            <label for="telefone1Comprador" class="required">Telefone/Celular </label>
-                                            <input type="text" id="telefone1Comprador" name="telefone1Comprador" maxlength="15" required placeholder="(11) 99999-9999">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="telefone2Comprador">Telefone/Celular (opcional)</label>
-                                            <input type="text" id="telefone2Comprador" name="telefone2Comprador" maxlength="15" placeholder="(11) 99999-9999">
-                                        </div>
-                                    </div>
-                                    
+                                
+                                <div class="form-group">
+                                    <label for="ruaComprador" class="required">Rua </label>
+                                    <input type="text" id="ruaComprador" name="ruaComprador" required placeholder="Nome da rua">
+                                </div>
+                                
+                                <div class="form-group-row">
                                     <div class="form-group">
-                                        <label for="planoComprador">Plano</label>
-                                        <select id="planoComprador" name="planoComprador">
+                                        <label for="numeroComprador" class="required">Número </label>
+                                        <input type="text" id="numeroComprador" name="numeroComprador" required placeholder="Número">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="complementoComprador">Complemento (opcional)</label>
+                                        <input type="text" id="complementoComprador" name="complementoComprador" placeholder="Apto, Sala, etc.">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group-row">
+                                    <div class="form-group">
+                                        <label for="estadoComprador" class="required">Estado </label>
+                                        <select id="estadoComprador" name="estadoComprador" required>
                                             <option value="">Selecione...</option>
-                                            <option value="basico">Básico</option>
-                                            <option value="premium">Premium</option>
-                                            <option value="empresarial">Empresarial</option>
+                                            <option value="AC">Acre</option>
+                                            <option value="AL">Alagoas</option>
+                                            <option value="AP">Amapá</option>
+                                            <option value="AM">Amazonas</option>
+                                            <option value="BA">Bahia</option>
+                                            <option value="CE">Ceará</option>
+                                            <option value="DF">Distrito Federal</option>
+                                            <option value="ES">Espírito Santo</option>
+                                            <option value="GO">Goiás</option>
+                                            <option value="MA">Maranhão</option>
+                                            <option value="MT">Mato Grosso</option>
+                                            <option value="MS">Mato Grosso do Sul</option>
+                                            <option value="MG">Minas Gerais</option>
+                                            <option value="PA">Pará</option>
+                                            <option value="PB">Paraíba</option>
+                                            <option value="PR">Paraná</option>
+                                            <option value="PE">Pernambuco</option>
+                                            <option value="PI">Piauí</option>
+                                            <option value="RJ">Rio de Janeiro</option>
+                                            <option value="RN">Rio Grande do Norte</option>
+                                            <option value="RS">Rio Grande do Sul</option>
+                                            <option value="RO">Rondônia</option>
+                                            <option value="RR">Roraima</option>
+                                            <option value="SC">Santa Catarina</option>
+                                            <option value="SP">São Paulo</option>
+                                            <option value="SE">Sergipe</option>
+                                            <option value="TO">Tocantins</option>
                                         </select>
-                                        <small class="form-help">Você poderá alterar o plano posteriormente</small>
                                     </div>
-                                    
-                                    <div class="step-navigation">
-                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('comprador')">
-                                            ← Voltar
-                                        </button>
-                                        <button type="button" class="step-btn btn-ajax-submit">
-                                            Finalizar Cadastro
-                                        </button>
+                                    <div class="form-group">
+                                        <label for="cidadeComprador" class="required">Cidade </label>
+                                        <input type="text" id="cidadeComprador" name="cidadeComprador" required placeholder="Nome da cidade">
                                     </div>
+                                </div>
+                                
+                                <div class="step-navigation">
+                                    <button type="button" class="step-btn btn-prev" onclick="prevStep('comprador')">
+                                        ← Voltar
+                                    </button>
+                                    <button type="button" class="step-btn btn-next" onclick="nextStep('comprador')">
+                                        Próximo →
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- PASSO 3: Contato e Plano -->
+                            <div id="compradorStep3" class="step-content" style="display: none;">
+                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Contato e Plano</h4>
+                                
+                                <div class="form-group-row">
+                                    <div class="form-group">
+                                        <label for="telefone1Comprador" class="required">Telefone/Celular </label>
+                                        <input type="text" id="telefone1Comprador" name="telefone1Comprador" maxlength="15" required placeholder="(11) 99999-9999">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="telefone2Comprador">Telefone/Celular (opcional)</label>
+                                        <input type="text" id="telefone2Comprador" name="telefone2Comprador" maxlength="15" placeholder="(11) 99999-9999">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="planoComprador">Plano</label>
+                                    <select id="planoComprador" name="planoComprador">
+                                        <option value="free" selected>Grátis</option>
+                                        <option value="basico" disabled>Básico (R$ 29,90/mês)</option>
+                                        <option value="premium" disabled>Premium (R$ 79,90/mês)</option>
+                                        <option value="empresarial" disabled>Empresarial (R$ 199,90/mês)</option>
+                                    </select>
+                                    <small class="form-help" style="color: #666; font-style: italic; display: block; margin-top: 5px;">
+                                        * Todos começam com plano gratuito. Você poderá alterar o plano posteriormente em seu painel.
+                                    </small>
+                                </div>
+                                
+                                <div class="step-navigation">
+                                    <button type="button" class="step-btn btn-prev" onclick="prevStep('comprador')">
+                                        ← Voltar
+                                    </button>
+                                    <button type="button" class="step-btn btn-ajax-submit">
+                                        Finalizar Cadastro
+                                    </button>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div id="vendedorFields" style="display: none;">
-                            <div class="multi-step-form">
-                                <div class="progress-indicator">
-                                    <div class="progress-step active" data-step="1">1</div>
-                                    <div class="progress-step" data-step="2">2</div>
-                                    <div class="progress-step" data-step="3">3</div>
+                    <!-- FORMULÁRIO DO VENDEDOR -->
+                    <div id="vendedorFields" style="display: none;">
+                        <div class="multi-step-form">
+                            <div class="progress-indicator">
+                                <div class="progress-step active" data-step="1">1</div>
+                                <div class="progress-step" data-step="2">2</div>
+                                <div class="progress-step" data-step="3">3</div>
+                            </div>
+
+                            <!-- PASSO 1: Dados da Empresa -->
+                            <div id="vendedorStep1" class="step-content active">
+                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados da Empresa</h4>
+                                
+                                <div class="form-group">
+                                    <label for="nomeComercialVendedor" class="required">Nome Comercial </label>
+                                    <input type="text" id="nomeComercialVendedor" name="nomeComercialVendedor" required placeholder="Razão Social da empresa/fazenda">
+                                    <small class="form-help">Salvo na coluna nome_comercial do banco de dados</small>
                                 </div>
-
-                                <div id="vendedorStep1" class="step-content active">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
-                                    
-                                    <div class="form-group">
-                                        <label for="nomeComercialVendedor">Nome Comercial</label>
-                                        <input type="text" id="nomeComercialVendedor" name="nomeComercialVendedor" placeholder="Nome da sua empresa/fazenda">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="cpfCnpjVendedor" class="required">CPF/CNPJ </label>
-                                        <input type="text" id="cpfCnpjVendedor" name="cpfCnpjVendedor" required placeholder="000.000.000-00 ou 00.000.000/0000-00">
-                                        <small class="form-help">Digite apenas números, a máscara será aplicada automaticamente</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="cipVendedor">CIP</label>
-                                        <input type="text" id="cipVendedor" name="cipVendedor" placeholder="Código de Identificação do Produtor">
-                                    </div>
-                                    
-                                    <div class="step-navigation">
-                                        <div></div>
-                                        <button type="button" class="step-btn btn-next" onclick="nextStep('vendedor')">
-                                            Próximo →
-                                        </button>
-                                    </div>
+                                
+                                <div class="form-group">
+                                    <label for="cpfCnpjVendedor" class="required">CNPJ </label>
+                                    <input type="text" id="cpfCnpjVendedor" name="cpfCnpjVendedor" required placeholder="00.000.000/0000-00">
+                                    <small class="form-help">Para vendedor, é obrigatório CNPJ (14 dígitos)</small>
                                 </div>
+                                
+                                <div class="form-group">
+                                    <label for="cipVendedor">CIP (opcional)</label>
+                                    <input type="text" id="cipVendedor" name="cipVendedor" placeholder="Código de Identificação do Produtor">
+                                </div>
+                                
+                                <div class="step-navigation">
+                                    <div></div>
+                                    <button type="button" class="step-btn btn-next" onclick="nextStep('vendedor')">
+                                        Próximo →
+                                    </button>
+                                </div>
+                            </div>
 
-                                <div id="vendedorStep2" class="step-content">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
-                                    
-                                    <div class="form-group">
-                                        <label for="cepVendedor">CEP</label>
-                                        <div style="display: flex; gap: 10px; align-items: flex-start;">
-                                            <input type="text" id="cepVendedor" name="cepVendedor" maxlength="9" placeholder="00000-000" style="flex: 1;">
-                                            <button type="button" class="cep-btn" onclick="buscarCEPVendedor()">Buscar CEP</button>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="ruaVendedor" class="required">Rua </label>
-                                        <input type="text" id="ruaVendedor" name="ruaVendedor" required placeholder="Nome da rua">
-                                    </div>
-                                    
-                                    <div class="form-group-row">
-                                        <div class="form-group">
-                                            <label for="numeroVendedor" class="required">Número </label>
-                                            <input type="text" id="numeroVendedor" name="numeroVendedor" required placeholder="Número">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="complementoVendedor">Complemento</label>
-                                            <input type="text" id="complementoVendedor" name="complementoVendedor" placeholder="Apto, Sala, etc.">
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="form-group-row">
-                                        <div class="form-group">
-                                            <label for="estadoVendedor" class="required">Estado </label>
-                                            <select id="estadoVendedor" name="estadoVendedor" required>
-                                                <option value="">Selecione...</option>
-                                                <option value="AC">Acre</option>
-                                                <option value="AL">Alagoas</option>
-                                                <option value="AP">Amapá</option>
-                                                <option value="AM">Amazonas</option>
-                                                <option value="BA">Bahia</option>
-                                                <option value="CE">Ceará</option>
-                                                <option value="DF">Distrito Federal</option>
-                                                <option value="ES">Espírito Santo</option>
-                                                <option value="GO">Goiás</option>
-                                                <option value="MA">Maranhão</option>
-                                                <option value="MT">Mato Grosso</option>
-                                                <option value="MS">Mato Grosso do Sul</option>
-                                                <option value="MG">Minas Gerais</option>
-                                                <option value="PA">Pará</option>
-                                                <option value="PB">Paraíba</option>
-                                                <option value="PR">Paraná</option>
-                                                <option value="PE">Pernambuco</option>
-                                                <option value="PI">Piauí</option>
-                                                <option value="RJ">Rio de Janeiro</option>
-                                                <option value="RN">Rio Grande do Norte</option>
-                                                <option value="RS">Rio Grande do Sul</option>
-                                                <option value="RO">Rondônia</option>
-                                                <option value="RR">Roraima</option>
-                                                <option value="SC">Santa Catarina</option>
-                                                <option value="SP">São Paulo</option>
-                                                <option value="SE">Sergipe</option>
-                                                <option value="TO">Tocantins</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="cidadeVendedor" class="required">Cidade </label>
-                                            <input type="text" id="cidadeVendedor" name="cidadeVendedor" required placeholder="Nome da cidade">
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="step-navigation">
-                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('vendedor')">
-                                            ← Voltar
-                                        </button>
-                                        <button type="button" class="step-btn btn-next" onclick="nextStep('vendedor')">
-                                            Próximo →
-                                        </button>
+                            <!-- PASSO 2: Endereço -->
+                            <div id="vendedorStep2" class="step-content" style="display: none;">
+                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
+                                
+                                <div class="form-group">
+                                    <label for="cepVendedor">CEP (opcional)</label>
+                                    <div class="cep-container">
+                                        <input type="text" id="cepVendedor" name="cepVendedor" maxlength="9" placeholder="00000-000">
+                                        <button type="button" class="cep-btn" onclick="buscarCEPVendedor()">Buscar CEP</button>
                                     </div>
                                 </div>
-
-                                <div id="vendedorStep3" class="step-content">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Contato e Plano</h4>
-                                    
-                                    <div class="form-group-row">
-                                        <div class="form-group">
-                                            <label for="telefone1Vendedor" class="required">Telefone/Celular </label>
-                                            <input type="text" id="telefone1Vendedor" name="telefone1Vendedor" maxlength="15" required placeholder="(11) 99999-9999">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="telefone2Vendedor">Telefone/Celular (opcional)</label>
-                                            <input type="text" id="telefone2Vendedor" name="telefone2Vendedor" maxlength="15" placeholder="(11) 99999-9999">
-                                        </div>
-                                    </div>
-                                    
+                                
+                                <div class="form-group">
+                                    <label for="ruaVendedor" class="required">Rua </label>
+                                    <input type="text" id="ruaVendedor" name="ruaVendedor" required placeholder="Nome da rua">
+                                </div>
+                                
+                                <div class="form-group-row">
                                     <div class="form-group">
-                                        <label for="planoVendedor">Plano</label>
-                                        <select id="planoVendedor" name="planoVendedor">
+                                        <label for="numeroVendedor" class="required">Número </label>
+                                        <input type="text" id="numeroVendedor" name="numeroVendedor" required placeholder="Número">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="complementoVendedor">Complemento (opcional)</label>
+                                        <input type="text" id="complementoVendedor" name="complementoVendedor" placeholder="Apto, Sala, etc.">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group-row">
+                                    <div class="form-group">
+                                        <label for="estadoVendedor" class="required">Estado </label>
+                                        <select id="estadoVendedor" name="estadoVendedor" required>
                                             <option value="">Selecione...</option>
-                                            <option value="basico">Básico</option>
-                                            <option value="premium">Premium</option>
-                                            <option value="empresarial">Empresarial</option>
+                                            <option value="AC">Acre</option>
+                                            <option value="AL">Alagoas</option>
+                                            <option value="AP">Amapá</option>
+                                            <option value="AM">Amazonas</option>
+                                            <option value="BA">Bahia</option>
+                                            <option value="CE">Ceará</option>
+                                            <option value="DF">Distrito Federal</option>
+                                            <option value="ES">Espírito Santo</option>
+                                            <option value="GO">Goiás</option>
+                                            <option value="MA">Maranhão</option>
+                                            <option value="MT">Mato Grosso</option>
+                                            <option value="MS">Mato Grosso do Sul</option>
+                                            <option value="MG">Minas Gerais</option>
+                                            <option value="PA">Pará</option>
+                                            <option value="PB">Paraíba</option>
+                                            <option value="PR">Paraná</option>
+                                            <option value="PE">Pernambuco</option>
+                                            <option value="PI">Piauí</option>
+                                            <option value="RJ">Rio de Janeiro</option>
+                                            <option value="RN">Rio Grande do Norte</option>
+                                            <option value="RS">Rio Grande do Sul</option>
+                                            <option value="RO">Rondônia</option>
+                                            <option value="RR">Roraima</option>
+                                            <option value="SC">Santa Catarina</option>
+                                            <option value="SP">São Paulo</option>
+                                            <option value="SE">Sergipe</option>
+                                            <option value="TO">Tocantins</option>
                                         </select>
-                                        <small class="form-help">Você poderá alterar o plano posteriormente</small>
                                     </div>
-                                    
-                                    <div class="step-navigation">
-                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('vendedor')">
-                                            ← Voltar
-                                        </button>
-                                        <button type="button" class="step-btn btn-ajax-submit">
-                                            Finalizar Cadastro
-                                        </button>
+                                    <div class="form-group">
+                                        <label for="cidadeVendedor" class="required">Cidade </label>
+                                        <input type="text" id="cidadeVendedor" name="cidadeVendedor" required placeholder="Nome da cidade">
                                     </div>
+                                </div>
+                                
+                                <div class="step-navigation">
+                                    <button type="button" class="step-btn btn-prev" onclick="prevStep('vendedor')">
+                                        ← Voltar
+                                    </button>
+                                    <button type="button" class="step-btn btn-next" onclick="nextStep('vendedor')">
+                                        Próximo →
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- PASSO 3: Contato e Plano -->
+                            <div id="vendedorStep3" class="step-content" style="display: none;">
+                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Contato e Plano</h4>
+                                
+                                <div class="form-group-row">
+                                    <div class="form-group">
+                                        <label for="telefone1Vendedor" class="required">Telefone/Celular </label>
+                                        <input type="text" id="telefone1Vendedor" name="telefone1Vendedor" maxlength="15" required placeholder="(11) 99999-9999">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="telefone2Vendedor">Telefone/Celular (opcional)</label>
+                                        <input type="text" id="telefone2Vendedor" name="telefone2Vendedor" maxlength="15" placeholder="(11) 99999-9999">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="planoVendedor">Plano</label>
+                                    <select id="planoVendedor" name="planoVendedor">
+                                        <option value="free" selected>Grátis</option>
+                                        <option value="basico" disabled>Básico (R$ 49,90/mês)</option>
+                                        <option value="premium" disabled>Premium (R$ 99,90/mês)</option>
+                                        <option value="empresarial" disabled>Empresarial (R$ 249,90/mês)</option>
+                                    </select>
+                                    <small class="form-help" style="color: #666; font-style: italic; display: block; margin-top: 5px;">
+                                        * Todos começam com plano gratuito. Você poderá alterar o plano posteriormente em seu painel.
+                                    </small>
+                                </div>
+                                
+                                <div class="step-navigation">
+                                    <button type="button" class="step-btn btn-prev" onclick="prevStep('vendedor')">
+                                        ← Voltar
+                                    </button>
+                                    <button type="button" class="step-btn btn-ajax-submit">
+                                        Finalizar Cadastro
+                                    </button>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div id="transportadorFields" style="display: none;">
-                            <div class="multi-step-form">
-                                <div class="progress-indicator">
-                                    <div class="progress-step active" data-step="1">1</div>
-                                    <div class="progress-step" data-step="2">2</div>
-                                    <div class="progress-step" data-step="3">3</div>
+                    <!-- FORMULÁRIO DO TRANSPORTADOR -->
+                    <div id="transportadorFields" style="display: none;">
+                        <div class="multi-step-form">
+                            <div class="progress-indicator">
+                                <div class="progress-step active" data-step="1">1</div>
+                                <div class="progress-step" data-step="2">2</div>
+                                <div class="progress-step" data-step="3">3</div>
+                            </div>
+
+                            <!-- PASSO 1: Dados Pessoais -->
+                            <div id="transportadorStep1" class="step-content active">
+                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
+                                
+                                <div class="form-group">
+                                    <label for="telefoneTransportador" class="required">Telefone/Celular </label>
+                                    <input type="text" id="telefoneTransportador" name="telefoneTransportador" maxlength="15" required placeholder="(11) 99999-9999">
                                 </div>
-
-                                <div id="transportadorStep1" class="step-content active">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
-                                    
-                                    <div class="form-group">
-                                        <label for="telefoneTransportador" class="required">Telefone/Celular </label>
-                                        <input type="text" id="telefoneTransportador" name="telefoneTransportador" maxlength="15" required placeholder="(11) 99999-9999">
-                                    </div>
-                                    
-                                    <div class="form-group-row">
-                                        <div class="form-group">
-                                            <label for="ANTT">ANTT</label>
-                                            <input type="text" id="ANTT" name="ANTT" placeholder="Agência Nacional de Transportes Terrestres">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="numeroANTT" class="required">Número ANTT </label>
-                                            <input type="text" id="numeroANTT" name="numeroANTT" required placeholder="Número de registro na ANTT">
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="step-navigation">
-                                        <div></div>
-                                        <button type="button" class="step-btn btn-next" onclick="nextStep('transportador')">
-                                            Próximo →
-                                        </button>
-                                    </div>
+                                
+                                <div class="form-group">
+                                    <label for="numeroANTT" class="required">Número ANTT </label>
+                                    <input type="text" id="numeroANTT" name="numeroANTT" required placeholder="Somente números - Registro na ANTT">
+                                    <small class="form-help">Digite apenas números (ex: 12345678901234)</small>
                                 </div>
+                                
+                                <div class="step-navigation">
+                                    <div></div>
+                                    <button type="button" class="step-btn btn-next" onclick="nextStep('transportador')">
+                                        Próximo →
+                                    </button>
+                                </div>
+                            </div>
 
-                                <div id="transportadorStep2" class="step-content">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados do Veículo</h4>
-                                    
-                                    <div class="form-group">
-                                        <label for="placaVeiculo" class="required">Placa do Veículo </label>
+                            <!-- PASSO 2: Dados do Veículo -->
+                            <div id="transportadorStep2" class="step-content" style="display: none;">
+                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados do Veículo</h4>
+                                
+                                <div class="form-group">
+                                    <label for="placaVeiculo" class="required">Placa do Veículo </label>
+                                    <div class="placa-container">
                                         <input type="text" id="placaVeiculo" name="placaVeiculo" required 
-                                               placeholder="AAA-0A00" maxlength="8">
+                                               placeholder="AAA-1234 ou AAA1B23" maxlength="8">
+                                        <button type="button" class="placa-btn" onclick="buscarPlacaVeiculo()">Buscar Info</button>
                                     </div>
-                                    
+                                    <small class="form-help">Formato aceito: AAA-1234 (antigo) ou AAA1B23 (Mercosul)</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="modeloVeiculo" class="required">Modelo do Veículo </label>
+                                    <input type="text" id="modeloVeiculo" name="modeloVeiculo" required placeholder="Ex: Mercedes-Benz Actros 2020">
+                                    <small class="form-help">Clique no botão "Buscar Info" acima para tentar preencher automaticamente</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="descricaoVeiculo" class="required">Descrição do Veículo </label>
+                                    <textarea id="descricaoVeiculo" name="descricaoVeiculo" rows="3" required 
+                                              placeholder="Ex: Caminhão baú refrigerado, capacidade 20 toneladas, 3 eixos"></textarea>
+                                    <small class="form-help">Descreva as características do veículo para melhor identificação</small>
+                                </div>
+                                
+                                <div class="step-navigation">
+                                    <button type="button" class="step-btn btn-prev" onclick="prevStep('transportador')">
+                                        ← Voltar
+                                    </button>
+                                    <button type="button" class="step-btn btn-next" onclick="nextStep('transportador')">
+                                        Próximo →
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- PASSO 3: Localização -->
+                            <div id="transportadorStep3" class="step-content" style="display: none;">
+                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Localização</h4>
+                                
+                                <div class="form-group">
+                                    <label class="required">Selecione a cidade onde está instalado:</label>
+                                </div>
+                                
+                                <div class="form-group-row">
                                     <div class="form-group">
-                                        <label for="modeloVeiculo" class="required">Modelo do Veículo </label>
-                                        <input type="text" id="modeloVeiculo" name="modeloVeiculo" required placeholder="Ex: Mercedes-Benz Actros">
+                                        <label for="estadoTransportador" class="required">Estado </label>
+                                        <select id="estadoTransportador" name="estadoTransportador" required>
+                                            <option value="">Selecione o estado...</option>
+                                        </select>
                                     </div>
-                                    
                                     <div class="form-group">
-                                        <label for="descricaoVeiculo" class="required">Descrição do Veículo </label>
-                                        <textarea id="descricaoVeiculo" name="descricaoVeiculo" rows="3" required 
-                                                  placeholder="Ex: Caminhão baú refrigerado, capacidade 20 toneladas"></textarea>
-                                    </div>
-                                    
-                                    <div class="step-navigation">
-                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('transportador')">
-                                            ← Voltar
-                                        </button>
-                                        <button type="button" class="step-btn btn-next" onclick="nextStep('transportador')">
-                                            Próximo →
-                                        </button>
+                                        <label for="cidadeTransportador" class="required">Cidade </label>
+                                        <select id="cidadeTransportador" name="cidadeTransportador" required>
+                                            <option value="">Selecione a cidade...</option>
+                                        </select>
                                     </div>
                                 </div>
-
-                                <div id="transportadorStep3" class="step-content">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Localização</h4>
-                                    
-                                    <div class="form-group">
-                                        <label class="required">Selecione a cidade onde está instalado:</label>
-                                    </div>
-                                    
-                                    <div class="form-group-row">
-                                        <div class="form-group">
-                                            <label for="estadoTransportador" class="required">Estado </label>
-                                            <select id="estadoTransportador" name="estadoTransportador" required>
-                                                <option value="">Selecione o estado...</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="cidadeTransportador" class="required">Cidade </label>
-                                            <select id="cidadeTransportador" name="cidadeTransportador" required>
-                                                <option value="">Selecione a cidade...</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="step-navigation">
-                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('transportador')">
-                                            ← Voltar
-                                        </button>
-                                        <button type="button" class="step-btn btn-ajax-submit">
-                                            Finalizar Cadastro
-                                        </button>
-                                    </div>
+                                
+                                <div class="step-navigation">
+                                    <button type="button" class="step-btn btn-prev" onclick="prevStep('transportador')">
+                                        ← Voltar
+                                    </button>
+                                    <button type="button" class="step-btn btn-ajax-submit">
+                                        Finalizar Cadastro
+                                    </button>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Mensagem (opcional) -->
-                        <div class="form-group" id="messageGroup" style="display: none; margin-top: 20px;">
-                            <label for="message">Mensagem (opcional)</label>
-                            <textarea id="message" name="message" rows="4" placeholder="Conte-nos mais sobre o que você precisa..."></textarea>
-                        </div>
-                        
-                        <!-- Botão de envio genérico (para quando não há formulário específico selecionado) -->
-                        <div class="end" style="margin-top: 30px;">
-                            <button type="button" id="submitOther" class="cta-button" style="width: 100%; padding: 15px; font-size: 1.1em;">
-                                Enviar Solicitação de Cadastro
-                            </button>
-                            <small class="form-help" style="text-align: center; display: block; margin-top: 10px; color: #666;">
-                                * Campos obrigatórios
-                            </small>
-                        </div>
-                    </form>
-                </div>
+                    <!-- Mensagem (opcional) -->
+                    <div class="form-group" id="messageGroup" style="display: none; margin-top: 20px;">
+                        <label for="message">Mensagem (opcional)</label>
+                        <textarea id="message" name="message" rows="4" placeholder="Conte-nos mais sobre o que você precisa..."></textarea>
+                    </div>
+                    
+                    <!-- Botão de envio genérico -->
+                    <div class="end" style="margin-top: 30px;">
+                        <button type="button" id="submitOther" class="cta-button" style="width: 100%; padding: 15px; font-size: 1.1em;">
+                            Enviar Solicitação de Cadastro
+                        </button>
+                        <small class="form-help" style="text-align: center; display: block; margin-top: 10px; color: #666;">
+                            * Campos obrigatórios
+                        </small>
+                    </div>
+                </form>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <footer class="footer">
         <div class="container">

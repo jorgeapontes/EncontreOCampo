@@ -1,169 +1,415 @@
 <?php
 // src/processar_solicitacao.php
+
 require_once 'conexao.php';
 
+session_start();
 header('Content-Type: application/json');
 
-// Verificar se é uma requisição POST
+function validarCPF($cpf) {
+    // Remove caracteres não numéricos
+    $cpf = preg_replace('/[^0-9]/', '', $cpf);
+    
+    // Verifica se tem 11 dígitos
+    if (strlen($cpf) != 11) {
+        return false;
+    }
+    
+    // Verifica se é uma sequência de números repetidos
+    if (preg_match('/(\d)\1{10}/', $cpf)) {
+        return false;
+    }
+    
+    // Cálculo para validar CPF
+    for ($t = 9; $t < 11; $t++) {
+        for ($d = 0, $c = 0; $c < $t; $c++) {
+            $d += $cpf[$c] * (($t + 1) - $c);
+        }
+        $d = ((10 * $d) % 11) % 10;
+        if ($cpf[$c] != $d) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+function validarCNPJ($cnpj) {
+    // Remove caracteres não numéricos
+    $cnpj = preg_replace('/[^0-9]/', '', $cnpj);
+    
+    // Verifica se tem 14 dígitos
+    if (strlen($cnpj) != 14) {
+        return false;
+    }
+    
+    // Verifica se é uma sequência de números repetidos
+    if (preg_match('/(\d)\1{13}/', $cnpj)) {
+        return false;
+    }
+    
+    // Cálculo para validar CNPJ
+    $tamanho = strlen($cnpj) - 2;
+    $numeros = substr($cnpj, 0, $tamanho);
+    $digitos = substr($cnpj, $tamanho);
+    $soma = 0;
+    $pos = $tamanho - 7;
+    
+    for ($i = $tamanho; $i >= 1; $i--) {
+        $soma += $numeros[$tamanho - $i] * $pos--;
+        if ($pos < 2) {
+            $pos = 9;
+        }
+    }
+    
+    $resultado = $soma % 11 < 2 ? 0 : 11 - $soma % 11;
+    if ($resultado != $digitos[0]) {
+        return false;
+    }
+    
+    $tamanho++;
+    $numeros = substr($cnpj, 0, $tamanho);
+    $soma = 0;
+    $pos = $tamanho - 7;
+    
+    for ($i = $tamanho; $i >= 1; $i--) {
+        $soma += $numeros[$tamanho - $i] * $pos--;
+        if ($pos < 2) {
+            $pos = 9;
+        }
+    }
+    
+    $resultado = $soma % 11 < 2 ? 0 : 11 - $soma % 11;
+    if ($resultado != $digitos[1]) {
+        return false;
+    }
+    
+    return true;
+}
+
+function validarCPFouCNPJ($documento, $tipo) {
+    $documento = preg_replace('/[^0-9]/', '', $documento);
+    
+    if ($tipo === 'cpf') {
+        return validarCPF($documento);
+    } elseif ($tipo === 'cnpj') {
+        return validarCNPJ($documento);
+    }
+    
+    return false;
+}
+
+// Validação básica
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Método não permitido']);
     exit;
 }
 
+// Obter dados do formulário
+$dados = $_POST;
+
+// Validações obrigatórias
+$camposObrigatorios = ['name', 'email', 'senha', 'confirma_senha', 'subject'];
+foreach ($camposObrigatorios as $campo) {
+    if (empty($dados[$campo])) {
+        echo json_encode(['success' => false, 'message' => "O campo '{$campo}' é obrigatório."]);
+        exit;
+    }
+}
+
+// Validar email
+if (!filter_var($dados['email'], FILTER_VALIDATE_EMAIL)) {
+    echo json_encode(['success' => false, 'message' => 'Email inválido.']);
+    exit;
+}
+
+// Validar senha
+if ($dados['senha'] !== $dados['confirma_senha']) {
+    echo json_encode(['success' => false, 'message' => 'As senhas não coincidem.']);
+    exit;
+}
+
+if (strlen($dados['senha']) < 8) {
+    echo json_encode(['success' => false, 'message' => 'A senha deve ter no mínimo 8 caracteres.']);
+    exit;
+}
+
+$database = new Database();
+$conn = $database->getConnection();
+
+// Verificar se email já existe
+$sqlCheckEmail = "SELECT id FROM usuarios WHERE email = :email";
+$stmtCheckEmail = $conn->prepare($sqlCheckEmail);
+$stmtCheckEmail->bindParam(':email', $dados['email']);
+$stmtCheckEmail->execute();
+
+if ($stmtCheckEmail->rowCount() > 0) {
+    echo json_encode(['success' => false, 'message' => 'Este email já está cadastrado.']);
+    exit;
+}
+
+// Preparar dados comuns
+$nome = $dados['name'];
+$email = $dados['email'];
+$senhaHash = password_hash($dados['senha'], PASSWORD_DEFAULT);
+$tipoUsuario = $dados['subject']; // comprador, vendedor ou transportador
+
+// Validações específicas por tipo
+if ($tipoUsuario === 'comprador') {
+    // Verificar tipo de pessoa
+    if (empty($dados['tipo_pessoa_comprador'])) {
+        echo json_encode(['success' => false, 'message' => 'Selecione o tipo de pessoa (CPF ou CNPJ).']);
+        exit;
+    }
+    
+    $tipoPessoa = $dados['tipo_pessoa_comprador'];
+    $cpfCnpj = preg_replace('/[^0-9]/', '', $dados['cpfCnpjComprador']);
+    
+    // Validar CPF/CNPJ
+    if (!validarCPFouCNPJ($cpfCnpj, $tipoPessoa)) {
+        echo json_encode(['success' => false, 'message' => ($tipoPessoa === 'cpf' ? 'CPF' : 'CNPJ') . ' inválido.']);
+        exit;
+    }
+    
+    // Verificar se CPF/CNPJ já existe para comprador
+    $sqlCheckDoc = "SELECT id FROM compradores WHERE cpf_cnpj = :cpf_cnpj";
+    $stmtCheckDoc = $conn->prepare($sqlCheckDoc);
+    $stmtCheckDoc->bindParam(':cpf_cnpj', $cpfCnpj);
+    $stmtCheckDoc->execute();
+    
+    if ($stmtCheckDoc->rowCount() > 0) {
+        echo json_encode(['success' => false, 'message' => ($tipoPessoa === 'cpf' ? 'CPF' : 'CNPJ') . ' já cadastrado.']);
+        exit;
+    }
+    
+    // Verificar nome comercial
+    if (empty($dados['nomeComercialComprador'])) {
+        echo json_encode(['success' => false, 'message' => 'Nome de exibição/empresa é obrigatório.']);
+        exit;
+    }
+    
+} elseif ($tipoUsuario === 'vendedor') {
+    // Para vendedor, obrigatório CNPJ
+    $cpfCnpj = preg_replace('/[^0-9]/', '', $dados['cpfCnpjVendedor']);
+    
+    // Validar CNPJ (14 dígitos)
+    if (strlen($cpfCnpj) !== 14) {
+        echo json_encode(['success' => false, 'message' => 'CNPJ deve ter 14 dígitos.']);
+        exit;
+    }
+    
+    if (!validarCNPJ($cpfCnpj)) {
+        echo json_encode(['success' => false, 'message' => 'CNPJ inválido.']);
+        exit;
+    }
+    
+    // Verificar se CNPJ já existe para vendedor
+    $sqlCheckDoc = "SELECT id FROM vendedores WHERE cpf_cnpj = :cpf_cnpj";
+    $stmtCheckDoc = $conn->prepare($sqlCheckDoc);
+    $stmtCheckDoc->bindParam(':cpf_cnpj', $cpfCnpj);
+    $stmtCheckDoc->execute();
+    
+    if ($stmtCheckDoc->rowCount() > 0) {
+        echo json_encode(['success' => false, 'message' => 'CNPJ já cadastrado.']);
+        exit;
+    }
+    
+    // Verificar nome comercial
+    if (empty($dados['nomeComercialVendedor'])) {
+        echo json_encode(['success' => false, 'message' => 'Nome comercial é obrigatório.']);
+        exit;
+    }
+    
+} elseif ($tipoUsuario === 'transportador') {
+    // Para transportador, validar número ANTT
+    if (empty($dados['numeroANTT'])) {
+        echo json_encode(['success' => false, 'message' => 'Número ANTT é obrigatório.']);
+        exit;
+    }
+    
+    // Validar placa do veículo (formato brasileiro)
+    if (empty($dados['placaVeiculo'])) {
+        echo json_encode(['success' => false, 'message' => 'Placa do veículo é obrigatória.']);
+        exit;
+    }
+    
+    // Validar modelo do veículo
+    if (empty($dados['modeloVeiculo'])) {
+        echo json_encode(['success' => false, 'message' => 'Modelo do veículo é obrigatório.']);
+        exit;
+    }
+}
+
+// Iniciar transação
+$conn->beginTransaction();
+
 try {
-    $database = new Database();
-    $conn = $database->getConnection();
+    // 1. Inserir na tabela usuarios
+    $sqlUsuario = "INSERT INTO usuarios (email, senha, tipo, nome, status) 
+                   VALUES (:email, :senha, :tipo, :nome, 'pendente')";
+    $stmtUsuario = $conn->prepare($sqlUsuario);
+    $stmtUsuario->bindParam(':email', $email);
+    $stmtUsuario->bindParam(':senha', $senhaHash);
+    $stmtUsuario->bindParam(':tipo', $tipoUsuario);
+    $stmtUsuario->bindParam(':nome', $nome);
+    $stmtUsuario->execute();
     
-    // Coletar dados básicos
-    $nome = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
-    $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-    $senha = $_POST['senha'] ?? '';
-    $confirma_senha = $_POST['confirma_senha'] ?? '';
-    $tipo_solicitacao = filter_input(INPUT_POST, 'subject', FILTER_SANITIZE_STRING);
+    $usuarioId = $conn->lastInsertId();
     
-    // Validar dados básicos
-    if (empty($nome) || empty($email) || empty($senha) || empty($tipo_solicitacao)) {
-        throw new Exception('Preencha todos os campos obrigatórios.');
-    }
+    // 2. Inserir dados específicos conforme o tipo
+    $dadosSolicitacao = $dados;
+    unset($dadosSolicitacao['senha']);
+    unset($dadosSolicitacao['confirma_senha']);
+    $dadosSolicitacao['senha_hash'] = $senhaHash;
     
-    if ($senha !== $confirma_senha) {
-        throw new Exception('As senhas não coincidem.');
-    }
-    
-    if (strlen($senha) < 8) {
-        throw new Exception('A senha deve ter no mínimo 8 caracteres.');
-    }
-    
-    // Verificar se email já existe
-    $sql_check = "SELECT id FROM usuarios WHERE email = :email";
-    $stmt_check = $conn->prepare($sql_check);
-    $stmt_check->bindParam(':email', $email);
-    $stmt_check->execute();
-    
-    if ($stmt_check->rowCount() > 0) {
-        throw new Exception('Este email já está cadastrado no sistema.');
-    }
-    
-    // Preparar dados para JSON baseado no tipo de solicitação
-    $dados_json = [];
-    
-    // Dados comuns a todos os tipos
-    $dados_json['nome'] = $nome;
-    $dados_json['email'] = $email;
-    $dados_json['tipo_solicitacao'] = $tipo_solicitacao;
-    
-    // Hash da senha
-    $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
-    $dados_json['senha_hash'] = $senha_hash;
-    
-    // Coletar dados específicos baseado no tipo
-    if ($tipo_solicitacao === 'comprador') {
-        $dados_json['nomeComercialComprador'] = $_POST['nomeComercialComprador'] ?? '';
-        $dados_json['cpfCnpjComprador'] = preg_replace('/[^0-9]/', '', $_POST['cpfCnpjComprador'] ?? '');
-        $dados_json['cipComprador'] = $_POST['cipComprador'] ?? '';
-        $dados_json['cepComprador'] = preg_replace('/[^0-9]/', '', $_POST['cepComprador'] ?? '');
-        $dados_json['ruaComprador'] = $_POST['ruaComprador'] ?? '';
-        $dados_json['numeroComprador'] = $_POST['numeroComprador'] ?? '';
-        $dados_json['complementoComprador'] = $_POST['complementoComprador'] ?? '';
-        $dados_json['estadoComprador'] = $_POST['estadoComprador'] ?? '';
-        $dados_json['cidadeComprador'] = $_POST['cidadeComprador'] ?? '';
-        $dados_json['telefone1Comprador'] = preg_replace('/[^0-9]/', '', $_POST['telefone1Comprador'] ?? '');
-        $dados_json['telefone2Comprador'] = preg_replace('/[^0-9]/', '', $_POST['telefone2Comprador'] ?? '');
-        $dados_json['planoComprador'] = $_POST['planoComprador'] ?? 'basico';
+    if ($tipoUsuario === 'comprador') {
+        // Inserir na tabela compradores
+        $sqlComprador = "INSERT INTO compradores (usuario_id, tipo_pessoa, nome_comercial, cpf_cnpj, cip, cep, rua, numero, complemento, estado, cidade, telefone1, telefone2, plano) 
+                         VALUES (:usuario_id, :tipo_pessoa, :nome_comercial, :cpf_cnpj, :cip, :cep, :rua, :numero, :complemento, :estado, :cidade, :telefone1, :telefone2, :plano)";
+        $stmtComprador = $conn->prepare($sqlComprador);
         
-    } elseif ($tipo_solicitacao === 'vendedor') {
-        $dados_json['nomeComercialVendedor'] = $_POST['nomeComercialVendedor'] ?? '';
-        $dados_json['cpfCnpjVendedor'] = preg_replace('/[^0-9]/', '', $_POST['cpfCnpjVendedor'] ?? '');
-        $dados_json['cipVendedor'] = $_POST['cipVendedor'] ?? '';
-        $dados_json['cepVendedor'] = preg_replace('/[^0-9]/', '', $_POST['cepVendedor'] ?? '');
-        $dados_json['ruaVendedor'] = $_POST['ruaVendedor'] ?? '';
-        $dados_json['numeroVendedor'] = $_POST['numeroVendedor'] ?? '';
-        $dados_json['complementoVendedor'] = $_POST['complementoVendedor'] ?? '';
-        $dados_json['estadoVendedor'] = $_POST['estadoVendedor'] ?? '';
-        $dados_json['cidadeVendedor'] = $_POST['cidadeVendedor'] ?? '';
-        $dados_json['telefone1Vendedor'] = preg_replace('/[^0-9]/', '', $_POST['telefone1Vendedor'] ?? '');
-        $dados_json['telefone2Vendedor'] = preg_replace('/[^0-9]/', '', $_POST['telefone2Vendedor'] ?? '');
-        $dados_json['planoVendedor'] = $_POST['planoVendedor'] ?? 'basico';
+        // Formatar CPF/CNPJ
+        $cpfCnpjFormatado = $dados['cpfCnpjComprador'];
+        $cpfCnpjNumerico = preg_replace('/[^0-9]/', '', $cpfCnpjFormatado);
         
-    } elseif ($tipo_solicitacao === 'transportador') {
-        $dados_json['telefoneTransportador'] = preg_replace('/[^0-9]/', '', $_POST['telefoneTransportador'] ?? '');
-        $dados_json['ANTT'] = $_POST['ANTT'] ?? '';
-        $dados_json['numeroANTT'] = $_POST['numeroANTT'] ?? '';
-        $dados_json['placaVeiculo'] = $_POST['placaVeiculo'] ?? '';
-        $dados_json['modeloVeiculo'] = $_POST['modeloVeiculo'] ?? '';
-        $dados_json['descricaoVeiculo'] = $_POST['descricaoVeiculo'] ?? '';
-        $dados_json['estadoTransportador'] = $_POST['estadoTransportador'] ?? '';
-        $dados_json['cidadeTransportador'] = $_POST['cidadeTransportador'] ?? '';
+        // Aplicar máscara baseada no tipo
+        if ($dados['tipo_pessoa_comprador'] === 'cpf') {
+            $cpfCnpjFormatado = preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $cpfCnpjNumerico);
+        } else {
+            $cpfCnpjFormatado = preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $cpfCnpjNumerico);
+        }
+        
+        $plano = 'free'; // Sempre free inicialmente
+        
+        $stmtComprador->execute([
+            ':usuario_id' => $usuarioId,
+            ':tipo_pessoa' => $dados['tipo_pessoa_comprador'],
+            ':nome_comercial' => $dados['nomeComercialComprador'],
+            ':cpf_cnpj' => $cpfCnpjFormatado,
+            ':cip' => $dados['cipComprador'] ?? null,
+            ':cep' => $dados['cepComprador'] ?? null,
+            ':rua' => $dados['ruaComprador'] ?? null,
+            ':numero' => $dados['numeroComprador'] ?? null,
+            ':complemento' => $dados['complementoComprador'] ?? null,
+            ':estado' => $dados['estadoComprador'] ?? null,
+            ':cidade' => $dados['cidadeComprador'] ?? null,
+            ':telefone1' => $dados['telefone1Comprador'] ?? null,
+            ':telefone2' => $dados['telefone2Comprador'] ?? null,
+            ':plano' => $plano
+        ]);
+        
+    } elseif ($tipoUsuario === 'vendedor') {
+        // Inserir na tabela vendedores
+        $sqlVendedor = "INSERT INTO vendedores (usuario_id, tipo_pessoa, nome_comercial, cpf_cnpj, cip, cep, rua, numero, complemento, estado, cidade, telefone1, telefone2, plano) 
+                        VALUES (:usuario_id, :tipo_pessoa, :nome_comercial, :cpf_cnpj, :cip, :cep, :rua, :numero, :complemento, :estado, :cidade, :telefone1, :telefone2, :plano)";
+        $stmtVendedor = $conn->prepare($sqlVendedor);
+        
+        // Formatar CNPJ
+        $cpfCnpjNumerico = preg_replace('/[^0-9]/', '', $dados['cpfCnpjVendedor']);
+        $cpfCnpjFormatado = preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $cpfCnpjNumerico);
+        
+        $plano = 'free'; // Sempre free inicialmente
+        
+        $stmtVendedor->execute([
+            ':usuario_id' => $usuarioId,
+            ':tipo_pessoa' => 'cnpj', // Sempre CNPJ para vendedor
+            ':nome_comercial' => $dados['nomeComercialVendedor'],
+            ':cpf_cnpj' => $cpfCnpjFormatado,
+            ':cip' => $dados['cipVendedor'] ?? null,
+            ':cep' => $dados['cepVendedor'] ?? null,
+            ':rua' => $dados['ruaVendedor'] ?? null,
+            ':numero' => $dados['numeroVendedor'] ?? null,
+            ':complemento' => $dados['complementoVendedor'] ?? null,
+            ':estado' => $dados['estadoVendedor'] ?? null,
+            ':cidade' => $dados['cidadeVendedor'] ?? null,
+            ':telefone1' => $dados['telefone1Vendedor'] ?? null,
+            ':telefone2' => $dados['telefone2Vendedor'] ?? null,
+            ':plano' => $plano
+        ]);
+        
+    } elseif ($tipoUsuario === 'transportador') {
+        // Inserir na tabela transportadores
+        $sqlTransportador = "INSERT INTO transportadores (usuario_id, nome_comercial, telefone, numero_antt, placa_veiculo, modelo_veiculo, descricao_veiculo, estado, cidade, plano) 
+                             VALUES (:usuario_id, :nome_comercial, :telefone, :numero_antt, :placa_veiculo, :modelo_veiculo, :descricao_veiculo, :estado, :cidade, :plano)";
+        $stmtTransportador = $conn->prepare($sqlTransportador);
+        
+        $plano = 'free'; // Sempre free inicialmente
+        
+        $stmtTransportador->execute([
+            ':usuario_id' => $usuarioId,
+            ':nome_comercial' => $nome, // Usar nome normal como nome_comercial para transportador
+            ':telefone' => $dados['telefoneTransportador'] ?? null,
+            ':numero_antt' => $dados['numeroANTT'] ?? null,
+            ':placa_veiculo' => $dados['placaVeiculo'] ?? null,
+            ':modelo_veiculo' => $dados['modeloVeiculo'] ?? null,
+            ':descricao_veiculo' => $dados['descricaoVeiculo'] ?? null,
+            ':estado' => $dados['estadoTransportador'] ?? null,
+            ':cidade' => $dados['cidadeTransportador'] ?? null,
+            ':plano' => $plano
+        ]);
     }
     
-    // Inserir na tabela de solicitações de cadastro
-    $sql = "INSERT INTO solicitacoes_cadastro 
-            (nome, email, telefone, endereco, tipo_solicitacao, dados_json, status, data_solicitacao) 
-            VALUES 
-            (:nome, :email, :telefone, :endereco, :tipo_solicitacao, :dados_json, 'pendente', NOW())";
+    // 3. Inserir na tabela solicitacoes_cadastro
+    $sqlSolicitacao = "INSERT INTO solicitacoes_cadastro (usuario_id, nome, email, telefone, endereco, tipo_solicitacao, dados_json, status) 
+                       VALUES (:usuario_id, :nome, :email, :telefone, :endereco, :tipo_solicitacao, :dados_json, 'pendente')";
+    $stmtSolicitacao = $conn->prepare($sqlSolicitacao);
     
-    $stmt = $conn->prepare($sql);
-    
-    // Preparar telefone e endereco para inserção
+    // Preparar endereço e telefone
     $telefone = '';
     $endereco = '';
     
-    if ($tipo_solicitacao === 'comprador') {
-        $telefone = $dados_json['telefone1Comprador'] ?? '';
-        $endereco = $dados_json['ruaComprador'] . ', ' . $dados_json['numeroComprador'] . ', ' . 
-                    $dados_json['cidadeComprador'] . ', ' . $dados_json['estadoComprador'];
-    } elseif ($tipo_solicitacao === 'vendedor') {
-        $telefone = $dados_json['telefone1Vendedor'] ?? '';
-        $endereco = $dados_json['ruaVendedor'] . ', ' . $dados_json['numeroVendedor'] . ', ' . 
-                    $dados_json['cidadeVendedor'] . ', ' . $dados_json['estadoVendedor'];
-    } elseif ($tipo_solicitacao === 'transportador') {
-        $telefone = $dados_json['telefoneTransportador'] ?? '';
-        $endereco = $dados_json['cidadeTransportador'] . ', ' . $dados_json['estadoTransportador'];
+    if ($tipoUsuario === 'comprador') {
+        $telefone = $dados['telefone1Comprador'] ?? '';
+        $endereco = ($dados['ruaComprador'] ?? '') . ', ' . 
+                   ($dados['numeroComprador'] ?? '') . ', ' . 
+                   ($dados['cidadeComprador'] ?? '') . ', ' . 
+                   ($dados['estadoComprador'] ?? '');
+    } elseif ($tipoUsuario === 'vendedor') {
+        $telefone = $dados['telefone1Vendedor'] ?? '';
+        $endereco = ($dados['ruaVendedor'] ?? '') . ', ' . 
+                   ($dados['numeroVendedor'] ?? '') . ', ' . 
+                   ($dados['cidadeVendedor'] ?? '') . ', ' . 
+                   ($dados['estadoVendedor'] ?? '');
+    } elseif ($tipoUsuario === 'transportador') {
+        $telefone = $dados['telefoneTransportador'] ?? '';
+        $endereco = ($dados['cidadeTransportador'] ?? '') . ', ' . 
+                   ($dados['estadoTransportador'] ?? '');
     }
     
-    // Converter dados para JSON
-    $dados_json_string = json_encode($dados_json, JSON_UNESCAPED_UNICODE);
+    $stmtSolicitacao->execute([
+        ':usuario_id' => $usuarioId,
+        ':nome' => $nome,
+        ':email' => $email,
+        ':telefone' => $telefone,
+        ':endereco' => $endereco,
+        ':tipo_solicitacao' => $tipoUsuario,
+        ':dados_json' => json_encode($dadosSolicitacao, JSON_UNESCAPED_UNICODE)
+    ]);
     
-    $stmt->bindParam(':nome', $nome);
-    $stmt->bindParam(':email', $email);
-    $stmt->bindParam(':telefone', $telefone);
-    $stmt->bindParam(':endereco', $endereco);
-    $stmt->bindParam(':tipo_solicitacao', $tipo_solicitacao);
-    $stmt->bindParam(':dados_json', $dados_json_string);
+    // 4. Criar notificação para admin
+    $sqlNotificacao = "INSERT INTO notificacoes (usuario_id, mensagem, tipo, url) 
+                       VALUES (1, :mensagem, 'info', 'src/admin/solicitacoes.php')";
+    $stmtNotificacao = $conn->prepare($sqlNotificacao);
     
-    if ($stmt->execute()) {
-        // Criar notificação para o admin
-        $solicitacao_id = $conn->lastInsertId();
-        $mensagem_notificacao = "Nova solicitação de cadastro de $tipo_solicitacao: $nome";
-        
-        $sql_notificacao = "INSERT INTO notificacoes (usuario_id, mensagem, tipo, url) 
-                            VALUES (1, :mensagem, 'info', 'src/admin/solicitacoes.php')";
-        $stmt_notificacao = $conn->prepare($sql_notificacao);
-        $stmt_notificacao->bindParam(':mensagem', $mensagem_notificacao);
-        $stmt_notificacao->execute();
-        
-        echo json_encode([
-            'success' => true,
-            'message' => 'Solicitação enviada com sucesso! Aguarde a aprovação do administrador.',
-            'solicitacao_id' => $solicitacao_id
-        ]);
-    } else {
-        throw new Exception('Erro ao salvar solicitação no banco de dados.');
-    }
+    $mensagemNotificacao = "Nova solicitação de cadastro de {$tipoUsuario}: {$nome}";
+    $stmtNotificacao->bindParam(':mensagem', $mensagemNotificacao);
+    $stmtNotificacao->execute();
+    
+    // Confirmar transação
+    $conn->commit();
+    
+    echo json_encode([
+        'success' => true, 
+        'message' => 'Solicitação de cadastro enviada com sucesso! Em breve você receberá um email com as instruções. Sua conta será ativada após aprovação do administrador.'
+    ]);
     
 } catch (Exception $e) {
-    error_log('Erro processar_solicitacao: ' . $e->getMessage());
+    $conn->rollBack();
+    
+    error_log("Erro ao processar solicitação: " . $e->getMessage());
     echo json_encode([
-        'success' => false,
-        'message' => $e->getMessage(),
-        'error' => $e->getMessage()
-    ]);
-} catch (PDOException $e) {
-    error_log('Erro PDO processar_solicitacao: ' . $e->getMessage());
-    echo json_encode([
-        'success' => false,
-        'message' => 'Erro no banco de dados: ' . $e->getMessage(),
-        'error' => $e->getMessage()
+        'success' => false, 
+        'message' => 'Erro ao processar solicitação: ' . $e->getMessage()
     ]);
 }

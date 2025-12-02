@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 01/12/2025 às 18:41
+-- Tempo de geração: 02/12/2025 às 08:26
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -163,7 +163,45 @@ INSERT INTO `produtos` (`id`, `vendedor_id`, `nome`, `descricao`, `preco`, `prec
 (7, 1, 'Teste esgotar estoque', '', 5.00, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_691d3821c54958.39837631.jpeg', 0, NULL, 'ativo', '2025-11-19 03:23:13', '2025-11-20 22:10:44'),
 (8, 2, 'banana', 'bananas amarelas', 2.22, NULL, 0.00, 0, NULL, NULL, 'Frutas Tropicais', '../uploads/produtos/prod_691f52c5b25cb6.01137275.jpeg', 12, NULL, 'ativo', '2025-11-20 17:41:25', NULL),
 (9, 2, 'melancia', 'melancias', 1.11, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_691f52db2a3106.65007213.jpg', 1, NULL, 'ativo', '2025-11-20 17:41:47', NULL),
-(10, 1, 'teste', '', 20.00, 18.00, 10.00, 1, NULL, NULL, 'Frutas Tropicais', '../uploads/produtos/prod_692ce592138434.75940422.jpeg', 1, NULL, 'ativo', '2025-11-20 17:43:41', '2025-12-01 12:43:39');
+(10, 1, 'teste', '', 20.00, 18.00, 10.00, 1, NULL, NULL, 'Frutas Tropicais', '../uploads/produtos/prod_692ce592138434.75940422.jpeg', 1, NULL, 'ativo', '2025-11-20 17:43:41', '2025-12-01 12:43:39'),
+(11, 1, 'Mamao', 'mamao tropical', 100.00, NULL, 0.00, 0, NULL, NULL, 'Frutas Tropicais', '../uploads/produtos/prod_692e48c33210d6.50109901.png', 100, NULL, 'ativo', '2025-12-02 02:02:43', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `propostas_comprador`
+--
+
+CREATE TABLE `propostas_comprador` (
+  `id` int(11) NOT NULL,
+  `comprador_id` int(11) NOT NULL,
+  `preco_proposto` decimal(10,2) NOT NULL,
+  `quantidade_proposta` int(11) NOT NULL,
+  `condicoes_compra` text DEFAULT NULL,
+  `data_proposta` timestamp NOT NULL DEFAULT current_timestamp(),
+  `status` enum('enviada','pendente','aceita','recusada') NOT NULL DEFAULT 'enviada'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `propostas_comprador`
+--
+
+INSERT INTO `propostas_comprador` (`id`, `comprador_id`, `preco_proposto`, `quantidade_proposta`, `condicoes_compra`, `data_proposta`, `status`) VALUES
+(6, 1, 11.00, 1, 'teste', '2025-11-14 19:13:44', ''),
+(7, 2, 10.00, 5, 'testando proposta', '2025-11-17 19:20:14', 'enviada'),
+(12, 2, 4.00, 10, 'teste ACEITAR', '2025-11-19 02:34:24', 'aceita'),
+(13, 2, 4.00, 10, 'teste CONTRAPROPOSTA', '2025-11-19 02:35:23', 'pendente'),
+(14, 2, 1.00, 1, 'teste NEGAR', '2025-11-19 02:35:43', 'recusada'),
+(15, 2, 4.00, 10, 'teste novo ACEITAR', '2025-11-19 03:12:32', 'aceita'),
+(16, 2, 5.00, 10, NULL, '2025-11-19 03:23:36', 'aceita'),
+(17, 2, 1.00, 1, 'teste RECUSAR', '2025-11-19 03:43:01', 'recusada'),
+(18, 2, 1.00, 1, 'teste CONTADOR propostas pendentes vendedor', '2025-11-19 14:58:29', 'recusada'),
+(19, 2, 80.00, 80, 'proposta editada', '2025-12-02 02:06:06', 'enviada'),
+(21, 2, 100.00, 1, 'ACEITAR', '2025-12-02 03:08:06', 'aceita'),
+(22, 2, 100.00, 1, 'RECUSAR', '2025-12-02 03:08:55', 'recusada'),
+(31, 2, 85.00, 85, 'C', '2025-12-02 06:44:08', 'aceita'),
+(34, 2, 100.00, 1, NULL, '2025-12-02 07:14:18', 'recusada'),
+(35, 2, 100.00, 1, NULL, '2025-12-02 07:19:42', 'enviada');
 
 -- --------------------------------------------------------
 
@@ -172,6 +210,44 @@ INSERT INTO `produtos` (`id`, `vendedor_id`, `nome`, `descricao`, `preco`, `prec
 --
 
 CREATE TABLE `propostas_negociacao` (
+  `id` int(11) NOT NULL,
+  `produto_id` int(11) NOT NULL,
+  `proposta_comprador_id` int(11) NOT NULL,
+  `proposta_vendedor_id` int(11) DEFAULT NULL,
+  `preco_final` decimal(10,2) DEFAULT NULL,
+  `quantidade_final` int(11) DEFAULT NULL,
+  `status` enum('aceita','negociacao','recusada','finalizada') NOT NULL DEFAULT 'negociacao',
+  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
+  `data_atualizacao` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `propostas_negociacao`
+--
+
+INSERT INTO `propostas_negociacao` (`id`, `produto_id`, `proposta_comprador_id`, `proposta_vendedor_id`, `preco_final`, `quantidade_final`, `status`, `data_criacao`, `data_atualizacao`) VALUES
+(1, 2, 6, NULL, 11.00, 1, '', '2025-11-14 19:13:44', NULL),
+(2, 2, 7, NULL, 10.00, 5, '', '2025-11-17 19:20:14', NULL),
+(3, 6, 12, NULL, 4.00, 10, 'aceita', '2025-11-19 02:34:24', NULL),
+(4, 6, 13, NULL, 4.00, 10, 'negociacao', '2025-11-19 02:35:23', NULL),
+(5, 6, 14, NULL, 1.00, 1, 'recusada', '2025-11-19 02:35:43', NULL),
+(6, 6, 15, NULL, 4.00, 10, 'aceita', '2025-11-19 03:12:32', NULL),
+(7, 7, 16, NULL, 5.00, 10, 'aceita', '2025-11-19 03:23:36', NULL),
+(8, 6, 17, NULL, 1.00, 1, 'recusada', '2025-11-19 03:43:01', NULL),
+(9, 6, 18, NULL, 1.00, 1, 'recusada', '2025-11-19 14:58:29', NULL),
+(18, 11, 21, NULL, NULL, NULL, 'aceita', '2025-12-02 03:08:06', '2025-12-02 04:49:40'),
+(19, 11, 22, NULL, NULL, NULL, 'recusada', '2025-12-02 03:08:55', '2025-12-02 04:49:03'),
+(29, 11, 31, 15, NULL, NULL, 'aceita', '2025-12-02 06:44:08', '2025-12-02 07:13:40'),
+(32, 11, 34, 16, NULL, NULL, 'recusada', '2025-12-02 07:14:18', '2025-12-02 07:15:49'),
+(33, 11, 35, NULL, NULL, NULL, 'negociacao', '2025-12-02 07:19:42', '2025-12-02 07:20:29');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `propostas_negociacao_old`
+--
+
+CREATE TABLE `propostas_negociacao_old` (
   `id` int(11) NOT NULL,
   `produto_id` int(11) NOT NULL COMMENT 'O anúncio ao qual a proposta se refere',
   `comprador_id` int(11) NOT NULL COMMENT 'O comprador que fez a proposta',
@@ -187,10 +263,10 @@ CREATE TABLE `propostas_negociacao` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Despejando dados para a tabela `propostas_negociacao`
+-- Despejando dados para a tabela `propostas_negociacao_old`
 --
 
-INSERT INTO `propostas_negociacao` (`id`, `produto_id`, `comprador_id`, `preco_proposto`, `quantidade_proposta`, `condicoes_comprador`, `status`, `data_proposta`, `data_resposta`, `data_atualizacao`, `observacoes_vendedor`, `observacoes_vendedor_teste`) VALUES
+INSERT INTO `propostas_negociacao_old` (`id`, `produto_id`, `comprador_id`, `preco_proposto`, `quantidade_proposta`, `condicoes_comprador`, `status`, `data_proposta`, `data_resposta`, `data_atualizacao`, `observacoes_vendedor`, `observacoes_vendedor_teste`) VALUES
 (6, 2, 1, 11.00, 1, 'teste', '', '2025-11-14 19:13:44', '2025-11-15 16:17:19', '2025-11-15 19:17:19', NULL, NULL),
 (7, 2, 2, 10.00, 5, 'testando proposta', 'pendente', '2025-11-17 19:20:14', NULL, NULL, NULL, NULL),
 (12, 6, 2, 4.00, 10, 'teste ACEITAR', 'aceita', '2025-11-19 02:34:24', '2025-11-18 23:59:06', '2025-11-19 02:59:06', NULL, NULL),
@@ -200,6 +276,33 @@ INSERT INTO `propostas_negociacao` (`id`, `produto_id`, `comprador_id`, `preco_p
 (16, 7, 2, 5.00, 10, NULL, 'aceita', '2025-11-19 03:23:36', '2025-11-19 00:23:59', '2025-11-19 03:23:59', NULL, NULL),
 (17, 6, 2, 1.00, 1, 'teste RECUSAR', 'recusada', '2025-11-19 03:43:01', '2025-11-19 00:43:37', '2025-11-19 03:43:37', NULL, NULL),
 (18, 6, 2, 1.00, 1, 'teste CONTADOR propostas pendentes vendedor', 'recusada', '2025-11-19 14:58:29', '2025-11-19 11:58:51', '2025-11-19 14:58:51', NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `propostas_vendedor`
+--
+
+CREATE TABLE `propostas_vendedor` (
+  `id` int(11) NOT NULL,
+  `proposta_comprador_id` int(11) NOT NULL,
+  `vendedor_id` int(11) NOT NULL,
+  `preco_proposto` decimal(10,2) NOT NULL,
+  `quantidade_proposta` int(11) NOT NULL,
+  `condicoes_venda` text DEFAULT NULL,
+  `data_contra_proposta` timestamp NOT NULL DEFAULT current_timestamp(),
+  `status` enum('enviada','pendente','aceita','recusada') NOT NULL DEFAULT 'enviada',
+  `observacao` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `propostas_vendedor`
+--
+
+INSERT INTO `propostas_vendedor` (`id`, `proposta_comprador_id`, `vendedor_id`, `preco_proposto`, `quantidade_proposta`, `condicoes_venda`, `data_contra_proposta`, `status`, `observacao`) VALUES
+(14, 31, 1, 25.00, 50, 'B', '2025-12-02 06:46:42', 'enviada', NULL),
+(15, 31, 1, 30.00, 30, 'D', '2025-12-02 07:13:03', 'enviada', NULL),
+(16, 34, 1, 10.00, 10, '', '2025-12-02 07:14:59', 'enviada', NULL);
 
 -- --------------------------------------------------------
 
@@ -372,12 +475,36 @@ ALTER TABLE `produtos`
   ADD KEY `vendedor_id` (`vendedor_id`);
 
 --
+-- Índices de tabela `propostas_comprador`
+--
+ALTER TABLE `propostas_comprador`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `comprador_id` (`comprador_id`);
+
+--
 -- Índices de tabela `propostas_negociacao`
 --
 ALTER TABLE `propostas_negociacao`
   ADD PRIMARY KEY (`id`),
+  ADD KEY `produto_id` (`produto_id`),
+  ADD KEY `proposta_comprador_id` (`proposta_comprador_id`),
+  ADD KEY `proposta_vendedor_id` (`proposta_vendedor_id`);
+
+--
+-- Índices de tabela `propostas_negociacao_old`
+--
+ALTER TABLE `propostas_negociacao_old`
+  ADD PRIMARY KEY (`id`),
   ADD KEY `propostas_negociacao_ibfk_1` (`produto_id`),
   ADD KEY `propostas_negociacao_ibfk_2` (`comprador_id`);
+
+--
+-- Índices de tabela `propostas_vendedor`
+--
+ALTER TABLE `propostas_vendedor`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `proposta_comprador_id` (`proposta_comprador_id`),
+  ADD KEY `vendedor_id` (`vendedor_id`);
 
 --
 -- Índices de tabela `solicitacoes_cadastro`
@@ -440,13 +567,31 @@ ALTER TABLE `notificacoes`
 -- AUTO_INCREMENT de tabela `produtos`
 --
 ALTER TABLE `produtos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
+-- AUTO_INCREMENT de tabela `propostas_comprador`
+--
+ALTER TABLE `propostas_comprador`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT de tabela `propostas_negociacao`
 --
 ALTER TABLE `propostas_negociacao`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+
+--
+-- AUTO_INCREMENT de tabela `propostas_negociacao_old`
+--
+ALTER TABLE `propostas_negociacao_old`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+
+--
+-- AUTO_INCREMENT de tabela `propostas_vendedor`
+--
+ALTER TABLE `propostas_vendedor`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT de tabela `solicitacoes_cadastro`
@@ -508,11 +653,32 @@ ALTER TABLE `produtos`
   ADD CONSTRAINT `produtos_ibfk_1` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`id`) ON DELETE CASCADE;
 
 --
+-- Restrições para tabelas `propostas_comprador`
+--
+ALTER TABLE `propostas_comprador`
+  ADD CONSTRAINT `propostas_comprador_ibfk_1` FOREIGN KEY (`comprador_id`) REFERENCES `compradores` (`id`) ON DELETE CASCADE;
+
+--
 -- Restrições para tabelas `propostas_negociacao`
 --
 ALTER TABLE `propostas_negociacao`
   ADD CONSTRAINT `propostas_negociacao_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `propostas_negociacao_ibfk_2` FOREIGN KEY (`comprador_id`) REFERENCES `compradores` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `propostas_negociacao_ibfk_2` FOREIGN KEY (`proposta_comprador_id`) REFERENCES `propostas_comprador` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `propostas_negociacao_ibfk_3` FOREIGN KEY (`proposta_vendedor_id`) REFERENCES `propostas_vendedor` (`id`) ON DELETE SET NULL;
+
+--
+-- Restrições para tabelas `propostas_negociacao_old`
+--
+ALTER TABLE `propostas_negociacao_old`
+  ADD CONSTRAINT `propostas_negociacao_old_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `propostas_negociacao_old_ibfk_2` FOREIGN KEY (`comprador_id`) REFERENCES `compradores` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `propostas_vendedor`
+--
+ALTER TABLE `propostas_vendedor`
+  ADD CONSTRAINT `propostas_vendedor_ibfk_1` FOREIGN KEY (`proposta_comprador_id`) REFERENCES `propostas_comprador` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `propostas_vendedor_ibfk_2` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`id`) ON DELETE CASCADE;
 
 --
 -- Restrições para tabelas `solicitacoes_cadastro`

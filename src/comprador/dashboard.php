@@ -53,6 +53,14 @@ try {
     $stmt_propostas->execute();
     $totais_status = $stmt_propostas->fetchAll(PDO::FETCH_ASSOC);
 
+    // Inicializa os contadores
+    $dashboard_data['enviada'] = 0;
+    $dashboard_data['pendente'] = 0;
+    $dashboard_data['aceita'] = 0;
+    $dashboard_data['recusada'] = 0;
+    $dashboard_data['finalizada'] = 0;
+    $dashboard_data['total_propostas'] = 0;
+
     foreach ($totais_status as $item) {
         $dashboard_data['total_propostas'] += $item['total'];
         $status_key = strtolower($item['status']);
@@ -61,18 +69,20 @@ try {
         }
     }
 
-    // Contar propostas aceitas na tabela de negociação
-    $sql_aceitas = "SELECT COUNT(pn.id) as aceitas
-                    FROM propostas_negociacao pn
-                    JOIN propostas_comprador pc ON pn.proposta_comprador_id = pc.id
-                    WHERE pc.comprador_id = :comprador_id AND pn.status = 'aceita'";
+    // CORREÇÃO: Contar compras realizadas (propostas ACEITAS na tabela de negociação)
+    $sql_compras_realizadas = "SELECT COUNT(DISTINCT pn.id) as compras_realizadas
+                               FROM propostas_negociacao pn
+                               INNER JOIN propostas_comprador pc ON pn.proposta_comprador_id = pc.id
+                               WHERE pc.comprador_id = :comprador_id 
+                               AND pn.status = 'aceita'";
     
-    $stmt_aceitas = $conn->prepare($sql_aceitas);
-    $stmt_aceitas->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
-    $stmt_aceitas->execute();
-    $aceitas = $stmt_aceitas->fetch(PDO::FETCH_ASSOC);
+    $stmt_compras = $conn->prepare($sql_compras_realizadas);
+    $stmt_compras->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
+    $stmt_compras->execute();
+    $compras_result = $stmt_compras->fetch(PDO::FETCH_ASSOC);
     
-    $dashboard_data['aceita'] = $aceitas['aceitas'] ?? 0;
+    // Atualiza o contador de compras realizadas
+    $dashboard_data['aceita'] = $compras_result['compras_realizadas'] ?? 0;
 
 } catch (PDOException $e) {
     error_log("Erro ao carregar totais de propostas: " . $e->getMessage());

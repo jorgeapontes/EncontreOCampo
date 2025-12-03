@@ -116,7 +116,6 @@ $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Nova Navbar no estilo do index.php -->
     <header>
         <nav class="navbar">
             <div class="nav-container">

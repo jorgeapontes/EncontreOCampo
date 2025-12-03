@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 03/12/2025 às 03:30
+-- Tempo de geração: 03/12/2025 às 18:18
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -66,6 +66,7 @@ CREATE TABLE `compradores` (
   `usuario_id` int(11) NOT NULL,
   `tipo_pessoa` enum('cpf','cnpj') DEFAULT NULL,
   `nome_comercial` varchar(255) DEFAULT NULL,
+  `foto_perfil_url` varchar(500) DEFAULT NULL,
   `cpf_cnpj` varchar(20) NOT NULL,
   `cip` varchar(50) DEFAULT NULL,
   `cep` varchar(10) DEFAULT NULL,
@@ -83,10 +84,10 @@ CREATE TABLE `compradores` (
 -- Despejando dados para a tabela `compradores`
 --
 
-INSERT INTO `compradores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, `cpf_cnpj`, `cip`, `cep`, `rua`, `numero`, `complemento`, `estado`, `cidade`, `telefone1`, `telefone2`, `plano`) VALUES
-(1, 3, NULL, 'Jorge Pontes', '411.115.848-00', NULL, '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'free'),
-(2, 8, NULL, NULL, '123.456.789-99', NULL, '13218-200', 'Rua Paschoal Segre', '225', NULL, 'SP', 'Jundiaí', '11912341234', NULL, 'free'),
-(3, 13, 'cpf', 'Jorginho', '411.115.848-00', '', '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '(11) 99656-3500', '', 'free');
+INSERT INTO `compradores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, `foto_perfil_url`, `cpf_cnpj`, `cip`, `cep`, `rua`, `numero`, `complemento`, `estado`, `cidade`, `telefone1`, `telefone2`, `plano`) VALUES
+(1, 3, NULL, 'Jorge Pontes', NULL, '411.115.848-00', NULL, '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'free'),
+(2, 8, 'cpf', 'Frutas Possani', '../uploads/compradores/comprador_8_1764781847.jpg', '123.456.789-99', '123456789', '13218-200', 'Rua Paschoal Segre', '225', 'Casa do Jorge', 'SP', 'Jundiaí', '11912341234', '', 'free'),
+(3, 13, 'cpf', 'Jorginho', NULL, '411.115.848-00', '', '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '(11) 99656-3500', '', 'free');
 
 -- --------------------------------------------------------
 
@@ -409,7 +410,7 @@ INSERT INTO `usuarios` (`id`, `email`, `senha`, `tipo`, `nome`, `status`, `data_
 (3, 'jorgeappontes13@gmail.com', '$2y$10$G01Lh5IUbanlM7HsqPVJCedjau8JTSyWFxoYa9DYF0EoCNsnA5L2i', 'comprador', 'Jorge Pontes', 'ativo', '2025-11-09 00:23:59', NULL, NULL, NULL),
 (4, 'vendedor@gmail.com', '$2y$10$WiZ7DfVl8YB49H7SjzLXEuk6UsnWeNGQnBoCD5bF4f5P8R.8Xt.IS', 'vendedor', 'Vendedor', 'ativo', '2025-11-09 00:28:21', NULL, NULL, NULL),
 (7, 'transportador@gmail.com', '$2y$10$ydt.M8elv07ezQw77wQZc.HCjZ8gvIRsUM.9FvhiAGKHbLtsBi7lS', 'transportador', 'Transportador', 'ativo', '2025-11-09 00:29:26', NULL, NULL, NULL),
-(8, 'comprador@gmail.com', '$2y$10$eeHvPWmRt.UfXNCIhs.0GuX5hR8IS/sPBZj/LxhzRRHnuRJOU4k2W', 'comprador', 'Comprador', 'ativo', '2025-11-17 18:55:39', NULL, NULL, NULL),
+(8, 'comprador@gmail.com', '$2y$10$eeHvPWmRt.UfXNCIhs.0GuX5hR8IS/sPBZj/LxhzRRHnuRJOU4k2W', 'comprador', 'Jorge', 'ativo', '2025-11-17 18:55:39', NULL, NULL, NULL),
 (9, 'vendedor2@gmail.com', '$2y$10$s.T35LUiwMUk90sR5QNhResWbIid1TkOZlo7GrUjavpSlqeMvwnW2', 'vendedor', 'vendedor2', 'ativo', '2025-11-20 17:40:01', NULL, NULL, NULL),
 (11, 'jorgev@gmail.com', '$2y$10$dYUUcwFHeSAZKAHMbystPe22T1fZtfuBiMhbKy1Zje7PraxRIqb0G', 'vendedor', 'JorgeV', 'ativo', '2025-12-02 12:49:02', NULL, NULL, NULL),
 (12, 'teste@gmail.com', '$2y$10$aXdfuVEyQhKloWsi5stRa.8.EBl6Oo5NI7mf.ZDXP19qg7kp5m206', 'vendedor', 'teste', 'ativo', '2025-12-02 12:52:04', NULL, NULL, NULL),

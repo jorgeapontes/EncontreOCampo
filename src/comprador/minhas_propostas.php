@@ -313,4 +313,3 @@ function responderContraproposta(negociacaoId, acao) {
     </main>
 </body>
 </html>
-[file content end]

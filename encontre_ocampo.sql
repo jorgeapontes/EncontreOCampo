@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 03/12/2025 às 17:50
+-- Tempo de geração: 03/12/2025 às 18:35
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -66,6 +66,7 @@ CREATE TABLE `compradores` (
   `usuario_id` int(11) NOT NULL,
   `tipo_pessoa` enum('cpf','cnpj') DEFAULT NULL,
   `nome_comercial` varchar(255) DEFAULT NULL,
+  `foto_perfil_url` varchar(500) DEFAULT NULL,
   `cpf_cnpj` varchar(20) NOT NULL,
   `cip` varchar(50) DEFAULT NULL,
   `cep` varchar(10) DEFAULT NULL,
@@ -83,10 +84,10 @@ CREATE TABLE `compradores` (
 -- Despejando dados para a tabela `compradores`
 --
 
-INSERT INTO `compradores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, `cpf_cnpj`, `cip`, `cep`, `rua`, `numero`, `complemento`, `estado`, `cidade`, `telefone1`, `telefone2`, `plano`) VALUES
-(1, 3, NULL, 'Jorge Pontes', '411.115.848-00', NULL, '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'free'),
-(2, 8, NULL, NULL, '123.456.789-99', NULL, '13218-200', 'Rua Paschoal Segre', '225', NULL, 'SP', 'Jundiaí', '11912341234', NULL, 'free'),
-(3, 13, 'cpf', 'Jorginho', '411.115.848-00', '', '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '(11) 99656-3500', '', 'free');
+INSERT INTO `compradores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, `foto_perfil_url`, `cpf_cnpj`, `cip`, `cep`, `rua`, `numero`, `complemento`, `estado`, `cidade`, `telefone1`, `telefone2`, `plano`) VALUES
+(1, 3, NULL, 'Jorge Pontes', NULL, '411.115.848-00', NULL, '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'free'),
+(2, 8, NULL, NULL, NULL, '123.456.789-99', NULL, '13218-200', 'Rua Paschoal Segre', '225', NULL, 'SP', 'Jundiaí', '11912341234', NULL, 'free'),
+(3, 13, 'cpf', 'Jorginho', NULL, '411.115.848-00', '', '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '(11) 99656-3500', '', 'free');
 
 -- --------------------------------------------------------
 

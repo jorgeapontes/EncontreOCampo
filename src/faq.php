@@ -102,7 +102,7 @@ if ($is_logged_in) {
                             <i class="fas fa-chevron-down"></i>
                         </div>
                         <div class="faq-answer">
-                            <p>Para se cadastrar, clique em "Login" no menu superior e depois em "Registre-se". Preencha os dados solicitados conforme seu perfil (comprador, vendedor ou transportador). Seu cadastro será analisado e ativado em até 24 horas.</p>
+                            <p>Para se cadastrar, vá até o formulário no final da página principal ou clique em "Login" no menu superior e depois em "Registre-se". Preencha os dados solicitados conforme seu perfil (comprador, vendedor ou transportador). Aguarde seu cadastro ser analisado e ativado.</p>
                         </div>
                     </div>
 
@@ -116,7 +116,7 @@ if ($is_logged_in) {
                         </div>
                     </div>
 
-                    <div class="faq-item">
+                    <!-- <div class="faq-item">
                         <div class="faq-question">
                             <h4>Posso ter mais de um tipo de conta?</h4>
                             <i class="fas fa-chevron-down"></i>
@@ -124,7 +124,7 @@ if ($is_logged_in) {
                         <div class="faq-answer">
                             <p>Sim! Você pode ter múltiplos perfis usando o mesmo email. Por exemplo, pode ser vendedor e comprador ao mesmo tempo. Cada perfil terá seu próprio dashboard e funcionalidades específicas.</p>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
 
@@ -151,7 +151,7 @@ if ($is_logged_in) {
                             <i class="fas fa-chevron-down"></i>
                         </div>
                         <div class="faq-answer">
-                            <p>Sim, desde que a proposta ainda esteja com status "pendente". Acesse "Minhas Propostas" no seu dashboard e clique em "Cancelar Proposta". Após o vendedor responder, não é mais possível cancelar.</p>
+                            <p>Sim, é possível cancelar uma proposta. Acesse "Minhas Propostas" no seu dashboard e clique em "Cancelar Proposta". Após o vendedor responder, não é mais possível cancelar.</p>
                         </div>
                     </div>
 
@@ -200,7 +200,7 @@ if ($is_logged_in) {
                             <i class="fas fa-chevron-down"></i>
                         </div>
                         <div class="faq-answer">
-                            <p>No dashboard de vendedor, acesse "Propostas Recebidas". Você verá todas as propostas pendentes e poderá aceitar, recusar ou fazer contrapropostas. Recebemos notificações por email sobre novas propostas.</p>
+                            <p>No dashboard de vendedor, acesse "Propostas Recebidas". Você verá todas as propostas pendentes e poderá aceitar, recusar ou fazer contrapropostas.</p>
                         </div>
                     </div>
                 </div>
@@ -219,7 +219,7 @@ if ($is_logged_in) {
                             <i class="fas fa-chevron-down"></i>
                         </div>
                         <div class="faq-answer">
-                            <p>As formas de pagamento são combinadas diretamente entre comprador e vendedor durante a negociação. Podem incluir transferência bancária, PIX, dinheiro ou outras formas acordadas entre as partes.</p>
+                            <p>A forma de pagamento pode ser escolhida diretamente pelo comprador durante o checkout. Pix e cartões são as mais comuns.
                         </div>
                     </div>
 
@@ -239,7 +239,7 @@ if ($is_logged_in) {
                             <i class="fas fa-chevron-down"></i>
                         </div>
                         <div class="faq-answer">
-                            <p>O responsável pelo frete é definido durante a negociação. Pode ser pago pelo comprador, pelo vendedor ou rateado entre ambos. Esta informação deve ficar clara nas condições da proposta.</p>
+                            <p>Por padrão, o vendedor é responsável pelo frete, mas isso pode ser alterado durante a negociação. Pode ser pago pelo comprador, pelo vendedor ou rateado entre ambos. Esta informação deve ficar clara nas condições da proposta.</p>
                         </div>
                     </div>
                 </div>
@@ -252,7 +252,7 @@ if ($is_logged_in) {
                     <h3>Segurança e Suporte</h3>
                 </div>
                 <div class="faq-items">
-                    <div class="faq-item">
+                    <!-- <div class="faq-item">
                         <div class="faq-question">
                             <h4>Como a plataforma garante a segurança das transações?</h4>
                             <i class="fas fa-chevron-down"></i>
@@ -260,7 +260,7 @@ if ($is_logged_in) {
                         <div class="faq-answer">
                             <p>Verificamos todos os usuários cadastrados, mantemos histórico das negociações e oferecemos um canal de comunicação seguro dentro da plataforma. Recomendamos que todo acordo seja documentado através do sistema.</p>
                         </div>
-                    </div>
+                    </div> -->
 
                     <div class="faq-item">
                         <div class="faq-question">

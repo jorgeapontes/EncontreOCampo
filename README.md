@@ -1,7 +1,7 @@
 # 🌾 Encontre o Campo: Marketplace de Produtos Agrícolas
 
 [![Status do Projeto](https://img.shields.io/badge/Status-Em%20Desenvolvimento-blue)](https://github.com/seu-usuario/seu-repositorio)
-[![Licença](https://img.shields.io/badge/Licença-MIT-green)](LICENSE)
+
 
 > Uma plataforma de comércio on-line que conecta produtores rurais (Vendedores) diretamente a compradores e empresas (Compradores), facilitando a negociação e a aquisição de produtos agrícolas com foco em transparência e eficiência.
 

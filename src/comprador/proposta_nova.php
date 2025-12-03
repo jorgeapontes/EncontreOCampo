@@ -153,6 +153,11 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                 <li class="nav-item"><a href="favoritos.php" class="nav-link">Favoritos</a></li>
                 <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
             </ul>
+            <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+            </div>
         </div>
     </nav>
 
@@ -414,6 +419,21 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
     </footer>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        // Menu Hamburguer
+        const hamburger = document.querySelector(".hamburger");
+        const navMenu = document.querySelector(".nav-menu");
+
+        hamburger.addEventListener("click", () => {
+            hamburger.classList.toggle("active");
+            navMenu.classList.toggle("active");
+        });
+
+        document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
+            hamburger.classList.remove("active");
+            navMenu.classList.remove("active");
+        }));
+        });
         // Scripts originais mantidos e funcionais
         const quantidadeInput = document.getElementById('quantidade');
         const decreaseBtn = document.getElementById('decrease-qty');

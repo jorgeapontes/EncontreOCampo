@@ -35,6 +35,9 @@ if ($is_logged_in) {
     <link rel="stylesheet" href="css/termos.css">
     <link rel="shortcut icon" href="../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -47,6 +50,14 @@ if ($is_logged_in) {
                         <h2>O CAMPO</h2>
                     </div>
                 </div>
+                
+                <!-- Menu Hamburguer (adicionado) -->
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+                
                 <ul class="nav-menu">
                     <li class="nav-item">
                         <a href="../index.php" class="nav-link">Home</a>
@@ -278,6 +289,23 @@ if ($is_logged_in) {
             }
         });
     });
+       
+        // Menu Hamburguer functionality (adicionado)
+        const hamburger = document.querySelector(".hamburger");
+        const navMenu = document.querySelector(".nav-menu");
+        
+        if (hamburger) {
+            hamburger.addEventListener("click", () => {
+                hamburger.classList.toggle("active");
+                navMenu.classList.toggle("active");
+            });
+            
+            // Fechar menu ao clicar em um link
+            document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
+                hamburger.classList.remove("active");
+                navMenu.classList.remove("active");
+            }));
+        }
     </script>
 </body>
 </html>

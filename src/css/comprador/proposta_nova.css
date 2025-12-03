@@ -628,24 +628,49 @@
     color: var(--dark-color);
 }
 
+/* CORREÇÃO DO INPUT COM SÍMBOLO R$ */
 .input-with-symbol {
     position: relative;
     display: flex;
     align-items: center;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--white);
+    transition: all 0.3s ease;
+}
+
+.input-with-symbol:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
 }
 
 .currency-symbol {
-    position: absolute;
-    left: 15px;
-    color: var(--text-light);
+    padding: 14px 0 14px 16px;
+    color: var(--text-color);
     font-weight: 600;
+    background: var(--white);
+    border-right: 1px solid var(--border-color);
+    min-width: 40px;
+    text-align: center;
 }
 
 .input-with-symbol input {
-    padding-left: 40px;
+    flex: 1;
+    padding: 14px 16px;
+    border: none;
+    font-size: 1rem;
+    background: transparent;
+    outline: none;
+    width: 100%;
 }
 
-.form-group input,
+.input-with-symbol input::placeholder {
+    color: var(--text-light);
+}
+
+/* Fim da correção */
+
+.form-group input:not(.input-with-symbol input),
 .form-group textarea {
     width: 100%;
     padding: 14px 16px;
@@ -656,7 +681,7 @@
     background: var(--white);
 }
 
-.form-group input:focus,
+.form-group input:focus:not(.input-with-symbol input),
 .form-group textarea:focus {
     border-color: var(--primary-color);
     outline: none;

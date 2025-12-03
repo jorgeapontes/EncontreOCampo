@@ -135,6 +135,38 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
     <link rel="stylesheet" href="../css/comprador/proposta_nova.css?v=1.1">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ESTILO TEMPORÁRIO PARA CORRIGIR O PROBLEMA DO R$ */
+        .input-with-symbol {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .input-with-symbol .currency-symbol {
+            padding: 10px 12px;
+            background: #f5f5f5;
+            border-right: 1px solid #ddd;
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+        }
+        
+        .input-with-symbol input {
+            flex: 1;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .input-with-symbol input:focus {
+            outline: none;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -148,8 +180,8 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
             </div>
             <ul class="nav-menu">
                 <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>
-                <li class="nav-item"><a href="../anuncios.php" class="nav-link">Ver Anúncios</a></li>
-                <li class="nav-item"><a href="minhas_propostas.php" class="nav-link">Minhas Propostas</a></li>
+                <li class="nav-item"><a href="../anuncios.php" class="nav-link">Comprar</a></li>
+                <!-- <li class="nav-item"><a href="minhas_propostas.php" class="nav-link">Minhas Propostas</a></li> -->
                 <li class="nav-item"><a href="favoritos.php" class="nav-link">Favoritos</a></li>
                 <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
             </ul>
@@ -265,7 +297,7 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
         <div class="produtos-relacionados">
             <div class="relacionados-header">
                 <h3><i class="fas fa-star"></i> Outros anúncios</h3>
-                <p>Descubra outros produtos disponíveis:</p>
+                <p>Descobrra outros produtos disponíveis:</p>
             </div>
             <div class="relacionados-grid">
                 <?php foreach ($produtos_relacionados as $produto): 
@@ -328,7 +360,7 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                                    value="<?php echo number_format($info_desconto['preco_final'], 2, '.', ''); ?>"
                                    placeholder="0.00">
                         </div>
-                        <small>Digite o valor que você deseja pagar por unidade</small>
+                        <small>Digite o valor que você deseja pagar</small>
                     </div>
 
                     <div class="form-group">
@@ -434,7 +466,84 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
             hamburger.classList.remove("active");
             navMenu.classList.remove("active");
         }));
+        
+        // Favoritar produto
+        const btnFavoritar = document.getElementById('btn-favoritar');
+        
+        if (btnFavoritar) {
+            btnFavoritar.addEventListener('click', function() {
+                const produtoId = this.getAttribute('data-produto-id');
+                const isFavoritado = this.classList.contains('favoritado');
+                
+                // Mudar visual imediatamente para feedback
+                const heartIcon = this.querySelector('i');
+                const heartText = this.querySelector('span');
+                
+                if (isFavoritado) {
+                    // Remover dos favoritos
+                    this.classList.remove('favoritado');
+                    heartIcon.classList.remove('fas');
+                    heartIcon.classList.add('far');
+                    heartText.textContent = 'Favoritar';
+                } else {
+                    // Adicionar aos favoritos
+                    this.classList.add('favoritado');
+                    heartIcon.classList.remove('far');
+                    heartIcon.classList.add('fas');
+                    heartText.textContent = 'Favoritado';
+                }
+                
+                // Enviar requisição AJAX
+                const formData = new FormData();
+                formData.append('produto_id', produtoId);
+                formData.append('acao', isFavoritado ? 'remover' : 'adicionar');
+                
+                fetch('favoritar_produto.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        // Reverter visual se houver erro
+                        if (isFavoritado) {
+                            this.classList.add('favoritado');
+                            heartIcon.classList.remove('far');
+                            heartIcon.classList.add('fas');
+                            heartText.textContent = 'Favoritado';
+                        } else {
+                            this.classList.remove('favoritado');
+                            heartIcon.classList.remove('fas');
+                            heartIcon.classList.add('far');
+                            heartText.textContent = 'Favoritar';
+                        }
+                        
+                        if (data.message) {
+                            alert('Erro: ' + data.message);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    // Reverter visual
+                    if (isFavoritado) {
+                        this.classList.add('favoritado');
+                        heartIcon.classList.remove('far');
+                        heartIcon.classList.add('fas');
+                        heartText.textContent = 'Favoritado';
+                    } else {
+                        this.classList.remove('favoritado');
+                        heartIcon.classList.remove('fas');
+                        heartIcon.classList.add('far');
+                        heartText.textContent = 'Favoritar';
+                    }
+                    alert('Erro ao favoritar produto. Tente novamente.');
+                });
+            });
+        }
+
         });
+        
         // Scripts originais mantidos e funcionais
         const quantidadeInput = document.getElementById('quantidade');
         const decreaseBtn = document.getElementById('decrease-qty');
@@ -443,7 +552,6 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
         const btnCancelarProposta = document.getElementById('btn-cancelar-proposta');
         const propostaSection = document.getElementById('proposta-section');
         const quantidadeProposta = document.getElementById('quantidade_proposta');
-        const btnFavoritar = document.getElementById('btn-favoritar');
         const btnCompartilhar = document.getElementById('btn-compartilhar');
 
         propostaSection.style.display = 'none';
@@ -505,7 +613,7 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
             });
         }
         
-        // ... Logica de favoritar e compartilhar mantida ...
+        // Logica de compartilhar
         if (btnCompartilhar) {
             btnCompartilhar.addEventListener('click', function() {
                 const url = window.location.href;

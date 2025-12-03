@@ -710,6 +710,7 @@ require_once 'src/conexao.php';
                             <li><a href="#comprar">Comprar</a></li>
                             <li><a href="#vender">Vender</a></li>
                             <li><a href="#transporte">Transporte</a></li>
+                            <li><a href="src/anuncios.php">Anúncios</a>
                         </ul>
                     </div>
                     <div class="footer-column">
@@ -717,6 +718,7 @@ require_once 'src/conexao.php';
                         <ul>
                             <li><a href="#contato">Contato</a></li>
                             <li><a href="src/faq.php">FAQ</a></li>
+                            <li><a href="src/sobre.php">Sobre Nós</a></li>
                             <li><a href="src/termos.php">Termos de Uso</a></li>
                             <li><a href="src/privacidade.php">Política de Privacidade</a></li>
                         </ul>

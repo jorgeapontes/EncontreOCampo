@@ -1,36 +1,35 @@
-# 🌾 Encontre o Campo: Marketplace de Produtos Agrícolas
+# 🌾 Encontre o Campo: Agricultural Products Marketplace
 
-[![Status do Projeto](https://img.shields.io/badge/Status-Em%20Desenvolvimento-blue)](https://github.com/seu-usuario/seu-repositorio)
-
-
-> Uma plataforma de comércio on-line que conecta produtores rurais (Vendedores) diretamente a compradores e empresas (Compradores), facilitando a negociação e a aquisição de produtos agrícolas com foco em transparência e eficiência.
-
-## ✨ Funcionalidades Principais
-
-O "Encontre o Campo" oferece um ecossistema completo de vendas e negociação:
-
-### 🧑‍🌾 Vendedor (Produtor Rural)
-* **Gestão de Anúncios:** Cadastro, edição e acompanhamento de produtos e seus estoques.
-* **Planos de Assinatura:** Sistema de planos (Básico, Premium) para determinar o limite de anúncios.
-* **Negociação e Propostas:** Visualização, aceitação, rejeição ou envio de contrapropostas de compra.
+[![Project Status](https://img.shields.io/badge/Status-In%20Development-blue)](https://github.com/seu-usuario/seu-repositorio)
 
 
-### 🛒 Comprador (Empresas/Consumidores)
-* **Busca Avançada:** Filtros por categoria, preço e localização para encontrar produtos específicos.
-* **Criação de Propostas:** Capacidade de negociar preço, quantidade e condições de pagamento/entrega com o vendedor antes de finalizar a compra.
-* **Painel de Propostas:** Acompanhamento do status de todas as propostas enviadas e em negociação.
+>An online commerce platform that connects rural producers (Sellers) directly to buyers and companies (Buyers), facilitating the negotiation and acquisition of agricultural products with a focus on transparency and efficiency.
 
-### 🛡️ Arquitetura e Pagamento
-* **Precedência de Preços:** Lógica de aplicação de preço final (Proposta > Desconto > Preço Normal).
-* **Congelamento de Pedidos:** Registro da transação final (`pedidos` table) no momento da compra, garantindo a integridade do valor mesmo se o preço do produto for alterado.
-* **Mercado Pago Integration:** Utilização de API do Mercado Pago, para compras/vendas e assinaturas.
+## ✨ Key Features
 
+"Encontre o Campo" offers a complete sales and negotiation ecosystem:
+
+### 🧑‍🌾  Seller (Rural Producer)
+* **Listing Management:** Registration, editing and tracking of products and their inventory.
+* **Subscription Plans:** Plan system to determine listing limits..
+* **Negotiation and Proposals:** Viewing, accepting, rejecting or sending purchase counterproposals.
+
+
+### 🛒  Buyer (Companies/Consumers)
+* **Advanced Search:** Filters by category, price and location to find specific products.
+* **Proposal Creation:** Ability to negotiate price, quantity and payment/delivery conditions with the seller before finalizing the purchase.
+* **Proposal Dashboard:** Tracking the status of all sent and ongoing proposals.
+  
+### 🛡️ Architecture and Payment
+* **Price Precedence:** Final price application logic (Proposal > Discount > Normal Price).
+* **Order Freezings:** Recording of the final transaction (orders table) at the time of purchase, ensuring value integrity even if the product price is changed.
+* **Mercado Pago Integration:** Use of Mercado Pago API for purchases/sales and subscriptions.
 ---
 
-## 🚀 Pré-requisitos
+## 🚀 Prerequisites
 
-* [PHP] (versão 7.4 ou superior)
+* [PHP] (version 7.4 or higher)
 * [MySQL/MariaDB]
-* [Composer] (Para gerenciar dependências PHP)
-* Servidor Web (Apache ou Nginx, ou use o servidor embutido do PHP)
+* [Composer] (To manage PHP dependencies)
+* Servidor Web (Apache or Nginx, or use PHP's built-in server)
 

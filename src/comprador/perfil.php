@@ -146,6 +146,7 @@ try {
                                 </div>
                             </div>
                         </div>
+                        <input type="file" id="foto_perfil" name="foto_perfil" accept="image/jpeg,image/png,image/gif" style="display: none;">
                     </center>
                 </div>
 

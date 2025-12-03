@@ -109,13 +109,18 @@ try {
 
 // Verificar se o produto já está nos favoritos do usuário
 $is_favorito = false;
+$favorito_id = null;
 try {
     $sql_favorito = "SELECT id FROM favoritos WHERE usuario_id = :usuario_id AND produto_id = :produto_id";
     $stmt_favorito = $conn->prepare($sql_favorito);
     $stmt_favorito->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
     $stmt_favorito->bindParam(':produto_id', $anuncio_id, PDO::PARAM_INT);
     $stmt_favorito->execute();
-    $is_favorito = $stmt_favorito->rowCount() > 0;
+    if ($stmt_favorito->rowCount() > 0) {
+        $is_favorito = true;
+        $favorito = $stmt_favorito->fetch(PDO::FETCH_ASSOC);
+        $favorito_id = $favorito['id'];
+    }
 } catch (PDOException $e) {
     // Se a tabela não existir, ignora o erro
 }
@@ -205,12 +210,19 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                 </div>
                 
                 <!-- Botão de Favoritar -->
-                <button class="btn-favoritar <?php echo $is_favorito ? 'favoritado' : ''; ?>" 
-                        id="btn-favoritar" 
-                        data-produto-id="<?php echo $anuncio_id; ?>">
-                    <i class="<?php echo $is_favorito ? 'fas' : 'far'; ?> fa-heart"></i>
-                    <span><?php echo $is_favorito ? 'Favoritado' : 'Favoritar'; ?></span>
-                </button>
+                <?php if ($is_favorito && $favorito_id): ?>
+                    <a href="remover_favorito.php?favorito_id=<?php echo $favorito_id; ?>&redirect=proposta_nova.php?anuncio_id=<?php echo $anuncio_id; ?>" 
+                       class="btn-favoritar favoritado">
+                        <i class="fas fa-heart"></i>
+                        <span>Favoritado</span>
+                    </a>
+                <?php else: ?>
+                    <a href="adicionar_favorito.php?produto_id=<?php echo $anuncio_id; ?>&redirect=proposta_nova.php?anuncio_id=<?php echo $anuncio_id; ?>" 
+                       class="btn-favoritar">
+                        <i class="far fa-heart"></i>
+                        <span>Favoritar</span>
+                    </a>
+                <?php endif; ?>
 
                 <!-- Botão de Compartilhar -->
                 <button class="btn-compartilhar" id="btn-compartilhar">
@@ -467,83 +479,11 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
             navMenu.classList.remove("active");
         }));
         
-        // Favoritar produto
-        const btnFavoritar = document.getElementById('btn-favoritar');
-        
-        if (btnFavoritar) {
-            btnFavoritar.addEventListener('click', function() {
-                const produtoId = this.getAttribute('data-produto-id');
-                const isFavoritado = this.classList.contains('favoritado');
-                
-                // Mudar visual imediatamente para feedback
-                const heartIcon = this.querySelector('i');
-                const heartText = this.querySelector('span');
-                
-                if (isFavoritado) {
-                    // Remover dos favoritos
-                    this.classList.remove('favoritado');
-                    heartIcon.classList.remove('fas');
-                    heartIcon.classList.add('far');
-                    heartText.textContent = 'Favoritar';
-                } else {
-                    // Adicionar aos favoritos
-                    this.classList.add('favoritado');
-                    heartIcon.classList.remove('far');
-                    heartIcon.classList.add('fas');
-                    heartText.textContent = 'Favoritado';
-                }
-                
-                // Enviar requisição AJAX
-                const formData = new FormData();
-                formData.append('produto_id', produtoId);
-                formData.append('acao', isFavoritado ? 'remover' : 'adicionar');
-                
-                fetch('favoritar_produto.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.success) {
-                        // Reverter visual se houver erro
-                        if (isFavoritado) {
-                            this.classList.add('favoritado');
-                            heartIcon.classList.remove('far');
-                            heartIcon.classList.add('fas');
-                            heartText.textContent = 'Favoritado';
-                        } else {
-                            this.classList.remove('favoritado');
-                            heartIcon.classList.remove('fas');
-                            heartIcon.classList.add('far');
-                            heartText.textContent = 'Favoritar';
-                        }
-                        
-                        if (data.message) {
-                            alert('Erro: ' + data.message);
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    // Reverter visual
-                    if (isFavoritado) {
-                        this.classList.add('favoritado');
-                        heartIcon.classList.remove('far');
-                        heartIcon.classList.add('fas');
-                        heartText.textContent = 'Favoritado';
-                    } else {
-                        this.classList.remove('favoritado');
-                        heartIcon.classList.remove('fas');
-                        heartIcon.classList.add('far');
-                        heartText.textContent = 'Favoritar';
-                    }
-                    alert('Erro ao favoritar produto. Tente novamente.');
-                });
-            });
-        }
+        // Favoritar produto - Removido o JavaScript antigo e mantido apenas links HTML
+        // A funcionalidade agora é feita via links PHP (adicionar_favorito.php e remover_favorito.php)
 
         });
-        
+
         // Scripts originais mantidos e funcionais
         const quantidadeInput = document.getElementById('quantidade');
         const decreaseBtn = document.getElementById('decrease-qty');
@@ -604,8 +544,8 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
             setTimeout(() => { propostaSection.style.display = 'none'; }, 300);
             btnFazerProposta.innerHTML = '<i class="fas fa-handshake"></i>Fazer Proposta';
             btnFazerProposta.classList.remove('active');
-            propostaAberta = false;
-        });
+                propostaAberta = false;
+            });
 
         if (quantidadeProposta) {
             quantidadeInput.addEventListener('change', () => {

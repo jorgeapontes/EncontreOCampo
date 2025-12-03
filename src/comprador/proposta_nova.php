@@ -204,6 +204,7 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
 
                     <div class="preco-section">
                         <div class="preco-wrapper">
+                            <span class="unidade">por <?php echo $unidade; ?></span>
                             <?php if ($info_desconto['ativo']): ?>
                                 <span class="preco-antigo">R$ <?php echo number_format($info_desconto['preco_original'], 2, ',', '.'); ?></span>
                                 <span class="preco-atual destaque-oferta">R$ <?php echo $preco_display; ?></span>
@@ -211,7 +212,7 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                                 <span class="preco-atual">R$ <?php echo $preco_display; ?></span>
                             <?php endif; ?>
                         </div>
-                        <span class="unidade">por <?php echo $unidade; ?></span>
+                        
                     </div>
                     
                     <div class="estoque-info">
@@ -264,7 +265,7 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
         <div class="produtos-relacionados">
             <div class="relacionados-header">
                 <h3><i class="fas fa-star"></i> Outros anúncios</h3>
-                <p>Descubra outros produtos disponíveis</p>
+                <p>Descubra outros produtos disponíveis:</p>
             </div>
             <div class="relacionados-grid">
                 <?php foreach ($produtos_relacionados as $produto): 
@@ -317,7 +318,7 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                         <label for="preco_proposto">
                             <i class="fas fa-tag"></i>
                             Seu Preço Proposto
-                            <span class="unit">(por <?php echo $unidade; ?>)</span>
+                            <span class="unit">(R$ <?php echo $unidade; ?>)</span>
                         </label>
                         <div class="input-with-symbol">
                             <span class="currency-symbol">R$</span>
@@ -346,7 +347,7 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                 <div class="form-group full-width">
                     <label for="condicoes">
                         <i class="fas fa-file-alt"></i>
-                        Condições de Pagamento/Entrega
+                        Condições/Detalhes da Proposta ou Frete
                         <span class="optional">(Opcional)</span>
                     </label>
                     <textarea id="condicoes" name="condicoes" rows="4" 

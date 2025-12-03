@@ -412,7 +412,7 @@ if ($ultima_proposta_vendedor) {
                             
                             <div class="info-section">
                                 <div class="form-group">
-                                    <label for="novo_preco_initial">Novo Preço (por <?php echo htmlspecialchars($proposta['unidade_medida']); ?>)</label>
+                                    <label for="novo_preco_initial">Novo Preço (R$ <?php echo htmlspecialchars($proposta['unidade_medida']); ?>)</label>
                                     <input type="number" step="0.01" id="novo_preco_initial" name="novo_preco" 
                                         value="<?php echo htmlspecialchars($valor_atual_negociacao); ?>" required>
                                 </div>
@@ -426,7 +426,7 @@ if ($ultima_proposta_vendedor) {
                             <div class="form-group">
                                 <label for="novas_condicoes_initial">Novas Condições de Pagamento/Entrega (Opcional)</label>
                                 <textarea id="novas_condicoes_initial" name="novas_condicoes" rows="3" 
-                                        placeholder="Ex: Novo prazo de entrega, frete por conta do comprador, etc."></textarea>
+                                        placeholder="Ex: Novo preço, frete por conta do comprador, etc."></textarea>
                             </div>
                             
                             <button type="submit" class="btn btn-info">

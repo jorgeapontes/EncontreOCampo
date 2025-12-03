@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <form method="POST" class="proposta-form">
                 <div class="form-group">
-                    <label for="preco_proposto">Preço Proposto (por <?php echo htmlspecialchars($proposta['unidade_medida']); ?>):</label>
+                    <label for="preco_proposto">Preço Proposto (R$ <?php echo htmlspecialchars($proposta['unidade_medida']); ?>):</label>
                     <input type="number" step="0.01" id="preco_proposto" name="preco_proposto" 
                            value="<?php echo htmlspecialchars($proposta['preco_proposto']); ?>" required>
                 </div>

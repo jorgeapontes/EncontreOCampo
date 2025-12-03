@@ -205,14 +205,14 @@ require_once 'src/conexao.php';
                         <h4>Email</h4>
                         <p>contato@encontreocampo.com.br</p>
                     </div>
-                    <div class="contact-item">
+                    <!-- <div class="contact-item">
                         <h4>Telefone</h4>
                         <p>(11) 3456-7890</p>
                     </div>
                     <div class="contact-item">
                         <h4>Endereço</h4>
                         <p>Rua das Frutas, 123 - Centro, São Paulo - SP</p>
-                    </div>
+                    </div> -->
                 </div>
             </div>
             <div class="contact-form">

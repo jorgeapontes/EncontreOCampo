@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 03/12/2025 às 03:30
+-- Tempo de geração: 03/12/2025 às 17:50
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -186,7 +186,7 @@ CREATE TABLE `propostas_comprador` (
   `quantidade_proposta` int(11) NOT NULL,
   `condicoes_compra` text DEFAULT NULL,
   `data_proposta` timestamp NOT NULL DEFAULT current_timestamp(),
-  `status` enum('enviada','pendente','aceita','recusada') NOT NULL DEFAULT 'enviada'
+  `status` enum('enviada','pendente','aceita','recusada','finalizada') NOT NULL DEFAULT 'enviada'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -194,21 +194,9 @@ CREATE TABLE `propostas_comprador` (
 --
 
 INSERT INTO `propostas_comprador` (`id`, `comprador_id`, `preco_proposto`, `quantidade_proposta`, `condicoes_compra`, `data_proposta`, `status`) VALUES
-(6, 1, 11.00, 1, 'teste', '2025-11-14 19:13:44', ''),
-(7, 2, 10.00, 5, 'testando proposta', '2025-11-17 19:20:14', 'enviada'),
-(12, 2, 4.00, 10, 'teste ACEITAR', '2025-11-19 02:34:24', 'aceita'),
-(13, 2, 4.00, 10, 'teste CONTRAPROPOSTA', '2025-11-19 02:35:23', 'pendente'),
-(14, 2, 1.00, 1, 'teste NEGAR', '2025-11-19 02:35:43', 'recusada'),
-(15, 2, 4.00, 10, 'teste novo ACEITAR', '2025-11-19 03:12:32', 'aceita'),
-(16, 2, 5.00, 10, NULL, '2025-11-19 03:23:36', 'aceita'),
-(17, 2, 1.00, 1, 'teste RECUSAR', '2025-11-19 03:43:01', 'recusada'),
-(18, 2, 1.00, 1, 'teste CONTADOR propostas pendentes vendedor', '2025-11-19 14:58:29', 'recusada'),
-(19, 2, 80.00, 80, 'proposta editada', '2025-12-02 02:06:06', 'enviada'),
-(21, 2, 100.00, 1, 'ACEITAR', '2025-12-02 03:08:06', 'aceita'),
-(22, 2, 100.00, 1, 'RECUSAR', '2025-12-02 03:08:55', 'recusada'),
-(31, 2, 85.00, 85, 'C', '2025-12-02 06:44:08', 'aceita'),
-(34, 2, 100.00, 1, NULL, '2025-12-02 07:14:18', 'recusada'),
-(35, 2, 100.00, 1, NULL, '2025-12-02 07:19:42', 'enviada');
+(51, 2, 100.00, 1, 'ACEITAR DIRETO', '2025-12-03 16:45:34', 'aceita'),
+(52, 2, 100.00, 1, 'ACEITAR CONTRAPROPOSTA VENDEDOR', '2025-12-03 16:46:21', 'finalizada'),
+(53, 2, 80.00, 80, 'ACEITAR contraproposta COMPRADOR', '2025-12-03 16:46:38', 'aceita');
 
 -- --------------------------------------------------------
 
@@ -233,20 +221,9 @@ CREATE TABLE `propostas_negociacao` (
 --
 
 INSERT INTO `propostas_negociacao` (`id`, `produto_id`, `proposta_comprador_id`, `proposta_vendedor_id`, `preco_final`, `quantidade_final`, `status`, `data_criacao`, `data_atualizacao`) VALUES
-(1, 2, 6, NULL, 11.00, 1, '', '2025-11-14 19:13:44', NULL),
-(2, 2, 7, NULL, 10.00, 5, '', '2025-11-17 19:20:14', NULL),
-(3, 6, 12, NULL, 4.00, 10, 'aceita', '2025-11-19 02:34:24', NULL),
-(4, 6, 13, NULL, 4.00, 10, 'negociacao', '2025-11-19 02:35:23', NULL),
-(5, 6, 14, NULL, 1.00, 1, 'recusada', '2025-11-19 02:35:43', NULL),
-(6, 6, 15, NULL, 4.00, 10, 'aceita', '2025-11-19 03:12:32', NULL),
-(7, 7, 16, NULL, 5.00, 10, 'aceita', '2025-11-19 03:23:36', NULL),
-(8, 6, 17, NULL, 1.00, 1, 'recusada', '2025-11-19 03:43:01', NULL),
-(9, 6, 18, NULL, 1.00, 1, 'recusada', '2025-11-19 14:58:29', NULL),
-(18, 11, 21, NULL, NULL, NULL, 'aceita', '2025-12-02 03:08:06', '2025-12-02 04:49:40'),
-(19, 11, 22, NULL, NULL, NULL, 'recusada', '2025-12-02 03:08:55', '2025-12-02 04:49:03'),
-(29, 11, 31, 15, NULL, NULL, 'aceita', '2025-12-02 06:44:08', '2025-12-02 07:13:40'),
-(32, 11, 34, 16, NULL, NULL, 'recusada', '2025-12-02 07:14:18', '2025-12-02 07:15:49'),
-(33, 11, 35, NULL, NULL, NULL, 'negociacao', '2025-12-02 07:19:42', '2025-12-02 07:20:29');
+(49, 11, 51, NULL, 100.00, 1, 'aceita', '2025-12-03 16:45:34', '2025-12-03 16:46:46'),
+(50, 11, 52, 33, 90.00, 90, 'aceita', '2025-12-03 16:46:21', '2025-12-03 16:47:35'),
+(51, 11, 53, 34, 80.00, 80, 'aceita', '2025-12-03 16:46:38', '2025-12-03 16:49:07');
 
 -- --------------------------------------------------------
 
@@ -298,7 +275,7 @@ CREATE TABLE `propostas_vendedor` (
   `quantidade_proposta` int(11) NOT NULL,
   `condicoes_venda` text DEFAULT NULL,
   `data_contra_proposta` timestamp NOT NULL DEFAULT current_timestamp(),
-  `status` enum('enviada','pendente','aceita','recusada') NOT NULL DEFAULT 'enviada',
+  `status` enum('enviada','pendente','aceita','recusada','finalizada') NOT NULL DEFAULT 'enviada',
   `observacao` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -307,9 +284,8 @@ CREATE TABLE `propostas_vendedor` (
 --
 
 INSERT INTO `propostas_vendedor` (`id`, `proposta_comprador_id`, `vendedor_id`, `preco_proposto`, `quantidade_proposta`, `condicoes_venda`, `data_contra_proposta`, `status`, `observacao`) VALUES
-(14, 31, 1, 25.00, 50, 'B', '2025-12-02 06:46:42', 'enviada', NULL),
-(15, 31, 1, 30.00, 30, 'D', '2025-12-02 07:13:03', 'enviada', NULL),
-(16, 34, 1, 10.00, 10, '', '2025-12-02 07:14:59', 'enviada', NULL);
+(33, 52, 1, 90.00, 90, 'aceitar contraproposta vendedor', '2025-12-03 16:47:25', 'aceita', NULL),
+(34, 53, 1, 95.00, 95, 'aceitar contraproposta comprador', '2025-12-03 16:48:25', 'finalizada', NULL);
 
 -- --------------------------------------------------------
 
@@ -590,13 +566,13 @@ ALTER TABLE `produtos`
 -- AUTO_INCREMENT de tabela `propostas_comprador`
 --
 ALTER TABLE `propostas_comprador`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- AUTO_INCREMENT de tabela `propostas_negociacao`
 --
 ALTER TABLE `propostas_negociacao`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT de tabela `propostas_negociacao_old`
@@ -608,7 +584,7 @@ ALTER TABLE `propostas_negociacao_old`
 -- AUTO_INCREMENT de tabela `propostas_vendedor`
 --
 ALTER TABLE `propostas_vendedor`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT de tabela `solicitacoes_cadastro`

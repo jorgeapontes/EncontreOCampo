@@ -90,7 +90,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 2. Atualizar a negociação
         $sql_update_negociacao = "UPDATE propostas_negociacao 
                                  SET status = 'negociacao',
-                                     proposta_vendedor_id = NULL,  
                                      data_atualizacao = NOW()
                                  WHERE id = :negociacao_id";
         

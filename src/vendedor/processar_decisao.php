@@ -84,27 +84,71 @@ try {
     
     try {
         if ($acao === 'aceitar') {
+            // Verificar se há contraproposta do vendedor ativa
+            $sql_check_vendedor = "SELECT pv.id, pv.status 
+                                FROM propostas_vendedor pv
+                                JOIN propostas_negociacao pn ON pv.id = pn.proposta_vendedor_id
+                                WHERE pn.proposta_comprador_id = :proposta_comprador_id 
+                                AND pv.status IN ('enviada', 'pendente')";
+            $stmt_check_vendedor = $conn->prepare($sql_check_vendedor);
+            $stmt_check_vendedor->bindParam(':proposta_comprador_id', $proposta_comprador_id);
+            $stmt_check_vendedor->execute();
+            $vendedor_proposal = $stmt_check_vendedor->fetch(PDO::FETCH_ASSOC);
+            
+            // Determinar status baseado na existência de contraproposta do vendedor
+            if ($vendedor_proposal) {
+                // Existe contraproposta do vendedor: situação 3
+                $novo_status_comprador = 'aceita';
+                $novo_status_vendedor = 'finalizada';
+            } else {
+                // Não existe contraproposta: situação 1
+                $novo_status_comprador = 'aceita';
+                $novo_status_vendedor = null; // Não aplicável
+            }
+            
             // 1. Atualizar status da proposta do comprador
             $sql_update_comprador = "UPDATE propostas_comprador 
-                                    SET status = 'aceita' 
+                                    SET status = :status 
                                     WHERE id = :proposta_comprador_id";
             
             $stmt_update_comprador = $conn->prepare($sql_update_comprador);
             $stmt_update_comprador->bindParam(':proposta_comprador_id', $proposta_comprador_id);
+            $stmt_update_comprador->bindParam(':status', $novo_status_comprador);
             $stmt_update_comprador->execute();
             
-            // 2. Atualizar status da negociação
+            // 2. Se existir proposta do vendedor, atualizar status
+            if ($vendedor_proposal && $novo_status_vendedor) {
+                $sql_update_vendedor = "UPDATE propostas_vendedor 
+                                    SET status = :status
+                                    WHERE id = :proposta_vendedor_id";
+                
+                $stmt_update_vendedor = $conn->prepare($sql_update_vendedor);
+                $stmt_update_vendedor->bindParam(':proposta_vendedor_id', $vendedor_proposal['id']);
+                $stmt_update_vendedor->bindParam(':status', $novo_status_vendedor);
+                $stmt_update_vendedor->execute();
+            }
+            
+            // 3. Atualizar negociação
             $sql_update_negociacao = "UPDATE propostas_negociacao 
-                                     SET status = 'aceita',
-                                         data_atualizacao = NOW()
-                                     WHERE proposta_comprador_id = :proposta_comprador_id";
+                                    SET status = 'aceita',
+                                        preco_final = :preco_final,
+                                        quantidade_final = :quantidade_final,
+                                        data_atualizacao = NOW()
+                                    WHERE proposta_comprador_id = :proposta_comprador_id";
             
             $stmt_update_negociacao = $conn->prepare($sql_update_negociacao);
             $stmt_update_negociacao->bindParam(':proposta_comprador_id', $proposta_comprador_id);
+            $stmt_update_negociacao->bindParam(':preco_final', $proposta['preco_proposto']);
+            $stmt_update_negociacao->bindParam(':quantidade_final', $proposta['quantidade_proposta']);
             $stmt_update_negociacao->execute();
             
             $conn->commit();
-            redirecionar($proposta_comprador_id, 'sucesso', "Proposta aceita com sucesso! A negociação foi concluída.");
+            
+            $msg = $vendedor_proposal ? 
+                "Contraproposta do comprador aceita com sucesso! Negociação finalizada." :
+                "Proposta do comprador aceita com sucesso! Negociação concluída.";
+                
+            redirecionar($proposta_comprador_id, 'sucesso', $msg);
             
         } elseif ($acao === 'recusar') {
             // 1. Atualizar status da proposta do comprador

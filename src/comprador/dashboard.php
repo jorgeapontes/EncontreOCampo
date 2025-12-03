@@ -102,342 +102,135 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard do Comprador</title>
-    <link rel="stylesheet" href="../../index.css"> 
-    <link rel="stylesheet" href="../css/comprador/comprador.css"> 
+    <link rel="stylesheet" href="../css/comprador/dashboard.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
-    <style>
-        /* Estilos Específicos do Dashboard */
-        .dashboard-container {
-            padding-top: 120px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .welcome-header {
-            background-color: var(--primary-light);
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            border-left: 5px solid var(--primary-color);
-        }
-
-        .welcome-header h1 {
-            color: var(--dark-color);
-            font-size: 2.2em;
-            margin-bottom: 5px;
-        }
-
-        .welcome-header p {
-            color: var(--text-color);
-            font-size: 1.1em;
-            margin: 0;
-        }
-
-        /* Cartões de Estatísticas */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-
-        .stat-card {
-            background-color: var(--white);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: transform 0.2s;
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-        }
-
-        .stat-card .icon {
-            font-size: 2.5em;
-            padding: 10px;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .stat-card .details {
-            text-align: right;
-        }
-
-        .stat-card .details h2 {
-            font-size: 2.2em;
-            margin: 0;
-            color: var(--dark-color);
-            line-height: 1;
-        }
-
-        .stat-card .details p {
-            font-size: 1em;
-            color: var(--text-light);
-            margin: 0;
-            font-weight: 500;
-        }
-
-        /* Cores dos Cartões */
-        .card-total {
-            border-bottom: 3px solid var(--secondary-color);
-        }
-        .card-total .icon {
-            background-color: #ffe0b2; /* Laranja claro */
-            color: var(--secondary-color);
-        }
-
-        .card-pending {
-            border-bottom: 3px solid #FFC107;
-        }
-        .card-pending .icon {
-            background-color: #FFF8E1; /* Amarelo claro */
-            color: #FFC107;
-        }
-
-        .card-accepted {
-            border-bottom: 3px solid var(--primary-color);
-        }
-        .card-accepted .icon {
-            background-color: var(--primary-light);
-            color: var(--primary-color);
-        }
-
-        .card-rejected {
-            border-bottom: 3px solid #E53935;
-        }
-        .card-rejected .icon {
-            background-color: #FFEBEE; /* Vermelho claro */
-            color: #E53935;
-        }
-        
-        /* Seção de Ações Rápidas */
-        .quick-actions {
-            margin-bottom: 40px;
-        }
-
-        .quick-actions h2 {
-            text-align: left;
-            margin-bottom: 20px;
-            font-size: 1.8em;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 10px;
-        }
-
-        .actions-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .actions-grid a{
-            /* border: 1px solid green; */
-            box-shadow: 5px 5px 10px rgba(0,0,0,0.1);
-        }
-
-        .action-link {
-            background-color: var(--white);
-            padding: 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            color: var(--dark-color);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            transition: background-color 0.2s;
-        }
-
-        .action-link:hover {
-            background-color: var(--primary-light);
-        }
-
-        .action-link i {
-            font-size: 1.5em;
-            color: var(--primary-color);
-        }
-
-        .action-link span {
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-        /*nav-link*/
-        .nav-menu {
-            display: flex;
-            list-style: none;
-            align-items: center;
-        }
-
-        .nav-item {
-            margin-left: 30px;
-        }
-
-        .nav-link {
-            color: var(--text-color);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 1rem;
-            padding: 10px 0;
-            position: relative;
-            transition: color 0.3s ease;
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: 0;
-            left: 0;
-            background-color: var(--primary-color);
-            transition: width 0.3s ease;
-        }
-
-        .nav-link.active {
-            color: var(--primary-color);
-        }
-
-        .nav-link.active::after {
-            width: 100%;
-        }
-
-        .nav-link:hover {
-            color: var(--primary-color);
-        }
-
-        .nav-link:hover::after {
-            width: 100%;
-        }
-
-        .nav-link.exit-button {
-            background-color: rgb(230, 30, 30);
-            color: var(--white);
-            padding: 8px 20px;
-            border-radius: 20px;
-            transition: background-color 0.3s ease;
-            margin-left: 15px;
-        }
-
-        .nav-link.exit-button:hover {
-            background-color: rgb(200, 30, 30);
-            color: var(--white);
-        }
-
-        /* Remover sublinhado do botão login */
-        .nav-link.no-underline::after {
-            display: none;
-        }
-
-        .hamburger {
-            display: none;
-            cursor: pointer;
-        }
-
-        @media (max-width: 768px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            .welcome-header h1 {
-                font-size: 1.8em;
-            }
-        }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <img src="../../img/logo-nova.png" alt="Logo">
-                <div>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <img src="../../img/logo-nova.png" alt="Logo">
+                    <div>
                         <h1>ENCONTRE</h1>
                         <h2>O CAMPO</h2>
                     </div>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="../../index.php" class="nav-link">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="" class="nav-link active">Painel</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
+                    </li>
+                    <?php if (isset($_SESSION['usuario_id'])): ?>
+                    <li class="nav-item">
+                        <a href="../notificacoes.php" class="nav-link no-underline">
+                            <i class="fas fa-bell"></i>
+                            <?php
+                            // Contar notificações não lidas
+                            if (isset($_SESSION['usuario_id'])) {
+                                $database = new Database();
+                                $conn = $database->getConnection();
+                                $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
+                                $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
+                                $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
+                                $stmt_nao_lidas->execute();
+                                $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
+                                if ($total_nao_lidas > 0) {
+                                    echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
+                                }
+                            }
+                            ?>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    <li class="nav-item">
+                        <a href="../logout.php" class="nav-link exit-button no-underline">Sair</a>
+                    </li>
+                </ul>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
             </div>
-            <ul class="nav-menu">
-                <li class="nav-item"><a href="dashboard.php" class="nav-link active">Dashboard</a></li>
-                <li class="nav-item"><a href="../anuncios.php" class="nav-link">Comprar</a></li>
-                <li class="nav-item"><a href="favoritos.php" class="nav-link">Favoritos</a></li>
-                <!-- <li class="nav-item"><a href="minhas_propostas.php" class="nav-link">Minhas Propostas</a></li> -->
-                 <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
-                <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
-            </ul>
-        </div>
-    </nav>
+        </nav>
+    </header>
+    <br>
 
-    <main class="container dashboard-container">
-        <div class="welcome-header">
-            <h1>Bem-vindo, <?php echo $usuario_nome; ?>!</h1>
-            <p>Este é o seu painel de controle.</p>
-        </div>
+    <div class="main-content">
+        <section class="header">    
+            <center>
+                <h1>Bem-vindo, <?php echo $usuario_nome ?>!</h1>
+            </center>
+        </section>
         
-        <section class="stats-grid">
-            <a href="minhas_propostas.php" class="stat-card card-total">
-                <div class="icon"><i class="fas fa-handshake"></i></div>
-                <div class="details">
-                    <h2><?php echo $dashboard_data['total_propostas']; ?></h2>
-                    <p>Total de Propostas</p>
+        <section class="info-cards">
+            <a href="minhas_propostas.php">
+                <div class="card">
+                    <i class="fas fa-handshake"></i>
+                    <h3>Total de propostas</h3>
+                    <p><?php echo $dashboard_data['total_propostas']; ?></p>
                 </div>
             </a>
 
-            <a href="minhas_propostas.php" class="stat-card card-pending">
-                <div class="icon"><i class="fas fa-clock"></i></div>
-                <div class="details">
-                    <h2><?php echo $dashboard_data['pendente']; ?></h2>
-                    <p>Propostas Pendentes</p>
+            <a href="minhas_propostas.php">
+                <div class="card">
+                    <i class="fas fa-clock"></i>
+                    <h3>Propostas pendentes</h3>
+                    <p><?php echo $dashboard_data['pendente']; ?></p>
                 </div>
             </a>
 
-            <a href="#" class="stat-card card-accepted">
-                <div class="icon"><i class="fas fa-check-circle"></i></div>
-                <div class="details">
-                    <h2><?php echo $dashboard_data['aceita']; ?></h2>
-                    <p>Compras realizadas</p>
+            <a href="#">
+                <div class="card">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>Compras realizadas</h3>
+                    <p><?php echo $dashboard_data['aceita']; ?></p>
                 </div>
             </a>
             
-            <a href="favoritos.php" class="stat-card card-rejected">
-                <div class="icon"><i class="fas fa-heart"></i></div>
-                <div class="details">
-                    <h2><?php echo $dashboard_data['favoritos']; ?></h2>
-                    <p>Produtos favoritos</p>
+            <a href="favoritos.php">
+                <div class="card">
+                    <i class="fas fa-heart"></i>
+                    <h3>Favoritos</h3>
+                    <p><?php echo $dashboard_data['favoritos']; ?></p>
                 </div>
             </a>
         </section>
 
-        <section class="quick-actions">
-            <h2>Ações Rápidas</h2>
-            <div class="actions-grid">
-                <a href="../anuncios.php" class="action-link">
-                    <i class="fa-solid fa-dollar-sign"></i>
-                    <span>Ver Anúncios</span>
-                </a>
-                <a href="minhas_propostas.php" class="action-link">
-                    <i class="fas fa-list-alt"></i>
-                    <span>Minhas Propostas</span>
-                </a>
-                <a href="#" class="action-link">
-                    <i class="fas fa-truck"></i>
-                    <span>Solicitar Transporte</span>
-                </a>
-                <a href="perfil.php" class="action-link">
-                    <i class="fas fa-user-circle"></i>
-                    <span>Dados</span>
-                </a>
-            </div>
+        <section class="header sub">
+            <center>
+                <h3>Ações rápidas</h3>
+            </center>
         </section>
-    </main>
+
+        <section class="acoes-rapidas">
+            <a href="../anuncios.php">
+                <i class="fa-solid fa-dollar-sign"></i>
+                <span>Ver Anúncios</span>
+            </a>
+            <a href="minhas_propostas.php">
+                <i class="fas fa-list-alt"></i>
+                <span>Minhas Propostas</span>
+            </a>
+            <a href="#">
+                <i class="fas fa-truck"></i>
+                <span>Solicitar Transporte</span>
+            </a>
+            <a href="perfil.php">
+                <i class="fas fa-user-circle"></i>
+                <span>Dados</span>
+            </a>
+        </section>
+    </div>
 </body>
 </html>

@@ -157,7 +157,7 @@ function toggleNomeComercialComprador() {
             }
         } else {
             labelNomeComercial.textContent = 'Nome da Empresa ';
-            inputNomeComercial.placeholder = 'Razão Social da empresa';
+            inputNomeComercial.placeholder = 'Nome da empresa';
             cpfCnpjInput.placeholder = '00.000.000/0000-00';
             
             // Limpar e reaplicar máscara para CNPJ
@@ -992,84 +992,6 @@ function renderStaticProducts() {
     const carousel = document.getElementById('anunciosCarousel');
     if (!carousel) return;
 
-    const staticProducts = [
-        {
-            id: 1,
-            nome: 'Maçãs Vermelhas',
-            preco: '4.50',
-            imagem: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-            descricao: 'Frescas direto do pomar',
-            estoque: 15
-        },
-        {
-            id: 2,
-            nome: 'Laranjas Doces', 
-            preco: '3.20',
-            imagem: 'https://images.unsplash.com/photo-1550258987-190a2d41a8ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-            descricao: 'Colhidas no ponto certo',
-            estoque: 25
-        },
-        {
-            id: 3,
-            nome: 'Bananas Prata',
-            preco: '2.80', 
-            imagem: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-            descricao: 'Maduras e saborosas',
-            estoque: 30
-        },
-        {
-            id: 4,
-            nome: 'Uvas Verdes',
-            preco: '8.90',
-            imagem: 'https://mondiniplantas.cdn.magazord.com.br/img/2025/05/produto/6871/pe-de-uva-thompson.jpg?ims=800x800',
-            descricao: 'Dulces e sem sementes',
-            estoque: 12
-        },
-        {
-            id: 5,
-            nome: 'Morangos Frescos',
-            preco: '12.50',
-            imagem: 'https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-            descricao: 'Vermelhos e suculentos',
-            estoque: 8
-        },
-        {
-            id: 6,
-            nome: 'Abacates Maduros',
-            preco: '5.75',
-            imagem: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-            descricao: 'Perfeitos para guacamole',
-            estoque: 18
-        }
-    ];
-
-    carousel.innerHTML = '';
-
-    staticProducts.forEach((produto, index) => {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        
-        card.innerHTML = `
-            <div class="product-image" style="background-image: url('${produto.imagem}')">
-                ${produto.estoque < 10 ? `<div class="product-badge">Poucas unidades</div>` : ''}
-            </div>
-            <div class="product-info">
-                <h3>${produto.nome}</h3>
-                <p>${produto.descricao}</p>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                    <span class="price">R$ ${produto.preco}</span>
-                    <small style="color: #666;">Estoque: ${produto.estoque}</small>
-                </div>
-                <button class="buy-btn" onclick="verAnuncio(${produto.id})">Ver Detalhes</button>
-            </div>
-        `;
-
-        card.style.animationDelay = `${index * 0.1}s`;
-        carousel.appendChild(card);
-    });
-
-    updateSlidesToShow();
-    setupCarouselControls();
 }
 
 function setupCarouselControls() {

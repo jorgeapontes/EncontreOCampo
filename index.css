@@ -27,7 +27,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1button200px;
     margin: 0 auto;
     padding: 0 20px;
 }
@@ -218,7 +218,8 @@ body {
     cursor: pointer;
 }
 
-#btn-vender{
+.cta-button2{
+    font-family: "Montserrat", sans-serif;
     display: inline-block;
     background-color: transparent;
     color: var(--white);
@@ -228,8 +229,10 @@ body {
     font-weight: 600;
     transition: all 0.3s ease;
     border: 2px solid white;
-    text-align: center;
-    justify-content: center;
+}
+
+.cta-button2 a{
+    font-family: "Montserrat", sans-serif !important;
 }
 
 #btn-vender:hover {
@@ -1023,12 +1026,11 @@ input:invalid:not(:focus):not(:placeholder-shown) {
         padding: 0 15px;
     }
     
-    .hero-buttons .cta-button,
-    #btn-vender {
-        width: 100%;
-        max-width: 280px;
-        padding: 12px 15px;
-        font-size: 0.9rem;
+    .hero-buttons .cta-button {
+        width: 95%;
+        max-width: 300px;
+        padding: 12px 20px;
+        font-size: 0.95rem;
     }
 
     .transport-image {
@@ -1186,18 +1188,14 @@ input:invalid:not(:focus):not(:placeholder-shown) {
         flex-direction: column;
         align-items: center;
         width: 100%;
-        gap: 15px;
+        gap: 10px;
     }
     
-    .hero-buttons .cta-button,
-    #btn-vender {
+    .hero-buttons .cta-button {
         width: 90%;
         max-width: 280px;
-        margin: 0 auto;
+        margin: 0 !important;
         text-align: center;
-        display: block;
-        padding: 14px 20px;
-        font-size: 1rem;
     }
 
     .hero-content h1 {
@@ -1302,23 +1300,6 @@ input:invalid:not(:focus):not(:placeholder-shown) {
         max-width: 200px;
     }
     
-    .sell-text,
-    .transport-text {
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .sell-text .cta-button,
-    .transport-text .cta-button {
-        margin: 20px auto 0;
-        display: inline-block;
-        width: auto;
-        min-width: 220px;
-        text-align: center;
-    }
-
     .sell-content,
     .transport-content,
     .contact-content {
@@ -1994,3 +1975,4 @@ input:focus::placeholder {
     font-weight: normal;
     font-style: italic;
 }
+

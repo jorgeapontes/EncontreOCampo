@@ -98,7 +98,7 @@ require_once 'src/conexao.php';
             <p class="hero-text">Conectamos produtores e compradores com qualidade e agilidade, por todo o Brasil</p>
             <div class="hero-buttons">
                 <a href="#comprar" id="btn-comprar" class="cta-button">Compre agora</a>
-                <a href="#vender" id="btn-vender" class="cta-button.secondary">Venda conosco</a>
+                <a href="#vender" id="btn-comprar" class="cta-button">Venda conosco</a>
             </div>
         </div>
     </section>
@@ -277,20 +277,15 @@ require_once 'src/conexao.php';
                                 <div class="form-group">
                                     <label for="cpfCnpjComprador" class="required">CPF/CNPJ </label>
                                     <input type="text" id="cpfCnpjComprador" name="cpfCnpjComprador" required placeholder="000.000.000-00">
-                                    <small class="form-help">Digite apenas números, a máscara será aplicada automaticamente</small>
+                                    <small class="form-help">Digite apenas números, a pontuação será aplicada automaticamente</small>
                                 </div>
                                 
                                 <div class="form-group" id="nomeComercialGroup">
                                     <label id="labelNomeComercialComprador" for="nomeComercialComprador" class="required">Nome de Exibição </label>
                                     <input type="text" id="nomeComercialComprador" name="nomeComercialComprador" required placeholder="Como você quer ser chamado na plataforma">
-                                    <small class="form-help">Salvo na coluna nome_comercial do banco de dados</small>
+                                    <small class="form-help">Esse nome será exibido para os outros usuários na plataforma.</small>
                                 </div>
                                 
-                                <div class="form-group">
-                                    <label for="cipComprador">CIP (opcional)</label>
-                                    <input type="text" id="cipComprador" name="cipComprador" placeholder="Código de Identificação do Produtor">
-                                    <small class="form-help">Apenas para produtores rurais cadastrados</small>
-                                </div>
                                 
                                 <div class="step-navigation">
                                     <div></div>
@@ -433,7 +428,7 @@ require_once 'src/conexao.php';
                                 
                                 <div class="form-group">
                                     <label for="nomeComercialVendedor" class="required">Nome Comercial </label>
-                                    <input type="text" id="nomeComercialVendedor" name="nomeComercialVendedor" required placeholder="Razão Social da empresa/fazenda">
+                                    <input type="text" id="nomeComercialVendedor" name="nomeComercialVendedor" required placeholder="Nome da empresa/fazenda">
                                     <small class="form-help">Salvo na coluna nome_comercial do banco de dados</small>
                                 </div>
                                 

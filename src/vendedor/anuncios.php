@@ -189,15 +189,37 @@ try {
                                 <td>
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <?php 
-                                        $imagem_url = $anuncio['imagem_url'] ?: '../../img/placeholder.png';
+                                        // CORREÇÃO CRÍTICA: Ajustar caminho das imagens
+                                        $imagem_url = $anuncio['imagem_url'] ?: '../img/placeholder.png';
+                                        
+                                        // Se o caminho começa com '../', substituir por caminho correto
                                         if (strpos($imagem_url, '../') === 0) {
-                                            $imagem_url = substr($imagem_url, 3);
+                                            // Exemplo: '../uploads/produtos/prod_xxx.jpg'
+                                            // Deve se tornar: 'uploads/produtos/prod_xxx.jpg'
+                                            // Porque estamos em src/vendedor/
+                                            // Precisamos: ../uploads/produtos/prod_xxx.jpg
+                                            
+                                            // Na verdade, o caminho '../uploads/' já está correto!
+                                            // Mas precisamos garantir que é relativo à pasta src/vendedor/
+                                            // Pasta atual: src/vendedor/
+                                            // Imagem: src/uploads/produtos/...
+                                            // Caminho relativo: ../uploads/produtos/...
+                                            
+                                            // O caminho no banco já está certo! Só precisamos garantir
+                                            $imagem_url = $anuncio['imagem_url'];
                                         }
+                                        
+                                        // Se não tiver caminho, usar placeholder
+                                        if (empty($imagem_url)) {
+                                            $imagem_url = '../img/placeholder.png';
+                                        }
+                                        
+                                        $final_url = htmlspecialchars($imagem_url);
                                         ?>
-                                        <img src="<?php echo htmlspecialchars($imagem_url); ?>" 
+                                        <img src="<?php echo $final_url; ?>" 
                                              alt="<?php echo htmlspecialchars($anuncio['nome']); ?>"
                                              style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;"
-                                             onerror="this.src='../../img/placeholder.png'">
+                                             onerror="console.log('Erro ao carregar: <?php echo addslashes($final_url); ?>'); this.onerror=null; this.src='../img/placeholder.png';">
                                         <div>
                                             <strong><?php echo htmlspecialchars($anuncio['nome']); ?></strong><br>
                                             <small><?php echo htmlspecialchars($anuncio['unidade_medida']); ?></small>

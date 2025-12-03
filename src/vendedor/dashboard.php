@@ -22,13 +22,15 @@ $total_anuncios = count($anuncios);
 $total_propostas_pendentes = 0;
 
 // CONTADOR DE PROPOSTAS PENDENTES - CORRIGIDA
+// CONTADOR DE PROPOSTAS PENDENTES - CORRIGIDA
 try {
     $query_propostas = "SELECT COUNT(pc.id) as total_pendentes
                         FROM propostas_comprador pc
-                        JOIN propostas_negociacao pn ON pc.id = pn.proposta_comprador_id
-                        JOIN produtos p ON pn.produto_id = p.id
+                        INNER JOIN propostas_negociacao pn ON pc.id = pn.proposta_comprador_id
+                        INNER JOIN produtos p ON pn.produto_id = p.id
                         WHERE p.vendedor_id = :vendedor_id 
-                        AND pc.status = 'pendente'"; // Agora usa status da propostas_comprador
+                        AND pc.status = 'enviada'
+                        AND pn.status = 'negociacao'"; 
                         
     $stmt_propostas = $db->prepare($query_propostas);
     $stmt_propostas->bindParam(':vendedor_id', $vendedor['id']);

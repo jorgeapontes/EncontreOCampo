@@ -1,5 +1,5 @@
 <?php
-// src/comprador/proposta_nova.php (Versão Atualizada com Descontos)
+// src/comprador/proposta_nova.php (Versão Atualizada com Cálculo Dinâmico)
 
 session_start();
 require_once __DIR__ . '/../conexao.php';
@@ -234,7 +234,8 @@ try {
     // Se a tabela não existir, ignora o erro
 }
 
-$preco_display = number_format($info_desconto['preco_final'], 2, ',', '.');
+$preco_unitario = $info_desconto['preco_final'];
+$preco_display = number_format($preco_unitario, 2, ',', '.');
 $unidade = htmlspecialchars($anuncio['unidade_medida']);
 $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) : '../../img/placeholder.png';
 ?>
@@ -279,6 +280,25 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
         
         .input-with-symbol input:focus {
             outline: none;
+        }
+        
+        /* Estilo para o valor total dinâmico */
+        .preco-dinamico {
+            transition: all 0.3s ease;
+        }
+        
+        .preco-dinamico .valor-unitario {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .preco-dinamico .valor-total-label {
+            font-size: 14px;
+            color: #2E7D32;
+            margin-top: 5px;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -355,17 +375,24 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                         </div>
                     </div>
 
-                    <div class="preco-section">
+                    <div class="preco-section preco-dinamico">
                         <div class="preco-wrapper">
                             <span class="unidade">por <?php echo $unidade; ?></span>
                             <?php if ($info_desconto['ativo']): ?>
                                 <span class="preco-antigo">R$ <?php echo number_format($info_desconto['preco_original'], 2, ',', '.'); ?></span>
-                                <span class="preco-atual destaque-oferta">R$ <?php echo $preco_display; ?></span>
+                                <span class="preco-atual destaque-oferta" id="preco-atual">R$ <?php echo $preco_display; ?></span>
                             <?php else: ?>
-                                <span class="preco-atual">R$ <?php echo $preco_display; ?></span>
+                                <span class="preco-atual" id="preco-atual">R$ <?php echo $preco_display; ?></span>
                             <?php endif; ?>
                         </div>
                         
+                        <!-- Aqui mostraremos o valor unitário e total -->
+                        <div class="valor-unitario" id="valor-unitario">
+                            Preço unitário: R$ <?php echo $preco_display; ?>
+                        </div>
+                        <div class="valor-total-label" id="valor-total-label">
+                            Total: <span id="valor-total">R$ <?php echo $preco_display; ?></span>
+                        </div>
                     </div>
                     
                     <div class="estoque-info">
@@ -418,7 +445,7 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
         <div class="produtos-relacionados">
             <div class="relacionados-header">
                 <h3><i class="fas fa-star"></i> Outros anúncios</h3>
-                <p>Descubra outros produtos disponíveis:</p>
+                <p>Descobrir outros produtos disponíveis:</p>
             </div>
             <div class="relacionados-grid">
                 <?php foreach ($produtos_relacionados as $produto): 
@@ -472,17 +499,21 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                         <label for="preco_proposto">
                             <i class="fas fa-tag"></i>
                             Seu Preço Proposto
-                            <span class="unit">(R$ <?php echo $unidade; ?>)</span>
+                            <span class="unit">(por <?php echo $unidade; ?>)</span>
                         </label>
                         <div class="input-with-symbol">
                             <span class="currency-symbol">R$</span>
-                            <!-- Preenche automaticamente com o preço final (já com desconto se houver) -->
+                            <!-- Valor inicial será calculado pelo JavaScript -->
                             <input type="number" id="preco_proposto" name="preco_proposto" 
                                    step="0.01" min="0.01" required
                                    value="<?php echo number_format($info_desconto['preco_final'], 2, '.', ''); ?>"
                                    placeholder="0.00">
                         </div>
-                        <small>Digite o valor que você deseja pagar</small>
+                        <small>Digite o valor que você deseja pagar por <?php echo $unidade; ?></small>
+                        <div class="proposta-info">
+                            <small>Preço unitário atual: <span id="preco-unitario-info">R$ <?php echo $preco_display; ?></span></small><br>
+                            <small>Quantidade: <span id="quantidade-info">1</span> <?php echo $unidade; ?></small>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -603,13 +634,77 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
         const propostaSection = document.getElementById('proposta-section');
         const quantidadeProposta = document.getElementById('quantidade_proposta');
         const btnCompartilhar = document.getElementById('btn-compartilhar');
+        const precoAtualElement = document.getElementById('preco-atual');
+        const valorTotalElement = document.getElementById('valor-total');
+        const valorUnitarioElement = document.getElementById('valor-unitario');
+        const valorTotalLabel = document.getElementById('valor-total-label');
+        const precoPropostoInput = document.getElementById('preco_proposto');
+        const precoUnitarioInfo = document.getElementById('preco-unitario-info');
+        const quantidadeInfo = document.getElementById('quantidade-info');
+        
+        // Preço unitário do produto (com desconto se aplicável)
+        const precoUnitario = <?php echo $preco_unitario; ?>;
 
         propostaSection.style.display = 'none';
+        
+        // Função para formatar valor no padrão brasileiro
+        function formatarValor(valor) {
+            return valor.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+        
+        // Função para calcular e exibir o valor total
+        function atualizarValorTotal() {
+            const quantidade = parseInt(quantidadeInput.value);
+            
+            if (quantidade && quantidade > 0) {
+                const valorTotal = precoUnitario * quantidade;
+                const valorUnitarioFormatado = formatarValor(precoUnitario);
+                const valorTotalFormatado = formatarValor(valorTotal);
+                
+                // Atualizar o preço grande na tela
+                if (quantidade === 1) {
+                    // Se for apenas 1 unidade, mostra apenas o preço unitário
+                    precoAtualElement.textContent = `R$ ${valorUnitarioFormatado}`;
+                    valorTotalLabel.style.display = 'none';
+                } else {
+                    // Se for mais de 1 unidade, mostra o preço unitário e o total
+                    precoAtualElement.textContent = `R$ ${valorTotalFormatado}`;
+                    valorTotalLabel.style.display = 'block';
+                    valorTotalElement.textContent = `R$ ${valorTotalFormatado}`;
+                }
+                
+                // Atualizar também o campo de quantidade na proposta
+                if (quantidadeProposta) {
+                    quantidadeProposta.value = quantidade;
+                }
+                
+                // Atualizar o valor unitário informativo
+                valorUnitarioElement.textContent = `Preço unitário: R$ ${valorUnitarioFormatado} por ${'<?php echo $unidade; ?>'}`;
+                
+                // Atualizar as informações na seção de proposta
+                precoUnitarioInfo.textContent = `R$ ${valorUnitarioFormatado}`;
+                quantidadeInfo.textContent = quantidade;
+                
+                // Atualizar o campo de preço proposto para o valor total
+                // IMPORTANTE: O campo preco_proposto é o preço POR UNIDADE, não o total
+                // Por isso mantemos o preço unitário como valor inicial
+                if (precoPropostoInput.value == <?php echo $preco_unitario; ?>) {
+                    // Se o usuário ainda não modificou o preço proposto, atualizamos para o preço unitário atual
+                    precoPropostoInput.value = precoUnitario.toFixed(2);
+                }
+            }
+        }
+        
+        // Atualizar valor total inicial
+        atualizarValorTotal();
 
         decreaseBtn.addEventListener('click', () => {
             if (quantidadeInput.value > 1) {
                 quantidadeInput.value = parseInt(quantidadeInput.value) - 1;
-                if (quantidadeProposta) quantidadeProposta.value = quantidadeInput.value;
+                atualizarValorTotal();
             }
         });
 
@@ -617,7 +712,7 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
             const max = parseInt(quantidadeInput.max);
             if (quantidadeInput.value < max) {
                 quantidadeInput.value = parseInt(quantidadeInput.value) + 1;
-                if (quantidadeProposta) quantidadeProposta.value = quantidadeInput.value;
+                atualizarValorTotal();
             }
         });
 
@@ -628,8 +723,32 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
             if (value < min) value = min;
             if (value > max) value = max;
             quantidadeInput.value = value;
-            if (quantidadeProposta) quantidadeProposta.value = value;
+            atualizarValorTotal();
         });
+        
+        // Atualizar valor total também quando o usuário digitar
+        quantidadeInput.addEventListener('input', () => {
+            atualizarValorTotal();
+        });
+        
+        // Quando o usuário muda a quantidade na proposta, atualizar a quantidade principal
+        if (quantidadeProposta) {
+            quantidadeProposta.addEventListener('change', () => {
+                let value = parseInt(quantidadeProposta.value);
+                const max = parseInt(quantidadeProposta.max);
+                const min = parseInt(quantidadeProposta.min);
+                if (value < min) value = min;
+                if (value > max) value = max;
+                quantidadeProposta.value = value;
+                quantidadeInput.value = value;
+                atualizarValorTotal();
+            });
+            
+            quantidadeProposta.addEventListener('input', () => {
+                quantidadeInput.value = quantidadeProposta.value;
+                atualizarValorTotal();
+            });
+        }
 
         let propostaAberta = false;
         btnFazerProposta.addEventListener('click', () => {
@@ -657,12 +776,6 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                 propostaAberta = false;
             });
 
-        if (quantidadeProposta) {
-            quantidadeInput.addEventListener('change', () => {
-                quantidadeProposta.value = quantidadeInput.value;
-            });
-        }
-        
         // Logica de compartilhar
         if (btnCompartilhar) {
             btnCompartilhar.addEventListener('click', function() {
@@ -670,6 +783,31 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                 navigator.clipboard.writeText(url).then(() => {
                     alert('Link copiado para a área de transferência!');
                 });
+            });
+        }
+        
+        // Botão Comprar Agora - ação para compra direta
+        const btnComprar = document.getElementById('btn-comprar');
+        if (btnComprar) {
+            btnComprar.addEventListener('click', function() {
+                const quantidade = quantidadeInput.value;
+                const valorTotal = precoUnitario * quantidade;
+                
+                // Formatar valores para exibição
+                const valorTotalFormatado = formatarValor(valorTotal);
+                const precoUnitarioFormatado = formatarValor(precoUnitario);
+                
+                // Confirmar a compra
+                const confirmar = confirm(`Você está comprando ${quantidade} ${'<?php echo $unidade; ?>'} de ${'<?php echo htmlspecialchars($anuncio['produto']); ?>'}\n\n` +
+                                         `Preço unitário: R$ ${precoUnitarioFormatado}\n` +
+                                         `Valor total: R$ ${valorTotalFormatado}\n\n` +
+                                         `Deseja prosseguir com a compra?`);
+                
+                if (confirmar) {
+                    // Aqui você pode redirecionar para a página de checkout ou processar a compra
+                    alert('Funcionalidade de compra direta em desenvolvimento. Para comprar, use a opção "Fazer Proposta".');
+                    // window.location.href = `processar_compra.php?anuncio_id=<?php echo $anuncio_id; ?>&quantidade=${quantidade}`;
+                }
             });
         }
     </script>

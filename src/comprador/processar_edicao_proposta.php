@@ -16,9 +16,10 @@ function redirecionar($negociacao_id, $tipo, $mensagem) {
     exit();
 }
 
-// 1. VERIFICAÇÃO DE ACESSO
-if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprador') {
-    redirecionar(null, 'erro', "Acesso negado. Faça login como Comprador.");
+// 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA
+if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['comprador', 'vendedor'])) {
+    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador ou Vendedor."));
+    exit();
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -35,7 +36,7 @@ if (!$negociacao_id) {
 // 2. OBTER DADOS DO FORMULÁRIO
 $novo_preco = filter_input(INPUT_POST, 'preco_proposto', FILTER_VALIDATE_FLOAT);
 $nova_quantidade = filter_input(INPUT_POST, 'quantidade_proposta', FILTER_VALIDATE_INT);
-$novas_condicoes = filter_input(INPUT_POST, 'condicoes', FILTER_SANITIZE_STRING);
+$novas_condicoes = filter_input(INPUT_POST, 'condicoes');
 
 // Validações
 if (!$novo_preco || !$nova_quantidade || $novo_preco <= 0 || $nova_quantidade <= 0) {

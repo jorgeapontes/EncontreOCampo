@@ -5,8 +5,8 @@ session_start();
 require_once __DIR__ . '/../conexao.php';
 
 // 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA
-if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprador') {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador."));
+if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['comprador', 'vendedor'])) {
+    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador ou Vendedor."));
     exit();
 }
 
@@ -18,6 +18,7 @@ if (!isset($_GET['anuncio_id']) || !is_numeric($_GET['anuncio_id'])) {
 
 $anuncio_id = (int)$_GET['anuncio_id'];
 $usuario_id = $_SESSION['usuario_id'];
+$usuario_tipo = $_SESSION['usuario_tipo'];
 
 $database = new Database();
 $conn = $database->getConnection();
@@ -75,6 +76,114 @@ try {
     die("Erro ao carregar anúncio: " . $e->getMessage()); 
 }
 
+// 4. VERIFICAR SE O VENDEDOR ESTÁ TENTANDO COMPRAR DE SI MESMO
+if ($usuario_tipo === 'vendedor') {
+    // Precisamos verificar se este vendedor é o dono do anúncio
+    try {
+        $sql_verifica_vendedor = "SELECT v.id 
+                                  FROM vendedores v 
+                                  JOIN produtos p ON p.vendedor_id = v.id 
+                                  WHERE p.id = :anuncio_id AND v.usuario_id = :usuario_id";
+        
+        $stmt_verifica = $conn->prepare($sql_verifica_vendedor);
+        $stmt_verifica->bindParam(':anuncio_id', $anuncio_id, PDO::PARAM_INT);
+        $stmt_verifica->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+        $stmt_verifica->execute();
+        
+        if ($stmt_verifica->rowCount() > 0) {
+            // O vendedor é o dono do anúncio, não pode comprar de si mesmo
+            header("Location: ../anuncios.php?erro=" . urlencode("Você não pode comprar ou fazer proposta para seu próprio anúncio."));
+            exit();
+        }
+    } catch (PDOException $e) {
+        // Em caso de erro, continua (não bloqueia o acesso)
+        error_log("Erro ao verificar vendedor: " . $e->getMessage());
+    }
+}
+
+// Na seção onde busca o comprador_id, substitua pelo código completo:
+
+// 5. BUSCAR O COMPRADOR_ID CORRETAMENTE (COM CRIAÇÃO AUTOMÁTICA)
+$comprador_id = null;
+try {
+    $sql_busca_comprador = "SELECT id FROM compradores WHERE usuario_id = :usuario_id";
+    
+    $stmt_comprador = $conn->prepare($sql_busca_comprador);
+    $stmt_comprador->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt_comprador->execute();
+    
+    if ($stmt_comprador->rowCount() > 0) {
+        $comprador = $stmt_comprador->fetch(PDO::FETCH_ASSOC);
+        $comprador_id = $comprador['id'];
+    } else {
+        // Se não encontrar registro como comprador
+        if ($usuario_tipo === 'vendedor') {
+            // Buscar dados do vendedor para criar perfil de comprador
+            $sql_busca_vendedor = "SELECT v.*, u.email, u.nome 
+                                   FROM vendedores v 
+                                   JOIN usuarios u ON v.usuario_id = u.id 
+                                   WHERE v.usuario_id = :usuario_id";
+            
+            $stmt_vendedor = $conn->prepare($sql_busca_vendedor);
+            $stmt_vendedor->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+            $stmt_vendedor->execute();
+            $vendedor = $stmt_vendedor->fetch(PDO::FETCH_ASSOC);
+            
+            if ($vendedor) {
+                // Dados padrão caso algum campo esteja vazio
+                $nome_comercial = !empty($vendedor['nome_comercial']) ? $vendedor['nome_comercial'] : $vendedor['nome'];
+                $cpf_cnpj = !empty($vendedor['cpf_cnpj']) ? $vendedor['cpf_cnpj'] : '';
+                $cep = !empty($vendedor['cep']) ? $vendedor['cep'] : '';
+                $rua = !empty($vendedor['rua']) ? $vendedor['rua'] : '';
+                $numero = !empty($vendedor['numero']) ? $vendedor['numero'] : '';
+                $estado = !empty($vendedor['estado']) ? $vendedor['estado'] : '';
+                $cidade = !empty($vendedor['cidade']) ? $vendedor['cidade'] : '';
+                $telefone1 = !empty($vendedor['telefone1']) ? $vendedor['telefone1'] : '';
+                
+                // Criar registro na tabela compradores
+                $sql_criar_comprador = "INSERT INTO compradores 
+                                        (usuario_id, tipo_pessoa, nome_comercial, cpf_cnpj, cep, rua, numero, complemento, estado, cidade, telefone1, plano)
+                                        VALUES 
+                                        (:usuario_id, 'cpf', :nome_comercial, :cpf_cnpj, :cep, :rua, :numero, '', :estado, :cidade, :telefone1, 'free')";
+                
+                $stmt_criar = $conn->prepare($sql_criar_comprador);
+                $stmt_criar->bindParam(':usuario_id', $usuario_id);
+                $stmt_criar->bindParam(':nome_comercial', $nome_comercial);
+                $stmt_criar->bindParam(':cpf_cnpj', $cpf_cnpj);
+                $stmt_criar->bindParam(':cep', $cep);
+                $stmt_criar->bindParam(':rua', $rua);
+                $stmt_criar->bindParam(':numero', $numero);
+                $stmt_criar->bindParam(':estado', $estado);
+                $stmt_criar->bindParam(':cidade', $cidade);
+                $stmt_criar->bindParam(':telefone1', $telefone1);
+                
+                if ($stmt_criar->execute()) {
+                    $comprador_id = $conn->lastInsertId();
+                    // Log para auditoria
+                    error_log("Perfil de comprador criado automaticamente para vendedor ID: $usuario_id");
+                } else {
+                    error_log("Erro ao criar perfil de comprador para vendedor ID: $usuario_id");
+                    header("Location: ../anuncios.php?erro=" . urlencode("Erro ao configurar perfil de comprador. Tente novamente."));
+                    exit();
+                }
+            } else {
+                // Vendedor não encontrado (situação incomum)
+                error_log("Vendedor não encontrado ao tentar criar perfil de comprador. Usuario ID: $usuario_id");
+                header("Location: ../anuncios.php?erro=" . urlencode("Perfil de vendedor incompleto. Atualize seus dados primeiro."));
+                exit();
+            }
+        } else {
+            // Usuário é comprador mas não tem registro (erro grave)
+            error_log("Comprador sem registro na tabela compradores. Usuario ID: $usuario_id");
+            header("Location: dashboard.php?erro=" . urlencode("Perfil de comprador incompleto. Entre em contato com o suporte."));
+            exit();
+        }
+    }
+} catch (PDOException $e) {
+    error_log("Erro ao buscar/criar comprador_id: " . $e->getMessage());
+    header("Location: dashboard.php?erro=" . urlencode("Erro temporário no sistema. Tente novamente em alguns minutos."));
+    exit();
+}
 // Calcular desconto do produto principal
 $info_desconto = calcularDesconto($anuncio['preco'], $anuncio['preco_desconto'], $anuncio['desconto_data_fim']);
 
@@ -309,7 +418,7 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
         <div class="produtos-relacionados">
             <div class="relacionados-header">
                 <h3><i class="fas fa-star"></i> Outros anúncios</h3>
-                <p>Descobrra outros produtos disponíveis:</p>
+                <p>Descubra outros produtos disponíveis:</p>
             </div>
             <div class="relacionados-grid">
                 <?php foreach ($produtos_relacionados as $produto): 
@@ -355,7 +464,8 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
 
             <form action="processar_proposta.php" method="POST" class="proposta-form">
                 <input type="hidden" name="produto_id" value="<?php echo $anuncio_id; ?>">
-                <input type="hidden" name="comprador_usuario_id" value="<?php echo $usuario_id; ?>">
+                <input type="hidden" name="comprador_id" value="<?php echo $comprador_id; ?>">
+                <input type="hidden" name="usuario_tipo" value="<?php echo $usuario_tipo; ?>">
 
                 <div class="form-row">
                     <div class="form-group">

@@ -5,7 +5,8 @@ require_once 'conexao.php';
 
 $is_logged_in = isset($_SESSION['usuario_id']);
 $usuario_tipo = $_SESSION['usuario_tipo'] ?? null;
-$is_comprador = $usuario_tipo === 'comprador';
+$usuario_id = $_SESSION['usuario_id'] ?? null;
+$is_comprador = $usuario_tipo === 'comprador' || $usuario_tipo === 'vendedor';
 
 // Lógica para o botão de acesso/perfil na navbar
 if ($is_logged_in) {
@@ -19,9 +20,13 @@ if ($is_logged_in) {
     } else {
         $button_action = '#';
     }
+    $button_class = 'user-profile';
+    $data_target = '';
 } else {
     $button_text = 'Login';
     $button_action = '#';
+    $button_class = 'open-login-modal';
+    $data_target = 'data-target="#loginModal"';
 }
 
 // Conexão e busca dos anúncios
@@ -48,6 +53,12 @@ if (!empty(trim($termo_pesquisa))) {
 if (!empty($filtro_categoria)) {
     $where_conditions[] = "p.categoria = :categoria";
     $params[':categoria'] = $filtro_categoria;
+}
+
+// Se o usuário estiver logado como vendedor, não mostrar seus próprios anúncios
+if ($is_logged_in && $usuario_tipo === 'vendedor') {
+    $where_conditions[] = "v.usuario_id != :usuario_id";
+    $params[':usuario_id'] = $usuario_id;
 }
 
 // Ordenação
@@ -155,8 +166,8 @@ try {
                     </li>
                     <li class="nav-item">
                         <a href="<?php echo htmlspecialchars($button_action); ?>" 
-                           class="nav-link <?php echo $is_logged_in ? 'user-profile' : 'open-login-modal'; ?>"
-                           <?php if (!$is_logged_in) echo 'data-target="#loginModal"'; ?>>
+                           class="nav-link <?php echo $button_class; ?>"
+                           <?php echo $data_target; ?>>
                             <?php echo htmlspecialchars($button_text); ?>
                         </a>
                     </li>
@@ -190,6 +201,8 @@ try {
                 <p>
                     <?php if (!empty($termo_pesquisa)): ?>
                         <?php echo count($anuncios); ?> anúncio(s) encontrado(s)
+                    <?php elseif ($is_logged_in && $usuario_tipo === 'vendedor'): ?>
+                        Explore ofertas de outros vendedores
                     <?php else: ?>
                         Explore as ofertas de frutas e legumes dos nossos vendedores
                     <?php endif; ?>
@@ -322,6 +335,13 @@ try {
                         <h3>Nenhum resultado encontrado</h3>
                         <p>Tente outros termos ou <a href="anuncios.php">veja todos os anúncios</a></p>
                     </div>
+                <?php elseif ($is_logged_in && $usuario_tipo === 'vendedor'): ?>
+                    <div class="empty-search">
+                        <i class="fas fa-store fa-3x"></i>
+                        <h3>Nenhum anúncio de outros vendedores encontrado</h3>
+                        <p>No momento, não há anúncios de outros vendedores disponíveis.</p>
+                        <p><a href="vendedor/meus_produtos.php">Veja seus próprios anúncios</a></p>
+                    </div>
                 <?php else: ?>
                     <p>Nenhum anúncio ativo encontrado no momento.</p>
                 <?php endif; ?>
@@ -414,13 +434,18 @@ try {
                             </div>
                             
                             <div class="card-actions">
-                                <?php if ($is_comprador): ?>
+                                <?php if ($is_logged_in && ($usuario_tipo === 'comprador' || $usuario_tipo === 'vendedor')): ?>
                                     <a href="comprador/proposta_nova.php?anuncio_id=<?php echo $anuncio['id']; ?>" class="btn btn-primary">
                                         <i class="fas fa-handshake"></i> Comprar
                                     </a>
-                                <?php else: ?>
+                                <?php elseif (!$is_logged_in): ?>
                                     <button class="btn btn-primary open-login-modal" data-target="#loginModal">
                                         <i class="fas fa-handshake"></i> Comprar
+                                    </button>
+                                <?php else: ?>
+                                    <!-- Se estiver logado mas não for comprador nem vendedor (ex: admin) -->
+                                    <button class="btn btn-primary" disabled>
+                                        <i class="fas fa-handshake"></i> Apenas para Compradores/Vendedores
                                     </button>
                                 <?php endif; ?>
                             </div>
@@ -436,7 +461,7 @@ try {
             <span class="modal-close">&times;</span>
             <h3>Acesso Negociador</h3>
             <p>
-                É necessário estar logado como Comprador para fazer uma proposta.
+                É necessário estar logado como Comprador ou Vendedor para fazer uma proposta.
             </p>
             <form action="login.php" method="POST">
                 <div class="form-group">

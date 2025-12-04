@@ -540,6 +540,64 @@ th:last-child {
 
 /* Responsividade para a seção de formulário */
 @media (max-width: 768px) {
+    .hamburger {
+        display: block;
+    }
+    
+    .hamburger.active .bar:nth-child(2) {
+        opacity: 0;
+    }
+    
+    .hamburger.active .bar:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+    }
+    
+    .hamburger.active .bar:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
+    }
+    
+    .nav-menu {
+        position: fixed;
+        left: -100%;
+        top: 70px;
+        margin-top: 20px;
+        gap: 0;
+        flex-direction: column;
+        background-color: var(--white);
+        width: 100%;
+        text-align: center;
+        transition: 0.3s;
+        box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
+        padding: 20px 0;
+    }
+    
+    .nav-menu.active {
+        left: 0;
+    }
+    
+    .nav-item {
+        margin: 16px 0;
+    }
+
+    .nav-item:last-child {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .nav-menu.active .nav-item:last-child .nav-link.exit-button {
+        display: block;
+        width: 200px;
+        margin: 10px auto;
+        text-align: center;
+        padding: 10px 20px;
+        background: rgb(230, 30, 30);
+        color: white;
+        border-radius: 20px;
+    }
     .form-section {
         padding: 20px;
     }
@@ -634,6 +692,30 @@ th:last-child {
     .section-anuncios h2 {
         display: block;
         width: 100%;
+    }
+
+    .info-cards {
+        flex-direction: column;
+        padding: 0 10px; /* Adiciona um pouco de padding lateral */
+    }
+
+    .info-cards a {
+        margin-bottom: 15px; /* Espaçamento entre os cards */
+        padding: 20px; /* Aumentar o padding para melhor aparência */
+        text-align: center; /* Centralizar o conteúdo */
+    }
+
+    .card {
+        text-align: center; /* Centralizar o conteúdo do card */
+    }
+
+    .card p {
+        display: block; /* Para que o número fique em linha nova, se desejado */
+        margin-left: 0; /* Remove a margem esquerda que tinha no mobile */
+    }
+    .acoes-rapidas{
+        flex-direction: column;
+        padding: 0 10px;
     }
 }
 

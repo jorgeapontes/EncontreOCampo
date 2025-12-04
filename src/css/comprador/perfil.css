@@ -403,6 +403,7 @@ body {
         position: fixed;
         left: -100%;
         top: 70px;
+        margin-top: 20px;
         gap: 0;
         flex-direction: column;
         background-color: var(--white);
@@ -419,6 +420,10 @@ body {
     
     .nav-item {
         margin: 16px 0;
+    }
+
+    .nav-link.exit-button {
+        margin-right: 15px;
     }
 
     .form-group-row {

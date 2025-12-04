@@ -1156,6 +1156,7 @@ input:invalid:not(:focus):not(:placeholder-shown) {
         position: fixed;
         left: -100%;
         top: 70px;
+        margin-top: 40px;
         gap: 0;
         flex-direction: column;
         background-color: var(--white);

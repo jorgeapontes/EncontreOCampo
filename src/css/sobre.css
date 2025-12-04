@@ -701,6 +701,7 @@
     
     .hero-image {
         height: 250px;
+        width: 500px;
     }
     
     .hero-image img {

@@ -313,7 +313,7 @@ try {
         navMenu.classList.remove('active');
     }));
 
-    // Função para alternar status
+    // Função para alternar status - CORRIGIDA
     function toggleStatus(anuncioId, currentStatus) {
         const novoStatus = currentStatus === 'ativo' ? 'inativo' : 'ativo';
         const confirmacao = currentStatus === 'ativo' 
@@ -321,24 +321,36 @@ try {
             : 'Tem certeza que deseja ativar este anúncio?';
         
         if (confirm(confirmacao)) {
-            fetch('anuncio_alterar_status.php', {
+            fetch('anuncios_alterar_status.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body: `id=${anuncioId}&status=${novoStatus}`
             })
-            .then(response => response.json())
+            .then(response => {
+                // Verificar se a resposta é JSON válido
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    return response.json();
+                } else {
+                    return response.text().then(text => {
+                        console.error('Resposta não é JSON:', text);
+                        throw new Error('Resposta do servidor não é JSON válido');
+                    });
+                }
+            })
             .then(data => {
                 if (data.success) {
+                    // Recarregar a página para atualizar os dados
                     location.reload();
                 } else {
-                    alert('Erro ao alterar status: ' + data.message);
+                    alert('Erro ao alterar status: ' + (data.message || 'Erro desconhecido'));
                 }
             })
             .catch(error => {
-                console.error('Erro:', error);
-                alert('Erro ao comunicar com o servidor');
+                console.error('Erro detalhado:', error);
+                alert('Erro ao comunicar com o servidor. Verifique o console para mais detalhes.');
             });
         }
     }
@@ -353,7 +365,17 @@ try {
                 },
                 body: `id=${anuncioId}`
             })
-            .then(response => response.json())
+            .then(response => {
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    return response.json();
+                } else {
+                    return response.text().then(text => {
+                        console.error('Resposta não é JSON:', text);
+                        throw new Error('Resposta do servidor não é JSON válido');
+                    });
+                }
+            })
             .then(data => {
                 if (data.success) {
                     location.reload();

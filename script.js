@@ -1,4 +1,4 @@
-// script.js - VERSÃO COMPLETA E CORRIGIDA
+// script.js - VERSÃO COMPLETA E CORRIGIDA COM VALIDAÇÃO DE EMAIL DUPLICADO
 
 // script.js - VERIFICAÇÃO DE CARREGAMENTO
 console.log('=== SCRIPT.JS CARREGADO ===');
@@ -729,7 +729,45 @@ function initializeTransportadorMasks() {
 }
 
 // ===============================================
-// LÓGICA DE SUBMISSÃO AJAX
+// FUNÇÃO PARA VERIFICAR EMAIL DUPLICADO (NOVA)
+// ===============================================
+
+async function verificarEmailDuplicado(email) {
+    if (!email) return false;
+    
+    console.log('Verificando email:', email);
+    
+    try {
+        // Verificar se o email já está cadastrado antes do envio
+        const response = await fetch('src/verificar_email.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `email=${encodeURIComponent(email)}`
+        });
+        
+        if (!response.ok) {
+            console.warn('Erro na verificação de email:', response.status);
+            return false; // Se não conseguir verificar, permite continuar (o backend ainda validará)
+        }
+        
+        const result = await response.json();
+        console.log('Resposta da verificação de email:', result);
+        
+        if (result.success === false && result.message && result.message.includes('já está cadastrado')) {
+            return true; // Email duplicado encontrado
+        }
+        
+        return false; // Email não está duplicado
+    } catch (error) {
+        console.error('Erro ao verificar email duplicado:', error);
+        return false; // Em caso de erro, permite continuar (o backend validará)
+    }
+}
+
+// ===============================================
+// LÓGICA DE SUBMISSÃO AJAX - ATUALIZADA
 // ===============================================
 
 async function submitForm(e) {
@@ -776,7 +814,43 @@ async function submitForm(e) {
         return;
     }
     
-    // 3. Validações específicas
+    // 3. VALIDAÇÃO DE EMAIL DUPLICADO (NOVO)
+    const email = document.getElementById('email').value;
+    if (email) {
+        console.log('Validando email duplicado...');
+        
+        // Desabilitar botão temporariamente
+        const originalText = submitButton.textContent;
+        submitButton.textContent = 'Verificando email...';
+        submitButton.disabled = true;
+        submitButton.style.opacity = '0.7';
+        
+        try {
+            // Verificar se o email já está cadastrado
+            const emailDuplicado = await verificarEmailDuplicado(email);
+            
+            // Restaurar botão
+            submitButton.textContent = originalText;
+            submitButton.disabled = false;
+            submitButton.style.opacity = '1';
+            
+            if (emailDuplicado) {
+                alert('❌ Este email já está cadastrado!\n\nPor favor, use outro email ou faça login se já possui uma conta.');
+                document.getElementById('email').style.borderColor = '#ff6b6b';
+                document.getElementById('email').focus();
+                return;
+            }
+        } catch (error) {
+            console.error('Erro na validação de email:', error);
+            // Restaurar botão mesmo em caso de erro
+            submitButton.textContent = originalText;
+            submitButton.disabled = false;
+            submitButton.style.opacity = '1';
+            // Continua o processo, pois o backend também validará
+        }
+    }
+    
+    // 4. Validações específicas
     if (subject === 'comprador') {
         const tipoPessoa = document.querySelector('input[name="tipoPessoaComprador"]:checked');
         if (!tipoPessoa) {
@@ -795,7 +869,7 @@ async function submitForm(e) {
         }
     }
 
-    // 4. Desabilitar botão e mostrar carregamento
+    // 5. Desabilitar botão e mostrar carregamento para envio final
     const originalText = submitButton.textContent;
     submitButton.textContent = 'Enviando...';
     submitButton.disabled = true;

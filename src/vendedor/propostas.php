@@ -38,18 +38,31 @@ try {
     $sql = "SELECT 
                 pc.id AS proposta_id,
                 pc.data_proposta,
-                pc.preco_proposto,
-                pc.quantidade_proposta,
-                pc.status AS proposta_status,  -- Renomeado para evitar conflito
+                pc.preco_proposto AS preco_comprador,
+                pc.quantidade_proposta AS quantidade_comprador,
+                pc.status AS proposta_status_comprador,  -- Status da proposta do comprador
                 pc.condicoes_compra,
-                pn.id AS negociacao_id,  -- ADICIONADO: ID da negociação
-                pn.status AS negociacao_status,  -- ADICIONADO: Status da negociação
+                pn.id AS negociacao_id,
+                pn.status AS negociacao_status,
                 pn.produto_id,
                 p.nome AS produto_nome,
                 p.unidade_medida,
                 p.preco AS preco_anuncio_original,
-                p.vendedor_id,  -- ADICIONADO: Para debug
-                u.nome AS nome_comprador
+                p.vendedor_id,
+                u.nome AS nome_comprador,
+                -- Subconsulta para obter a última contraproposta do vendedor
+                (SELECT pv.preco_proposto 
+                 FROM propostas_vendedor pv 
+                 WHERE pv.proposta_comprador_id = pc.id 
+                 ORDER BY pv.data_contra_proposta DESC LIMIT 1) AS preco_vendedor,
+                (SELECT pv.quantidade_proposta 
+                 FROM propostas_vendedor pv 
+                 WHERE pv.proposta_comprador_id = pc.id 
+                 ORDER BY pv.data_contra_proposta DESC LIMIT 1) AS quantidade_vendedor,
+                (SELECT pv.data_contra_proposta 
+                 FROM propostas_vendedor pv 
+                 WHERE pv.proposta_comprador_id = pc.id 
+                 ORDER BY pv.data_contra_proposta DESC LIMIT 1) AS data_contraproposta
             FROM propostas_comprador pc
             JOIN propostas_negociacao pn ON pc.id = pn.proposta_comprador_id
             JOIN produtos p ON pn.produto_id = p.id
@@ -62,10 +75,6 @@ try {
     $stmt->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
     $stmt->execute();
     $propostas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // DEBUG: Verificar dados retornados
-    error_log("DEBUG propostas.php - Total de propostas: " . count($propostas));
-    error_log("DEBUG propostas.php - Vendedor ID: " . $vendedor_id);
     
 } catch (PDOException $e) {
     die("Erro ao carregar propostas: " . $e->getMessage()); 
@@ -182,7 +191,10 @@ function formatarStatusVendedor($status_negociacao, $status_comprador = null) {
         <?php else: ?>
             <div class="propostas-list">
                 <?php foreach ($propostas as $proposta): 
-                    $status_info = formatarStatusVendedor($proposta['negociacao_status'], $proposta['proposta_status']);
+                    $status_info = formatarStatusVendedor($proposta['negociacao_status'], $proposta['proposta_status_comprador']);
+                    
+                    // Verificar se existe contraproposta do vendedor e se o status do comprador é 'pendente'
+                    $temContraproposta = !empty($proposta['preco_vendedor']) && $proposta['proposta_status_comprador'] === 'pendente';
                 ?>
                     <div class="proposta-card <?php echo $status_info['class']; ?>">
                         <div class="proposta-header">
@@ -200,15 +212,21 @@ function formatarStatusVendedor($status_negociacao, $status_comprador = null) {
                                 <p><strong>Data:</strong> <?php echo date('d/m/Y H:i', strtotime($proposta['data_proposta'])); ?></p>
                             </div>
                             <div class="info-group">
-                                <p><strong>Proposto:</strong> <span><?php echo 'R$ ' . number_format($proposta['preco_proposto'], 2, ',', '.') . ' / ' . htmlspecialchars($proposta['unidade_medida']); ?></span></p>
-                                <p><strong>Qtde Proposta:</strong> <?php echo htmlspecialchars($proposta['quantidade_proposta']) . ' ' . htmlspecialchars($proposta['unidade_medida']); ?></p>
+                                <?php if ($temContraproposta): ?>
+                                    <!-- Exibir dados da contraproposta do vendedor -->
+                                    <p><strong>Proposto:</strong> <span>R$ <?php echo number_format($proposta['preco_vendedor'], 2, ',', '.') . ' / ' . htmlspecialchars($proposta['unidade_medida']); ?></span></p>
+                                    <p><strong>Qtde Proposta:</strong> <?php echo htmlspecialchars($proposta['quantidade_vendedor']) . ' ' . htmlspecialchars($proposta['unidade_medida']); ?></p>
+                                <?php else: ?>
+                                    <!-- Exibir dados da proposta do comprador -->
+                                    <p><strong>Proposto:</strong> <span>R$ <?php echo number_format($proposta['preco_comprador'], 2, ',', '.') . ' / ' . htmlspecialchars($proposta['unidade_medida']); ?></span></p>
+                                    <p><strong>Qtde Proposta:</strong> <?php echo htmlspecialchars($proposta['quantidade_comprador']) . ' ' . htmlspecialchars($proposta['unidade_medida']); ?></p>
+                                <?php endif; ?>
                             </div>
                             <div class="info-group">
                                 <p><strong>Seu Preço Original:</strong> <?php echo 'R$ ' . number_format($proposta['preco_anuncio_original'], 2, ',', '.') . ' / ' . htmlspecialchars($proposta['unidade_medida']); ?></p>
                             </div>
                         </div>
                         
-                        <!-- No loop das propostas, atualize os links: -->
                         <div class="proposta-actions">
                             <?php if ($proposta['negociacao_status'] == 'aceita' || $proposta['negociacao_status'] == 'recusada'): ?>
                                 <a href="detalhes_proposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn-action <?= $status_info['class'] ?>">

@@ -40,23 +40,23 @@ try {
 
     // Buscar detalhes da proposta do comprador - ATUALIZADA para incluir estoque
     $sql = "SELECT 
-                pc.*,
-                pn.id AS negociacao_id,
-                pn.status AS negociacao_status,  -- Status da tabela propostas_negociacao
-                pn.produto_id,
-                p.nome AS produto_nome,
-                p.unidade_medida,
-                p.preco AS preco_anuncio_original,
-                p.estoque AS estoque_disponivel,  -- ADICIONADO: estoque do produto
-                u.nome AS nome_comprador,
-                c.nome_comercial AS loja_comprador,
-                pc.condicoes_compra AS condicoes_comprador
-            FROM propostas_comprador pc
-            JOIN propostas_negociacao pn ON pc.id = pn.proposta_comprador_id
-            JOIN produtos p ON pn.produto_id = p.id
-            JOIN compradores c ON pc.comprador_id = c.id
-            JOIN usuarios u ON c.usuario_id = u.id
-            WHERE pc.id = :proposta_comprador_id AND p.vendedor_id = :vendedor_id";
+            pc.*,
+            pn.id AS negociacao_id,
+            pn.status AS negociacao_status,
+            pn.produto_id,
+            p.nome AS produto_nome,
+            p.unidade_medida,
+            p.preco AS preco_anuncio_original,
+            p.estoque AS estoque_disponivel,
+            u.nome AS nome_comprador,
+            c.nome_comercial AS loja_comprador,
+            pc.condicoes_compra AS condicoes_comprador
+        FROM propostas_comprador pc
+        JOIN propostas_negociacao pn ON pc.id = pn.proposta_comprador_id
+        JOIN produtos p ON pn.produto_id = p.id
+        JOIN compradores c ON pc.comprador_id = c.id
+        JOIN usuarios u ON c.usuario_id = u.id
+        WHERE pc.id = :proposta_comprador_id AND p.vendedor_id = :vendedor_id";
             
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(':proposta_comprador_id', $proposta_comprador_id, PDO::PARAM_INT);
@@ -111,15 +111,15 @@ $status_comprador = $proposta['status'];
 $status_info = formatarStatusVendedor($status_negociacao, $status_comprador);
 
 // Definir valores atuais da negociação
+// SEMPRE mostrar os dados da proposta do comprador
+$valor_atual_negociacao = $proposta['preco_proposto'];
+$quantidade_atual_negociacao = $proposta['quantidade_proposta'];
+$condicoes_comprador_atual = $proposta['condicoes_comprador'];
+
+// Se houver proposta do vendedor, ela será exibida na seção separada
 if ($ultima_proposta_vendedor) {
-    // Se há proposta do vendedor, usar esses valores
-    $valor_atual_negociacao = $ultima_proposta_vendedor['preco_proposto'];
-    $quantidade_atual_negociacao = $ultima_proposta_vendedor['quantidade_proposta'];
     $condicoes_vendedor = $ultima_proposta_vendedor['condicoes_venda'];
 } else {
-    // Senão, usar os valores da proposta original do comprador
-    $valor_atual_negociacao = $proposta['preco_proposto'];
-    $quantidade_atual_negociacao = $proposta['quantidade_proposta'];
     $condicoes_vendedor = null;
 }
 ?>
@@ -352,20 +352,23 @@ if ($ultima_proposta_vendedor) {
                     <p><strong>Comprador:</strong> <?php echo htmlspecialchars($proposta['nome_comprador']); ?> (<?php echo htmlspecialchars($proposta['loja_comprador']); ?>)</p>
                 </div>
                 
-                <div class="info-card">
-                    <h4><i class="fas fa-handshake"></i> Último Valor Negociado</h4>
-                    <p><strong>Preço:</strong> <span class="proposta-valor">R$ <?php echo number_format($valor_atual_negociacao, 2, ',', '.') . ' / ' . htmlspecialchars($proposta['unidade_medida']); ?></span></p>
-                    <p><strong>Quantidade:</strong> <?php echo htmlspecialchars($quantidade_atual_negociacao) . ' ' . htmlspecialchars($proposta['unidade_medida']); ?></p>
-                    <p><strong>Enviada/Atualizada em:</strong> <?php echo date('d/m/Y H:i', strtotime($proposta['data_proposta'])); ?></p>
+                <!-- NOVA SEÇÃO: PROPOSTA DO CLIENTE -->
+                    <div class="info-card">
+                        <h4><i class="fas fa-user-tag"></i> Proposta do Cliente</h4>
+                        <p><strong>Preço:</strong> <span class="proposta-valor">R$ <?php echo number_format($valor_atual_negociacao, 2, ',', '.') . ' / ' . htmlspecialchars($proposta['unidade_medida']); ?></span></p>
+                        <p><strong>Quantidade:</strong> <?php echo htmlspecialchars($quantidade_atual_negociacao) . ' ' . htmlspecialchars($proposta['unidade_medida']); ?></p>
+                        <p><strong>Enviada em:</strong> <?php echo date('d/m/Y H:i', strtotime($proposta['data_proposta'])); ?></p>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="condicoes-section">
-                <h3>Condições do Comprador (Proposta Inicial)</h3>
-                <p>
-                    <?php echo empty($proposta['condicoes_comprador']) ? 'Nenhuma condição especial informada.' : nl2br(htmlspecialchars($proposta['condicoes_comprador'])); ?>
-                </p>
-            </div>
+
+                <?php if (!empty($condicoes_comprador_atual)): ?>
+                <div class="condicoes-section">
+                    <h3>Condições do Comprador (Proposta Inicial)</h3>
+                    <p>
+                        <?php echo nl2br(htmlspecialchars($condicoes_comprador_atual)); ?>
+                    </p>
+                </div>
+                <?php endif; ?>
             
             <?php // CORRIGIDO: condicoes_vendedor -> observacoes_vendedor ?>
             <?php if ($ultima_proposta_vendedor && !empty($ultima_proposta_vendedor['condicoes_venda'])): ?>

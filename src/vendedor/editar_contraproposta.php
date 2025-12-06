@@ -34,8 +34,9 @@ try {
 
     $vendedor_id = $vendedor['id'];
 
-    // Buscar a contraproposta atual
-    $sql = "SELECT pv.*, pc.status AS status_comprador, pn.status AS negociacao_status
+    // Buscar a contraproposta atual com estoque do produto
+    $sql = "SELECT pv.*, pc.status AS status_comprador, pn.status AS negociacao_status, 
+                   p.estoque AS estoque_disponivel, p.unidade_medida 
             FROM propostas_vendedor pv
             JOIN propostas_comprador pc ON pv.proposta_comprador_id = pc.id
             JOIN propostas_negociacao pn ON pv.proposta_comprador_id = pn.proposta_comprador_id
@@ -72,26 +73,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $quantidade = $_POST['quantidade'];
     $condicoes = $_POST['condicoes'];
     
-    try {
-        $sql_update = "UPDATE propostas_vendedor 
-                      SET preco_proposto = :preco, 
-                          quantidade_proposta = :quantidade, 
-                          condicoes_venda = :condicoes,
-                          data_contra_proposta = NOW()
-                      WHERE id = :contraproposta_id";
-        
-        $stmt_update = $conn->prepare($sql_update);
-        $stmt_update->bindParam(':preco', $preco_proposto);
-        $stmt_update->bindParam(':quantidade', $quantidade);
-        $stmt_update->bindParam(':condicoes', $condicoes);
-        $stmt_update->bindParam(':contraproposta_id', $contraproposta['id']);
-        $stmt_update->execute();
-        
-        header("Location: detalhes_proposta.php?id=" . $proposta_comprador_id . "&sucesso=" . urlencode("Contraproposta atualizada com sucesso!"));
-        exit();
-        
-    } catch (PDOException $e) {
-        $erro = "Erro ao atualizar contraproposta: " . $e->getMessage();
+    // VALIDAÇÃO: Verificar se quantidade não excede estoque
+    if ($quantidade > $contraproposta['estoque_disponivel']) {
+        $erro = "Quantidade excede o estoque disponível. Máximo: " . $contraproposta['estoque_disponivel'];
+    } elseif ($quantidade <= 0) {
+        $erro = "Quantidade deve ser maior que zero.";
+    } else {
+        try {
+            $sql_update = "UPDATE propostas_vendedor 
+                          SET preco_proposto = :preco, 
+                              quantidade_proposta = :quantidade, 
+                              condicoes_venda = :condicoes,
+                              data_contra_proposta = NOW()
+                          WHERE id = :contraproposta_id";
+            
+            $stmt_update = $conn->prepare($sql_update);
+            $stmt_update->bindParam(':preco', $preco_proposto);
+            $stmt_update->bindParam(':quantidade', $quantidade);
+            $stmt_update->bindParam(':condicoes', $condicoes);
+            $stmt_update->bindParam(':contraproposta_id', $contraproposta['id']);
+            $stmt_update->execute();
+            
+            header("Location: detalhes_proposta.php?id=" . $proposta_comprador_id . "&sucesso=" . urlencode("Contraproposta atualizada com sucesso!"));
+            exit();
+            
+        } catch (PDOException $e) {
+            $erro = "Erro ao atualizar contraproposta: " . $e->getMessage();
+        }
     }
 }
 ?>
@@ -116,6 +124,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="alert alert-error"><?php echo $erro; ?></div>
         <?php endif; ?>
         
+        <div class="proposta-info">
+            <p><strong>Estoque Disponível:</strong> <?php echo htmlspecialchars($contraproposta['estoque_disponivel']); ?> <?php echo htmlspecialchars($contraproposta['unidade_medida']); ?></p>
+        </div>
+        
         <form method="POST" class="proposta-form">
             <div class="form-group">
                 <label for="preco_proposto">Preço Proposto:</label>
@@ -126,7 +138,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group">
                 <label for="quantidade">Quantidade:</label>
                 <input type="number" id="quantidade" name="quantidade" 
-                       value="<?php echo htmlspecialchars($contraproposta['quantidade_proposta']); ?>" required>
+                       value="<?php echo htmlspecialchars($contraproposta['quantidade_proposta']); ?>" 
+                       min="1" 
+                       max="<?php echo htmlspecialchars($contraproposta['estoque_disponivel']); ?>" 
+                       required>
+                <small class="estoque-info">Máximo disponível: <?php echo htmlspecialchars($contraproposta['estoque_disponivel']); ?> <?php echo htmlspecialchars($contraproposta['unidade_medida']); ?></small>
             </div>
             
             <div class="form-group">
@@ -140,5 +156,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </form>
     </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const quantidadeInput = document.getElementById('quantidade');
+            const maxQuantidade = <?php echo $contraproposta['estoque_disponivel']; ?>;
+            
+            // Impedir valores fora do intervalo
+            quantidadeInput.addEventListener('change', function() {
+                let value = parseInt(this.value);
+                if (value < 1) {
+                    this.value = 1;
+                    alert('Quantidade deve ser pelo menos 1.');
+                } else if (value > maxQuantidade) {
+                    this.value = maxQuantidade;
+                    alert('Quantidade não pode exceder o estoque disponível de ' + maxQuantidade);
+                }
+            });
+            
+            quantidadeInput.addEventListener('input', function() {
+                let value = parseInt(this.value);
+                if (value > maxQuantidade) {
+                    this.value = maxQuantidade;
+                }
+            });
+        });
+    </script>
 </body>
 </html>

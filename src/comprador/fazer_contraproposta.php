@@ -34,7 +34,8 @@ try {
                 pv.condicoes_venda AS condicoes_vendedor,
                 p.nome AS produto_nome,
                 p.unidade_medida,
-                p.preco AS preco_original
+                p.preco AS preco_original,
+                p.estoque AS estoque_disponivel 
             FROM propostas_negociacao pn
             JOIN propostas_comprador pc ON pn.proposta_comprador_id = pc.id
             JOIN produtos p ON pn.produto_id = p.id
@@ -70,42 +71,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $quantidade = $_POST['quantidade'];
     $condicoes = $_POST['condicoes'] ?? '';
     
-    try {
-        $conn->beginTransaction();
-        
-        // 1. Criar nova proposta do comprador (atualizar a existente)
-        $sql_update_comprador = "UPDATE propostas_comprador 
-                                SET preco_proposto = :preco,
-                                    quantidade_proposta = :quantidade,
-                                    condicoes_compra = :condicoes,
-                                    status = 'enviada'
-                                WHERE id = :proposta_comprador_id";
-        
-        $stmt_update = $conn->prepare($sql_update_comprador);
-        $stmt_update->bindParam(':preco', $preco_proposto);
-        $stmt_update->bindParam(':quantidade', $quantidade);
-        $stmt_update->bindParam(':condicoes', $condicoes);
-        $stmt_update->bindParam(':proposta_comprador_id', $negociacao['proposta_comprador_id']);
-        $stmt_update->execute();
-        
-        // 2. Atualizar a negociação
-        $sql_update_negociacao = "UPDATE propostas_negociacao 
-                                 SET status = 'negociacao',
-                                     data_atualizacao = NOW()
-                                 WHERE id = :negociacao_id";
-        
-        $stmt_update_neg = $conn->prepare($sql_update_negociacao);
-        $stmt_update_neg->bindParam(':negociacao_id', $negociacao_id);
-        $stmt_update_neg->execute();
-        
-        $conn->commit();
-        
-        header("Location: minhas_propostas.php?sucesso=" . urlencode("Contraproposta enviada com sucesso! Aguarde a resposta do vendedor."));
-        exit();
-        
-    } catch (PDOException $e) {
-        $conn->rollBack();
-        $erro = "Erro ao enviar contraproposta: " . $e->getMessage();
+    // VALIDAÇÃO: Verificar se quantidade não excede estoque
+    if ($quantidade > $negociacao['estoque_disponivel']) {
+        $erro = "Quantidade excede o estoque disponível. Máximo: " . $negociacao['estoque_disponivel'];
+    } elseif ($quantidade <= 0) {
+        $erro = "Quantidade deve ser maior que zero.";
+    } else {
+        try {
+            $conn->beginTransaction();
+            
+            // 1. Criar nova proposta do comprador (atualizar a existente)
+            $sql_update_comprador = "UPDATE propostas_comprador 
+                                    SET preco_proposto = :preco,
+                                        quantidade_proposta = :quantidade,
+                                        condicoes_compra = :condicoes,
+                                        status = 'enviada'
+                                    WHERE id = :proposta_comprador_id";
+            
+            $stmt_update = $conn->prepare($sql_update_comprador);
+            $stmt_update->bindParam(':preco', $preco_proposto);
+            $stmt_update->bindParam(':quantidade', $quantidade);
+            $stmt_update->bindParam(':condicoes', $condicoes);
+            $stmt_update->bindParam(':proposta_comprador_id', $negociacao['proposta_comprador_id']);
+            $stmt_update->execute();
+            
+            // 2. Atualizar a negociação
+            $sql_update_negociacao = "UPDATE propostas_negociacao 
+                                     SET status = 'negociacao',
+                                         data_atualizacao = NOW()
+                                     WHERE id = :negociacao_id";
+            
+            $stmt_update_neg = $conn->prepare($sql_update_negociacao);
+            $stmt_update_neg->bindParam(':negociacao_id', $negociacao_id);
+            $stmt_update_neg->execute();
+            
+            $conn->commit();
+            
+            header("Location: minhas_propostas.php?sucesso=" . urlencode("Contraproposta enviada com sucesso! Aguarde a resposta do vendedor."));
+            exit();
+            
+        } catch (PDOException $e) {
+            $conn->rollBack();
+            $erro = "Erro ao enviar contraproposta: " . $e->getMessage();
+        }
     }
 }
 ?>
@@ -155,6 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="info-group">
                     <p><strong>Produto:</strong> <?php echo htmlspecialchars($negociacao['produto_nome']); ?></p>
                     <p><strong>Preço Original:</strong> R$ <?php echo number_format($negociacao['preco_original'], 2, ',', '.'); ?> / <?php echo htmlspecialchars($negociacao['unidade_medida']); ?></p>
+                    <p><strong>Estoque Disponível:</strong> <?php echo htmlspecialchars($negociacao['estoque_disponivel']); ?> <?php echo htmlspecialchars($negociacao['unidade_medida']); ?></p>
                 </div>
             </div>
 
@@ -185,7 +194,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-group">
                     <label for="quantidade">Nova Quantidade (<?php echo htmlspecialchars($negociacao['unidade_medida']); ?>):</label>
                     <input type="number" id="quantidade" name="quantidade" 
-                           value="<?php echo htmlspecialchars($negociacao['quantidade_proposta']); ?>" required>
+                           value="<?php echo htmlspecialchars($negociacao['quantidade_proposta']); ?>" 
+                           min="1" 
+                           max="<?php echo htmlspecialchars($negociacao['estoque_disponivel']); ?>" 
+                           required>
+                    <small class="estoque-info">Máximo disponível: <?php echo htmlspecialchars($negociacao['estoque_disponivel']); ?> <?php echo htmlspecialchars($negociacao['unidade_medida']); ?></small>
                 </div>
 
                 <div class="form-group">
@@ -203,5 +216,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
         </div>
     </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const quantidadeInput = document.getElementById('quantidade');
+            const maxQuantidade = <?php echo $negociacao['estoque_disponivel']; ?>;
+            
+            // Impedir valores fora do intervalo
+            quantidadeInput.addEventListener('change', function() {
+                let value = parseInt(this.value);
+                if (value < 1) {
+                    this.value = 1;
+                    alert('Quantidade deve ser pelo menos 1.');
+                } else if (value > maxQuantidade) {
+                    this.value = maxQuantidade;
+                    alert('Quantidade não pode exceder o estoque disponível de ' + maxQuantidade);
+                }
+            });
+            
+            quantidadeInput.addEventListener('input', function() {
+                let value = parseInt(this.value);
+                if (value > maxQuantidade) {
+                    this.value = maxQuantidade;
+                }
+            });
+        });
+    </script>
 </body>
 </html>

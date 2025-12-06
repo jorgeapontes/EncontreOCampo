@@ -38,7 +38,7 @@ try {
     }
     $vendedor_id = $resultado_vendedor['id'];
 
-    // Buscar detalhes da proposta do comprador - ATUALIZADA para trazer status da negociação
+    // Buscar detalhes da proposta do comprador - ATUALIZADA para incluir estoque
     $sql = "SELECT 
                 pc.*,
                 pn.id AS negociacao_id,
@@ -47,6 +47,7 @@ try {
                 p.nome AS produto_nome,
                 p.unidade_medida,
                 p.preco AS preco_anuncio_original,
+                p.estoque AS estoque_disponivel,  -- ADICIONADO: estoque do produto
                 u.nome AS nome_comprador,
                 c.nome_comercial AS loja_comprador,
                 pc.condicoes_compra AS condicoes_comprador
@@ -128,7 +129,7 @@ if ($ultima_proposta_vendedor) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalhes da Proposta #<?php echo $proposta_id; ?></title>
+    <title>Detalhes da Proposta #<?php echo $proposta_comprador_id; ?></title>
     <link rel="stylesheet" href="../../index.css"> 
     <link rel="stylesheet" href="../css/vendedor/vendedor.css"> 
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
@@ -243,6 +244,14 @@ if ($ultima_proposta_vendedor) {
             border-radius: 5px;
             box-sizing: border-box;
         }
+        
+        .estoque-info {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
         /* ... outros estilos ... */
         
         .btn-warning { 
@@ -339,6 +348,7 @@ if ($ultima_proposta_vendedor) {
                     <h4><i class="fas fa-box-open"></i> Produto Anunciado</h4>
                     <p><strong>Nome:</strong> <?php echo htmlspecialchars($proposta['produto_nome']); ?></p>
                     <p><strong>Preço Anunciado:</strong> R$ <?php echo number_format($proposta['preco_anuncio_original'], 2, ',', '.') . ' / ' . htmlspecialchars($proposta['unidade_medida']); ?></p>
+                    <p><strong>Estoque Disponível:</strong> <?php echo htmlspecialchars($proposta['estoque_disponivel']); ?> <?php echo htmlspecialchars($proposta['unidade_medida']); ?></p>
                     <p><strong>Comprador:</strong> <?php echo htmlspecialchars($proposta['nome_comprador']); ?> (<?php echo htmlspecialchars($proposta['loja_comprador']); ?>)</p>
                 </div>
                 
@@ -419,7 +429,11 @@ if ($ultima_proposta_vendedor) {
                                 <div class="form-group">
                                     <label for="nova_quantidade_initial">Nova Quantidade (<?php echo htmlspecialchars($proposta['unidade_medida']); ?>)</label>
                                     <input type="number" step="0.01" id="nova_quantidade_initial" name="nova_quantidade" 
-                                        value="<?php echo htmlspecialchars($quantidade_atual_negociacao); ?>" required>
+                                        value="<?php echo htmlspecialchars($quantidade_atual_negociacao); ?>" 
+                                        min="1" 
+                                        max="<?php echo htmlspecialchars($proposta['estoque_disponivel']); ?>" 
+                                        required>
+                                    <small class="estoque-info">Estoque disponível: <?php echo htmlspecialchars($proposta['estoque_disponivel']); ?> <?php echo htmlspecialchars($proposta['unidade_medida']); ?></small>
                                 </div>
                             </div>
                             
@@ -434,6 +448,32 @@ if ($ultima_proposta_vendedor) {
                                 Enviar Contraproposta
                             </button>
                         </form>
+                        
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const quantidadeInput = document.getElementById('nova_quantidade_initial');
+                                const maxQuantidade = <?php echo $proposta['estoque_disponivel']; ?>;
+                                
+                                // Impedir valores fora do intervalo
+                                quantidadeInput.addEventListener('change', function() {
+                                    let value = parseInt(this.value);
+                                    if (value < 1) {
+                                        this.value = 1;
+                                        alert('Quantidade deve ser pelo menos 1.');
+                                    } else if (value > maxQuantidade) {
+                                        this.value = maxQuantidade;
+                                        alert('Quantidade não pode exceder o estoque disponível de ' + maxQuantidade);
+                                    }
+                                });
+                                
+                                quantidadeInput.addEventListener('input', function() {
+                                    let value = parseInt(this.value);
+                                    if (value > maxQuantidade) {
+                                        this.value = maxQuantidade;
+                                    }
+                                });
+                            });
+                        </script>
                     </div>
                     
                 <?php elseif ($status_negociacao === 'negociacao' && $status_comprador === 'pendente'): ?>
@@ -480,5 +520,23 @@ if ($ultima_proposta_vendedor) {
             </div>
         </div>
     </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Menu Hamburguer
+            const hamburger = document.querySelector(".hamburger");
+            const navMenu = document.querySelector(".nav-menu");
+
+            hamburger.addEventListener("click", () => {
+                hamburger.classList.toggle("active");
+                navMenu.classList.toggle("active");
+            });
+
+            document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
+                hamburger.classList.remove("active");
+                navMenu.classList.remove("active");
+            }));
+        });
+    </script>
 </body>
 </html>

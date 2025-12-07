@@ -798,3 +798,144 @@ th:last-child {
         margin: 5px 0 0;
     }
 }
+
+.contrapropostas-container {
+    padding-top: 120px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.contraproposta-card {
+    background-color: var(--white);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.contra-info-group p strong {
+    display: block;
+    font-weight: bold;
+    color: var(--text-color);
+    margin-bottom: 3px;
+    font-size: 1.05em;
+}
+
+.contraproposta-form {
+    margin-top: 20px;
+    padding: 30px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: var(--white);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.contraproposta-form textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+.contraproposta-form input[type="number"],
+        .contraproposta-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-sizing: border-box; 
+        }
+
+        .contraproposta-form input[type="number"]:focus,
+        .contraproposta-form textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+            outline: none;
+        }
+
+.contraproposta-form-group {
+    margin-bottom: 15px;
+}
+
+.contraproposta-form-group small {
+            display: block;
+            margin-top: 5px;
+            color: var(--text-light);
+            font-size: 0.9em;
+        }
+
+.contraproposta-form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.contraproposta-form-group input,
+.contraproposta-form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+    font-family: inherit;
+}
+
+.contraproposta-form-group input:focus,
+.contraproposta-form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.contraproposta-form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.btn-atualizar-contraproposta {
+    background-color: #4CAF50 !important;
+    color: white !important;
+    text-decoration: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.btn-atualizar-contraproposta:hover{
+    background-color: #45a049 !important;
+    transform: translateY(-2px);
+}
+
+.btn-cancelar{
+    background-color: #2196F3 !important;
+    color: white !important;
+    text-decoration: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.btn-cancelar:hover{
+    background-color: #1976D2 !important;
+    transform: translateY(-2px);
+}

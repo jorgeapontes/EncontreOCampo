@@ -36,7 +36,8 @@ try {
 
     // Buscar a contraproposta atual com estoque do produto
     $sql = "SELECT pv.*, pc.status AS status_comprador, pn.status AS negociacao_status, 
-                   p.estoque AS estoque_disponivel, p.unidade_medida 
+                   p.estoque AS estoque_disponivel, p.unidade_medida, 
+                   p.nome AS produto_nome, p.preco AS preco_original
             FROM propostas_vendedor pv
             JOIN propostas_comprador pc ON pv.proposta_comprador_id = pc.id
             JOIN propostas_negociacao pn ON pv.proposta_comprador_id = pn.proposta_comprador_id
@@ -111,50 +112,97 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Contraproposta</title>
     <link rel="stylesheet" href="../../index.css">
-    <link rel="stylesheet" href="../css/vendedor/vendedor.css">
+    <link rel="stylesheet" href="../css/vendedor/propostas.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
 </head>
 <body>
     <!-- Navbar similar ao detalhes_proposta.php -->
-    
-    <main class="container">
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <img src="../../img/logo-nova.png" alt="Logo">
+                    <div>
+                        <h1>ENCONTRE</h1>
+                        <h2>O CAMPO</h2>
+                    </div>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="../../index.php" class="nav-link">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="dashboard.php" class="nav-link">Painel</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="anuncios.php" class="nav-link">Meus Anúncios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="propostas.php" class="nav-link active">Propostas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="precos.php" class="nav-link">Médias de Preços</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../logout.php" class="nav-link login-button no-underline">Sair</a>
+                    </li>
+                </ul>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container contrapropostas-container">
         <h1>Editar Contraproposta</h1>
         
         <?php if (isset($erro)): ?>
             <div class="alert alert-error"><?php echo $erro; ?></div>
         <?php endif; ?>
-        
-        <div class="proposta-info">
-            <p><strong>Estoque Disponível:</strong> <?php echo htmlspecialchars($contraproposta['estoque_disponivel']); ?> <?php echo htmlspecialchars($contraproposta['unidade_medida']); ?></p>
+
+        <div class="contraproposta-card">
+            <div class="proposta-info">
+                <div class="contra-info-group">
+                    <p><strong>Produto:</strong> <?php echo htmlspecialchars($contraproposta['produto_nome']); ?></p>
+                    <p><strong>Preço Original:</strong> R$ <?php echo number_format($contraproposta['preco_original'], 2, ',', '.'); ?> / <?php echo htmlspecialchars($contraproposta['unidade_medida']); ?></p>
+                    <p><strong>Estoque Disponível:</strong> <?php echo htmlspecialchars($contraproposta['estoque_disponivel']); ?> <?php echo htmlspecialchars($contraproposta['unidade_medida']); ?></p>
+                </div>
+            </div>
+            
+            <form method="POST" class="contraproposta-form">
+                <div class="contraproposta-form-group">
+                    <label for="preco_proposto">Preço Proposto (R$ ):</label>
+                    <input type="number" step="0.01" id="preco_proposto" name="preco_proposto" 
+                        value="<?php echo htmlspecialchars($contraproposta['preco_proposto']); ?>" required>
+                </div>
+                
+                <div class="contraproposta-form-group">
+                    <label for="quantidade">Quantidade ():</label>
+                    <input type="number" id="quantidade" name="quantidade" 
+                        value="<?php echo htmlspecialchars($contraproposta['quantidade_proposta']); ?>" 
+                        min="1" 
+                        max="<?php echo htmlspecialchars($contraproposta['estoque_disponivel']); ?>" 
+                        required>
+                    <small class="estoque-info">Máximo disponível: <?php echo htmlspecialchars($contraproposta['estoque_disponivel']); ?> <?php echo htmlspecialchars($contraproposta['unidade_medida']); ?></small>
+                </div>
+                
+                <div class="contraproposta-form-group">
+                    <label for="condicoes">Condições de Venda (opcional):</label>
+                    <textarea id="condicoes" name="condicoes" rows="4"><?php echo htmlspecialchars($contraproposta['condicoes_venda']); ?></textarea>
+                </div>
+                
+                <div class="contraproposta-form-actions">
+                    <button type="submit" class="btn-atualizar-contraproposta">Atualizar Contraproposta</button>
+                    <a href="detalhes_proposta.php?id=<?php echo $proposta_comprador_id; ?>" class="btn-cancelar">Cancelar</a>
+                </div>
+            </form>
         </div>
-        
-        <form method="POST" class="proposta-form">
-            <div class="form-group">
-                <label for="preco_proposto">Preço Proposto:</label>
-                <input type="number" step="0.01" id="preco_proposto" name="preco_proposto" 
-                       value="<?php echo htmlspecialchars($contraproposta['preco_proposto']); ?>" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="quantidade">Quantidade:</label>
-                <input type="number" id="quantidade" name="quantidade" 
-                       value="<?php echo htmlspecialchars($contraproposta['quantidade_proposta']); ?>" 
-                       min="1" 
-                       max="<?php echo htmlspecialchars($contraproposta['estoque_disponivel']); ?>" 
-                       required>
-                <small class="estoque-info">Máximo disponível: <?php echo htmlspecialchars($contraproposta['estoque_disponivel']); ?> <?php echo htmlspecialchars($contraproposta['unidade_medida']); ?></small>
-            </div>
-            
-            <div class="form-group">
-                <label for="condicoes">Condições de Venda (opcional):</label>
-                <textarea id="condicoes" name="condicoes" rows="4"><?php echo htmlspecialchars($contraproposta['condicoes_venda']); ?></textarea>
-            </div>
-            
-            <div class="form-actions">
-                <button type="submit" class="btn btn-success">Atualizar Contraproposta</button>
-                <a href="detalhes_proposta.php?id=<?php echo $proposta_comprador_id; ?>" class="btn btn-secondary">Cancelar</a>
-            </div>
-        </form>
     </main>
     
     <script>

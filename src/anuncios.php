@@ -145,39 +145,48 @@ try {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../index.php" style="display: flex; align-items: center; text-decoration: none;">
-                        <img src="../img/logo-nova.png" alt="Logo">
-                        <div>
-                            <h1>ENCONTRE</h1>
-                            <h2>O CAMPO</h2>
-                        </div>
-                    </a>
+                    <img src="../img/logo-nova.png" alt="Logo">
+                    <div>
+                        <h1>ENCONTRE</h1>
+                        <h2>O CAMPO</h2>
+                    </div>
                 </div>
-
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="../index.php" class="nav-link">Home</a>
+                        <a href="../../index.php" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="anuncios.php" class="nav-link active">Comprar</a>
+                        <a href="<?= $_SESSION['usuario_tipo'] ?>/dashboard.php" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">
-                        <a href="comprador/favoritos.php" class="nav-link">Favoritos</a>
+                        <a href="<?= $_SESSION['usuario_tipo'] ?>/perfil.php" class="nav-link">Meu Perfil</a>
                     </li>
+                    <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
-                        <a href="<?php echo htmlspecialchars($button_action); ?>" 
-                           class="nav-link <?php echo $button_class; ?>"
-                           <?php echo $data_target; ?>>
-                            <?php echo htmlspecialchars($button_text); ?>
+                        <a href="notificacoes.php" class="nav-link no-underline">
+                            <i class="fas fa-bell"></i>
+                            <?php
+                            // Contar notificações não lidas
+                            if (isset($_SESSION['usuario_id'])) {
+                                $database = new Database();
+                                $conn = $database->getConnection();
+                                $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
+                                $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
+                                $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
+                                $stmt_nao_lidas->execute();
+                                $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
+                                if ($total_nao_lidas > 0) {
+                                    echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
+                                }
+                            }
+                            ?>
                         </a>
                     </li>
-                    <?php if ($is_logged_in): ?>
-                        <li class="nav-item">
-                            <a href="logout.php" class="nav-link exit-button no-underline">Sair</a>
-                        </li>
                     <?php endif; ?>
+                    <li class="nav-item">
+                        <a href="../logout.php" class="nav-link exit-button no-underline">Sair</a>
+                    </li>
                 </ul>
-                
                 <div class="hamburger">
                     <span class="bar"></span>
                     <span class="bar"></span>

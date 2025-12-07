@@ -269,51 +269,60 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <a href="../../index.php" style="display: flex; align-items: center; text-decoration: none;">
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
                     <img src="../../img/logo-nova.png" alt="Logo">
                     <div>
                         <h1>ENCONTRE</h1>
                         <h2>O CAMPO</h2>
                     </div>
-                </a>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="../../index.php" class="nav-link">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="dashboard.php" class="nav-link">Painel</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
+                    </li>
+                    <?php if (isset($_SESSION['usuario_id'])): ?>
+                    <li class="nav-item">
+                        <a href="../notificacoes.php" class="nav-link no-underline">
+                            <i class="fas fa-bell"></i>
+                            <?php
+                            // Contar notificações não lidas
+                            if (isset($_SESSION['usuario_id'])) {
+                                $database = new Database();
+                                $conn = $database->getConnection();
+                                $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
+                                $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
+                                $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
+                                $stmt_nao_lidas->execute();
+                                $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
+                                if ($total_nao_lidas > 0) {
+                                    echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
+                                }
+                            }
+                            ?>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    <li class="nav-item">
+                        <a href="../logout.php" class="nav-link exit-button no-underline">Sair</a>
+                    </li>
+                </ul>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
             </div>
-
-            <ul class="nav-menu">
-                <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>
-                <li class="nav-item"><a href="../anuncios.php" class="nav-link">Comprar</a></li>
-                <li class="nav-item"><a href="minhas_propostas.php" class="nav-link">Minhas Propostas</a></li>
-                <li class="nav-item"><a href="favoritos.php" class="nav-link active">Favoritos</a></li>
-                <?php if (isset($_SESSION['usuario_id'])): ?>
-                <li class="nav-item">
-                    <a href="../notificacoes.php" class="nav-link no-underline">
-                        <i class="fas fa-bell"></i>
-                        <?php
-                        $database = new Database();
-                        $conn = $database->getConnection();
-                        $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
-                        $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
-                        $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
-                        $stmt_nao_lidas->execute();
-                        $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
-                        if ($total_nao_lidas > 0) {
-                            echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
-                        }
-                        ?>
-                    </a>
-                </li>
-                <?php endif; ?>
-                <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
-            </ul>
-            <div class="hamburger">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </div>
-        </div>
-    </nav>
+        </nav>
+    </header>
     <br>
 
     <main class="main-content">

@@ -1,5 +1,3 @@
-[file name]: minhas_propostas.php
-[file content begin]
 <?php
 // src/comprador/minhas_propostas.php - ATUALIZADO
 

@@ -246,47 +246,13 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($anuncio['produto']); ?> - Encontre o Campo</title>
-    <link rel="stylesheet" href="../../index.css">
-    <link rel="stylesheet" href="../css/comprador/proposta_nova.css?v=1.1">
+    <link rel="stylesheet" href="../css/comprador/proposta_nova.css?v=1.3">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
     <style>
-        /* ESTILO TEMPORÁRIO PARA CORRIGIR O PROBLEMA DO R$ */
-        .input-with-symbol {
-            display: flex;
-            align-items: center;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            overflow: hidden;
-            background: white;
-        }
-        
-        .input-with-symbol .currency-symbol {
-            padding: 10px 12px;
-            background: #f5f5f5;
-            border-right: 1px solid #ddd;
-            font-weight: bold;
-            color: #333;
-            white-space: nowrap;
-        }
-        
-        .input-with-symbol input {
-            flex: 1;
-            border: none;
-            padding: 10px;
-            font-size: 16px;
-            outline: none;
-        }
-        
-        .input-with-symbol input:focus {
-            outline: none;
-        }
-        
-        /* Estilo para o valor total dinâmico */
-        .preco-dinamico {
-            transition: all 0.3s ease;
-        }
-        
         .preco-dinamico .valor-unitario {
             font-size: 14px;
             color: #666;
@@ -306,254 +272,284 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <img src="../../img/logo-nova.png" alt="Logo">
-                <div>
-                    <h1>ENCONTRE</h1>
-                    <h2>O CAMPO</h2>
-                </div>
+                <a href="../../index.php" style="display: flex; align-items: center; text-decoration: none;">
+                    <img src="../../img/logo-nova.png" alt="Logo">
+                    <div>
+                        <h1>ENCONTRE</h1>
+                        <h2>O CAMPO</h2>
+                    </div>
+                </a>
             </div>
+
             <ul class="nav-menu">
                 <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>
                 <li class="nav-item"><a href="../anuncios.php" class="nav-link">Comprar</a></li>
-                <!-- <li class="nav-item"><a href="minhas_propostas.php" class="nav-link">Minhas Propostas</a></li> -->
-                <li class="nav-item"><a href="favoritos.php" class="nav-link">Favoritos</a></li>
+                <li class="nav-item"><a href="minhas_propostas.php" class="nav-link">Minhas Propostas</a></li>
+                <li class="nav-item"><a href="favoritos.php" class="nav-link active">Favoritos</a></li>
+                <?php if (isset($_SESSION['usuario_id'])): ?>
+                <li class="nav-item">
+                    <a href="../notificacoes.php" class="nav-link no-underline">
+                        <i class="fas fa-bell"></i>
+                        <?php
+                        $database = new Database();
+                        $conn = $database->getConnection();
+                        $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
+                        $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
+                        $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
+                        $stmt_nao_lidas->execute();
+                        $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
+                        if ($total_nao_lidas > 0) {
+                            echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
+                        }
+                        ?>
+                    </a>
+                </li>
+                <?php endif; ?>
                 <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
             </ul>
             <div class="hamburger">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
             </div>
         </div>
     </nav>
+    <br>
 
-    <main class="container produto-container">
-        <div class="produto-content">
-            <!-- Seção de Imagem do Produto -->
-            <div class="produto-imagem">
-                <div class="imagem-principal">
-                    <?php if ($info_desconto['ativo']): ?>
-                        <div class="badge-desconto-lg">-<?php echo $info_desconto['porcentagem']; ?>%</div>
-                    <?php endif; ?>
-                    <img src="<?php echo $imagePath; ?>" alt="<?php echo htmlspecialchars($anuncio['produto']); ?>">
-                </div>
-                
-                <!-- Botão de Favoritar -->
-                <?php if ($is_favorito && $favorito_id): ?>
-                    <a href="remover_favorito.php?favorito_id=<?php echo $favorito_id; ?>&redirect=proposta_nova.php?anuncio_id=<?php echo $anuncio_id; ?>" 
-                       class="btn-favoritar favoritado">
-                        <i class="fas fa-heart"></i>
-                        <span>Favoritado</span>
-                    </a>
-                <?php else: ?>
-                    <a href="adicionar_favorito.php?produto_id=<?php echo $anuncio_id; ?>&redirect=proposta_nova.php?anuncio_id=<?php echo $anuncio_id; ?>" 
-                       class="btn-favoritar">
-                        <i class="far fa-heart"></i>
-                        <span>Favoritar</span>
-                    </a>
-                <?php endif; ?>
-
-                <!-- Botão de Compartilhar -->
-                <button class="btn-compartilhar" id="btn-compartilhar">
-                    <i class="fas fa-share-alt"></i>
-                    <span>Compartilhar</span>
-                </button>
-            </div>
-
-            <!-- Formulário de Compra -->
-            <div class="compra-section">
-                <!-- Seção de Informações do Produto -->
-                <div class="produto-info">
-                    <div class="info-header">
-                        <h1><?php echo htmlspecialchars($anuncio['produto']); ?></h1>
-                        <div class="vendedor-info">
-                            <span class="vendedor-label">Vendido por:</span>
-                            <a href="../perfil_vendedor.php?vendedor_id=<?php echo $anuncio['vendedor_usuario_id']; ?>" class="vendedor-nome">
-                                <?php echo htmlspecialchars($anuncio['nome_vendedor']); ?>
-                                <i class="fas fa-external-link-alt"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="preco-section preco-dinamico">
-                        <div class="preco-wrapper">
-                            <span class="unidade">por <?php echo $unidade; ?></span>
-                            <?php if ($info_desconto['ativo']): ?>
-                                <span class="preco-antigo">R$ <?php echo number_format($info_desconto['preco_original'], 2, ',', '.'); ?></span>
-                                <span class="preco-atual destaque-oferta" id="preco-atual">R$ <?php echo $preco_display; ?></span>
-                            <?php else: ?>
-                                <span class="preco-atual" id="preco-atual">R$ <?php echo $preco_display; ?></span>
-                            <?php endif; ?>
-                        </div>
-                        
-                        <!-- Aqui mostraremos o valor unitário e total -->
-                        <div class="valor-unitario" id="valor-unitario">
-                            Preço unitário: R$ <?php echo $preco_display; ?>
-                        </div>
-                        <div class="valor-total-label" id="valor-total-label">
-                            Total: <span id="valor-total">R$ <?php echo $preco_display; ?></span>
-                        </div>
+    <main class="main-content">
+        <div class="produto-container">
+            <div class="produto-content">
+                <!-- Seção de Imagem do Produto -->
+                <div class="produto-imagem">
+                    <div class="imagem-principal">
+                        <?php if ($info_desconto['ativo']): ?>
+                            <div class="badge-desconto">-<?php echo $info_desconto['porcentagem']; ?>%</div>
+                        <?php endif; ?>
+                        <img src="<?php echo $imagePath; ?>" alt="<?php echo htmlspecialchars($anuncio['produto']); ?>">
                     </div>
                     
-                    <div class="estoque-info">
-                        <i class="fas fa-box"></i>
-                        <span><?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?> <?php echo $unidade; ?> disponíveis</span>
-                    </div>
+                    <div class="produto-actions">
+                        <?php if ($is_favorito && $favorito_id): ?>
+                            <a href="remover_favorito.php?favorito_id=<?php echo $favorito_id; ?>&redirect=proposta_nova.php?anuncio_id=<?php echo $anuncio_id; ?>" 
+                               class="btn-action favoritado">
+                                <i class="fas fa-heart"></i>
+                                <span>Remover dos Favoritos</span>
+                            </a>
+                        <?php else: ?>
+                            <a href="adicionar_favorito.php?produto_id=<?php echo $anuncio_id; ?>&redirect=proposta_nova.php?anuncio_id=<?php echo $anuncio_id; ?>" 
+                               class="btn-action">
+                                <i class="far fa-heart"></i>
+                                <span>Adicionar aos Favoritos</span>
+                            </a>
+                        <?php endif; ?>
 
-                    <div class="quantidade-selector">
-                        <label for="quantidade">Quantidade:</label>
-                        <div class="quantidade-control">
-                            <button type="button" class="qty-btn" id="decrease-qty">-</button>
-                            <input type="number" id="quantidade" name="quantidade" value="1" min="1" max="<?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?>">
-                            <button type="button" class="qty-btn" id="increase-qty">+</button>
-                        </div>
-                        <span class="unidade-info"><?php echo $unidade; ?></span>
-                    </div>
-
-                    <div class="botoes-compra">
-                        <button type="button" class="btn-comprar" id="btn-comprar">
-                            <i class="fas fa-shopping-cart"></i>
-                            Comprar Agora
+                        <button class="btn-action" id="btn-compartilhar">
+                            <i class="fas fa-share-alt"></i>
+                            <span>Compartilhar</span>
                         </button>
-                        
-                        <div class="proposta-option">
-                            <p class="proposta-text">Algo não te agradou?</p>
-                            <button type="button" class="btn-proposta" id="btn-fazer-proposta">
-                                <i class="fas fa-handshake"></i>
-                                Fazer Proposta
-                            </button>
-                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Descrição do Produto (Abaixo da seção principal) -->
-        <?php if ($anuncio['descricao']): ?>
-        <div class="descricao-completa">
-            <div class="descricao-header">
-                <h3><i class="fas fa-file-alt"></i> Descrição do Produto</h3>
-            </div>
-            <div class="descricao-content">
-                <p><?php echo nl2br(htmlspecialchars($anuncio['descricao'])); ?></p>
-            </div>
-        </div>
-        <?php endif; ?>
-
-        <!-- Seção de Produtos que Podem te Interessar -->
-        <?php if (!empty($produtos_relacionados)): ?>
-        <div class="produtos-relacionados">
-            <div class="relacionados-header">
-                <h3><i class="fas fa-star"></i> Outros anúncios</h3>
-                <p>Descobrir outros produtos disponíveis:</p>
-            </div>
-            <div class="relacionados-grid">
-                <?php foreach ($produtos_relacionados as $produto): 
-                    $desc_rel = calcularDesconto($produto['preco'], $produto['preco_desconto'], $produto['desconto_data_fim']);
-                    $imagem_produto = $produto['imagem_url'] ? htmlspecialchars($produto['imagem_url']) : '../../img/placeholder.png';
-                ?>
-                    <div class="produto-card <?php echo $desc_rel['ativo'] ? 'card-oferta' : ''; ?>">
-                        <a href="proposta_nova.php?anuncio_id=<?php echo $produto['id']; ?>" class="produto-link">
-                            <div class="produto-imagem-card">
-                                <?php if ($desc_rel['ativo']): ?>
-                                    <div class="badge-desconto-sm">-<?php echo $desc_rel['porcentagem']; ?>%</div>
-                                <?php endif; ?>
-                                <img src="<?php echo $imagem_produto; ?>" alt="<?php echo htmlspecialchars($produto['nome']); ?>">
+                <!-- Formulário de Compra -->
+                <div class="compra-section">
+                    <div class="produto-info">
+                        <div class="info-header">
+                            <h2><?php echo htmlspecialchars($anuncio['produto']); ?></h2>
+                            <div class="vendedor-info">
+                                <span class="vendedor-label">Vendido por:</span>
+                                <a href="../perfil_vendedor.php?vendedor_id=<?php echo $anuncio['vendedor_usuario_id']; ?>" class="vendedor-nome">
+                                    <?php echo htmlspecialchars($anuncio['nome_vendedor']); ?>
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
                             </div>
-                            <div class="produto-info-card">
-                                <h4><?php echo htmlspecialchars($produto['nome']); ?></h4>
-                                <p class="vendedor-card">por <?php echo htmlspecialchars($produto['nome_vendedor']); ?></p>
-                                <div class="preco-card">
-                                    <?php if ($desc_rel['ativo']): ?>
-                                        <div class="preco-container-sm">
-                                            <span class="preco-antigo-sm">R$ <?php echo number_format($desc_rel['preco_original'], 2, ',', '.'); ?></span>
-                                            <span class="preco destaque">R$ <?php echo number_format($desc_rel['preco_final'], 2, ',', '.'); ?></span>
-                                        </div>
-                                    <?php else: ?>
-                                        <span class="preco">R$ <?php echo number_format($desc_rel['preco_final'], 2, ',', '.'); ?></span>
-                                    <?php endif; ?>
-                                    <span class="unidade-card">/ <?php echo htmlspecialchars($produto['unidade_medida']); ?></span>
+                        </div>
+
+                        <div class="preco-section preco-dinamico">
+                            <?php if ($info_desconto['ativo']): ?>
+                                <div class="preco-container">
+                                    <span class="preco-antigo">R$ <?php echo number_format($info_desconto['preco_original'], 2, ',', '.'); ?></span>
+                                    <span class="preco destaque-oferta" id="preco-atual">R$ <?php echo $preco_display; ?></span>
+                                </div>
+                                <div class="economia-info">
+                                    <i class="fas fa-tag"></i> Economia de R$ <?php echo number_format($info_desconto['preco_original'] - $info_desconto['preco_final'], 2, ',', '.'); ?>
+                                </div>
+                            <?php else: ?>
+                                <span class="preco" id="preco-atual">R$ <?php echo $preco_display; ?></span>
+                            <?php endif; ?>
+                            
+                            <div class="unidade-info">
+                                <span class="unidade">por <?php echo $unidade; ?></span>
+                            </div>
+                            
+                            <div class="valor-info">
+                                <div class="valor-unitario" id="valor-unitario">
+                                    Preço unitário: R$ <?php echo $preco_display; ?>
+                                </div>
+                                <div class="valor-total-label" id="valor-total-label">
+                                    Total: <span id="valor-total">R$ <?php echo $preco_display; ?></span>
                                 </div>
                             </div>
-                        </a>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-        <?php endif; ?>
-
-        <!-- Formulário de Proposta (Inicialmente Oculto) -->
-        <div class="proposta-section" id="proposta-section">
-            <div class="proposta-header">
-                <h2><i class="fas fa-handshake"></i> Fazer Proposta</h2>
-                <p>Negocie diretamente com o vendedor</p>
-            </div>
-
-            <form action="processar_proposta.php" method="POST" class="proposta-form">
-                <input type="hidden" name="produto_id" value="<?php echo $anuncio_id; ?>">
-                <input type="hidden" name="comprador_id" value="<?php echo $comprador_id; ?>">
-                <input type="hidden" name="usuario_tipo" value="<?php echo $usuario_tipo; ?>">
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="preco_proposto">
-                            <i class="fas fa-tag"></i>
-                            Seu Preço Proposto
-                            <span class="unit">(por <?php echo $unidade; ?>)</span>
-                        </label>
-                        <div class="input-with-symbol">
-                            <span class="currency-symbol">R$</span>
-                            <!-- Valor inicial será calculado pelo JavaScript -->
-                            <input type="number" id="preco_proposto" name="preco_proposto" 
-                                   step="0.01" min="0.01" required
-                                   value="<?php echo number_format($info_desconto['preco_final'], 2, '.', ''); ?>"
-                                   placeholder="0.00">
                         </div>
-                        <small>Digite o valor que você deseja pagar por <?php echo $unidade; ?></small>
-                        <div class="proposta-info">
-                            <small>Preço unitário atual: <span id="preco-unitario-info">R$ <?php echo $preco_display; ?></span></small><br>
-                            <small>Quantidade: <span id="quantidade-info">1</span> <?php echo $unidade; ?></small>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="quantidade_proposta">
+                        
+                        <div class="estoque-info">
                             <i class="fas fa-box"></i>
-                            Quantidade Desejada
-                            <span class="unit">(em <?php echo $unidade; ?>)</span>
-                        </label>
-                        <input type="number" id="quantidade_proposta" name="quantidade_proposta" 
-                               min="1" max="<?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?>" 
-                               required value="1">
-                        <small>Máximo disponível: <?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?> <?php echo $unidade; ?></small>
+                            <span><?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?> <?php echo $unidade; ?> disponíveis</span>
+                        </div>
+
+                        <div class="quantidade-selector">
+                            <label for="quantidade">Quantidade:</label>
+                            <div class="quantidade-control">
+                                <button type="button" class="qty-btn" id="decrease-qty">-</button>
+                                <input type="number" id="quantidade" name="quantidade" value="1" min="1" max="<?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?>">
+                                <button type="button" class="qty-btn" id="increase-qty">+</button>
+                            </div>
+                            <span class="unidade-info"><?php echo $unidade; ?></span>
+                        </div>
+
+                        <div class="botoes-compra">
+                            <button type="button" class="btn-comprar" id="btn-comprar">
+                                <i class="fas fa-shopping-cart"></i>
+                                Comprar Agora
+                            </button>
+                            
+                            <div class="proposta-option">
+                                <button type="button" class="btn-proposta" id="btn-fazer-proposta">
+                                    <i class="fas fa-handshake"></i>
+                                    Fazer Proposta
+                                </button>
+                                <p class="proposta-text">Negocie diretamente com o vendedor</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="form-group full-width">
-                    <label for="condicoes">
-                        <i class="fas fa-file-alt"></i>
-                        Condições/Detalhes da Proposta ou Frete
-                        <span class="optional">(Opcional)</span>
-                    </label>
-                    <textarea id="condicoes" name="condicoes" rows="4" 
-                              placeholder="Adicione aqui detalhes para a negociação..."></textarea>
+            <!-- Descrição do Produto -->
+            <?php if ($anuncio['descricao']): ?>
+            <div class="descricao-completa">
+                <div class="descricao-header">
+                    <h3><i class="fas fa-file-alt"></i> Descrição do Produto</h3>
+                </div>
+                <div class="descricao-content">
+                    <p><?php echo nl2br(htmlspecialchars($anuncio['descricao'])); ?></p>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- Formulário de Proposta -->
+            <div class="proposta-section" id="proposta-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-handshake"></i> Fazer Proposta</h3>
+                    <p>Preencha os detalhes da sua proposta</p>
                 </div>
 
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i>
-                        Enviar Proposta
-                    </button>
-                    <button type="button" class="btn btn-secondary" id="btn-cancelar-proposta">
-                        <i class="fas fa-times"></i>
-                        Cancelar
-                    </button>
+                <form action="processar_proposta.php" method="POST" class="proposta-form">
+                    <input type="hidden" name="produto_id" value="<?php echo $anuncio_id; ?>">
+                    <input type="hidden" name="comprador_id" value="<?php echo $comprador_id; ?>">
+                    <input type="hidden" name="usuario_tipo" value="<?php echo $usuario_tipo; ?>">
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="preco_proposto">
+                                <i class="fas fa-tag"></i>
+                                Preço Proposto (por <?php echo $unidade; ?>)
+                            </label>
+                            <div class="input-with-symbol">
+                                <span class="currency-symbol">R$</span>
+                                <input type="number" id="preco_proposto" name="preco_proposto" 
+                                       step="0.01" min="0.01" required
+                                       value="<?php echo number_format($info_desconto['preco_final'], 2, '.', ''); ?>"
+                                       placeholder="0.00">
+                            </div>
+                            <small>Preço atual: R$ <?php echo $preco_display; ?> por <?php echo $unidade; ?></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="quantidade_proposta">
+                                <i class="fas fa-box"></i>
+                                Quantidade (<?php echo $unidade; ?>)
+                            </label>
+                            <input type="number" id="quantidade_proposta" name="quantidade_proposta" 
+                                   min="1" max="<?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?>" 
+                                   required value="1">
+                            <small>Máximo: <?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?> <?php echo $unidade; ?></small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="condicoes">
+                            <i class="fas fa-file-alt"></i>
+                            Condições/Detalhes (Opcional)
+                        </label>
+                        <textarea id="condicoes" name="condicoes" rows="4" 
+                                  placeholder="Adicione detalhes para a negociação, como condições de entrega, pagamento, etc..."></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                            Enviar Proposta
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="btn-cancelar-proposta">
+                            <i class="fas fa-times"></i>
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Produtos Relacionados -->
+            <?php if (!empty($produtos_relacionados)): ?>
+            <div class="produtos-relacionados">
+                <div class="section-header">
+                    <h3><i class="fas fa-star"></i> Outros Anúncios</h3>
+                    <p>Produtos que podem te interessar</p>
                 </div>
-            </form>
+                <div class="anuncios-grid">
+                    <?php foreach ($produtos_relacionados as $produto): 
+                        $desc_rel = calcularDesconto($produto['preco'], $produto['preco_desconto'], $produto['desconto_data_fim']);
+                        $imagem_produto = $produto['imagem_url'] ? htmlspecialchars($produto['imagem_url']) : '../../img/placeholder.png';
+                    ?>
+                        <div class="anuncio-card <?php echo $desc_rel['ativo'] ? 'card-desconto' : ''; ?>">
+                            <a href="proposta_nova.php?anuncio_id=<?php echo $produto['id']; ?>" class="produto-link">
+                                <div class="card-image">
+                                    <?php if ($desc_rel['ativo']): ?>
+                                        <div class="badge-desconto">-<?php echo $desc_rel['porcentagem']; ?>%</div>
+                                    <?php endif; ?>
+                                    <img src="<?php echo $imagem_produto; ?>" alt="<?php echo htmlspecialchars($produto['nome']); ?>">
+                                </div>
+                                <div class="card-content">
+                                    <div class="card-header">
+                                        <h3><?php echo htmlspecialchars($produto['nome']); ?></h3>
+                                        <span class="vendedor">por <?php echo htmlspecialchars($produto['nome_vendedor']); ?></span>
+                                    </div>
+                                    
+                                    <div class="card-body">
+                                        <div class="price-container">
+                                            <?php if ($desc_rel['ativo']): ?>
+                                                <div class="preco-original">R$ <?php echo number_format($desc_rel['preco_original'], 2, ',', '.'); ?></div>
+                                                <div class="price price-desconto">
+                                                    R$ <?php echo number_format($desc_rel['preco_final'], 2, ',', '.'); ?>
+                                                    <span>/<?php echo htmlspecialchars($produto['unidade_medida']); ?></span>
+                                                </div>
+                                            <?php else: ?>
+                                                <p class="price">
+                                                    R$ <?php echo number_format($desc_rel['preco_final'], 2, ',', '.'); ?>
+                                                    <span>/<?php echo htmlspecialchars($produto['unidade_medida']); ?></span>
+                                                </p>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
     </main>
 
-    <!-- Footer -->
     <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-content">
@@ -639,8 +635,6 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
         const valorUnitarioElement = document.getElementById('valor-unitario');
         const valorTotalLabel = document.getElementById('valor-total-label');
         const precoPropostoInput = document.getElementById('preco_proposto');
-        const precoUnitarioInfo = document.getElementById('preco-unitario-info');
-        const quantidadeInfo = document.getElementById('quantidade-info');
         
         // Preço unitário do produto (com desconto se aplicável)
         const precoUnitario = <?php echo $preco_unitario; ?>;
@@ -683,10 +677,6 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                 
                 // Atualizar o valor unitário informativo
                 valorUnitarioElement.textContent = `Preço unitário: R$ ${valorUnitarioFormatado} por ${'<?php echo $unidade; ?>'}`;
-                
-                // Atualizar as informações na seção de proposta
-                precoUnitarioInfo.textContent = `R$ ${valorUnitarioFormatado}`;
-                quantidadeInfo.textContent = quantidade;
                 
                 // Atualizar o campo de preço proposto para o valor total
                 // IMPORTANTE: O campo preco_proposto é o preço POR UNIDADE, não o total

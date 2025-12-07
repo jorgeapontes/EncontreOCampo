@@ -154,8 +154,6 @@ function responderContraproposta(negociacaoId, acao) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minhas Propostas - Comprador</title>
-    <link rel="stylesheet" href="../../index.css"> 
-    <link rel="stylesheet" href="../css/comprador/comprador.css"> 
     <link rel="stylesheet" href="../css/comprador/minhas_propostas.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -164,32 +162,69 @@ function responderContraproposta(negociacaoId, acao) {
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <img src="../../img/logo-nova.png" alt="Logo">
-                <div>
-                    <h1>ENCONTRE</h1>
-                    <h2>O CAMPO</h2>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <img src="../../img/logo-nova.png" alt="Logo">
+                    <div>
+                        <h1>ENCONTRE</h1>
+                        <h2>O CAMPO</h2>
+                    </div>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="../../index.php" class="nav-link">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="dashboard.php" class="nav-link">Painel</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
+                    </li>
+                    <?php if (isset($_SESSION['usuario_id'])): ?>
+                    <li class="nav-item">
+                        <a href="../notificacoes.php" class="nav-link no-underline">
+                            <i class="fas fa-bell"></i>
+                            <?php
+                            // Contar notificações não lidas
+                            if (isset($_SESSION['usuario_id'])) {
+                                $database = new Database();
+                                $conn = $database->getConnection();
+                                $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
+                                $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
+                                $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
+                                $stmt_nao_lidas->execute();
+                                $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
+                                if ($total_nao_lidas > 0) {
+                                    echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
+                                }
+                            }
+                            ?>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    <li class="nav-item">
+                        <a href="../logout.php" class="nav-link exit-button no-underline">Sair</a>
+                    </li>
+                </ul>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
                 </div>
             </div>
-            <ul class="nav-menu">
-                <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>
-                <li class="nav-item"><a href="../anuncios.php" class="nav-link">Comprar</a></li>
-                <li class="nav-item"><a href="minhas_propostas.php" class="nav-link active">Minhas Propostas</a></li>
-                <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
-            </ul>
-            <div class="hamburger">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </div>
-        </div>
-    </nav>
+        </nav>
+    </header>
+    <br>
 
-    <main class="container propostas-container">
-        <h1>Minhas Propostas de Negociação</h1>
-        <p>Acompanhe o status das propostas que você enviou aos vendedores.</p>
+    <main class="main-content">
+        <section class="header">
+            <center>
+                <h1>Minhas Propostas de Negociação</h1>
+                <p>Acompanhe o status das propostas que você enviou aos vendedores.</p>
+            </center>
+        </section>
 
         <?php if ($mensagem_sucesso): ?>
             <div class="alert alert-success">
@@ -221,7 +256,7 @@ function responderContraproposta(negociacaoId, acao) {
                     // DEBUG no card (pode remover depois)
                     $debug_info = "N: {$status_negociacao}, C: {$status_comprador}";
                 ?>
-                    <div class="proposta-card">
+                    <div class="proposta-card <?php echo $status_info['class']; ?>">
                         <!-- DEBUG - remover depois -->
                         <div class="debug-info" style="display: none;">
                             <?php echo $debug_info; ?>
@@ -231,7 +266,7 @@ function responderContraproposta(negociacaoId, acao) {
                             <h3>
                                 Proposta para: <?php echo htmlspecialchars($proposta['produto_nome']); ?>
                             </h3>
-                            <span class="status-badge <?php echo $status_info['class']; ?>">
+                            <span class="status-badge <?php echo $status_info['class']."-btn"; ?>">
                                 <?php echo $status_info['text']; ?>
                             </span>
                         </div>
@@ -262,22 +297,22 @@ function responderContraproposta(negociacaoId, acao) {
 
                         <?php if ($tem_contraproposta): ?>
                             <div class="contraproposta-section">
-                                <strong>Contraproposta do Vendedor (Enviada em: <?php echo date('d/m/Y H:i', strtotime($proposta['data_contra_proposta'])); ?>):</strong>
+                                <strong id="contraproposta-title">Contraproposta do Vendedor (<?php echo date('d/m/Y H:i', strtotime($proposta['data_contra_proposta'])); ?>):</strong>
                                 <div class="contraproposta-content">
                                     <?php if (!empty($proposta['observacoes_vendedor'])): ?>
                                         <p><strong>Observações:</strong> <?php echo nl2br(htmlspecialchars($proposta['observacoes_vendedor'])); ?></p>
                                     <?php endif; ?>
                                     
                                     <?php if ($proposta['preco_vendedor']): ?>
-                                        <p><strong>Preço Proposto pelo Vendedor:</strong> R$ <?php echo number_format($proposta['preco_vendedor'], 2, ',', '.'); ?> / <?php echo htmlspecialchars($proposta['unidade_medida']); ?></p>
+                                        <p><strong>Preço Proposto pelo Vendedor:</strong> <span>R$ <?php echo number_format($proposta['preco_vendedor'], 2, ',', '.'); ?> / <?php echo htmlspecialchars($proposta['unidade_medida']); ?></span></p>
                                     <?php endif; ?>
                                     
                                     <?php if ($proposta['quantidade_vendedor']): ?>
-                                        <p><strong>Quantidade Proposta:</strong> <?php echo $proposta['quantidade_vendedor']; ?> <?php echo htmlspecialchars($proposta['unidade_medida']); ?></p>
+                                        <p><strong>Quantidade Proposta:</strong><span> <?php echo $proposta['quantidade_vendedor']; ?> <?php echo htmlspecialchars($proposta['unidade_medida']); ?></span></p>
                                     <?php endif; ?>
                                     
                                     <?php if (!empty($proposta['condicoes_vendedor'])): ?>
-                                        <p><strong>Condições do Vendedor:</strong> <?php echo nl2br(htmlspecialchars($proposta['condicoes_vendedor'])); ?></p>
+                                        <p><strong>Condições do Vendedor:</strong><span> <?php echo nl2br(htmlspecialchars($proposta['condicoes_vendedor'])); ?></span></p>
                                     <?php endif; ?>
                                 </div>
                                 </div>

@@ -1,4 +1,31 @@
-/* --- Navbar --- */
+/* src/vendedor/dashboard.css */
+:root {
+    --primary-color: #4CAF50; /* Verde Principal */
+    --primary-dark: #388E3C;
+    --primary-light: #C8E6C9;
+    --secondary-color: #6167ea;
+    --dark-color: #2E7D32; /* Verde Escuro */
+    --light-color: #F1F8E9;
+    --text-color: #212121;
+    --white: #FFFFFF;
+    --gray: #F5F5F5;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Montserrat", sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--gray);
+    min-height: 100vh;
+}
+
+/* --- Nova Navbar (estilo do index.php) --- */
 .navbar {
     background-color: var(--white);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -106,6 +133,7 @@
     color: var(--white);
 }
 
+/* Remover sublinhado do botão login */
 .nav-link.no-underline::after {
     display: none;
 }
@@ -124,105 +152,345 @@
     transition: all 0.3s ease;
 }
 
-/* Estilos da Listagem de Propostas */
-.propostas-container {
-    padding-top: 120px;
-    max-width: 1000px;
-    margin: 0 auto;
-}
-
-.proposta-card {
-    background-color: var(--white);
-    border: 1px solid #ddd;
-    border-radius: 8px;
+/* --- Conteúdo Principal --- */
+.main-content {
+    margin-top: 60px; /* Compensa a navbar fixa */
     padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-    display: flex;
-    flex-direction: column;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.proposta-header {
+/* --- Header --- */
+.header {
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    color: var(--dark-color);
+    font-family: "Zalando Sans SemiExpanded", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+}
+
+/* --- Cards de Informação --- */
+.info-cards {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.card {
+    display: auto;
+}
+
+.info-cards a:hover {
+    cursor: pointer;
+    transform: translate(0px, -10px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: 0.2s;
+}
+
+.info-cards a {
+    text-decoration: none;
+    background-color: var(--white);
+    padding: 20px 0px 10px 0px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    flex: 1;
+    text-align: center;
+    border-left: 5px solid var(--primary-color);
+    transition: 0.2s;
+}
+
+.card a {
+    text-decoration: none;
+    background-color: red;
+}
+
+.card i {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 0px;
+}
+
+.card h3 {
+    font-size: 1.1rem;
+    color: var(--text-color);
+    margin-bottom: 0px;
+    font-weight: 400;
+}
+
+.card p {
+    font-size: 2.2rem;
+    color: var(--dark-color);
+}
+
+/* --- Seção de Anúncios --- */
+.section-anuncios {
+    background-color: var(--white);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.section-anuncios h2 {
+    color: var(--dark-color);
+    padding-bottom: 10px;
+    display: inline-block;
+    font-weight: 400;
+}
+
+.section-anuncios.header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px dashed #eee;
-    padding-bottom: 15px;
-    margin-bottom: 15px;
 }
 
-.proposta-header h3 {
-    margin: 0;
+/* Tabela */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+}
+
+th {
+    background-color: var(--primary-light);
     color: var(--dark-color);
-    font-size: 1.5em;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;
 }
 
-.proposta-info {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+tr {
+    background-color: #fafafa;
+    border-radius: 0 0 10px 10px;
+    border-bottom: 1px solid #f0f0f0
 }
 
-.info-group p {
-    margin-bottom: 5px;
-    font-size: 0.95em;
+tr:last-child {
+    border: none;
 }
 
-.info-group p strong {
-    display: block;
-    font-weight: bold;
-    color: var(--text-color);
-    margin-bottom: 3px;
-    font-size: 1.05em;
+tr:last-child td:first-child {
+    border-radius: 0 0 0 10px;
 }
 
-.info-group p span {
-    color: var(--primary-color);
-    font-weight: 600;
+tr:last-child td:last-child {
+    border-radius: 0 0 10px 0;
+}
+
+th:first-child {
+    border-radius: 10px 0px 0 0;
+}
+
+th:last-child {
+    border-radius: 0px 10px 0 0;
 }
 
 /* Status Badges */
-.status-badge {
+.status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
     font-weight: bold;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.9em;
-    text-transform: uppercase;
+    display: inline-block;
 }
 
-.status-pending {
-    background-color: #FFF3E0;
-    color: #FF9800;
-    border: 1px solid #FF9800;
+.status.ativo {
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
 }
 
-.status-accepted {
-    background-color: #E8F5E9;
-    color: #4CAF50;
-    border: 1px solid #4CAF50;
+/* Botões de Ação */
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-right: 8px;
+    transition: color 0.2s;
 }
 
-.status-rejected {
-    background-color: #FFEBEE;
-    color: #F44336;
-    border: 1px solid #F44336;
+.action-btn.edit {
+    color: var(--secondary-color);
 }
 
-.status-negotiation {
-    background-color: #E3F2FD;
-    color: #2196F3;
-    border: 1px solid #2196F3;
+.action-btn.delete {
+    color: #f44336;
 }
 
-/* Status Enviada (Azul) - Quando comprador enviou e aguarda resposta */
-.status-negotiation {
-    background-color: #E3F2FD;
-    color: #2196F3;
-    border: 1px solid #2196F3;
+.action-btn:hover {
+    filter: brightness(90%);
 }
 
-/* Alertas */
-.alert {
+/* Botão CTA (Novo Anúncio) */
+.cta-button {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+    margin-bottom: 20px;
+    float: right;
+    margin-left: 10px;
+}
+
+.cta-button .fas {
+    font-size: 0.8rem;
+}
+
+.cta-button:hover {
+    background-color: var(--primary-dark);
+}
+
+.cta-button i {
+    margin-right: 8px;
+}
+
+@media (max-width: 576px) {
+    .section-perfil {
+        padding: 15px;
+    }
+    
+    .section-perfil h2 {
+        font-size: 1.3rem;
+    }
+    
+    .perfil-form h3 {
+        font-size: 1.1rem;
+    }
+}
+/* --- Seção de Formulário (Para anuncio_editar.php e similares) --- */
+.form-section {
+    background-color: var(--white);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+}
+
+.form-section h2 {
+    color: var(--dark-color);
+    border-bottom: 2px solid var(--primary-light);
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+    display: inline-block;
+    font-size: 1.5rem;
+}
+
+.form-section h3 {
+    color: var(--dark-color);
+    margin: 25px 0 15px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--primary-light);
+    font-size: 1.3rem;
+}
+
+/* Formulário de anúncio */
+.anuncio-form {
+    display: grid;
+    gap: 20px;
+}
+
+.anuncio-form .form-group {
+    margin-bottom: 20px;
+}
+
+.anuncio-form .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.anuncio-form .form-group label.required::after {
+    content: " *";
+    color: #e53935;
+}
+
+.anuncio-form .form-group input[type="text"],
+.anuncio-form .form-group input[type="number"],
+.anuncio-form .form-group input[type="file"],
+.anuncio-form .form-group select,
+.anuncio-form .form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    font-family: inherit;
+}
+
+.anuncio-form .form-group input:focus,
+.anuncio-form .form-group select:focus,
+.anuncio-form .form-group textarea:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.anuncio-form .form-group input:disabled,
+.anuncio-form .form-group select:disabled {
+    background-color: var(--gray);
+    color: #666;
+    cursor: not-allowed;
+}
+
+.anuncio-form .form-row {
+    display: flex;
+    gap: 20px;
+}
+
+.anuncio-form .form-row .form-group {
+    flex: 1;
+}
+
+.anuncio-form textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.anuncio-form img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    border: 1px solid var(--gray);
+}
+
+/* Link de voltar */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 20px;
+    transition: color 0.3s;
+}
+
+.back-link:hover {
+    color: var(--primary-dark);
+}
+
+.back-link i {
+    margin-right: 8px;
+}
+
+/* Alertas no formulário */
+.form-section .alert {
     padding: 15px;
     margin-bottom: 20px;
     border-radius: 5px;
@@ -231,210 +499,85 @@
     align-items: center;
 }
 
-.alert-success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.alert-error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-.alert i {
+.form-section .alert i {
     margin-right: 10px;
-    font-size: 1.2em;
 }
 
-/* Empty State */
-.empty-state {
-    text-align: center;
-    padding: 50px;
-    background-color: var(--white);
-    border-radius: 8px;
-    border: 1px dashed #ccc;
-    margin-top: 30px;
+.form-section .success-alert {
+    background-color: #e8f5e9;
+    color: #388e3c;
+    border: 1px solid #c8e6c9;
 }
 
-.empty-state h3 {
-    color: var(--text-light);
+.form-section .error-alert {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
 }
 
-/* Seções de condições e contraproposta */
-.condicoes-section {
-    margin-top: 15px;
-    padding-top: 10px;
-    border-top: 1px solid #f0f0f0;
-}
-
-.condicoes-texto {
-    font-style: italic;
-    color: var(--text-light);
-    display: block;
-    margin-top: 5px;
-}
-
-.contraproposta-section {
-    margin-top: 15px;
-    padding: 15px;
-    background-color: #f8f9fa;
-    border-radius: 5px;
-    border-left: 4px solid #2196F3;
-}
-
-.contraproposta-content {
-    margin: 10px 0;
-    padding: 10px;
-    background-color: white;
-    border-radius: 3px;
-    border: 1px solid #e0e0e0;
-}
-
-.contraproposta-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-    flex-wrap: wrap;
-}
-
-/* BOTÕES - ESTILOS CORRIGIDOS */
-.btn {
-    text-decoration: none;
-    padding: 10px 15px;
-    border-radius: 4px;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    font-weight: 500;
-}
-
-/* Botão Editar (Laranja) */
-.btn-edit {
-    background-color: #FF9800 !important;
-    color: white !important;
-}
-
-.btn-edit:hover {
-    background-color: #e68900 !important;
-    transform: translateY(-2px);
-}
-
-/* Botão Excluir (Vermelho) */
-.btn-delete {
-    background-color: #dc3545 !important;
-    color: white !important;
-}
-
-.btn-delete:hover {
-    background-color: #c82333 !important;
-    transform: translateY(-2px);
-}
-
-/* Botão Sucesso (Verde) */
-.btn-success {
-    background-color: #4CAF50 !important;
-    color: white !important;
-}
-
-.btn-success:hover {
-    background-color: #45a049 !important;
-    transform: translateY(-2px);
-}
-
-/* Botão Secundário (Azul) */
-.btn-secondary {
-    background-color: #2196F3 !important;
-    color: white !important;
-}
-
-.btn-secondary:hover {
-    background-color: #1976D2 !important;
-    transform: translateY(-2px);
-}
-
-/* Container dos botões principais */
-.proposta-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid #f0f0f0;
-}
-
-/* Container dos botões de contraproposta */
-.contraproposta-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-    flex-wrap: wrap;
-}
-
-/* Estilos para formulários (editar_proposta.php) */
-.proposta-form {
-    margin-top: 20px;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 600;
-    color: var(--text-color);
-}
-
-.form-group input,
-.form-group textarea {
+/* Botão específico do formulário */
+.anuncio-form .big-button {
+    font-size: 1.1rem;
+    padding: 15px 30px;
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-    transition: border-color 0.3s;
-}
-
-.form-group input:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: var(--primary-color);
-}
-
-.form-actions {
+    margin-top: 20px;
+    justify-content: center;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 5px;
+    color: var(--white);
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
     display: flex;
+    align-items: center;
     gap: 10px;
-    justify-content: flex-end;
+}
+
+.anuncio-form .big-button:hover {
+    background-color: var(--primary-dark);
+}
+
+/* Responsividade para a seção de formulário */
+@media (max-width: 768px) {
+    .form-section {
+        padding: 20px;
+    }
+    
+    .anuncio-form .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .form-section h2 {
+        font-size: 1.3rem;
+    }
+    
+    .form-section h3 {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .form-section {
+        padding: 15px;
+    }
+}
+/* Estado Vazio */
+.empty-state {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-color);
+    border: 1px dashed var(--primary-light);
+    border-radius: 5px;
     margin-top: 20px;
 }
 
-/* Garantir que os botões de contraproposta sejam sempre visíveis */
-.contraproposta-actions {
-    display: flex !important;
-    gap: 10px;
-    margin-top: 15px;
-    flex-wrap: wrap;
-}
-
-/* Estilo para debug - remover depois */
-.debug-info {
-    background: #f8f9fa;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 4px;
-    font-size: 12px;
-    color: #666;
-}
-
-.debug-info strong {
-    color: #333;
+/* --- Media Queries (Responsividade) --- */
+@media (max-width: 900px) {
+    .info-cards {
+        flex-direction: column;
+    }
 }
 
 @media (max-width: 768px) {
@@ -458,7 +601,6 @@
         position: fixed;
         left: -100%;
         top: 70px;
-        margin-top: 20px;
         gap: 0;
         flex-direction: column;
         background-color: var(--white);
@@ -476,35 +618,356 @@
     .nav-item {
         margin: 16px 0;
     }
-
-    .nav-menu .exit-button {
-        width: 80%; /* ou um valor fixo em pixels, ex: 200px */
-        max-width: 200px;
-        margin: 10px auto; /* centralizar */
-        text-align: center;
-        display: block;
-        padding: 10px 20px;
+    
+    .nav-link.login-button {
+        margin-left: 0;
     }
+    
+    
+    .cta-button {
+        float: none;
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    
+    .section-anuncios h2 {
+        display: block;
+        width: 100%;
+    }
+}
 
+@media (max-width: 576px) {
+    .main-content {
+        padding: 15px;
+    }
+    
+    .card {
+        text-align: left;
+    }
+    
+    .card p {
+        display: inline-block;
+        margin-left: 10px;
+    }
+}
+
+.propostas-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1%;
+    justify-content: flex-start; 
+}
+
+.proposta-card {
+    background-color: var(--white);
+    border-left: 5px solid var(--secondary-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    flex-basis: 49.5%;
+}
+
+.proposta-card.status-accepted { border-left-color: var(--primary-color); }
+.proposta-card.status-rejected { border-left-color: #E53935; }
+.proposta-card.status-negotiation { border-left-color: #2196F3; }
+.proposta-card.status-pending { border-left-color: #FF9800; }
+
+.proposta-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+.proposta-header h3 {
+    margin: 0;
+    font-size: 1.5em;
+    font-weight: 600;
+}
+
+.proposta-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.info-group p {
+    margin-bottom: 5px;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+.info-group p strong {
+    display: block;
+    font-weight: 400;
+    color: var(--text-color);
+    margin-bottom: -5px;
+    font-size: 1.1em;
+}
+
+.info-group p span {
+    font-weight: 600;
+}
+
+/* Status Badges */
+.status-badge {
+    font-weight: 600;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    text-transform: uppercase;
+}
+
+.condicoes-section {
+    font-weight: 600;
+}
+
+#contraproposta-title {
+    margin-left: 0;
+    margin-bottom: 10px;
+}
+
+.contraproposta-section span {
+    margin-left: 20px;
+    font-weight: 600;
+}
+
+.contraproposta-section strong {
+    margin-left: 20px;
+    display: block;
+    font-weight: 400;
+    color: var(--text-color);
+    margin-bottom: -5px;
+    font-size: 1.1em;
+}
+
+.condicoes-section strong {
+    color: var(--text-color);
+    display: block;
+    font-weight: 400;
+    color: var(--text-color);
+    margin-bottom: -5px;
+    font-size: 1.1em;
+}
+
+.status-pending { color: #FF9800; border-left: 8px solid #FF9800; }
+.status-accepted { color: #4CAF50; border-left: 8px solid #4CAF50; }
+.status-rejected { color: #F44336; border-left: 8px solid #F44336; }
+.status-negotiation { color: #2196F3; border-left: 8px solid #2196F3; }
+
+.status-pending-btn { color: #FF9800; }
+.status-accepted-btn { color: #4CAF50; }
+.status-rejected-btn { color: #F44336; }
+.status-negotiation-btn { color: #2196F3; }
+
+.proposta-actions {
+    text-align: right;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.btn-action {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 400;
+    transition: background-color 0.3s;
+    margin-left: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-action i {
+    font-size: 0.8rem;
+    margin-right: 3px;
+}
+
+.btn-action.status-pending { background-color: #FF9800; border: none; }
+.btn-action.status-accepted { background-color: #4CAF50; border: none; }
+.btn-action.status-rejected { background-color: #F44336; border: none; }
+.btn-action.status-negotiation { background-color: #2196F3; border: none; }
+
+.btn-action.status-pending:hover { background-color: #d68100; }
+.btn-action.status-accepted:hover { background-color: #409242; }
+.btn-action.status-rejected:hover { background-color: #d0392e; }
+.btn-action.status-negotiation:hover { background-color: #1b7bc9; }
+
+.empty-state {
+    text-align: center;
+    padding: 50px;
+    background-color: var(--white);
+    border-radius: 8px;
+    border: 1px dashed #ccc;
+    margin-top: 30px;
+}
+
+@media (max-width: 768px) {
     .proposta-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
     }
-    
     .proposta-info {
         grid-template-columns: 1fr;
     }
-    
-    .contraproposta-actions,
-    .proposta-actions,
-    .form-actions {
-        flex-direction: column;
-    }
-    
-    .btn {
-        justify-content: center;
+    .proposta-actions {
         text-align: center;
-        width: 100%;
     }
+    .btn-action {
+        display: block;
+        width: 100%;
+        margin: 5px 0 0;
+    }
+}
+
+.contrapropostas-container {
+    padding-top: 120px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.contraproposta-card {
+    background-color: var(--white);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.contra-info-group p strong {
+    display: block;
+    font-weight: bold;
+    color: var(--text-color);
+    margin-bottom: 3px;
+    font-size: 1.05em;
+}
+
+.contraproposta-form {
+    margin-top: 20px;
+    padding: 30px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: var(--white);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.contraproposta-form textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+.contraproposta-form input[type="number"],
+        .contraproposta-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-sizing: border-box; 
+        }
+
+        .contraproposta-form input[type="number"]:focus,
+        .contraproposta-form textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+            outline: none;
+        }
+
+.contraproposta-form-group {
+    margin-bottom: 15px;
+}
+
+.contraproposta-form-group small {
+            display: block;
+            margin-top: 5px;
+            color: var(--text-light);
+            font-size: 0.9em;
+        }
+
+.contraproposta-form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.contraproposta-form-group input,
+.contraproposta-form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+    font-family: inherit;
+}
+
+.contraproposta-form-group input:focus,
+.contraproposta-form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.contraproposta-form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.btn-atualizar-contraproposta {
+    background-color: #4CAF50 !important;
+    color: white !important;
+    text-decoration: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.btn-atualizar-contraproposta:hover{
+    background-color: #45a049 !important;
+    transform: translateY(-2px);
+}
+
+.btn-cancelar{
+    background-color: #2196F3 !important;
+    color: white !important;
+    text-decoration: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.btn-cancelar:hover{
+    background-color: #1976D2 !important;
+    transform: translateY(-2px);
 }

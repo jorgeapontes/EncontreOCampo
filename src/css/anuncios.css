@@ -264,7 +264,6 @@ body {
 
 .btn-clear-search {
     text-decoration: none;
-    background: var(--primary-color);
     border: none;
     border-radius: 10px;
     width: 40px;
@@ -272,14 +271,14 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--white);
+    color: var(--text-color);
     cursor: pointer;
     transition: all 0.3s ease;
     margin-left: 5px;
 }
 
 .btn-clear-search:hover {
-    background: var(--primary-dark);
+    background: lightgray;
 }
 
 /* Filtros */

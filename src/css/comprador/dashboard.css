@@ -750,6 +750,10 @@ th:last-child {
     transition: 0.2s;
 }
 
+.acoes-rapidas a:hover {
+    transform: translateY(-5px);
+}
+
 .acoes-rapidas a i {
     color: #d1a21f;
     margin-right: 5px;

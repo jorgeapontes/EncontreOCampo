@@ -310,6 +310,21 @@ th:last-child {
     color: var(--primary-dark);
 }
 
+.status.inativo {
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+}
+
+.status.pendente {
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+}
+
+.status.esgotado {
+    background-color: #ff9e9e;
+    color: #ab0000;
+}
+
 /* Botões de Ação */
 .action-btn {
     background: none;

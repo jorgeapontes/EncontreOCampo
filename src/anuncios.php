@@ -153,14 +153,16 @@ try {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="../../index.php" class="nav-link">Home</a>
+                        <a href="../index.php" class="nav-link">Home</a>
                     </li>
-                    <li class="nav-item">
-                        <a href="<?= $_SESSION['usuario_tipo'] ?>/dashboard.php" class="nav-link">Painel</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="<?= $_SESSION['usuario_tipo'] ?>/perfil.php" class="nav-link">Meu Perfil</a>
-                    </li>
+                    <?php if (isset($_SESSION['usuario_id'])): ?>
+                        <li class="nav-item">
+                            <a href="<?= $_SESSION['usuario_tipo'] ?>/dashboard.php" class="nav-link">Painel</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="<?= $_SESSION['usuario_tipo'] ?>/perfil.php" class="nav-link">Meu Perfil</a>
+                        </li>
+                    <?php endif; ?>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
                         <a href="notificacoes.php" class="nav-link no-underline">
@@ -184,7 +186,11 @@ try {
                     </li>
                     <?php endif; ?>
                     <li class="nav-item">
-                        <a href="logout.php" class="nav-link exit-button no-underline">Sair</a>
+                        <?php if (isset($_SESSION['usuario_id'])): ?>
+                            <a href="logout.php" class="nav-link exit-button no-underline">Sair</a>
+                        <?php else: ?>
+                            <a href="login.php" class="nav-link login-button no-underline">Login</a>
+                        <?php endif; ?>
                     </li>
                 </ul>
                 <div class="hamburger">

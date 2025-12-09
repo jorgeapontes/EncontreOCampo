@@ -43,6 +43,30 @@ try {
     error_log("Erro ao contar propostas pendentes: " . $e->getMessage());
     $total_propostas_pendentes = 0;
 }
+
+// CONTADOR DE MENSAGENS NÃO LIDAS DO VENDEDOR
+$total_mensagens_nao_lidas = 0;
+try {
+    $query_mensagens = "SELECT COUNT(DISTINCT cm.conversa_id) as total_conversas_nao_lidas
+                        FROM chat_mensagens cm
+                        INNER JOIN chat_conversas cc ON cm.conversa_id = cc.id
+                        INNER JOIN produtos p ON cc.produto_id = p.id
+                        WHERE p.vendedor_id = :vendedor_id 
+                        AND cm.remetente_id != :usuario_id
+                        AND cm.lida = 0";
+                        
+    $stmt_mensagens = $db->prepare($query_mensagens);
+    $stmt_mensagens->bindParam(':vendedor_id', $vendedor['id'], PDO::PARAM_INT);
+    $stmt_mensagens->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
+    $stmt_mensagens->execute();
+    $resultado_msg = $stmt_mensagens->fetch(PDO::FETCH_ASSOC);
+    
+    $total_mensagens_nao_lidas = $resultado_msg['total_conversas_nao_lidas'] ?? 0;
+    
+} catch (PDOException $e) {
+    error_log("Erro ao contar mensagens não lidas: " . $e->getMessage());
+    $total_mensagens_nao_lidas = 0;
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -128,13 +152,13 @@ try {
                     <p><?php echo $total_anuncios; ?></p>
                 </div>
             </a>
-            <a href="propostas.php">
-                <div class="card">
-                    <i class="fas fa-handshake"></i>
-                    <h3>Propostas Pendentes</h3>
-                    <p><?php echo $total_propostas_pendentes; ?></p>
-                </div>
-            </a>
+            <a href="chats.php">
+    <div class="card">
+        <i class="fas fa-comments"></i>
+        <h3>Chats</h3>
+        <p><?php echo $total_mensagens_nao_lidas; ?> não lidas</p>
+    </div>
+</a>
             <a href="vendas.php">
                 <div class="card">
                     <i class="fas fa-dollar-sign"></i>

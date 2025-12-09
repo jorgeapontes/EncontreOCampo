@@ -266,6 +266,32 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
             margin-top: 5px;
             font-weight: 600;
         }
+
+        .btn-chat {
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+    color: white;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+}
+
+.btn-chat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+}
+
+.btn-chat i {
+    font-size: 20px;
+}
     </style>
 </head>
 <body>
@@ -421,13 +447,16 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                                 Comprar Agora
                             </button>
                             
-                            <div class="proposta-option">
-                                <button type="button" class="btn-proposta" id="btn-fazer-proposta">
-                                    <i class="fas fa-handshake"></i>
-                                    Fazer Proposta
-                                </button>
-                                <p class="proposta-text">Negocie diretamente com o vendedor</p>
-                            </div>
+                            <div class="botoes-compra">
+    
+    <div class="proposta-option">
+        <a href="../chat/chat.php?produto_id=<?php echo $anuncio_id; ?>" class="btn-chat">
+            <i class="fas fa-comments"></i>
+            Conversar com o Vendedor
+        </a>
+        <p class="proposta-text">Tire suas dúvidas diretamente com o vendedor</p>
+    </div>
+</div>
                         </div>
                     </div>
                 </div>

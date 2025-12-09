@@ -262,7 +262,7 @@ try {
                         <input type="text" id="plano" name="plano" 
                             value="<?php echo htmlspecialchars($comprador_data['plano'] ?? 'free'); ?>" 
                             disabled>
-                        <small>Para alterar seu plano, entre em contato com o suporte.</small>
+                        <small>Altere aqui seu plano.</small>
                     </div>
                     
                     <input type="hidden" name="usuario_id" value="<?php echo $usuario_id; ?>">

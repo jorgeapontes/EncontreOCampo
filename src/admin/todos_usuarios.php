@@ -30,19 +30,32 @@ if ($ordenar === "novo_velho") {
 }
 
 // Construção da Query Dinâmica
-$sql = "SELECT id, nome, email, tipo, status, data_criacao FROM usuarios WHERE 1=1";
+$sql = "SELECT u.id, u.nome, u.email, u.tipo, u.status, u.data_criacao 
+        FROM usuarios u 
+        WHERE (u.status = 'ativo' OR u.status = 'inativo')";
 $params = [];
 
 // Adiciona filtro de tipo se selecionado
 if (!empty($filtro_tipo) && $filtro_tipo !== "todos") {
-    $sql .= " AND tipo = :tipo";
+    $sql .= " AND u.tipo = :tipo";
     $params[':tipo'] = $filtro_tipo;
 }
 
-// Adiciona busca por nome ou email se houver pesquisa
+// Adiciona busca por nome, email ou CPF/CNPJ se houver pesquisa
 if (!empty(trim($termo_pesquisa))) {
-    $sql .= " AND (nome LIKE :pesquisa OR email LIKE :pesquisa)";
+    // Remove pontos, traços e barras para busca por CPF/CNPJ limpo
+    $termo_limpo = preg_replace('/[^0-9]/', '', trim($termo_pesquisa));
+    
+    $sql .= " AND (u.nome LIKE :pesquisa OR u.email LIKE :pesquisa";
+    
+    // Adiciona busca por CPF/CNPJ nas tabelas específicas
+    $sql .= " OR EXISTS (SELECT 1 FROM compradores c WHERE c.usuario_id = u.id AND c.cpf_cnpj LIKE :cpf_cnpj)";
+    $sql .= " OR EXISTS (SELECT 1 FROM vendedores v WHERE v.usuario_id = u.id AND v.cpf_cnpj LIKE :cpf_cnpj)";
+    $sql .= " OR EXISTS (SELECT 1 FROM transportadores t WHERE t.usuario_id = u.id AND t.numero_antt LIKE :cpf_cnpj)";
+    $sql .= ")";
+    
     $params[':pesquisa'] = '%' . trim($termo_pesquisa) . '%';
+    $params[':cpf_cnpj'] = '%' . $termo_limpo . '%';
 }
 
 $sql .= " ORDER BY $orderBy";
@@ -135,7 +148,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
             <input type="text" 
                    name="pesquisa" 
                    class="search-input-inline" 
-                   placeholder="Pesquisar por nome ou e-mail..." 
+                   placeholder="Pesquisar por nome, e-mail ou CPF/CNPJ..." 
                    value="<?php echo htmlspecialchars($termo_pesquisa); ?>">
             
             <?php if (!empty($termo_pesquisa)): ?>

@@ -105,7 +105,7 @@ require_once 'src/conexao.php';
 
     <section id="comprar" class="section bg-light">
     <div class="container">
-        <h2 class="section-title">Compre Frutas</h2>
+        <h2 class="section-title">Compre</h2>
         
         <!-- Carrossel melhorado -->
         <div class="carousel-container">

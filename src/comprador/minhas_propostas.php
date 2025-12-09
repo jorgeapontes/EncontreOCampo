@@ -327,7 +327,7 @@ function responderContraproposta(negociacaoId, acao) {
                                         <i class="fas fa-edit"></i>
                                         Alterar Detalhes
                                     </a>
-                                    <button onclick="confirmarExclusao(<?php echo $proposta['negociacao_id']; ?>)" class="btn btn-delete">
+                                    <button onclick="confirmarExclusao(<?php echo $proposta['negociacao_id']; ?>)" class="btn btn-danger">
                                         <i class="fas fa-trash"></i>
                                         Excluir Proposta
                                     </button>
@@ -336,13 +336,13 @@ function responderContraproposta(negociacaoId, acao) {
                                     <div class="contraproposta-actions">
                                         <button onclick="responderContraproposta(<?php echo $proposta['negociacao_id']; ?>, 'aceitar')" class="btn btn-success">
                                             <i class="fas fa-check"></i>
-                                            Aceitar Contraproposta
+                                            Aceitar
                                         </button>
                                         <button onclick="responderContraproposta(<?php echo $proposta['negociacao_id']; ?>, 'recusar')" class="btn btn-danger">
                                             <i class="fas fa-times"></i>
-                                            Recusar Contraproposta
+                                            Recusar
                                         </button>
-                                        <a href="fazer_contraproposta.php?id=<?php echo $proposta['negociacao_id']; ?>" class="btn btn-secondary">
+                                        <a href="fazer_contraproposta.php?id=<?php echo $proposta['negociacao_id']; ?>" class="btn btn-info">
                                             <i class="fas fa-edit"></i>
                                             Fazer Contraproposta
                                         </a>

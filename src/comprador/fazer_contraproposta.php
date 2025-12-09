@@ -148,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </nav>
 
-    <main class="container propostas-container">
+    <main class="container contrapropostas-container">
         <h1>Fazer Contraproposta</h1>
         
         <?php if (isset($erro)): ?>
@@ -158,9 +158,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         <?php endif; ?>
 
-        <div class="proposta-card">
+        <div class="contraproposta-card">
             <div class="proposta-info">
-                <div class="info-group">
+                <div class="contra-info-group">
                     <p><strong>Produto:</strong> <?php echo htmlspecialchars($negociacao['produto_nome']); ?></p>
                     <p><strong>Preço Original:</strong> R$ <?php echo number_format($negociacao['preco_original'], 2, ',', '.'); ?> / <?php echo htmlspecialchars($negociacao['unidade_medida']); ?></p>
                     <p><strong>Estoque Disponível:</strong> <?php echo htmlspecialchars($negociacao['estoque_disponivel']); ?> <?php echo htmlspecialchars($negociacao['unidade_medida']); ?></p>
@@ -168,8 +168,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <?php if (!empty($negociacao['condicoes_vendedor'])): ?>
-                <div class="contraproposta-section">
-                    <strong>Contraproposta do Vendedor:</strong>
+                <div class="contra-info-group">
+                    <strong><div class="contraproposta-titulo">Contraproposta do Vendedor:</div></strong>
                     <div class="contraproposta-content">
                         <?php if ($negociacao['preco_vendedor']): ?>
                             <p><strong>Preço Proposto:</strong> R$ <?php echo number_format($negociacao['preco_vendedor'], 2, ',', '.'); ?> / <?php echo htmlspecialchars($negociacao['unidade_medida']); ?></p>
@@ -179,19 +179,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <p><strong>Quantidade:</strong> <?php echo $negociacao['quantidade_vendedor']; ?> <?php echo htmlspecialchars($negociacao['unidade_medida']); ?></p>
                         <?php endif; ?>
                         
+                        <p><strong>Condições:</strong></p>
                         <?php echo nl2br(htmlspecialchars($negociacao['condicoes_vendedor'])); ?>
                     </div>
                 </div>
             <?php endif; ?>
 
-            <form method="POST" class="proposta-form">
-                <div class="form-group">
+            <form method="POST" class="contraproposta-form">
+                <div class="contraproposta-form-group">
                     <label for="preco_proposto">Seu Novo Preço (por <?php echo htmlspecialchars($negociacao['unidade_medida']); ?>):</label>
                     <input type="number" step="0.01" id="preco_proposto" name="preco_proposto" 
                            value="<?php echo htmlspecialchars($negociacao['preco_proposto']); ?>" required>
                 </div>
 
-                <div class="form-group">
+                <div class="contraproposta-form-group">
                     <label for="quantidade">Nova Quantidade (<?php echo htmlspecialchars($negociacao['unidade_medida']); ?>):</label>
                     <input type="number" id="quantidade" name="quantidade" 
                            value="<?php echo htmlspecialchars($negociacao['quantidade_proposta']); ?>" 
@@ -201,17 +202,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <small class="estoque-info">Máximo disponível: <?php echo htmlspecialchars($negociacao['estoque_disponivel']); ?> <?php echo htmlspecialchars($negociacao['unidade_medida']); ?></small>
                 </div>
 
-                <div class="form-group">
+                <div class="contraproposta-form-group">
                     <label for="condicoes">Suas Novas Condições (opcional):</label>
                     <textarea id="condicoes" name="condicoes" rows="4"><?php echo htmlspecialchars($negociacao['condicoes_compra']); ?></textarea>
                 </div>
 
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-success">
+                <div class="contraproposta-form-actions">
+                    <button type="submit" class="btn btn-atualizar-contraproposta">
                         <i class="fas fa-reply"></i>
                         Enviar Contraproposta
                     </button>
-                    <a href="minhas_propostas.php" class="btn btn-secondary">Cancelar</a>
+                    <a href="minhas_propostas.php" class="btn btn-cancelar">Cancelar</a>
                 </div>
             </form>
         </div>

@@ -454,7 +454,7 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
             <i class="fas fa-comments"></i>
             Conversar com o Vendedor
         </a>
-        <p class="proposta-text">Tire suas dúvidas diretamente com o vendedor</p>
+        <p class="proposta-text">Negocie diretamente com o vendedor</p>
     </div>
 </div>
                         </div>

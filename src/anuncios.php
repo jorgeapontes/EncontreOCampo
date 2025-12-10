@@ -8,27 +8,6 @@ $usuario_tipo = $_SESSION['usuario_tipo'] ?? null;
 $usuario_id = $_SESSION['usuario_id'] ?? null;
 $is_comprador = $usuario_tipo === 'comprador' || $usuario_tipo === 'vendedor';
 
-// Lógica para o botão de acesso/perfil na navbar
-if ($is_logged_in) {
-    $button_text = 'Olá, ' . htmlspecialchars($_SESSION['usuario_nome'] ?? 'Usuário');
-    if ($usuario_tipo == 'admin') {
-        $button_action = 'admin/dashboard.php';
-    } elseif ($usuario_tipo == 'comprador') {
-        $button_action = 'comprador/dashboard.php';
-    } elseif ($usuario_tipo == 'vendedor') {
-        $button_action = 'vendedor/dashboard.php';
-    } else {
-        $button_action = '#';
-    }
-    $button_class = 'user-profile';
-    $data_target = '';
-} else {
-    $button_text = 'Login';
-    $button_action = '#';
-    $button_class = 'open-login-modal';
-    $data_target = 'data-target="#loginModal"';
-}
-
 // Conexão e busca dos anúncios
 $database = new Database();
 $conn = $database->getConnection();
@@ -88,17 +67,12 @@ switch ($ordenacao) {
         break;
 }
 
-// Categorias disponíveis para filtro
+// Categorias e Estados
 $categorias_disponiveis = [
-    'Frutas Cítricas',
-    'Frutas Tropicais',
-    'Frutas de Caroço',
-    'Frutas Vermelhas',
-    'Frutas Secas',
-    'Frutas Exóticas',
+    'Frutas Cítricas', 'Frutas Tropicais', 'Frutas de Caroço',
+    'Frutas Vermelhas', 'Frutas Secas', 'Frutas Exóticas',
 ];
 
-// Estados disponíveis para filtro (lista de estados brasileiros)
 $estados_disponiveis = [
     'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 
     'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 
@@ -130,11 +104,7 @@ try {
             ORDER BY " . $order_by;
             
     $stmt = $conn->prepare($sql);
-    
-    foreach ($params as $key => $value) {
-        $stmt->bindValue($key, $value);
-    }
-    
+    foreach ($params as $key => $value) $stmt->bindValue($key, $value);
     $stmt->execute();
     $anuncios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -177,36 +147,27 @@ try {
                         <li class="nav-item">
                             <a href="<?= $_SESSION['usuario_tipo'] ?>/perfil.php" class="nav-link">Meu Perfil</a>
                         </li>
-                    <?php endif; ?>
-                    <?php if (isset($_SESSION['usuario_id'])): ?>
-                    <li class="nav-item">
-                        <a href="notificacoes.php" class="nav-link no-underline">
-                            <i class="fas fa-bell"></i>
-                            <?php
-                            // Contar notificações não lidas
-                            if (isset($_SESSION['usuario_id'])) {
-                                $database = new Database();
-                                $conn = $database->getConnection();
+                        <li class="nav-item">
+                            <a href="notificacoes.php" class="nav-link no-underline">
+                                <i class="fas fa-bell"></i>
+                                <?php
                                 $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
                                 $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
                                 $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
                                 $stmt_nao_lidas->execute();
                                 $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
-                                if ($total_nao_lidas > 0) {
-                                    echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
-                                }
-                            }
-                            ?>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <li class="nav-item">
-                        <?php if (isset($_SESSION['usuario_id'])): ?>
+                                if ($total_nao_lidas > 0) echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
+                                ?>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="logout.php" class="nav-link exit-button no-underline">Sair</a>
-                        <?php else: ?>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item">
                             <a href="login.php" class="nav-link login-button no-underline">Login</a>
-                        <?php endif; ?>
-                    </li>
+                        </li>
+                    <?php endif; ?>
                 </ul>
                 <div class="hamburger">
                     <span class="bar"></span>
@@ -235,12 +196,6 @@ try {
                 <p>
                     <?php if (!empty($termo_pesquisa)): ?>
                         <?php echo count($anuncios); ?> anúncio(s) encontrado(s)
-                    <?php elseif (!empty($filtro_estado)): ?>
-                        <?php echo count($anuncios); ?> anúncio(s) do estado <?php echo htmlspecialchars($filtro_estado); ?>
-                    <?php elseif (!empty($filtro_categoria)): ?>
-                        <?php echo count($anuncios); ?> anúncio(s) na categoria <?php echo htmlspecialchars($filtro_categoria); ?>
-                    <?php elseif ($is_logged_in && $usuario_tipo === 'vendedor'): ?>
-                        Explore ofertas de outros vendedores
                     <?php else: ?>
                         Explore as ofertas de frutas e legumes dos nossos vendedores
                     <?php endif; ?>
@@ -248,7 +203,6 @@ try {
             </center>
         </section>
 
-        <!-- ÁREA DE PESQUISA E FILTROS -->
         <div class="search-filters-area">
             <div class="search-container">
                 <form action="anuncios.php" method="GET" class="search-form">
@@ -272,7 +226,6 @@ try {
 
             <div class="filtros-simples">
                 <div class="filtros-botoes">
-                    <!-- Botão Filtrar (Categorias) -->
                     <div class="dropdown">
                         <button class="filtro-btn">
                             <i class="fas fa-filter"></i>
@@ -283,43 +236,29 @@ try {
                         </button>
                         <div class="dropdown-content">
                             <form method="GET" action="anuncios.php" class="filtro-form">
-                                <?php if (!empty($termo_pesquisa)): ?>
-                                    <input type="hidden" name="pesquisa" value="<?php echo htmlspecialchars($termo_pesquisa); ?>">
-                                <?php endif; ?>
-                                <?php if (!empty($filtro_estado)): ?>
-                                    <input type="hidden" name="estado" value="<?php echo htmlspecialchars($filtro_estado); ?>">
-                                <?php endif; ?>
-                                <input type="hidden" name="ordenacao" value="<?php echo htmlspecialchars($ordenacao); ?>">
+                                <?php if (!empty($termo_pesquisa)): ?> <input type="hidden" name="pesquisa" value="<?= htmlspecialchars($termo_pesquisa) ?>"> <?php endif; ?>
+                                <?php if (!empty($filtro_estado)): ?> <input type="hidden" name="estado" value="<?= htmlspecialchars($filtro_estado) ?>"> <?php endif; ?>
+                                <input type="hidden" name="ordenacao" value="<?= htmlspecialchars($ordenacao) ?>">
                                 
-                                <div class="filtro-section">
-                                    <div class="filtro-header">
-                                        <i class="fas fa-apple-alt"></i> Categorias
-                                        <?php if (!empty($filtro_categoria)): ?>
-                                            <a href="anuncios.php?<?php 
-                                                echo !empty($termo_pesquisa) ? 'pesquisa=' . urlencode($termo_pesquisa) . '&' : '';
-                                                echo !empty($filtro_estado) ? 'estado=' . urlencode($filtro_estado) : '';
-                                                ?>" class="remove-filtro">
-                                                Limpar
-                                            </a>
-                                        <?php endif; ?>
-                                    </div>
-                                    
-                                    <div class="categorias-list">
-                                        <?php foreach ($categorias_disponiveis as $categoria_option): ?>
-                                            <label class="filtro-option">
-                                                <input type="radio" name="categoria" value="<?php echo htmlspecialchars($categoria_option); ?>" 
-                                                    <?php echo ($filtro_categoria === $categoria_option) ? 'checked' : ''; ?>
-                                                    onchange="this.form.submit()">
-                                                <span><?php echo htmlspecialchars($categoria_option); ?></span>
-                                            </label>
-                                        <?php endforeach; ?>
-                                    </div>
+                                <div class="filtro-header">
+                                    <span><i class="fas fa-apple-alt"></i> Categorias</span>
+                                    <?php if (!empty($filtro_categoria)): ?>
+                                        <a href="anuncios.php?<?= http_build_query(array_merge($_GET, ['categoria' => null])) ?>" class="remove-filtro">Limpar</a>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="categorias-list">
+                                    <?php foreach ($categorias_disponiveis as $cat): ?>
+                                        <label class="filtro-option">
+                                            <input type="radio" name="categoria" value="<?= htmlspecialchars($cat) ?>" 
+                                                <?= ($filtro_categoria === $cat) ? 'checked' : '' ?> onchange="this.form.submit()">
+                                            <span><?= htmlspecialchars($cat) ?></span>
+                                        </label>
+                                    <?php endforeach; ?>
                                 </div>
                             </form>
                         </div>
                     </div>
 
-                    <!-- Botão Localização (Estados) -->
                     <div class="dropdown">
                         <button class="filtro-btn">
                             <i class="fas fa-map-marker-alt"></i>
@@ -330,136 +269,73 @@ try {
                         </button>
                         <div class="dropdown-content localizacao-dropdown">
                             <form method="GET" action="anuncios.php" class="filtro-form">
-                                <?php if (!empty($termo_pesquisa)): ?>
-                                    <input type="hidden" name="pesquisa" value="<?php echo htmlspecialchars($termo_pesquisa); ?>">
-                                <?php endif; ?>
-                                <?php if (!empty($filtro_categoria)): ?>
-                                    <input type="hidden" name="categoria" value="<?php echo htmlspecialchars($filtro_categoria); ?>">
-                                <?php endif; ?>
-                                <input type="hidden" name="ordenacao" value="<?php echo htmlspecialchars($ordenacao); ?>">
+                                <?php if (!empty($termo_pesquisa)): ?> <input type="hidden" name="pesquisa" value="<?= htmlspecialchars($termo_pesquisa) ?>"> <?php endif; ?>
+                                <?php if (!empty($filtro_categoria)): ?> <input type="hidden" name="categoria" value="<?= htmlspecialchars($filtro_categoria) ?>"> <?php endif; ?>
+                                <input type="hidden" name="ordenacao" value="<?= htmlspecialchars($ordenacao) ?>">
                                 
-                                <div class="filtro-section">
-                                    <div class="filtro-header">
-                                        <i class="fas fa-map"></i> Estados
-                                        <?php if (!empty($filtro_estado)): ?>
-                                            <a href="anuncios.php?<?php 
-                                                echo !empty($termo_pesquisa) ? 'pesquisa=' . urlencode($termo_pesquisa) . '&' : '';
-                                                echo !empty($filtro_categoria) ? 'categoria=' . urlencode($filtro_categoria) : '';
-                                                ?>" class="remove-filtro">
-                                                Limpar
-                                            </a>
-                                        <?php endif; ?>
-                                    </div>
-                                    
-                                    <div class="estados-grid">
-                                        <?php foreach ($estados_disponiveis as $estado_option): ?>
-                                            <label class="estado-option">
-                                                <input type="radio" name="estado" value="<?php echo htmlspecialchars($estado_option); ?>" 
-                                                    <?php echo ($filtro_estado === $estado_option) ? 'checked' : ''; ?>
-                                                    onchange="this.form.submit()">
-                                                <span class="estado-sigla"><?php echo htmlspecialchars($estado_option); ?></span>
-                                            </label>
-                                        <?php endforeach; ?>
-                                    </div>
+                                <div class="filtro-header">
+                                    <span><i class="fas fa-map"></i> Estados</span>
+                                    <?php if (!empty($filtro_estado)): ?>
+                                        <a href="anuncios.php?<?= http_build_query(array_merge($_GET, ['estado' => null])) ?>" class="remove-filtro">Limpar</a>
+                                    <?php endif; ?>
                                 </div>
-                                
-                                <?php if (!empty($filtro_estado)): ?>
-                                    <div class="filtro-section">
-                                        <a href="anuncios.php?<?php 
-                                            echo !empty($termo_pesquisa) ? 'pesquisa=' . urlencode($termo_pesquisa) . '&' : '';
-                                            echo !empty($filtro_categoria) ? 'categoria=' . urlencode($filtro_categoria) : '';
-                                            ?>" class="btn-limpar-filtro">
-                                            <i class="fas fa-times-circle"></i> Ver todos os estados
-                                        </a>
-                                    </div>
-                                <?php endif; ?>
+                                <div class="estados-grid">
+                                    <?php foreach ($estados_disponiveis as $est): ?>
+                                        <label class="estado-option">
+                                            <input type="radio" name="estado" value="<?= htmlspecialchars($est) ?>" 
+                                                <?= ($filtro_estado === $est) ? 'checked' : '' ?> onchange="this.form.submit()">
+                                            <span class="estado-sigla"><?= htmlspecialchars($est) ?></span>
+                                        </label>
+                                    <?php endforeach; ?>
+                                </div>
                             </form>
                         </div>
                     </div>
 
-                    <!-- Botão Ordenar -->
                     <div class="dropdown">
                         <button class="filtro-btn">
                             <i class="fas fa-sort"></i>
                             Ordenar
                         </button>
                         <div class="dropdown-content">
-                            <form method="GET" action="anuncios.php" class="filtro-form">
-                                <?php if (!empty($termo_pesquisa)): ?>
-                                    <input type="hidden" name="pesquisa" value="<?php echo htmlspecialchars($termo_pesquisa); ?>">
-                                <?php endif; ?>
-                                <?php if (!empty($filtro_categoria)): ?>
-                                    <input type="hidden" name="categoria" value="<?php echo htmlspecialchars($filtro_categoria); ?>">
-                                <?php endif; ?>
-                                <?php if (!empty($filtro_estado)): ?>
-                                    <input type="hidden" name="estado" value="<?php echo htmlspecialchars($filtro_estado); ?>">
-                                <?php endif; ?>
-                                
+                            <form method="GET" action="anuncios.php">
+                                <?php foreach($_GET as $key => $val): if($key != 'ordenacao') echo "<input type='hidden' name='$key' value='$val'>"; endforeach; ?>
                                 <div class="ordenacao-options">
                                     <label class="ordenacao-option">
-                                        <input type="radio" name="ordenacao" value="recentes" 
-                                            <?php echo ($ordenacao === 'recentes') ? 'checked' : ''; ?>
-                                            onchange="this.form.submit()">
-                                        <span><i class="fas fa-clock"></i> Mais recentes</span>
+                                        <input type="radio" name="ordenacao" value="recentes" <?= ($ordenacao === 'recentes') ? 'checked' : '' ?> onchange="this.form.submit()">
+                                        <span>Mais recentes</span>
                                     </label>
                                     <label class="ordenacao-option">
-                                        <input type="radio" name="ordenacao" value="preco_menor" 
-                                            <?php echo ($ordenacao === 'preco_menor') ? 'checked' : ''; ?>
-                                            onchange="this.form.submit()">
-                                        <span><i class="fas fa-arrow-down"></i> Menor preço</span>
+                                        <input type="radio" name="ordenacao" value="preco_menor" <?= ($ordenacao === 'preco_menor') ? 'checked' : '' ?> onchange="this.form.submit()">
+                                        <span>Menor preço</span>
                                     </label>
                                     <label class="ordenacao-option">
-                                        <input type="radio" name="ordenacao" value="preco_maior" 
-                                            <?php echo ($ordenacao === 'preco_maior') ? 'checked' : ''; ?>
-                                            onchange="this.form.submit()">
-                                        <span><i class="fas fa-arrow-up"></i> Maior preço</span>
-                                    </label>
-                                    <label class="ordenacao-option">
-                                        <input type="radio" name="ordenacao" value="nome" 
-                                            <?php echo ($ordenacao === 'nome') ? 'checked' : ''; ?>
-                                            onchange="this.form.submit()">
-                                        <span><i class="fas fa-sort-alpha-down"></i> Nome (A-Z)</span>
-                                    </label>
-                                    <label class="ordenacao-option">
-                                        <input type="radio" name="ordenacao" value="estoque" 
-                                            <?php echo ($ordenacao === 'estoque') ? 'checked' : ''; ?>
-                                            onchange="this.form.submit()">
-                                        <span><i class="fas fa-boxes"></i> Maior estoque</span>
+                                        <input type="radio" name="ordenacao" value="preco_maior" <?= ($ordenacao === 'preco_maior') ? 'checked' : '' ?> onchange="this.form.submit()">
+                                        <span>Maior preço</span>
                                     </label>
                                 </div>
                             </form>
                         </div>
                     </div>
                 </div>
-                
+
                 <?php if (!empty($filtro_categoria) || !empty($filtro_estado)): ?>
                     <div class="filtros-ativos">
-                        <small>Filtros ativos:</small>
                         <?php if (!empty($filtro_categoria)): ?>
                             <span class="filtro-ativo-tag">
-                                <?php echo htmlspecialchars($filtro_categoria); ?>
-                                <a href="anuncios.php?<?php 
-                                    echo !empty($termo_pesquisa) ? 'pesquisa=' . urlencode($termo_pesquisa) . '&' : '';
-                                    echo !empty($filtro_estado) ? 'estado=' . urlencode($filtro_estado) : '';
-                                ?>"><i class="fas fa-times"></i></a>
+                                <?= htmlspecialchars($filtro_categoria) ?>
+                                <a href="anuncios.php?<?= http_build_query(array_merge($_GET, ['categoria' => null])) ?>"><i class="fas fa-times"></i></a>
                             </span>
                         <?php endif; ?>
                         
                         <?php if (!empty($filtro_estado)): ?>
                             <span class="filtro-ativo-tag">
-                                Estado: <?php echo htmlspecialchars($filtro_estado); ?>
-                                <a href="anuncios.php?<?php 
-                                    echo !empty($termo_pesquisa) ? 'pesquisa=' . urlencode($termo_pesquisa) . '&' : '';
-                                    echo !empty($filtro_categoria) ? 'categoria=' . urlencode($filtro_categoria) : '';
-                                ?>"><i class="fas fa-times"></i></a>
+                                <?= htmlspecialchars($filtro_estado) ?>
+                                <a href="anuncios.php?<?= http_build_query(array_merge($_GET, ['estado' => null])) ?>"><i class="fas fa-times"></i></a>
                             </span>
                         <?php endif; ?>
                         
-                        <?php if (!empty($filtro_categoria) || !empty($filtro_estado)): ?>
-                            <a href="anuncios.php<?php echo !empty($termo_pesquisa) ? '?pesquisa=' . urlencode($termo_pesquisa) : ''; ?>" class="limpar-todos">
-                                <i class="fas fa-times-circle"></i> Limpar todos
-                            </a>
-                        <?php endif; ?>
+                        <a href="anuncios.php" class="limpar-todos">Limpar tudo</a>
                     </div>
                 <?php endif; ?>
             </div>
@@ -467,158 +343,88 @@ try {
 
         <?php if (empty($anuncios)): ?>
             <div class="empty-state">
-                <?php if (!empty($termo_pesquisa) || !empty($filtro_categoria) || !empty($filtro_estado)): ?>
-                    <div class="empty-search">
-                        <i class="fas fa-search fa-3x"></i>
-                        <h3>Nenhum resultado encontrado</h3>
-                        <p>Tente outros filtros ou <a href="anuncios.php">veja todos os anúncios</a></p>
-                    </div>
-                <?php elseif ($is_logged_in && $usuario_tipo === 'vendedor'): ?>
-                    <div class="empty-search">
-                        <i class="fas fa-store fa-3x"></i>
-                        <h3>Nenhum anúncio de outros vendedores encontrado</h3>
-                        <p>No momento, não há anúncios de outros vendedores disponíveis.</p>
-                        <p><a href="vendedor/meus_produtos.php">Veja seus próprios anúncios</a></p>
-                    </div>
-                <?php else: ?>
-                    <p>Nenhum anúncio ativo encontrado no momento.</p>
-                <?php endif; ?>
+                <div class="empty-search">
+                    <i class="fas fa-search fa-3x"></i>
+                    <h3>Nenhum resultado encontrado</h3>
+                    <p>Tente outros filtros ou <a href="anuncios.php">veja todos os anúncios</a></p>
+                </div>
             </div>
         <?php else: ?>
             <div class="anuncios-grid">
-                <?php foreach ($anuncios as $anuncio): ?>
-                    <?php
-                        $tem_desconto = false;
-                        $preco_final = $anuncio['preco'];
-                        $percentual_off = 0;
-
-                        if ($anuncio['desconto_ativo'] == 1) {
-                            $agora = date('Y-m-d H:i:s');
-                            $inicio = $anuncio['desconto_data_inicio'];
-                            $fim = $anuncio['desconto_data_fim'];
-                            
-                            $data_valida = true;
-                            if ($inicio && $agora < $inicio) $data_valida = false;
-                            if ($fim && $agora > $fim) $data_valida = false;
-
-                            if ($data_valida && $anuncio['preco_desconto'] > 0 && $anuncio['preco_desconto'] < $anuncio['preco']) {
+                <?php foreach ($anuncios as $anuncio): 
+                    $tem_desconto = false;
+                    $preco_final = $anuncio['preco'];
+                    $percentual_off = 0;
+                    if ($anuncio['desconto_ativo'] == 1) {
+                        $agora = date('Y-m-d H:i:s');
+                        if ((!$anuncio['desconto_data_inicio'] || $agora >= $anuncio['desconto_data_inicio']) && 
+                            (!$anuncio['desconto_data_fim'] || $agora <= $anuncio['desconto_data_fim'])) {
+                            if ($anuncio['preco_desconto'] > 0 && $anuncio['preco_desconto'] < $anuncio['preco']) {
                                 $tem_desconto = true;
                                 $preco_final = $anuncio['preco_desconto'];
                                 $percentual_off = intval($anuncio['desconto_percentual']);
                             }
                         }
-                    ?>
-
-                    <div class="anuncio-card <?php echo $tem_desconto ? 'card-desconto' : ''; ?>">
-                        <div class="card-image">
-                            <span class="categoria-badge"><?php echo htmlspecialchars($anuncio['categoria']); ?></span>
-                            <?php if ($tem_desconto): ?>
-                                <div class="badge-desconto">-<?php echo $percentual_off; ?>%</div>
-                            <?php endif; ?>
-
-                            <?php 
-                                $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) : '../img/placeholder.png';
-                                if (strpos($imagePath, '../') === 0) $imagePath = substr($imagePath, 3);
-                                if ($anuncio['imagem_url'] && !file_exists($imagePath)) $imagePath = '../img/placeholder.png';
-                            ?>
-                            <img src="<?php echo $imagePath; ?>" alt="Imagem de <?php echo htmlspecialchars($anuncio['produto']); ?>" 
-                                onerror="this.src='../img/placeholder.png'">
+                    }
+                ?>
+                <div class="anuncio-card <?= $tem_desconto ? 'card-desconto' : '' ?>">
+                    <div class="card-image">
+                        <span class="categoria-badge"><?= htmlspecialchars($anuncio['categoria']) ?></span>
+                        <?php if ($tem_desconto): ?><div class="badge-desconto">-<?= $percentual_off ?>%</div><?php endif; ?>
+                        <?php 
+                            $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) : '../img/placeholder.png';
+                            if (strpos($imagePath, '../') === 0) $imagePath = substr($imagePath, 3);
+                            if ($anuncio['imagem_url'] && !file_exists($imagePath)) $imagePath = '../img/placeholder.png';
+                        ?>
+                        <img src="<?= $imagePath ?>" alt="<?= htmlspecialchars($anuncio['produto']) ?>" onerror="this.src='../img/placeholder.png'">
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <h3><?= htmlspecialchars($anuncio['produto']) ?></h3>
+                            <div class="card-subheader">
+                                <span class="vendedor"><i class="fas fa-store"></i> <?= htmlspecialchars($anuncio['nome_vendedor']) ?></span>
+                                <span><i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($anuncio['estado_vendedor']) ?></span>
+                            </div>
                         </div>
-                        <div class="card-content">
-                            <div class="card-header">
-                                <h3><?php echo htmlspecialchars($anuncio['produto']); ?></h3>
-                                <div class="card-subheader">
-                                    <span class="vendedor">
-                                        <i class="fas fa-store"></i> <?php echo htmlspecialchars($anuncio['nome_vendedor']); ?>
-                                    </span>
-                                    <span class="localizacao">
-                                        <i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($anuncio['estado_vendedor']); ?>
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <div class="card-body">
-                                <div class="price-container">
-                                    <?php if ($tem_desconto): ?>
-                                        <div class="preco-original">R$ <?php echo number_format($anuncio['preco'], 2, ',', '.'); ?></div>
-                                        <div class="price price-desconto">
-                                            R$ <?php echo number_format($preco_final, 2, ',', '.'); ?>
-                                            <span>/<?php echo htmlspecialchars($anuncio['unidade_medida']); ?></span>
-                                        </div>
-                                        <div class="economia-info">
-                                            <i class="fas fa-tag"></i> Economia de R$ <?php echo number_format($anuncio['preco'] - $preco_final, 2, ',', '.'); ?>
-                                        </div>
-                                    <?php else: ?>
-                                        <p class="price">
-                                            R$ <?php echo number_format($anuncio['preco'], 2, ',', '.'); ?>
-                                            <span>/<?php echo htmlspecialchars($anuncio['unidade_medida']); ?></span>
-                                        </p>
-                                    <?php endif; ?>
-                                </div>
-
-                                <p class="estoque">
-                                    <i class="fas fa-box"></i>
-                                    <?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?> disponíveis
-                                </p>
-                                
-                                <p class="descricao">
-                                    <?php 
-                                    $descricao = htmlspecialchars($anuncio['descricao'] ?? 'Sem descrição.');
-                                    $limite = 120;
-                                    if (strlen($descricao) > $limite) {
-                                        $descricao_curta = substr($descricao, 0, $limite);
-                                        $ultimo_espaco = strrpos($descricao_curta, ' ');
-                                        echo ($ultimo_espaco !== false) ? substr($descricao_curta, 0, $ultimo_espaco) . '...' : $descricao_curta . '...';
-                                    } else {
-                                        echo $descricao;
-                                    }
-                                    ?>
-                                </p>
-                            </div>
-                            
-                            <div class="card-actions">
-                                <?php if ($is_logged_in && ($usuario_tipo === 'comprador' || $usuario_tipo === 'vendedor')): ?>
-                                    <a href="comprador/proposta_nova.php?anuncio_id=<?php echo $anuncio['id']; ?>" class="btn btn-primary">
-                                        <i class="fas fa-handshake"></i> Comprar
-                                    </a>
-                                <?php elseif (!$is_logged_in): ?>
-                                    <button class="btn btn-primary open-login-modal" data-target="#loginModal">
-                                        <i class="fas fa-handshake"></i> Comprar
-                                    </button>
+                        <div class="card-body">
+                            <div class="price-container">
+                                <?php if ($tem_desconto): ?>
+                                    <div class="preco-original">R$ <?= number_format($anuncio['preco'], 2, ',', '.') ?></div>
+                                    <div class="price price-desconto">
+                                        R$ <?= number_format($preco_final, 2, ',', '.') ?><span>/<?= htmlspecialchars($anuncio['unidade_medida']) ?></span>
+                                    </div>
+                                    <div class="economia-info">Economia de R$ <?= number_format($anuncio['preco'] - $preco_final, 2, ',', '.') ?></div>
                                 <?php else: ?>
-                                    <!-- Se estiver logado mas não for comprador nem vendedor (ex: admin) -->
-                                    <button class="btn btn-primary" disabled>
-                                        <i class="fas fa-handshake"></i> Apenas para Compradores/Vendedores
-                                    </button>
+                                    <p class="price">R$ <?= number_format($anuncio['preco'], 2, ',', '.') ?><span>/<?= htmlspecialchars($anuncio['unidade_medida']) ?></span></p>
                                 <?php endif; ?>
                             </div>
+                            <p class="estoque"><i class="fas fa-box"></i> <?= htmlspecialchars($anuncio['quantidade_disponivel']) ?> disponíveis</p>
+                        </div>
+                        <div class="card-actions">
+                            <?php if ($is_logged_in && ($usuario_tipo === 'comprador' || $usuario_tipo === 'vendedor')): ?>
+                                <a href="comprador/proposta_nova.php?anuncio_id=<?= $anuncio['id'] ?>" class="btn btn-primary"><i class="fas fa-handshake"></i> Comprar</a>
+                            <?php elseif (!$is_logged_in): ?>
+                                <button class="btn btn-primary open-login-modal" data-target="#loginModal"><i class="fas fa-handshake"></i> Comprar</button>
+                            <?php else: ?>
+                                <button class="btn btn-primary" disabled>Apenas Compradores</button>
+                            <?php endif; ?>
                         </div>
                     </div>
+                </div>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
     </main>
-    
+
     <div id="loginModal" class="modal">
         <div class="modal-content">
             <span class="modal-close">&times;</span>
             <h3>Acesso Negociador</h3>
-            <p>
-                É necessário estar logado como Comprador ou Vendedor para fazer uma proposta.
-            </p>
+            <p>Faça login para continuar.</p>
             <form action="login.php" method="POST">
-                <div class="form-group">
-                    <label for="modal-email">Email</label>
-                    <input type="email" id="modal-email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="modal-password">Senha</label>
-                    <input type="password" id="modal-password" name="password" required>
-                </div>
+                <div class="form-group"><label>Email</label><input type="email" name="email" required></div>
+                <div class="form-group"><label>Senha</label><input type="password" name="password" required></div>
                 <button type="submit" class="btn btn-primary">Entrar</button>
-                <div style="text-align: center; margin-top: 15px;">
-                    Não tem conta? <a href="../index.php#contato" target="_blank">Registre-se</a>
-                </div>
             </form>
         </div>
     </div>
@@ -626,106 +432,37 @@ try {
     <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-content">
-                <div class="footer-section">
-                    <h4>Encontre o Campo</h4>
-                    <ul>
-                        <li><a href="../index.php">Página Inicial</a></li>
-                        <li><a href="anuncios.php">Ver Anúncios</a></li>
-                        <li><a href="comprador/favoritos.php">Meus Favoritos</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Suporte</h4>
-                    <ul>
-                        <li><a href="../ajuda.php">Central de Ajuda</a></li>
-                        <li><a href="../contato.php">Fale Conosco</a></li>
-                        <li><a href="sobre.php">Sobre Nós</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Legal</h4>
-                    <ul>
-                        <li><a href="faq.php">FAQ</a></li>
-                        <li><a href="termos.php">Termos de Uso</a></li>
-                        <li><a href="privacidade.php">Política de Privacidade</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Contato</h4>
-                    <div class="contact-info">
-                        <p><i class="fas fa-envelope"></i> contato@encontreocampo.com.br</p>
-                        <p><i class="fas fa-phone"></i> (11) 99999-9999</p>
-                        <div class="social-links">
-                            <a href="#"><i class="fab fa-facebook"></i></a>
-                            <a href="#"><i class="fab fa-instagram"></i></a>
-                            <a href="#"><i class="fab fa-whatsapp"></i></a>
-                        </div>
-                    </div>
-                </div>
+                <div class="footer-section"><h4>Encontre o Campo</h4><ul><li><a href="#">Sobre</a></li></ul></div>
+                <div class="footer-section"><h4>Contato</h4><div class="social-links"><a href="#"><i class="fab fa-whatsapp"></i></a></div></div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; Encontre o Campo. Todos os direitos reservados.</p>
-            </div>
+            <div class="footer-bottom"><p>&copy; Encontre o Campo.</p></div>
         </div>
     </footer>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Menu Hamburguer
-        const hamburger = document.querySelector(".hamburger");
-        const navMenu = document.querySelector(".nav-menu");
-
-        hamburger.addEventListener("click", () => {
-            hamburger.classList.toggle("active");
-            navMenu.classList.toggle("active");
-        });
-
-        document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
-            hamburger.classList.remove("active");
-            navMenu.classList.remove("active");
-        }));
-
-        // Modal Logic
-        const modal = document.getElementById('loginModal');
-        const closeButton = document.querySelector('.modal-close');
-        
-        function openModal(e) { 
-            e.preventDefault(); 
-            modal.style.display = 'block'; 
-        }
-        
-        document.querySelectorAll('.open-login-modal').forEach(e => e.addEventListener('click', openModal));
-        
-        if (closeButton) closeButton.onclick = () => modal.style.display = 'none';
-        
-        window.onclick = (e) => { 
-            if (e.target === modal) modal.style.display = 'none'; 
-        }
-        
-        // Fechar dropdowns ao clicar fora
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.dropdown')) {
-                document.querySelectorAll('.dropdown-content').forEach(dropdown => {
-                    dropdown.classList.remove('show');
-                });
-            }
-        });
-        
-        // Mostrar/ocultar dropdowns
+        // Dropdown Logic
         document.querySelectorAll('.filtro-btn').forEach(button => {
             button.addEventListener('click', function(e) {
                 e.stopPropagation();
                 const dropdown = this.nextElementSibling;
+                document.querySelectorAll('.dropdown-content').forEach(d => { if (d !== dropdown) d.classList.remove('show'); });
                 dropdown.classList.toggle('show');
-                
-                // Fechar outros dropdowns
-                document.querySelectorAll('.dropdown-content').forEach(otherDropdown => {
-                    if (otherDropdown !== dropdown) {
-                        otherDropdown.classList.remove('show');
-                    }
-                });
             });
         });
+        window.onclick = function(e) {
+            if (!e.target.matches('.filtro-btn') && !e.target.closest('.dropdown-content')) {
+                document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
+            }
+            if (e.target == document.getElementById('loginModal')) document.getElementById('loginModal').style.display = "none";
+        }
+        document.querySelector('.modal-close').onclick = () => document.getElementById('loginModal').style.display = "none";
+        document.querySelectorAll('.open-login-modal').forEach(b => b.onclick = () => document.getElementById('loginModal').style.display = "block");
+        
+        // Hamburger
+        const hamburger = document.querySelector(".hamburger");
+        const navMenu = document.querySelector(".nav-menu");
+        hamburger.addEventListener("click", () => { hamburger.classList.toggle("active"); navMenu.classList.toggle("active"); });
     });
     </script>
 </body>

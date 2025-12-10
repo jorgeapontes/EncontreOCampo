@@ -3,6 +3,7 @@
 
 session_start();
 require_once __DIR__ . '/../conexao.php'; 
+require_once __DIR__ . '/../permissions.php'; 
 
 // 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprador') {
@@ -10,6 +11,17 @@ if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprado
     exit();
 }
 
+// Verificar se o usuário tem permissão para ver dashboard completo
+$usuario_status = $_SESSION['usuario_status'] ?? 'pendente';
+$is_pendente = ($usuario_status === 'pendente');
+
+$usuario_nome = htmlspecialchars($_SESSION['usuario_nome'] ?? 'Comprador');
+$usuario_id = $_SESSION['usuario_id'];
+
+$database = new Database();
+$conn = $database->getConnection();
+
+//
 $usuario_nome = htmlspecialchars($_SESSION['usuario_nome'] ?? 'Comprador');
 $usuario_id = $_SESSION['usuario_id'];
 
@@ -212,34 +224,50 @@ try {
         <section class="header">    
             <center>
                 <h1>Bem-vindo, <?php echo $usuario_nome ?>!</h1>
+                <?php if ($is_pendente): ?>
+                    <p class="subtitulo">(Cadastro aguardando aprovação)</p>
+                <?php endif; ?>
             </center>
         </section>
+
+        <?php if ($is_pendente): ?>
+            <div class="aviso-status">
+                <i class="fas fa-info-circle"></i>
+                <strong>Seu cadastro está aguardando aprovação.</strong> 
+                Enquanto isso, você pode visualizar anúncios, favoritar produtos e editar seus dados.
+                <br>
+            </div>
+        <?php endif; ?>
         
         <section class="info-cards">
-            <a href="meus_chats.php">
-                <div class="card">
-                    <i class="fas fa-comments"></i>
-                    <h3>Meus Chats</h3>
-                    <p><?php echo $dashboard_data['total_chats']; ?></p>
-                </div>
-            </a>
+            <?php if (!$is_pendente): ?>
+                <!-- Cards apenas para usuários ativos -->
+                <a href="meus_chats.php">
+                    <div class="card">
+                        <i class="fas fa-comments"></i>
+                        <h3>Meus Chats</h3>
+                        <p><?php echo $dashboard_data['total_chats']; ?></p>
+                    </div>
+                </a>
 
-            <a href="meus_chats.php?filtro=nao-lidos">
-                <div class="card">
-                    <i class="fas fa-envelope"></i>
-                    <h3>Mensagens Novas</h3>
-                    <p><?php echo $dashboard_data['chats_nao_lidos']; ?></p>
-                </div>
-            </a>
+                <a href="meus_chats.php?filtro=nao-lidos">
+                    <div class="card">
+                        <i class="fas fa-envelope"></i>
+                        <h3>Mensagens Novas</h3>
+                        <p><?php echo $dashboard_data['chats_nao_lidos']; ?></p>
+                    </div>
+                </a>
 
-            <a href="#">
-                <div class="card">
-                    <i class="fa-solid fa-bag-shopping"></i>
-                    <h3>Compras realizadas</h3>
-                    <p><?php echo $dashboard_data['aceita']; ?></p>
-                </div>
-            </a>
+                <a href="#">
+                    <div class="card">
+                        <i class="fa-solid fa-bag-shopping"></i>
+                        <h3>Compras realizadas</h3>
+                        <p><?php echo $dashboard_data['aceita']; ?></p>
+                    </div>
+                </a>
+            <?php endif; ?>
             
+            <!-- Card de favoritos - disponível para todos -->
             <a href="favoritos.php">
                 <div class="card">
                     <i class="fas fa-heart"></i>
@@ -256,18 +284,23 @@ try {
         </section>
 
         <section class="acoes-rapidas">
-            <a href="../anuncios.php">
-                <i class="fa-solid fa-dollar-sign"></i>
-                <span>Ver Anúncios</span>
+    <a href="../anuncios.php">
+        <i class="fa-solid fa-dollar-sign"></i>
+        <span>Ver Anúncios</span>
             </a>
-            <a href="meus_chats.php">
-                <i class="fas fa-comments"></i>
-                <span>Minhas Conversas</span>
-            </a>
-            <a href="#">
-                <i class="fas fa-truck"></i>
-                <span>Solicitar Transporte</span>
-            </a>
+            
+            <?php if (!$is_pendente): ?>
+                <!-- Apenas para usuários ativos -->
+                <a href="meus_chats.php">
+                    <i class="fas fa-comments"></i>
+                    <span>Minhas Conversas</span>
+                </a>
+                <a href="#">
+                    <i class="fas fa-truck"></i>
+                    <span>Solicitar Transporte</span>
+                </a>
+            <?php endif; ?>
+            
             <a href="perfil.php">
                 <i class="fas fa-user-circle"></i>
                 <span>Dados</span>

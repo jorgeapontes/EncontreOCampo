@@ -3,6 +3,7 @@
 
 session_start();
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/../permissions.php'; // ADICIONE ESTA LINHA
 
 // 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA
 if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['comprador', 'vendedor'])) {
@@ -354,6 +355,62 @@ $imagePath = !empty($imagens_produto[0]['url']) ? htmlspecialchars($imagens_prod
         .btn-chat i {
             font-size: 20px;
         }
+
+        .btn-disabled {
+            opacity: 0.6 !important;
+            cursor: not-allowed !important;
+            pointer-events: none !important;
+            filter: grayscale(30%) !important;
+        }
+
+        .btn-disabled:hover {
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .status-info, .status-alert {
+            padding: 8px 12px;
+            margin-top: 10px;
+        }
+
+        .status-info i, .status-alert i {
+            margin-right: 5px;
+        }
+
+        /* Badge de status pendente */
+        .status-badge-pendente {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ffc107;
+            color: #856404;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+            z-index: 100;
+        }
+
+        .aviso-pendente {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+            text-align: center;
+        }
+
+        .aviso-pendente i {
+            margin-right: 10px;
+            color: #ffc107;
+        }
+
+        .aviso-pendente a {
+            color: #007bff;
+            text-decoration: underline;
+            font-weight: bold;
+        }
         
         /* Estilos para o carrossel de imagens */
         .carrossel-container {
@@ -619,6 +676,13 @@ $imagePath = !empty($imagens_produto[0]['url']) ? htmlspecialchars($imagens_prod
     <br>
 
     <main class="main-content">
+        <?php if (isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'pendente'): ?>
+            <div class="aviso-pendente">
+                <i class="fas fa-clock"></i>
+                <strong>Seu cadastro está aguardando aprovação.</strong> 
+                Enquanto isso, você pode visualizar os anúncios, mas ainda não pode fazer negócios. 
+            </div>
+        <?php endif; ?>
         <div class="produto-container">
             <div class="produto-content">
                 <!-- Seção de Imagem do Produto - CARROSSEL FUNCIONAL -->
@@ -755,19 +819,34 @@ $imagePath = !empty($imagens_produto[0]['url']) ? htmlspecialchars($imagens_prod
                         </div>
 
                         <div class="botoes-compra">
-                            <button type="button" class="btn-comprar" id="btn-comprar">
-                                <i class="fas fa-shopping-cart"></i>
-                                Comprar Agora
-                            </button>
+                            <?php if (isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo'): ?>
+                                <button type="button" class="btn-comprar" id="btn-comprar">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    Comprar Agora
+                                </button>
+                            <?php else: ?>
+                                <button type="button" class="btn-comprar btn-disabled" disabled title="Aguarde a aprovação da sua conta">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    Comprar Agora
+                                </button>
+                            <?php endif; ?>
                             
-                            <div class="botoes-compra">
-                                <div class="proposta-option">
+                            <div class="proposta-option">
+                                <?php if (isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo'): ?>
                                     <a href="../chat/chat.php?produto_id=<?php echo $anuncio_id; ?>" class="btn-chat">
                                         <i class="fas fa-comments"></i>
                                         Conversar com o Vendedor
                                     </a>
-                                    <p class="proposta-text">Negocie diretamente com o vendedor</p>
-                                </div>
+                                <?php else: ?>
+                                    <a type="button" class="btn-chat btn-disabled" disabled title="Aguarde a aprovação da sua conta">
+                                        <i class="fas fa-comments"></i>
+                                        Conversar com o Vendedor
+                                    </a>
+                                    <div class="status-info" style="color: #ff6b6b; font-size: 0.9em; margin-top: 5px;">
+                                        <i class="fas fa-info-circle"></i> Aguarde a aprovação da sua conta para fazer negócios
+                                    </div>
+                                <?php endif; ?>
+                                <p class="proposta-text">Negocie diretamente com o vendedor</p>
                             </div>
                         </div>
                     </div>

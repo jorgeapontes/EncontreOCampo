@@ -19,20 +19,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if (password_verify($password, $usuario['senha'])) {
-
-                if ($usuario['status'] === 'pendente') {
-                    // Mensagem clara para o usuário
-                    $_SESSION['erro_login'] = "Sua solicitação de cadastro está em análise. Por favor, aguarde a aprovação do administrador.";
-                    header("Location: ../index.php#login");
-                    exit();
-                }
-
-
-                elseif ($usuario['status'] === 'ativo') {
+                // REMOVA ou modifique o bloco de verificação de status "pendente"
+                // Mantenha apenas a verificação para "ativo" e outros status
+                
+                if ($usuario['status'] === 'ativo' || $usuario['status'] === 'pendente') {
                     $_SESSION['usuario_id'] = $usuario['id'];
                     $_SESSION['usuario_email'] = $usuario['email'];
                     $_SESSION['usuario_tipo'] = $usuario['tipo'];
                     $_SESSION['usuario_nome'] = $usuario['nome'];
+                    $_SESSION['usuario_status'] = $usuario['status']; // Adicione o status na sessão
                     
                     // Redirecionar baseado no tipo de usuário
                     switch ($usuario['tipo']) {
@@ -40,20 +35,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             header("Location: admin/dashboard.php");
                             break;
                         case 'comprador':
-                            header("Location: anuncios.php");
-                            break;
                         case 'vendedor':
-                            header("Location: vendedor/dashboard.php");
-                            break;
                         case 'transportador':
-                            header("Location: transportador/dashboard.php");
+                            // Para usuários não-admin com status pendente
+                            if ($usuario['status'] === 'pendente') {
+                                header("Location: ../index.php");
+                            } else {
+                                // Para status ativo
+                                switch ($usuario['tipo']) {
+                                    case 'comprador':
+                                        header("Location: anuncios.php");
+                                        break;
+                                    case 'vendedor':
+                                        header("Location: vendedor/dashboard.php");
+                                        break;
+                                    case 'transportador':
+                                        header("Location: transportador/dashboard.php");
+                                        break;
+                                }
+                            }
                             break;
                         default:
                             header("Location: ../index.php");
                     }
                     exit();
                 } else {
-                    $erro = "Conta pendente de aprovação";
+                    $erro = "Conta inativa ou suspensa";
                 }
             } else {
                 $erro = "Senha incorreta";

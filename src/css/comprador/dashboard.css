@@ -177,6 +177,36 @@ body {
     font-style: normal;
 }
 
+.subtitulo {
+    font-size: 1rem;
+    color: #666;
+    margin-top: 5px;
+    font-weight: normal;
+}
+
+/* Aviso para usuários pendentes */
+.aviso-status {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 1px solid #ffc107;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 20px auto;
+    max-width: 800px;
+    text-align: center;
+    color: #856404;
+}
+
+.aviso-status i {
+    color: #ffc107;
+    margin-right: 10px;
+}
+
+.aviso-status a {
+    color: #007bff;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
 /* --- Cards de Informação --- */
 .info-cards {
     display: flex;

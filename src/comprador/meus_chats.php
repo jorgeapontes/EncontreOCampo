@@ -687,7 +687,7 @@ if ($filtro === 'nao-lidos') {
                             </a>
                         <?php else: ?>
                             <a href="meus_chats.php" class="btn-anuncios">
-                                <i class="fas fa-list"></i> Ver Todas as Conversas
+                                 Ver Todas as Conversas
                             </a>
                         <?php endif; ?>
                     </div>

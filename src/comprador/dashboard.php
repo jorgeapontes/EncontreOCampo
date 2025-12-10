@@ -15,13 +15,18 @@ $usuario_id = $_SESSION['usuario_id'];
 
 $database = new Database();
 $conn = $database->getConnection();
+
 $dashboard_data = [
     'total_propostas' => 0,
-    'enviada' => 0,     // Nova proposta
-    'pendente' => 0,    // Aguardando resposta
+    'enviada' => 0,
+    'pendente' => 0,
     'aceita' => 0,
-    'recusada' => 0
+    'recusada' => 0,
+    'favoritos' => 0,
+    'total_chats' => 0,
+    'chats_nao_lidos' => 0
 ];
+
 $comprador_id = null;
 
 // 2. OBTENDO O ID DO COMPRADOR
@@ -41,9 +46,8 @@ try {
     die("Erro ao buscar ID do comprador: " . $e->getMessage());
 }
 
-// 3. BUSCA DOS TOTAIS DAS PROPOSTAS POR STATUS - ATUALIZADA
+// 3. BUSCA DOS TOTAIS DAS PROPOSTAS POR STATUS
 try {
-    // Contar propostas por status na tabela propostas_comprador
     $sql_propostas = "SELECT status, COUNT(id) AS total FROM propostas_comprador 
                       WHERE comprador_id = :comprador_id
                       GROUP BY status";
@@ -53,7 +57,6 @@ try {
     $stmt_propostas->execute();
     $totais_status = $stmt_propostas->fetchAll(PDO::FETCH_ASSOC);
 
-    // Inicializa os contadores
     $dashboard_data['enviada'] = 0;
     $dashboard_data['pendente'] = 0;
     $dashboard_data['aceita'] = 0;
@@ -69,7 +72,6 @@ try {
         }
     }
 
-    // CORREÇÃO: Contar compras realizadas (propostas ACEITAS na tabela de negociação)
     $sql_compras_realizadas = "SELECT COUNT(DISTINCT pn.id) as compras_realizadas
                                FROM propostas_negociacao pn
                                INNER JOIN propostas_comprador pc ON pn.proposta_comprador_id = pc.id
@@ -81,7 +83,6 @@ try {
     $stmt_compras->execute();
     $compras_result = $stmt_compras->fetch(PDO::FETCH_ASSOC);
     
-    // Atualiza o contador de compras realizadas
     $dashboard_data['aceita'] = $compras_result['compras_realizadas'] ?? 0;
 
 } catch (PDOException $e) {
@@ -103,6 +104,42 @@ try {
 } catch (PDOException $e) {
     error_log("Erro ao carregar total de favoritos: " . $e->getMessage());
     $dashboard_data['favoritos'] = 0;
+}
+
+// 5. BUSCAR TOTAL DE CHATS E MENSAGENS NÃO LIDAS
+try {
+    // Total de chats do comprador
+    $sql_chats = "SELECT COUNT(DISTINCT cc.id) as total_chats
+                  FROM chat_conversas cc
+                  WHERE cc.comprador_id = :usuario_id
+                  AND cc.status = 'ativo'";
+    
+    $stmt_chats = $conn->prepare($sql_chats);
+    $stmt_chats->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt_chats->execute();
+    $chats_result = $stmt_chats->fetch(PDO::FETCH_ASSOC);
+    
+    $dashboard_data['total_chats'] = $chats_result['total_chats'] ?? 0;
+    
+    // Chats com mensagens não lidas
+    $sql_nao_lidos = "SELECT COUNT(DISTINCT cm.conversa_id) as chats_nao_lidos
+                      FROM chat_mensagens cm
+                      INNER JOIN chat_conversas cc ON cm.conversa_id = cc.id
+                      WHERE cc.comprador_id = :usuario_id
+                      AND cm.remetente_id != :usuario_id
+                      AND cm.lida = 0";
+    
+    $stmt_nao_lidos = $conn->prepare($sql_nao_lidos);
+    $stmt_nao_lidos->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt_nao_lidos->execute();
+    $nao_lidos_result = $stmt_nao_lidos->fetch(PDO::FETCH_ASSOC);
+    
+    $dashboard_data['chats_nao_lidos'] = $nao_lidos_result['chats_nao_lidos'] ?? 0;
+    
+} catch (PDOException $e) {
+    error_log("Erro ao carregar dados de chats: " . $e->getMessage());
+    $dashboard_data['total_chats'] = 0;
+    $dashboard_data['chats_nao_lidos'] = 0;
 }
 ?>
 
@@ -145,18 +182,13 @@ try {
                         <a href="../notificacoes.php" class="nav-link no-underline">
                             <i class="fas fa-bell"></i>
                             <?php
-                            // Contar notificações não lidas
-                            if (isset($_SESSION['usuario_id'])) {
-                                $database = new Database();
-                                $conn = $database->getConnection();
-                                $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
-                                $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
-                                $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
-                                $stmt_nao_lidas->execute();
-                                $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
-                                if ($total_nao_lidas > 0) {
-                                    echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
-                                }
+                            $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
+                            $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
+                            $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
+                            $stmt_nao_lidas->execute();
+                            $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
+                            if ($total_nao_lidas > 0) {
+                                echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
                             }
                             ?>
                         </a>
@@ -184,19 +216,19 @@ try {
         </section>
         
         <section class="info-cards">
-            <a href="minhas_propostas.php">
+            <a href="meus_chats.php">
                 <div class="card">
                     <i class="fas fa-comments"></i>
-                    <h3>Total de propostas</h3>
-                    <p><?php echo $dashboard_data['total_propostas']; ?></p>
+                    <h3>Meus Chats</h3>
+                    <p><?php echo $dashboard_data['total_chats']; ?></p>
                 </div>
             </a>
 
-            <a href="minhas_propostas.php">
+            <a href="meus_chats.php?filtro=nao-lidos">
                 <div class="card">
-                    <i class="fas fa-clock"></i>
-                    <h3>Propostas pendentes</h3>
-                    <p><?php echo $dashboard_data['pendente']; ?></p>
+                    <i class="fas fa-envelope"></i>
+                    <h3>Mensagens Novas</h3>
+                    <p><?php echo $dashboard_data['chats_nao_lidos']; ?></p>
                 </div>
             </a>
 
@@ -228,9 +260,9 @@ try {
                 <i class="fa-solid fa-dollar-sign"></i>
                 <span>Ver Anúncios</span>
             </a>
-            <a href="minhas_propostas.php">
-                <i class="fas fa-list-alt"></i>
-                <span>Minhas Propostas</span>
+            <a href="meus_chats.php">
+                <i class="fas fa-comments"></i>
+                <span>Minhas Conversas</span>
             </a>
             <a href="#">
                 <i class="fas fa-truck"></i>
@@ -243,7 +275,6 @@ try {
         </section>
     </div>
     <script>
-        // Menu Hamburguer functionality (adicionado)
         const hamburger = document.querySelector(".hamburger");
         const navMenu = document.querySelector(".nav-menu");
         
@@ -253,7 +284,6 @@ try {
                 navMenu.classList.toggle("active");
             });
             
-            // Fechar menu ao clicar em um link
             document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
                 hamburger.classList.remove("active");
                 navMenu.classList.remove("active");

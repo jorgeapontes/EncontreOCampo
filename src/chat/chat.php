@@ -15,6 +15,9 @@ $usuario_tipo = $_SESSION['usuario_tipo'];
 $produto_id = isset($_GET['produto_id']) ? (int)$_GET['produto_id'] : 0;
 $conversa_id_get = isset($_GET['conversa_id']) ? (int)$_GET['conversa_id'] : 0;
 
+// NOVO: Capturar de onde o usuário veio
+$referrer = isset($_GET['ref']) ? $_GET['ref'] : '';
+
 if ($produto_id <= 0) {
     header("Location: ../anuncios.php?erro=" . urlencode("Produto não encontrado"));
     exit();
@@ -101,11 +104,19 @@ if ($eh_vendedor_produto) {
     $conversas = null;
 }
 
-// Determinar URL de volta
+// NOVO: Determinar URL de volta baseado na origem
 if ($eh_vendedor_produto) {
+    // Vendedor sempre volta para chats.php
     $url_voltar = "../../src/vendedor/chats.php";
 } else {
-    $url_voltar = "../comprador/proposta_nova.php?anuncio_id=" . $produto_id;
+    // Comprador: verificar de onde veio
+    if ($referrer === 'meus_chats') {
+        // Veio da lista de chats
+        $url_voltar = "../comprador/meus_chats.php";
+    } else {
+        // Veio do produto (proposta_nova.php)
+        $url_voltar = "../comprador/proposta_nova.php?anuncio_id=" . $produto_id;
+    }
 }
 ?>
 <!DOCTYPE html>

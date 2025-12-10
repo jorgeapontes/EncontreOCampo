@@ -186,7 +186,7 @@ try {
         <section class="info-cards">
             <a href="minhas_propostas.php">
                 <div class="card">
-                    <i class="fas fa-handshake"></i>
+                    <i class="fas fa-comments"></i>
                     <h3>Total de propostas</h3>
                     <p><?php echo $dashboard_data['total_propostas']; ?></p>
                 </div>

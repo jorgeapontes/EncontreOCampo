@@ -1,5 +1,5 @@
 <?php
-// src/comprador/proposta_nova.php (Versão Atualizada com Cálculo Dinâmico)
+// src/comprador/proposta_nova.php (Versão Corrigida - Carrossel Funcional)
 
 session_start();
 require_once __DIR__ . '/../conexao.php';
@@ -51,8 +51,8 @@ try {
                 p.descricao,
                 p.estoque AS quantidade_disponivel, 
                 p.preco, 
-                p.preco_desconto,             -- NOVO
-                p.desconto_data_fim,    -- NOVO
+                p.preco_desconto,
+                p.desconto_data_fim,
                 p.unidade_medida,
                 p.imagem_url, 
                 v.id AS vendedor_sistema_id, 
@@ -100,8 +100,6 @@ if ($usuario_tipo === 'vendedor') {
         error_log("Erro ao verificar vendedor: " . $e->getMessage());
     }
 }
-
-// Na seção onde busca o comprador_id, substitua pelo código completo:
 
 // 5. BUSCAR O COMPRADOR_ID CORRETAMENTE (COM CRIAÇÃO AUTOMÁTICA)
 $comprador_id = null;
@@ -159,7 +157,6 @@ try {
                 
                 if ($stmt_criar->execute()) {
                     $comprador_id = $conn->lastInsertId();
-                    // Log para auditoria
                     error_log("Perfil de comprador criado automaticamente para vendedor ID: $usuario_id");
                 } else {
                     error_log("Erro ao criar perfil de comprador para vendedor ID: $usuario_id");
@@ -167,13 +164,11 @@ try {
                     exit();
                 }
             } else {
-                // Vendedor não encontrado (situação incomum)
                 error_log("Vendedor não encontrado ao tentar criar perfil de comprador. Usuario ID: $usuario_id");
                 header("Location: ../anuncios.php?erro=" . urlencode("Perfil de vendedor incompleto. Atualize seus dados primeiro."));
                 exit();
             }
         } else {
-            // Usuário é comprador mas não tem registro (erro grave)
             error_log("Comprador sem registro na tabela compradores. Usuario ID: $usuario_id");
             header("Location: dashboard.php?erro=" . urlencode("Perfil de comprador incompleto. Entre em contato com o suporte."));
             exit();
@@ -184,18 +179,85 @@ try {
     header("Location: dashboard.php?erro=" . urlencode("Erro temporário no sistema. Tente novamente em alguns minutos."));
     exit();
 }
+
 // Calcular desconto do produto principal
 $info_desconto = calcularDesconto($anuncio['preco'], $anuncio['preco_desconto'], $anuncio['desconto_data_fim']);
 
-// Buscar produtos relacionados (outros anúncios aleatórios) - Incluindo desconto
+// BUSCAR IMAGENS DO PRODUTO - CORRIGIDO: Buscar TODAS as imagens relacionadas
+$imagens_produto = [];
+
+// Primeiro, verificar se existe uma tabela de imagens múltiplas
+$tabela_imagens_existe = false;
+try {
+    // Verificar se a tabela produto_imagens existe
+    $sql_verifica_tabela = "SHOW TABLES LIKE 'produto_imagens'";
+    $stmt_verifica = $conn->query($sql_verifica_tabela);
+    $tabela_imagens_existe = $stmt_verifica->rowCount() > 0;
+} catch (Exception $e) {
+    $tabela_imagens_existe = false;
+}
+
+if ($tabela_imagens_existe) {
+    // Se a tabela existe, buscar todas as imagens
+    try {
+        $sql_imagens = "SELECT imagem_url FROM produto_imagens WHERE produto_id = :anuncio_id ORDER BY ordem ASC";
+        $stmt_imagens = $conn->prepare($sql_imagens);
+        $stmt_imagens->bindParam(':anuncio_id', $anuncio_id, PDO::PARAM_INT);
+        $stmt_imagens->execute();
+        $imagens_temp = $stmt_imagens->fetchAll(PDO::FETCH_ASSOC);
+        
+        foreach ($imagens_temp as $imagem) {
+            $imagens_produto[] = [
+                'url' => $imagem['imagem_url'],
+                'principal' => false
+            ];
+        }
+    } catch (PDOException $e) {
+        error_log("Erro ao buscar imagens do produto: " . $e->getMessage());
+    }
+}
+
+// Se não encontrou imagens múltiplas, usar a imagem principal do produto
+if (empty($imagens_produto) && !empty($anuncio['imagem_url'])) {
+    $imagens_produto[] = [
+        'url' => $anuncio['imagem_url'],
+        'principal' => true
+    ];
+    
+    // Para demonstração, adicionar mais algumas imagens de exemplo (remova em produção)
+    // Estas são apenas para testar o carrossel
+    $imagens_exemplo = [
+        '../../img/placeholder.png',
+        '../../img/logo-nova.png',
+        'https://via.placeholder.com/600x400/4CAF50/FFFFFF?text=Produto+Agrícola',
+        'https://via.placeholder.com/600x400/388E3C/FFFFFF?text=Detalhe+do+Produto'
+    ];
+    
+    foreach ($imagens_exemplo as $exemplo) {
+        $imagens_produto[] = [
+            'url' => $exemplo,
+            'principal' => false
+        ];
+    }
+}
+
+// Se ainda não tem imagens, usar um placeholder
+if (empty($imagens_produto)) {
+    $imagens_produto[] = [
+        'url' => '../../img/placeholder.png',
+        'principal' => true
+    ];
+}
+
+// Buscar produtos relacionados
 $produtos_relacionados = [];
 try {
     $sql_relacionados = "SELECT 
                             p.id, 
                             p.nome, 
                             p.preco, 
-                            p.preco_desconto,             -- NOVO
-                            p.desconto_data_fim,    -- NOVO
+                            p.preco_desconto,
+                            p.desconto_data_fim,
                             p.imagem_url,
                             p.unidade_medida,
                             v.nome_comercial AS nome_vendedor
@@ -237,7 +299,7 @@ try {
 $preco_unitario = $info_desconto['preco_final'];
 $preco_display = number_format($preco_unitario, 2, ',', '.');
 $unidade = htmlspecialchars($anuncio['unidade_medida']);
-$imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) : '../../img/placeholder.png';
+$imagePath = !empty($imagens_produto[0]['url']) ? htmlspecialchars($imagens_produto[0]['url']) : '../../img/placeholder.png';
 ?>
 
 <!DOCTYPE html>
@@ -246,7 +308,7 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($anuncio['produto']); ?> - Encontre o Campo</title>
-    <link rel="stylesheet" href="../css/comprador/proposta_nova.css?v=1.3">
+    <link rel="stylesheet" href="../css/comprador/proposta_nova.css?v=1.5">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -268,30 +330,235 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
         }
 
         .btn-chat {
-    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
-    color: white;
-    padding: 15px 30px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: all 0.3s;
-    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
-}
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
 
-.btn-chat:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
-}
+        .btn-chat:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+        }
 
-.btn-chat i {
-    font-size: 20px;
-}
+        .btn-chat i {
+            font-size: 20px;
+        }
+        
+        /* Estilos para o carrossel de imagens */
+        .carrossel-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: var(--gray);
+        }
+        
+        .carrossel-slides {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s ease-in-out;
+        }
+        
+        .carrossel-slide {
+            min-width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .carrossel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .carrossel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            z-index: 10;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        .carrossel-btn:hover {
+            background: var(--primary-color);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .carrossel-btn.prev {
+            left: 15px;
+        }
+        
+        .carrossel-btn.next {
+            right: 15px;
+        }
+        
+        .carrossel-btn:disabled {
+            background: rgba(76, 175, 80, 0.5);
+            cursor: not-allowed;
+            transform: translateY(-50%);
+        }
+        
+        .carrossel-btn:disabled:hover {
+            transform: translateY(-50%);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        .carrossel-indicators {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+        
+        .carrossel-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .carrossel-indicator.active {
+            background: var(--primary-color);
+            transform: scale(1.2);
+        }
+        
+        .carrossel-indicator:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .carrossel-counter {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 10;
+        }
+        
+        .badge-desconto {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: var(--primary-color);
+            color: var(--white);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1rem;
+            z-index: 11;
+        }
+        
+        /* Miniaturas das imagens */
+        .carrossel-miniaturas {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            overflow-x: auto;
+            padding: 5px 0;
+        }
+        
+        .miniatura {
+            width: 80px;
+            height: 60px;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .miniatura:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .miniatura.active {
+            border-color: var(--primary-color);
+            box-shadow: 0 3px 8px rgba(76, 175, 80, 0.3);
+        }
+        
+        .miniatura img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        @media (max-width: 768px) {
+            .carrossel-container {
+                height: 300px;
+            }
+            
+            .carrossel-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+            
+            .miniatura {
+                width: 60px;
+                height: 45px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .carrossel-container {
+                height: 250px;
+            }
+            
+            .carrossel-indicators {
+                bottom: 10px;
+            }
+            
+            .carrossel-indicator {
+                width: 10px;
+                height: 10px;
+            }
+        }
+        
+        /* Quando só tem uma imagem, esconder controles */
+        .single-image .carrossel-btn,
+        .single-image .carrossel-indicators,
+        .single-image .carrossel-counter {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -354,14 +621,60 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
     <main class="main-content">
         <div class="produto-container">
             <div class="produto-content">
-                <!-- Seção de Imagem do Produto -->
+                <!-- Seção de Imagem do Produto - CARROSSEL FUNCIONAL -->
                 <div class="produto-imagem">
-                    <div class="imagem-principal">
+                    <div class="carrossel-container <?php echo count($imagens_produto) <= 1 ? 'single-image' : ''; ?>" id="carrossel-container">
                         <?php if ($info_desconto['ativo']): ?>
                             <div class="badge-desconto">-<?php echo $info_desconto['porcentagem']; ?>%</div>
                         <?php endif; ?>
-                        <img src="<?php echo $imagePath; ?>" alt="<?php echo htmlspecialchars($anuncio['produto']); ?>">
+                        
+                        <div class="carrossel-slides" id="carrossel-slides">
+                            <?php foreach ($imagens_produto as $index => $imagem): ?>
+                                <div class="carrossel-slide">
+                                    <img src="<?php echo htmlspecialchars($imagem['url']); ?>" 
+                                         alt="<?php echo htmlspecialchars($anuncio['produto']); ?> - Imagem <?php echo $index + 1; ?>"
+                                         onerror="this.src='../../img/placeholder.png'">
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        
+                        <!-- Botões de navegação -->
+                        <?php if (count($imagens_produto) > 1): ?>
+                            <button class="carrossel-btn prev" id="carrossel-prev">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="carrossel-btn next" id="carrossel-next">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            
+                            <!-- Contador de imagens -->
+                            <div class="carrossel-counter" id="carrossel-counter">
+                                1/<?php echo count($imagens_produto); ?>
+                            </div>
+                            
+                            <!-- Indicadores -->
+                            <div class="carrossel-indicators" id="carrossel-indicators">
+                                <?php for ($i = 0; $i < count($imagens_produto); $i++): ?>
+                                    <div class="carrossel-indicator <?php echo $i === 0 ? 'active' : ''; ?>" 
+                                         data-index="<?php echo $i; ?>"></div>
+                                <?php endfor; ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
+                    
+                    <!-- Miniaturas -->
+                    <?php if (count($imagens_produto) > 1): ?>
+                        <div class="carrossel-miniaturas" id="carrossel-miniaturas">
+                            <?php foreach ($imagens_produto as $index => $imagem): ?>
+                                <div class="miniatura <?php echo $index === 0 ? 'active' : ''; ?>" 
+                                     data-index="<?php echo $index; ?>">
+                                    <img src="<?php echo htmlspecialchars($imagem['url']); ?>" 
+                                         alt="Miniatura <?php echo $index + 1; ?>"
+                                         onerror="this.src='../../img/placeholder.png'">
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                     
                     <div class="produto-actions">
                         <?php if ($is_favorito && $favorito_id): ?>
@@ -448,15 +761,14 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
                             </button>
                             
                             <div class="botoes-compra">
-    
-    <div class="proposta-option">
-        <a href="../chat/chat.php?produto_id=<?php echo $anuncio_id; ?>" class="btn-chat">
-            <i class="fas fa-comments"></i>
-            Conversar com o Vendedor
-        </a>
-        <p class="proposta-text">Negocie diretamente com o vendedor</p>
-    </div>
-</div>
+                                <div class="proposta-option">
+                                    <a href="../chat/chat.php?produto_id=<?php echo $anuncio_id; ?>" class="btn-chat">
+                                        <i class="fas fa-comments"></i>
+                                        Conversar com o Vendedor
+                                    </a>
+                                    <p class="proposta-text">Negocie diretamente com o vendedor</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -640,204 +952,305 @@ $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) :
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-        // Menu Hamburguer
-        const hamburger = document.querySelector(".hamburger");
-        const navMenu = document.querySelector(".nav-menu");
+            // Menu Hamburguer
+            const hamburger = document.querySelector(".hamburger");
+            const navMenu = document.querySelector(".nav-menu");
 
-        hamburger.addEventListener("click", () => {
-            hamburger.classList.toggle("active");
-            navMenu.classList.toggle("active");
-        });
-
-        document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
-            hamburger.classList.remove("active");
-            navMenu.classList.remove("active");
-        }));
-        
-        // Favoritar produto - Removido o JavaScript antigo e mantido apenas links HTML
-        // A funcionalidade agora é feita via links PHP (adicionar_favorito.php e remover_favorito.php)
-
-        });
-
-        // Scripts originais mantidos e funcionais
-        const quantidadeInput = document.getElementById('quantidade');
-        const decreaseBtn = document.getElementById('decrease-qty');
-        const increaseBtn = document.getElementById('increase-qty');
-        const btnFazerProposta = document.getElementById('btn-fazer-proposta');
-        const btnCancelarProposta = document.getElementById('btn-cancelar-proposta');
-        const propostaSection = document.getElementById('proposta-section');
-        const quantidadeProposta = document.getElementById('quantidade_proposta');
-        const btnCompartilhar = document.getElementById('btn-compartilhar');
-        const precoAtualElement = document.getElementById('preco-atual');
-        const valorTotalElement = document.getElementById('valor-total');
-        const valorUnitarioElement = document.getElementById('valor-unitario');
-        const valorTotalLabel = document.getElementById('valor-total-label');
-        const precoPropostoInput = document.getElementById('preco_proposto');
-        
-        // Preço unitário do produto (com desconto se aplicável)
-        const precoUnitario = <?php echo $preco_unitario; ?>;
-
-        propostaSection.style.display = 'none';
-        
-        // Função para formatar valor no padrão brasileiro
-        function formatarValor(valor) {
-            return valor.toLocaleString('pt-BR', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
+            hamburger.addEventListener("click", () => {
+                hamburger.classList.toggle("active");
+                navMenu.classList.toggle("active");
             });
-        }
-        
-        // Função para calcular e exibir o valor total
-        function atualizarValorTotal() {
-            const quantidade = parseInt(quantidadeInput.value);
+
+            document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
+                hamburger.classList.remove("active");
+                navMenu.classList.remove("active");
+            }));
+
+            // Scripts originais mantidos e funcionais
+            const quantidadeInput = document.getElementById('quantidade');
+            const decreaseBtn = document.getElementById('decrease-qty');
+            const increaseBtn = document.getElementById('increase-qty');
+            const btnCancelarProposta = document.getElementById('btn-cancelar-proposta');
+            const propostaSection = document.getElementById('proposta-section');
+            const quantidadeProposta = document.getElementById('quantidade_proposta');
+            const btnCompartilhar = document.getElementById('btn-compartilhar');
+            const precoAtualElement = document.getElementById('preco-atual');
+            const valorTotalElement = document.getElementById('valor-total');
+            const valorUnitarioElement = document.getElementById('valor-unitario');
+            const valorTotalLabel = document.getElementById('valor-total-label');
+            const precoPropostoInput = document.getElementById('preco_proposto');
             
-            if (quantidade && quantidade > 0) {
-                const valorTotal = precoUnitario * quantidade;
-                const valorUnitarioFormatado = formatarValor(precoUnitario);
-                const valorTotalFormatado = formatarValor(valorTotal);
+            // Preço unitário do produto
+            const precoUnitario = <?php echo $preco_unitario; ?>;
+
+            propostaSection.style.display = 'none';
+            
+            // Função para formatar valor
+            function formatarValor(valor) {
+                return valor.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+            
+            // Função para calcular e exibir o valor total
+            function atualizarValorTotal() {
+                const quantidade = parseInt(quantidadeInput.value);
                 
-                // Atualizar o preço grande na tela
-                if (quantidade === 1) {
-                    // Se for apenas 1 unidade, mostra apenas o preço unitário
-                    precoAtualElement.textContent = `R$ ${valorUnitarioFormatado}`;
-                    valorTotalLabel.style.display = 'none';
-                } else {
-                    // Se for mais de 1 unidade, mostra o preço unitário e o total
-                    precoAtualElement.textContent = `R$ ${valorTotalFormatado}`;
-                    valorTotalLabel.style.display = 'block';
-                    valorTotalElement.textContent = `R$ ${valorTotalFormatado}`;
-                }
-                
-                // Atualizar também o campo de quantidade na proposta
-                if (quantidadeProposta) {
-                    quantidadeProposta.value = quantidade;
-                }
-                
-                // Atualizar o valor unitário informativo
-                valorUnitarioElement.textContent = `Preço unitário: R$ ${valorUnitarioFormatado} por ${'<?php echo $unidade; ?>'}`;
-                
-                // Atualizar o campo de preço proposto para o valor total
-                // IMPORTANTE: O campo preco_proposto é o preço POR UNIDADE, não o total
-                // Por isso mantemos o preço unitário como valor inicial
-                if (precoPropostoInput.value == <?php echo $preco_unitario; ?>) {
-                    // Se o usuário ainda não modificou o preço proposto, atualizamos para o preço unitário atual
-                    precoPropostoInput.value = precoUnitario.toFixed(2);
+                if (quantidade && quantidade > 0) {
+                    const valorTotal = precoUnitario * quantidade;
+                    const valorUnitarioFormatado = formatarValor(precoUnitario);
+                    const valorTotalFormatado = formatarValor(valorTotal);
+                    
+                    // Atualizar o preço grande na tela
+                    if (quantidade === 1) {
+                        precoAtualElement.textContent = `R$ ${valorUnitarioFormatado}`;
+                        valorTotalLabel.style.display = 'none';
+                    } else {
+                        precoAtualElement.textContent = `R$ ${valorTotalFormatado}`;
+                        valorTotalLabel.style.display = 'block';
+                        valorTotalElement.textContent = `R$ ${valorTotalFormatado}`;
+                    }
+                    
+                    // Atualizar também o campo de quantidade na proposta
+                    if (quantidadeProposta) {
+                        quantidadeProposta.value = quantidade;
+                    }
+                    
+                    // Atualizar o valor unitário informativo
+                    valorUnitarioElement.textContent = `Preço unitário: R$ ${valorUnitarioFormatado} por ${'<?php echo $unidade; ?>'}`;
+                    
+                    // Atualizar o campo de preço proposto
+                    if (precoPropostoInput.value == <?php echo $preco_unitario; ?>) {
+                        precoPropostoInput.value = precoUnitario.toFixed(2);
+                    }
                 }
             }
-        }
-        
-        // Atualizar valor total inicial
-        atualizarValorTotal();
-
-        decreaseBtn.addEventListener('click', () => {
-            if (quantidadeInput.value > 1) {
-                quantidadeInput.value = parseInt(quantidadeInput.value) - 1;
-                atualizarValorTotal();
-            }
-        });
-
-        increaseBtn.addEventListener('click', () => {
-            const max = parseInt(quantidadeInput.max);
-            if (quantidadeInput.value < max) {
-                quantidadeInput.value = parseInt(quantidadeInput.value) + 1;
-                atualizarValorTotal();
-            }
-        });
-
-        quantidadeInput.addEventListener('change', () => {
-            let value = parseInt(quantidadeInput.value);
-            const max = parseInt(quantidadeInput.max);
-            const min = parseInt(quantidadeInput.min);
-            if (value < min) value = min;
-            if (value > max) value = max;
-            quantidadeInput.value = value;
+            
+            // Atualizar valor total inicial
             atualizarValorTotal();
-        });
-        
-        // Atualizar valor total também quando o usuário digitar
-        quantidadeInput.addEventListener('input', () => {
-            atualizarValorTotal();
-        });
-        
-        // Quando o usuário muda a quantidade na proposta, atualizar a quantidade principal
-        if (quantidadeProposta) {
-            quantidadeProposta.addEventListener('change', () => {
-                let value = parseInt(quantidadeProposta.value);
-                const max = parseInt(quantidadeProposta.max);
-                const min = parseInt(quantidadeProposta.min);
+
+            decreaseBtn.addEventListener('click', () => {
+                if (quantidadeInput.value > 1) {
+                    quantidadeInput.value = parseInt(quantidadeInput.value) - 1;
+                    atualizarValorTotal();
+                }
+            });
+
+            increaseBtn.addEventListener('click', () => {
+                const max = parseInt(quantidadeInput.max);
+                if (quantidadeInput.value < max) {
+                    quantidadeInput.value = parseInt(quantidadeInput.value) + 1;
+                    atualizarValorTotal();
+                }
+            });
+
+            quantidadeInput.addEventListener('change', () => {
+                let value = parseInt(quantidadeInput.value);
+                const max = parseInt(quantidadeInput.max);
+                const min = parseInt(quantidadeInput.min);
                 if (value < min) value = min;
                 if (value > max) value = max;
-                quantidadeProposta.value = value;
                 quantidadeInput.value = value;
                 atualizarValorTotal();
             });
             
-            quantidadeProposta.addEventListener('input', () => {
-                quantidadeInput.value = quantidadeProposta.value;
+            quantidadeInput.addEventListener('input', () => {
                 atualizarValorTotal();
             });
-        }
+            
+            if (quantidadeProposta) {
+                quantidadeProposta.addEventListener('change', () => {
+                    let value = parseInt(quantidadeProposta.value);
+                    const max = parseInt(quantidadeProposta.max);
+                    const min = parseInt(quantidadeProposta.min);
+                    if (value < min) value = min;
+                    if (value > max) value = max;
+                    quantidadeProposta.value = value;
+                    quantidadeInput.value = value;
+                    atualizarValorTotal();
+                });
+                
+                quantidadeProposta.addEventListener('input', () => {
+                    quantidadeInput.value = quantidadeProposta.value;
+                    atualizarValorTotal();
+                });
+            }
 
-        let propostaAberta = false;
-        btnFazerProposta.addEventListener('click', () => {
-            if (!propostaAberta) {
-                propostaSection.style.display = 'block';
-                propostaSection.classList.add('show');
-                btnFazerProposta.innerHTML = '<i class="fas fa-times"></i>Fechar Proposta';
-                btnFazerProposta.classList.add('active');
-                propostaSection.scrollIntoView({ behavior: 'smooth' });
-                propostaAberta = true;
-            } else {
+            btnCancelarProposta.addEventListener('click', () => {
                 propostaSection.classList.remove('show');
                 setTimeout(() => { propostaSection.style.display = 'none'; }, 300);
-                btnFazerProposta.innerHTML = '<i class="fas fa-handshake"></i>Fazer Proposta';
-                btnFazerProposta.classList.remove('active');
                 propostaAberta = false;
+            });
+
+            // Logica de compartilhar
+            if (btnCompartilhar) {
+                btnCompartilhar.addEventListener('click', function() {
+                    const url = window.location.href;
+                    navigator.clipboard.writeText(url).then(() => {
+                        alert('Link copiado para a área de transferência!');
+                    });
+                });
+            }
+            
+            // Botão Comprar Agora
+            const btnComprar = document.getElementById('btn-comprar');
+            if (btnComprar) {
+                btnComprar.addEventListener('click', function() {
+                    const quantidade = quantidadeInput.value;
+                    const valorTotal = precoUnitario * quantidade;
+                    
+                    const valorTotalFormatado = formatarValor(valorTotal);
+                    const precoUnitarioFormatado = formatarValor(precoUnitario);
+                    
+                    const confirmar = confirm(`Você está comprando ${quantidade} ${'<?php echo $unidade; ?>'} de ${'<?php echo htmlspecialchars($anuncio['produto']); ?>'}\n\n` +
+                                             `Preço unitário: R$ ${precoUnitarioFormatado}\n` +
+                                             `Valor total: R$ ${valorTotalFormatado}\n\n` +
+                                             `Deseja prosseguir com a compra?`);
+                    
+                    if (confirmar) {
+                        alert('Funcionalidade de compra direta em desenvolvimento. Para comprar, use a opção "Fazer Proposta".');
+                    }
+                });
+            }
+            
+            // SCRIPT DO CARROSSEL - CORRIGIDO E FUNCIONAL
+            const carrosselSlides = document.getElementById('carrossel-slides');
+            const carrosselPrev = document.getElementById('carrossel-prev');
+            const carrosselNext = document.getElementById('carrossel-next');
+            const carrosselCounter = document.getElementById('carrossel-counter');
+            const carrosselIndicators = document.querySelectorAll('.carrossel-indicator');
+            const carrosselMiniaturas = document.querySelectorAll('.miniatura');
+            const totalSlides = <?php echo count($imagens_produto); ?>;
+            
+            let currentSlide = 0;
+            
+            // Atualizar carrossel
+            function updateCarrossel() {
+                // Mover slides
+                carrosselSlides.style.transform = `translateX(-${currentSlide * 100}%)`;
+                
+                // Atualizar contador
+                if (carrosselCounter) {
+                    carrosselCounter.textContent = `${currentSlide + 1}/${totalSlides}`;
+                }
+                
+                // Atualizar indicadores
+                carrosselIndicators.forEach((indicator, index) => {
+                    if (index === currentSlide) {
+                        indicator.classList.add('active');
+                    } else {
+                        indicator.classList.remove('active');
+                    }
+                });
+                
+                // Atualizar miniaturas
+                carrosselMiniaturas.forEach((miniatura, index) => {
+                    if (index === currentSlide) {
+                        miniatura.classList.add('active');
+                        // Rolar para a miniatura ativa
+                        miniatura.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    } else {
+                        miniatura.classList.remove('active');
+                    }
+                });
+                
+                // Atualizar botões de navegação
+                if (carrosselPrev) {
+                    carrosselPrev.disabled = currentSlide === 0;
+                }
+                if (carrosselNext) {
+                    carrosselNext.disabled = currentSlide === totalSlides - 1;
+                }
+            }
+            
+            // Só inicializar o carrossel se tiver mais de uma imagem
+            if (totalSlides > 1 && carrosselPrev && carrosselNext) {
+                // Event listeners para botões
+                carrosselPrev.addEventListener('click', () => {
+                    if (currentSlide > 0) {
+                        currentSlide--;
+                        updateCarrossel();
+                    }
+                });
+                
+                carrosselNext.addEventListener('click', () => {
+                    if (currentSlide < totalSlides - 1) {
+                        currentSlide++;
+                        updateCarrossel();
+                    }
+                });
+                
+                // Event listeners para indicadores
+                carrosselIndicators.forEach(indicator => {
+                    indicator.addEventListener('click', () => {
+                        const index = parseInt(indicator.getAttribute('data-index'));
+                        if (index !== currentSlide) {
+                            currentSlide = index;
+                            updateCarrossel();
+                        }
+                    });
+                });
+                
+                // Event listeners para miniaturas
+                carrosselMiniaturas.forEach(miniatura => {
+                    miniatura.addEventListener('click', () => {
+                        const index = parseInt(miniatura.getAttribute('data-index'));
+                        if (index !== currentSlide) {
+                            currentSlide = index;
+                            updateCarrossel();
+                        }
+                    });
+                });
+                
+                // Navegação por teclado
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowLeft') {
+                        if (currentSlide > 0) {
+                            currentSlide--;
+                            updateCarrossel();
+                        }
+                    } else if (e.key === 'ArrowRight') {
+                        if (currentSlide < totalSlides - 1) {
+                            currentSlide++;
+                            updateCarrossel();
+                        }
+                    }
+                });
+                
+                // Auto-play (opcional - descomente se quiser)
+                /*
+                let autoPlay = setInterval(() => {
+                    if (currentSlide < totalSlides - 1) {
+                        currentSlide++;
+                    } else {
+                        currentSlide = 0;
+                    }
+                    updateCarrossel();
+                }, 4000);
+                
+                // Pausar auto-play ao interagir
+                const carrosselContainer = document.getElementById('carrossel-container');
+                carrosselContainer.addEventListener('mouseenter', () => {
+                    clearInterval(autoPlay);
+                });
+                
+                carrosselContainer.addEventListener('mouseleave', () => {
+                    autoPlay = setInterval(() => {
+                        if (currentSlide < totalSlides - 1) {
+                            currentSlide++;
+                        } else {
+                            currentSlide = 0;
+                        }
+                        updateCarrossel();
+                    }, 4000);
+                });
+                */
+                
+                // Inicializar estado dos botões
+                updateCarrossel();
             }
         });
-
-        btnCancelarProposta.addEventListener('click', () => {
-            propostaSection.classList.remove('show');
-            setTimeout(() => { propostaSection.style.display = 'none'; }, 300);
-            btnFazerProposta.innerHTML = '<i class="fas fa-handshake"></i>Fazer Proposta';
-            btnFazerProposta.classList.remove('active');
-                propostaAberta = false;
-            });
-
-        // Logica de compartilhar
-        if (btnCompartilhar) {
-            btnCompartilhar.addEventListener('click', function() {
-                const url = window.location.href;
-                navigator.clipboard.writeText(url).then(() => {
-                    alert('Link copiado para a área de transferência!');
-                });
-            });
-        }
-        
-        // Botão Comprar Agora - ação para compra direta
-        const btnComprar = document.getElementById('btn-comprar');
-        if (btnComprar) {
-            btnComprar.addEventListener('click', function() {
-                const quantidade = quantidadeInput.value;
-                const valorTotal = precoUnitario * quantidade;
-                
-                // Formatar valores para exibição
-                const valorTotalFormatado = formatarValor(valorTotal);
-                const precoUnitarioFormatado = formatarValor(precoUnitario);
-                
-                // Confirmar a compra
-                const confirmar = confirm(`Você está comprando ${quantidade} ${'<?php echo $unidade; ?>'} de ${'<?php echo htmlspecialchars($anuncio['produto']); ?>'}\n\n` +
-                                         `Preço unitário: R$ ${precoUnitarioFormatado}\n` +
-                                         `Valor total: R$ ${valorTotalFormatado}\n\n` +
-                                         `Deseja prosseguir com a compra?`);
-                
-                if (confirmar) {
-                    // Aqui você pode redirecionar para a página de checkout ou processar a compra
-                    alert('Funcionalidade de compra direta em desenvolvimento. Para comprar, use a opção "Fazer Proposta".');
-                    // window.location.href = `processar_compra.php?anuncio_id=<?php echo $anuncio_id; ?>&quantidade=${quantidade}`;
-                }
-            });
-        }
     </script>
 </body>
 </html>

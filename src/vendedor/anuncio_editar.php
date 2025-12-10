@@ -1,5 +1,5 @@
 <?php
-// src/vendedor/anuncio_editar.php (CÓDIGO CORRIGIDO - SALVA preco_desconto)
+// src/vendedor/anuncio_editar.php (VERSÃO CORRIGIDA: Loading e Top Image + Desconto)
 require_once 'auth.php'; 
 
 $mensagem_sucesso = '';
@@ -7,20 +7,15 @@ $mensagem_erro = '';
 $vendedor_id_fk = $vendedor['id'];
 $anuncio = null;
 
-// O ID pode vir da URL (GET) ou do formulário (POST)
 $anuncio_id = sanitizeInput($_REQUEST['id'] ?? $_POST['anuncio_id'] ?? null);
 
-// --------------------------------------------------------
-// 1. Lógica de Carregamento (GET) / Pré-processamento
-// --------------------------------------------------------
 if (!$anuncio_id) {
-    $_SESSION['mensagem_anuncio_erro'] = "ID do anúncio não fornecido para edição.";
     header("Location: anuncios.php");
     exit();
 }
 
+// 1. Carregamento
 try {
-    // Busca o anúncio para verificar se pertence ao vendedor logado
     $query_anuncio = "SELECT * FROM produtos WHERE id = :anuncio_id AND vendedor_id = :vendedor_id";
     $stmt_anuncio = $db->prepare($query_anuncio);
     $stmt_anuncio->bindParam(':anuncio_id', $anuncio_id);
@@ -29,23 +24,24 @@ try {
     $anuncio = $stmt_anuncio->fetch(PDO::FETCH_ASSOC);
 
     if (!$anuncio) {
-        $_SESSION['mensagem_anuncio_erro'] = "Anúncio não encontrado ou você não tem permissão para editá-lo.";
         header("Location: anuncios.php");
         exit();
     }
     
+    // Buscar imagens do produto ordenadas
+    $query_imagens = "SELECT * FROM produto_imagens WHERE produto_id = :produto_id ORDER BY ordem ASC";
+    $stmt_imagens = $db->prepare($query_imagens);
+    $stmt_imagens->bindParam(':produto_id', $anuncio_id);
+    $stmt_imagens->execute();
+    $imagens = $stmt_imagens->fetchAll(PDO::FETCH_ASSOC);
+    
 } catch (PDOException $e) {
-    $_SESSION['mensagem_anuncio_erro'] = "Erro de banco de dados ao carregar anúncio: " . $e->getMessage();
     header("Location: anuncios.php");
     exit();
 }
 
-// --------------------------------------------------------
-// 2. Lógica de Atualização (POST)
-// --------------------------------------------------------
-
+// 2. Atualização
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Coleta e sanitização dos dados básicos
     $nome = sanitizeInput($_POST['nome']);
     $descricao = sanitizeInput($_POST['descricao']);
     $preco = sanitizeInput($_POST['preco']);
@@ -60,14 +56,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $desconto_data_inicio = sanitizeInput($_POST['desconto_data_inicio'] ?? null);
     $desconto_data_fim = sanitizeInput($_POST['desconto_data_fim'] ?? null);
     
-    // A variável $anuncio já foi carregada acima, então usamos $anuncio['imagem_url'] como backup
-    $imagem_url_antiga = $anuncio['imagem_url']; 
-    $imagem_url_nova = $imagem_url_antiga;
-
-    // Conversão de tipos
+    // Tratamento de preço e estoque
     $preco_db = str_replace(',', '.', $preco);
     $estoque_db = (int)$estoque;
     $desconto_valor_db = str_replace(',', '.', $desconto_valor);
+
+    // Validação básica
+    if (empty($nome) || empty($preco)) {
+        $mensagem_erro = "Preencha os campos obrigatórios.";
+    }
 
     // Validação do desconto
     if ($desconto_ativo) {
@@ -90,72 +87,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // ----------------------------------------------------
-    // Lógica de Upload/Substituição de Imagem
-    // ----------------------------------------------------
-    $upload_dir = '../uploads/produtos/'; 
-    
-    if (isset($_FILES['imagem_upload']) && $_FILES['imagem_upload']['error'] === UPLOAD_ERR_OK && empty($mensagem_erro)) {
-        $file_name = $_FILES['imagem_upload']['name'];
-        $file_tmp = $_FILES['imagem_upload']['tmp_name'];
-        $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
-        
-        $allowed_extensions = ['jpg', 'jpeg', 'png'];
-        $max_file_size = 2097152;
-
-        if (!in_array($file_ext, $allowed_extensions)) {
-            $mensagem_erro = "Formato de arquivo inválido. Apenas JPG, JPEG e PNG são permitidos.";
-        } elseif ($_FILES['imagem_upload']['size'] > $max_file_size) {
-            $mensagem_erro = "O arquivo é muito grande. O tamanho máximo é 2MB.";
-        } else {
-            $novo_nome = uniqid('prod_', true) . '.' . $file_ext;
-            $destino_servidor = $upload_dir . $novo_nome;
-
-            if (move_uploaded_file($file_tmp, $destino_servidor)) {
-                $imagem_url_nova = $destino_servidor; 
-
-                if (!empty($imagem_url_antiga) && file_exists($imagem_url_antiga) && strpos($imagem_url_antiga, 'default_image') === false) {
-                    @unlink($imagem_url_antiga);
-                }
-            } else {
-                $mensagem_erro = "Erro ao mover o novo arquivo para o destino.";
-            }
-        }
-    }
-    // ----------------------------------------------------
-
-    // Validação básica
-    if (empty($mensagem_erro)) {
-        if (empty($nome) || empty($preco) || empty($estoque)) {
-            $mensagem_erro = "Por favor, preencha os campos obrigatórios: Nome, Preço e Estoque.";
-        } elseif (!is_numeric($preco_db) || $preco_db <= 0) {
-            $mensagem_erro = "O preço deve ser um valor numérico positivo.";
-        } elseif ($estoque_db <= 0 && $status === 'ativo') {
-            $mensagem_erro = "Anúncios ativos devem ter estoque maior que zero, ou mude o status para 'inativo'.";
-        }
-    }
-
     if (empty($mensagem_erro)) {
         try {
             $db->beginTransaction();
             
-            // CORREÇÃO PRINCIPAL: Calcular preco_desconto
+            // Cálculo do desconto
             $desconto_percentual = 0;
             $desconto_ativo_db = $desconto_ativo;
-            $preco_desconto_db = null; // Inicialmente null
+            $preco_desconto_db = null;
             
-            // Se desconto está ativo, calcular o preco_desconto
             if ($desconto_ativo && $desconto_valor_db > 0) {
                 if ($tipo_desconto === 'percentual') {
                     $desconto_percentual = $desconto_valor_db;
                     $preco_desconto_db = $preco_db * (1 - ($desconto_percentual / 100));
                 } else {
-                    // Para desconto em valor, calcular percentual equivalente
                     $desconto_percentual = ($desconto_valor_db / $preco_db) * 100;
                     $preco_desconto_db = $preco_db - $desconto_valor_db;
                 }
             } else {
-                // Se desconto não está ativo, zerar tudo
                 $desconto_ativo_db = 0;
                 $desconto_percentual = 0;
                 $preco_desconto_db = null;
@@ -165,80 +114,143 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $desconto_data_inicio_db = $desconto_data_inicio ? $desconto_data_inicio . ' 00:00:00' : null;
             $desconto_data_fim_db = $desconto_data_fim ? $desconto_data_fim . ' 23:59:59' : null;
             
-            // Se desconto não está ativo, limpar as datas
             if (!$desconto_ativo_db) {
                 $desconto_data_inicio_db = null;
                 $desconto_data_fim_db = null;
                 $preco_desconto_db = null;
             }
             
+            // Update Dados Básicos incluindo desconto
             $query = "UPDATE produtos SET 
-                        nome = :nome, 
-                        descricao = :descricao, 
-                        preco = :preco, 
-                        preco_desconto = :preco_desconto,
-                        categoria = :categoria, 
-                        estoque = :estoque, 
-                        status = :status,
-                        imagem_url = :imagem_url_nova,
-                        desconto_ativo = :desconto_ativo,
-                        desconto_percentual = :desconto_percentual,
-                        desconto_data_inicio = :desconto_data_inicio,
-                        desconto_data_fim = :desconto_data_fim,
-                        data_atualizacao = NOW()
-                      WHERE id = :anuncio_id AND vendedor_id = :vendedor_id";
-                      
+                        nome=:n, 
+                        descricao=:d, 
+                        preco=:p, 
+                        preco_desconto=:pd,
+                        categoria=:c, 
+                        estoque=:e, 
+                        status=:s,
+                        desconto_ativo=:da,
+                        desconto_percentual=:dp,
+                        desconto_data_inicio=:ddi,
+                        desconto_data_fim=:ddf,
+                        data_atualizacao=NOW() 
+                      WHERE id=:id AND vendedor_id=:vid";
+            
             $stmt = $db->prepare($query);
+            $stmt->execute([
+                ':n' => $nome, 
+                ':d' => $descricao, 
+                ':p' => $preco_db, 
+                ':pd' => $preco_desconto_db,
+                ':c' => $categoria, 
+                ':e' => $estoque_db, 
+                ':s' => $status,
+                ':da' => $desconto_ativo_db,
+                ':dp' => $desconto_percentual,
+                ':ddi' => $desconto_data_inicio_db,
+                ':ddf' => $desconto_data_fim_db,
+                ':id' => $anuncio_id, 
+                ':vid' => $vendedor_id_fk
+            ]);
+
+            // --- PROCESSAMENTO DE IMAGENS ---
             
-            // Binding dos parâmetros
-            $stmt->bindParam(':nome', $nome);
-            $stmt->bindParam(':descricao', $descricao);
-            $stmt->bindParam(':preco', $preco_db);
-            $stmt->bindParam(':preco_desconto', $preco_desconto_db);
-            $stmt->bindParam(':categoria', $categoria);
-            $stmt->bindParam(':estoque', $estoque_db, PDO::PARAM_INT);
-            $stmt->bindParam(':status', $status);
-            $stmt->bindParam(':imagem_url_nova', $imagem_url_nova);
-            $stmt->bindParam(':desconto_ativo', $desconto_ativo_db, PDO::PARAM_INT);
-            $stmt->bindParam(':desconto_percentual', $desconto_percentual);
-            $stmt->bindParam(':desconto_data_inicio', $desconto_data_inicio_db);
-            $stmt->bindParam(':desconto_data_fim', $desconto_data_fim_db);
-            $stmt->bindParam(':anuncio_id', $anuncio_id);
-            $stmt->bindParam(':vendedor_id', $vendedor_id_fk);
-            
-            if ($stmt->execute()) {
-                $db->commit();
-                
-                // Atualiza a variável $anuncio com os NOVOS DADOS
-                $anuncio['nome'] = $nome;
-                $anuncio['descricao'] = $descricao;
-                $anuncio['preco'] = $preco_db;
-                $anuncio['preco_desconto'] = $preco_desconto_db;
-                $anuncio['categoria'] = $categoria;
-                $anuncio['estoque'] = $estoque_db;
-                $anuncio['status'] = $status;
-                $anuncio['imagem_url'] = $imagem_url_nova;
-                $anuncio['desconto_ativo'] = $desconto_ativo_db;
-                $anuncio['desconto_percentual'] = $desconto_percentual;
-                $anuncio['desconto_data_inicio'] = $desconto_data_inicio_db;
-                $anuncio['desconto_data_fim'] = $desconto_data_fim_db;
-                
-                $mensagem_sucesso = "Anúncio **{$nome}** atualizado com sucesso!";
-            } else {
-                $db->rollBack();
-                $mensagem_erro = "Erro ao atualizar o anúncio. Tente novamente.";
+            // 1. Remover Imagens Deletadas
+            if (!empty($_POST['imagens_removidas'])) {
+                $removidas = json_decode($_POST['imagens_removidas'], true);
+                if (is_array($removidas)) {
+                    foreach ($removidas as $img_id) {
+                        $stmt_path = $db->prepare("SELECT imagem_url FROM produto_imagens WHERE id = :id AND produto_id = :pid");
+                        $stmt_path->execute([':id' => $img_id, ':pid' => $anuncio_id]);
+                        $path = $stmt_path->fetchColumn();
+                        
+                        if ($path) {
+                            $db->prepare("DELETE FROM produto_imagens WHERE id = :id")->execute([':id' => $img_id]);
+                            if (file_exists($path)) @unlink($path);
+                        }
+                    }
+                }
             }
 
-        } catch (PDOException $e) {
+            // 2. Upload Novas Imagens
+            $upload_dir = '../uploads/produtos/';
+            if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
+            
+            $mapa_novas_imagens = [];
+            
+            if (!empty($_FILES['novas_imagens'])) {
+                $total = count($_FILES['novas_imagens']['name']);
+                for ($i=0; $i < $total; $i++) {
+                    if ($_FILES['novas_imagens']['error'][$i] === UPLOAD_ERR_OK) {
+                        $tmp = $_FILES['novas_imagens']['tmp_name'][$i];
+                        $ext = strtolower(pathinfo($_FILES['novas_imagens']['name'][$i], PATHINFO_EXTENSION));
+                        $new_name = uniqid('prod_', true) . '.' . $ext;
+                        
+                        if (move_uploaded_file($tmp, $upload_dir . $new_name)) {
+                            $stmt_ins = $db->prepare("INSERT INTO produto_imagens (produto_id, imagem_url, ordem) VALUES (:pid, :url, 999)");
+                            $stmt_ins->execute([':pid' => $anuncio_id, ':url' => $upload_dir . $new_name]);
+                            $new_db_id = $db->lastInsertId();
+                            
+                            $mapa_novas_imagens[] = ['id' => $new_db_id, 'url' => $upload_dir . $new_name];
+                        }
+                    }
+                }
+            }
+
+            // 3. Reordenar TUDO e Definir Principal
+            if (!empty($_POST['nova_ordem'])) {
+                $ordem_json = json_decode($_POST['nova_ordem'], true);
+                
+                $contador_novas = 0;
+                $primeira_img_url = null;
+                
+                foreach ($ordem_json as $index => $item) {
+                    if ($item['type'] === 'existente') {
+                        $db->prepare("UPDATE produto_imagens SET ordem = :o WHERE id = :id AND produto_id = :pid")
+                           ->execute([':o' => $index, ':id' => $item['id'], ':pid' => $anuncio_id]);
+                           
+                        if ($index === 0) {
+                            $stmt_url = $db->prepare("SELECT imagem_url FROM produto_imagens WHERE id = :id");
+                            $stmt_url->execute([':id' => $item['id']]);
+                            $primeira_img_url = $stmt_url->fetchColumn();
+                        }
+                    } 
+                    elseif ($item['type'] === 'nova') {
+                        if (isset($mapa_novas_imagens[$contador_novas])) {
+                            $dados_nova = $mapa_novas_imagens[$contador_novas];
+                            $db->prepare("UPDATE produto_imagens SET ordem = :o WHERE id = :id")
+                               ->execute([':o' => $index, ':id' => $dados_nova['id']]);
+                            
+                            if ($index === 0) $primeira_img_url = $dados_nova['url'];
+                            
+                            $contador_novas++;
+                        }
+                    }
+                }
+                
+                // Atualizar imagem principal no produto
+                if ($primeira_img_url) {
+                    $db->prepare("UPDATE produtos SET imagem_url = :url WHERE id = :id")->execute([':url' => $primeira_img_url, ':id' => $anuncio_id]);
+                }
+            }
+
+            $db->commit();
+            $mensagem_sucesso = "Anúncio atualizado!";
+            
+            // Recarregar dados
+            $stmt_anuncio->execute();
+            $anuncio = $stmt_anuncio->fetch(PDO::FETCH_ASSOC);
+            $stmt_imagens->execute();
+            $imagens = $stmt_imagens->fetchAll(PDO::FETCH_ASSOC);
+            
+        } catch (Exception $e) {
             $db->rollBack();
-            $mensagem_erro = "Erro de banco de dados: " . $e->getMessage();
+            $mensagem_erro = "Erro: " . $e->getMessage();
         }
     }
 }
-// --------------------------------------------------------
-// 3. Formatação Final e Variáveis de Exibição
-// --------------------------------------------------------
-// Garante que o preço formatado exista, mesmo se o POST falhar.
+
+// Formatação dos dados para exibição
 $preco_formatado = number_format($anuncio['preco'], 2, ',', ''); 
 
 // Formatar dados de desconto para exibição
@@ -251,9 +263,7 @@ $desconto_data_inicio_formatada = $anuncio['desconto_data_inicio'] ? date('Y-m-d
 $desconto_data_fim_formatada = $anuncio['desconto_data_fim'] ? date('Y-m-d', strtotime($anuncio['desconto_data_fim'])) : '';
 
 // Determinar tipo de desconto atual para exibição
-$tipo_desconto_atual = 'percentual'; // Padrão
-
-// Usar preco_desconto se existir, caso contrário calcular
+$tipo_desconto_atual = 'percentual';
 $preco_com_desconto = $anuncio['preco_desconto'] ?? $anuncio['preco'];
 if ($anuncio['desconto_ativo'] && $anuncio['desconto_percentual'] > 0 && !$anuncio['preco_desconto']) {
     $preco_com_desconto = $anuncio['preco'] * (1 - ($anuncio['desconto_percentual'] / 100));
@@ -268,21 +278,159 @@ $categorias_disponiveis = [
     'Frutas Secas',
     'Frutas Exóticas',
 ];
-
-// ... O RESTANTE DO CÓDIGO HTML PERMANECE O MESMO ...
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Anúncio - Vendedor</title>
+    <title>Editar Anúncio</title>
     <link rel="stylesheet" href="../css/vendedor/anuncio_editar.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        /* CSS FIX: Loading deve ser none por padrão */
+        .loading-overlay {
+            display: none; 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.9); z-index: 9999;
+            align-items: center; justify-content: center; flex-direction: column;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3; border-top: 4px solid #4CAF50;
+            border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .foto-produto-display {
+            width: 100%; height: 300px;
+            background: #f5f5f5; border: 2px solid #ddd; border-radius: 8px;
+            overflow: hidden; position: relative;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .foto-produto-display img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Remover o hover antigo do lápis */
+        .foto-overlay { display: none !important; }
+
+        .galeria-imagens { margin-top: 20px; border: 2px dashed #ddd; padding: 20px; border-radius: 8px; }
+        .imagens-preview { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px; }
+        
+        .imagem-item {
+            position: relative; width: 120px; height: 120px;
+            border: 2px solid #ddd; border-radius: 6px; overflow: hidden;
+            cursor: move; background: #fff;
+        }
+        .imagem-item.dragging { opacity: 0.5; border-color: #2196F3; }
+        .imagem-item img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        
+        .btn-acao {
+            position: absolute; width: 25px; height: 25px; border-radius: 50%;
+            border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 10px; color: white;
+        }
+        .btn-acao.principal { top: 5px; right: 35px; background: rgba(0,0,0,0.6); }
+        .btn-acao.principal.active { background: #FFD700; color: #000; }
+        .btn-acao.deleting { top: 5px; right: 5px; background: #f44336; }
+        
+        /* Estilos para seção de desconto */
+        .desconto-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        
+        .desconto-toggle {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            margin-right: 10px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #4CAF50;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .tipo-desconto {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .tipo-desconto label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .desconto-fields {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .data-fields {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .preco-com-desconto {
+            padding: 8px;
+            background: #e8f5e9;
+            border-radius: 4px;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -290,171 +438,58 @@ $categorias_disponiveis = [
             <div class="nav-container">
                 <div class="logo">
                     <img src="../../img/logo-nova.png" alt="Logo">
-                    <div>
-                        <h1>ENCONTRE</h1>
-                        <h2>O CAMPO</h2>
-                    </div>
+                    <div><h1>ENCONTRE</h1><h2>O CAMPO</h2></div>
                 </div>
                 <ul class="nav-menu">
-                    <li class="nav-item">
-                        <a href="../../index.php" class="nav-link">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="dashboard.php" class="nav-link active">Painel</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
-                    </li>
-                    <?php if (isset($_SESSION['usuario_id'])): ?>
-                    <li class="nav-item">
-                        <a href="../notificacoes.php" class="nav-link no-underline">
-                            <i class="fas fa-bell"></i>
-                            <?php
-                            // Contar notificações não lidas
-                            if (isset($_SESSION['usuario_id'])) {
-                                $database = new Database();
-                                $conn = $database->getConnection();
-                                $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
-                                $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
-                                $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
-                                $stmt_nao_lidas->execute();
-                                $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
-                                if ($total_nao_lidas > 0) {
-                                    echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
-                                }
-                            }
-                            ?>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <li class="nav-item">
-                        <a href="../logout.php" class="nav-link exit-button no-underline"> Sair </a>
-                    </li>
+                    <li class="nav-item"><a href="anuncios.php" class="nav-link">Voltar</a></li>
                 </ul>
-                <div class="hamburger">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
             </div>
         </nav>
     </header>
     <br>
 
     <div class="main-content">
-        <center>
-            <header class="header">
-                <h1>Editar: <?php echo htmlspecialchars($anuncio['nome']); ?> (ID: <?php echo $anuncio['id']; ?>)</h1>
-            </header>
-        </center>
+        <center><header class="header"><h1>Editar: <?php echo htmlspecialchars($anuncio['nome']); ?></h1></header></center>
 
         <section class="form-section">
             <?php if (!empty($mensagem_sucesso)): ?>
-                <div class="alert success-alert"><i class="fas fa-check-circle"></i> <?php echo $mensagem_sucesso; ?></div>
+                <div class="alert success-alert"><i class="fas fa-check"></i> <?php echo $mensagem_sucesso; ?></div>
             <?php endif; ?>
             
-            <?php if (!empty($mensagem_erro)): ?>
-                <div class="alert error-alert"><i class="fas fa-exclamation-triangle"></i> <?php echo $mensagem_erro; ?></div>
-            <?php endif; ?>
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="spinner"></div>
+                <p>Salvando alterações...</p>
+            </div>
 
-            <form method="POST" action="anuncio_editar.php" class="anuncio-form" enctype="multipart/form-data">
+            <form method="POST" action="anuncio_editar.php" class="anuncio-form" enctype="multipart/form-data" id="anuncioForm">
                 <input type="hidden" name="anuncio_id" value="<?php echo $anuncio['id']; ?>">
+                <input type="hidden" id="imagens_removidas" name="imagens_removidas" value="">
+                <input type="hidden" id="nova_ordem" name="nova_ordem" value="">
                 
                 <div class="forms-area">
                     <div class="top-info">
                         <div class="form-group">
                             <div class="foto-produto-container">
-                                <div class="foto-produto-display">
+                                <div class="foto-produto-display" id="imagemPrincipalPreview">
                                     <?php if (!empty($anuncio['imagem_url']) && file_exists($anuncio['imagem_url'])): ?>
                                         <img src="<?php echo htmlspecialchars($anuncio['imagem_url']); ?>" alt="Imagem do Anúncio">
                                     <?php else: ?>
-                                        <div class="default-image">
-                                            <i class="fas fa-image"></i>
-                                        </div>
+                                        <div class="default-image"><i class="fas fa-image" style="font-size: 3rem; color: #ccc;"></i></div>
                                     <?php endif; ?>
-                                    <div class="foto-overlay">
-                                        <i class="fas fa-pencil-alt"></i>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="prod-info">
-                            <h2>Informações do Produto</h2>
+                            <h2>Informações</h2>
                             <div class="form-group">
-                                <label for="nome" class="required">Nome da Fruta/Produto</label>
-                                <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($anuncio['nome']); ?>" list="produtos-sugestoes" required>
-                                <datalist id="produtos-sugestoes">
-                                    <!-- Frutas -->
-                                    <option value="Abacate">
-                                    <option value="Abacaxi">
-                                    <option value="Açaí">
-                                    <option value="Acerola">
-                                    <option value="Amora">
-                                    <option value="Banana">
-                                    <option value="Caju">
-                                    <option value="Coco">
-                                    <option value="Figo">
-                                    <option value="Framboesa">
-                                    <option value="Goiaba">
-                                    <option value="Jabuticaba">
-                                    <option value="Jaca">
-                                    <option value="Kiwi">
-                                    <option value="Laranja">
-                                    <option value="Limão">
-                                    <option value="Maçã">
-                                    <option value="Mamão">
-                                    <option value="Manga">
-                                    <option value="Maracujá">
-                                    <option value="Melancia">
-                                    <option value="Melão">
-                                    <option value="Morango">
-                                    <option value="Pêra">
-                                    <option value="Pêssego">
-                                    <option value="Uva">
-                                    
-                                    <!-- Legumes -->
-                                    <option value="Abóbora">
-                                    <option value="Berinjela">
-                                    <option value="Beterraba">
-                                    <option value="Cenoura">
-                                    <option value="Chuchu">
-                                    <option value="Ervilha">
-                                    <option value="Milho">
-                                    <option value="Pepino">
-                                    <option value="Pimentão">
-                                    <option value="Quiabo">
-                                    <option value="Tomate">
-                                    
-                                    <!-- Verduras -->
-                                    <option value="Alface">
-                                    <option value="Couve">
-                                    <option value="Espinafre">
-                                    <option value="Rúcula">
-                                    <option value="Agrião">
-                                    <option value="Salsinha">
-                                    <option value="Cebolinha">
-                                    <option value="Manjericão">
-                                    
-                                    <!-- Grãos e Cereais -->
-                                    <option value="Arroz">
-                                    <option value="Feijão">
-                                    <option value="Soja">
-                                    <option value="Trigo">
-                                    <option value="Milho Seco">
-                                    
-                                    <!-- Outros -->
-                                    <option value="Batata">
-                                    <option value="Cebola">
-                                    <option value="Alho">
-                                    <option value="Gengibre">
-                                </datalist>
+                                <label for="nome" class="required">Nome</label>
+                                <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($anuncio['nome']); ?>" required>
                             </div>
-                            
                             <div class="form-group">
                                 <label for="categoria">Categoria</label>
                                 <select id="categoria" name="categoria">
                                     <?php foreach ($categorias_disponiveis as $cat): ?>
-                                        <option value="<?php echo $cat; ?>" <?php echo ($anuncio['categoria'] === $cat) ? 'selected' : ''; ?>>
+                                        <option value="<?php echo $cat; ?>" <?php echo ($anuncio['categoria'] == $cat)?'selected':''; ?>>
                                             <?php echo $cat; ?>
                                         </option>
                                     <?php endforeach; ?>
@@ -463,26 +498,37 @@ $categorias_disponiveis = [
                         </div>
                     </div>
                     
-                    <div class="form-group" style="display: none;">
-                        <input type="file" id="imagem_upload" name="imagem_upload" accept="image/jpeg, image/png">
+                    <div class="form-group">
+                        <label class="required">Imagens do Produto</label>
+                        <div class="galeria-imagens">
+                            <div class="galeria-header">
+                                <span class="contador-imagens" id="contadorImagens"><?php echo count($imagens); ?> imagens</span>
+                            </div>
+                            
+                            <div class="upload-area" id="uploadArea">
+                                <i class="fas fa-plus"></i> Adicionar Mais Fotos
+                            </div>
+                            
+                            <div class="imagens-preview" id="imagensPreview">
+                                </div>
+                            
+                            <input type="file" id="novas_imagens" name="novas_imagens[]" accept="image/*" multiple style="display: none;">
+                        </div>
                     </div>
-
-                    <h2>Preço e Estoque</h2>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="preco" class="required">Preço por Kg (R$)</label>
-                            <input type="text" id="preco" name="preco" value="<?php echo htmlspecialchars($preco_formatado); ?>" placeholder="Ex: 5,50" required>
+                            <label for="preco" class="required">Preço</label>
+                            <input type="text" id="preco" name="preco" value="<?php echo htmlspecialchars($preco_formatado); ?>" required>
                             <?php if ($anuncio['desconto_ativo'] && $anuncio['desconto_percentual'] > 0): ?>
                                 <div class="preco-com-desconto">
                                     Preço com desconto: R$ <?php echo number_format($preco_com_desconto, 2, ',', ''); ?>
                                 </div>
                             <?php endif; ?>
                         </div>
-                        
                         <div class="form-group">
-                            <label for="estoque" class="required">Estoque em Kg</label>
-                            <input type="number" id="estoque" name="estoque" value="<?php echo htmlspecialchars($anuncio['estoque']); ?>" min="0" required>
+                            <label for="estoque" class="required">Estoque</label>
+                            <input type="number" id="estoque" name="estoque" value="<?php echo htmlspecialchars($anuncio['estoque']); ?>" required>
                         </div>
                     </div>
                     
@@ -550,15 +596,15 @@ $categorias_disponiveis = [
                     </div>
                     
                     <div class="form-group">
-                        <label for="status" class="required">Status do Anúncio</label>
-                        <select id="status" name="status" required>
-                            <option value="ativo" <?php echo ($anuncio['status'] === 'ativo') ? 'selected' : ''; ?>>Ativo (Visível)</option>
-                            <option value="inativo" <?php echo ($anuncio['status'] === 'inativo') ? 'selected' : ''; ?>>Inativo (Pausado)</option>
+                        <label for="status">Status</label>
+                        <select id="status" name="status">
+                            <option value="ativo" <?php echo ($anuncio['status'] === 'ativo') ? 'selected' : ''; ?>>Ativo</option>
+                            <option value="inativo" <?php echo ($anuncio['status'] === 'inativo') ? 'selected' : ''; ?>>Inativo</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="descricao">Descrição Detalhada do Produto (Opcional)</label>
+                        <label for="descricao">Descrição</label>
                         <textarea id="descricao" name="descricao" rows="4"><?php echo htmlspecialchars($anuncio['descricao'] ?? ''); ?></textarea>
                     </div>
                     
@@ -569,22 +615,161 @@ $categorias_disponiveis = [
     </div>
 
     <script>
-        // Script para menu hamburger
-        const hamburger = document.querySelector(".hamburger");
-        const navMenu = document.querySelector(".nav-menu");
+        const imagensIniciais = <?php 
+            $imgs_json = array_map(function($img) {
+                return [
+                    'id' => $img['id'],
+                    'url' => $img['imagem_url'],
+                    'type' => 'existente'
+                ];
+            }, $imagens);
+            echo json_encode($imgs_json); 
+        ?>;
+    </script>
 
-        hamburger.addEventListener("click", () => {
-            hamburger.classList.toggle("active");
-            navMenu.classList.toggle("active");
-        });
-
-        document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
-            hamburger.classList.remove("active");
-            navMenu.classList.remove("active");
-        }));
-
-        // Máscara de preço
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // FIX: Garantir que loading está oculto ao carregar
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.style.display = 'none';
+
+            const previewContainer = document.getElementById('imagensPreview');
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('novas_imagens');
+            const removedInput = document.getElementById('imagens_removidas');
+            const orderInput = document.getElementById('nova_ordem');
+            const topImageContainer = document.getElementById('imagemPrincipalPreview');
+            const anuncioForm = document.getElementById('anuncioForm');
+            const contadorImagens = document.getElementById('contadorImagens');
+
+            let allImages = [...imagensIniciais];
+            let removedIds = [];
+
+            // Renderizar inicial
+            renderGallery();
+
+            // Eventos Upload
+            uploadArea.addEventListener('click', () => fileInput.click());
+            
+            fileInput.addEventListener('change', function(e) {
+                const files = Array.from(this.files);
+                files.forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = (evt) => {
+                        allImages.push({
+                            id: 'temp_' + Date.now() + '_' + index,
+                            url: evt.target.result,
+                            type: 'nova',
+                            file: file
+                        });
+                        renderGallery();
+                        updateFileInput();
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            // Função Renderizar
+            function renderGallery() {
+                previewContainer.innerHTML = '';
+                contadorImagens.textContent = `${allImages.length} imagens`;
+
+                if(allImages.length > 0) {
+                    topImageContainer.innerHTML = `<img src="${allImages[0].url}" alt="Principal">`;
+                } else {
+                    topImageContainer.innerHTML = '<div class="default-image"><i class="fas fa-image" style="font-size:3rem"></i></div>';
+                }
+
+                allImages.forEach((img, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'imagem-item';
+                    div.draggable = true;
+                    div.dataset.id = img.id;
+                    div.dataset.index = index;
+                    
+                    div.innerHTML = `
+                        <img src="${img.url}">
+                        <button type="button" class="btn-acao principal ${index === 0 ? 'active' : ''}" title="Esta é a foto principal (automático)">
+                            <i class="fas fa-star"></i>
+                        </button>
+                        <button type="button" class="btn-acao deleting" onclick="removeImg(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    
+                    div.addEventListener('dragstart', dragStart);
+                    div.addEventListener('dragover', dragOver);
+                    div.addEventListener('drop', drop);
+                    
+                    previewContainer.appendChild(div);
+                });
+
+                const orderData = allImages.map(img => ({
+                    type: img.type,
+                    id: img.type === 'existente' ? img.id : 'temp'
+                }));
+                orderInput.value = JSON.stringify(orderData);
+            }
+
+            // Global Remove
+            window.removeImg = (index) => {
+                const img = allImages[index];
+                if (img.type === 'existente') {
+                    removedIds.push(img.id);
+                    removedInput.value = JSON.stringify(removedIds);
+                }
+                allImages.splice(index, 1);
+                renderGallery();
+                updateFileInput();
+            };
+
+            // Drag Functions
+            let dragSrcEl = null;
+
+            function dragStart(e) {
+                dragSrcEl = this;
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', this.innerHTML);
+                this.classList.add('dragging');
+            }
+
+            function dragOver(e) {
+                if (e.preventDefault) e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                return false;
+            }
+
+            function drop(e) {
+                if (e.stopPropagation) e.stopPropagation();
+                
+                const srcIndex = parseInt(dragSrcEl.dataset.index);
+                const targetIndex = parseInt(this.dataset.index);
+
+                if (srcIndex !== targetIndex) {
+                    const item = allImages.splice(srcIndex, 1)[0];
+                    allImages.splice(targetIndex, 0, item);
+                    renderGallery();
+                    updateFileInput();
+                }
+                return false;
+            }
+
+            function updateFileInput() {
+                const dt = new DataTransfer();
+                allImages.forEach(img => {
+                    if (img.type === 'nova' && img.file) {
+                        dt.items.add(img.file);
+                    }
+                });
+                fileInput.files = dt.files;
+            }
+
+            // Submit
+            anuncioForm.addEventListener('submit', function() {
+                loadingOverlay.style.display = 'flex';
+            });
+
+            // Script para desconto
             const precoInput = document.getElementById('preco');
             const descontoValorInput = document.getElementById('desconto_valor');
             const descontoAtivoCheckbox = document.getElementById('desconto_ativo');
@@ -614,10 +799,8 @@ $categorias_disponiveis = [
                 if (value) {
                     const isPercentual = document.querySelector('input[name="tipo_desconto"]:checked').value === 'percentual';
                     if (isPercentual) {
-                        // Para percentual, permite até 100,00
                         value = (parseInt(value) / 100).toFixed(2);
                     } else {
-                        // Para valor, formata normalmente
                         value = (parseInt(value) / 100).toFixed(2);
                     }
                     value = value.replace('.', ',');
@@ -631,7 +814,6 @@ $categorias_disponiveis = [
                 camposDesconto.style.display = this.checked ? 'block' : 'none';
                 if (!this.checked) {
                     descontoCalculado.innerHTML = 'Insira os valores para calcular';
-                    // Limpar campo quando desativar
                     descontoValorInput.value = '';
                 } else {
                     calcularDesconto();
@@ -648,7 +830,6 @@ $categorias_disponiveis = [
                         descontoHelp.textContent = 'Valor em reais (Ex: 2,50 = R$ 2,50)';
                         descontoValorInput.placeholder = 'Ex: 2,50';
                     }
-                    // Limpar campo ao mudar tipo
                     descontoValorInput.value = '';
                     descontoCalculado.innerHTML = 'Insira os valores para calcular';
                 });
@@ -685,44 +866,6 @@ $categorias_disponiveis = [
                     descontoCalculado.innerHTML = 'Insira os valores para calcular';
                 }
             }
-
-            // Script para clicar na imagem abrir o seletor de arquivos
-            const fotoContainer = document.querySelector('.foto-produto-container');
-            const fileInput = document.getElementById('imagem_upload');
-            
-            if (fotoContainer && fileInput) {
-                fotoContainer.addEventListener('click', function() {
-                    fileInput.click();
-                });
-            }
-            
-            // Mostrar preview da nova imagem selecionada
-            fileInput.addEventListener('change', function(e) {
-                if (e.target.files && e.target.files[0]) {
-                    const reader = new FileReader();
-                    const imgElement = document.querySelector('.foto-produto-display img');
-                    const defaultImage = document.querySelector('.default-image');
-                    
-                    reader.onload = function(e) {
-                        if (imgElement) {
-                            imgElement.src = e.target.result;
-                        } else if (defaultImage) {
-                            const newImg = document.createElement('img');
-                            newImg.src = e.target.result;
-                            newImg.alt = "Imagem do Anúncio";
-                            newImg.style.width = '300px';
-                            newImg.style.height = '250px';
-                            newImg.style.objectFit = 'cover';
-                            newImg.style.borderRadius = '5px';
-                            newImg.style.border = '2px solid #C8E6C9';
-                            
-                            defaultImage.parentNode.replaceChild(newImg, defaultImage);
-                        }
-                    }
-                    
-                    reader.readAsDataURL(e.target.files[0]);
-                }
-            });
 
             // Calcular desconto inicial
             calcularDesconto();

@@ -9,9 +9,9 @@ $conn = $database->getConnection();
 $usuario_id = $_SESSION['usuario_id'];
 $vendedor_id = $vendedor['id'];
 
-// Buscar todas as conversas dos produtos do vendedor
+// BUSCAR CHATS COMO VENDEDOR (recebendo mensagens de compradores)
 try {
-    $sql = "SELECT 
+    $sql_vendedor = "SELECT 
                 cc.id AS conversa_id,
                 cc.produto_id,
                 cc.ultima_mensagem,
@@ -19,8 +19,9 @@ try {
                 p.nome AS produto_nome,
                 p.imagem_url AS produto_imagem,
                 p.preco AS produto_preco,
-                u.id AS comprador_usuario_id,
-                u.nome AS comprador_nome,
+                u.id AS outro_usuario_id,
+                u.nome AS outro_usuario_nome,
+                'vendedor' AS tipo_chat,
                 (SELECT COUNT(*) 
                  FROM chat_mensagens cm 
                  WHERE cm.conversa_id = cc.id 
@@ -30,19 +31,61 @@ try {
             INNER JOIN produtos p ON cc.produto_id = p.id
             INNER JOIN usuarios u ON cc.comprador_id = u.id
             WHERE p.vendedor_id = :vendedor_id
-            AND cc.status = 'ativo'
-            ORDER BY cc.ultima_mensagem_data DESC";
+            AND cc.status = 'ativo'";
     
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
-    $stmt->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
-    $stmt->execute();
-    $conversas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt_vendedor = $conn->prepare($sql_vendedor);
+    $stmt_vendedor->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
+    $stmt_vendedor->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt_vendedor->execute();
+    $conversas_vendedor = $stmt_vendedor->fetchAll(PDO::FETCH_ASSOC);
     
 } catch (PDOException $e) {
-    error_log("Erro ao buscar conversas: " . $e->getMessage());
-    $conversas = [];
+    error_log("Erro ao buscar conversas como vendedor: " . $e->getMessage());
+    $conversas_vendedor = [];
 }
+
+// BUSCAR CHATS COMO COMPRADOR (enviando mensagens para vendedores)
+try {
+    $sql_comprador = "SELECT 
+                cc.id AS conversa_id,
+                cc.produto_id,
+                cc.ultima_mensagem,
+                cc.ultima_mensagem_data,
+                p.nome AS produto_nome,
+                p.imagem_url AS produto_imagem,
+                p.preco AS produto_preco,
+                uv.id AS outro_usuario_id,
+                COALESCE(v.nome_comercial, uv.nome) AS outro_usuario_nome,
+                'comprador' AS tipo_chat,
+                (SELECT COUNT(*) 
+                 FROM chat_mensagens cm 
+                 WHERE cm.conversa_id = cc.id 
+                 AND cm.remetente_id != :usuario_id 
+                 AND cm.lida = 0) AS mensagens_nao_lidas
+            FROM chat_conversas cc
+            INNER JOIN produtos p ON cc.produto_id = p.id
+            INNER JOIN vendedores v ON p.vendedor_id = v.id
+            INNER JOIN usuarios uv ON v.usuario_id = uv.id
+            WHERE cc.comprador_id = :usuario_id
+            AND cc.status = 'ativo'";
+    
+    $stmt_comprador = $conn->prepare($sql_comprador);
+    $stmt_comprador->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt_comprador->execute();
+    $conversas_comprador = $stmt_comprador->fetchAll(PDO::FETCH_ASSOC);
+    
+} catch (PDOException $e) {
+    error_log("Erro ao buscar conversas como comprador: " . $e->getMessage());
+    $conversas_comprador = [];
+}
+
+// COMBINAR TODAS AS CONVERSAS
+$conversas = array_merge($conversas_vendedor, $conversas_comprador);
+
+// ORDENAR POR DATA MAIS RECENTE
+usort($conversas, function($a, $b) {
+    return strtotime($b['ultima_mensagem_data']) - strtotime($a['ultima_mensagem_data']);
+});
 
 // Contar total de mensagens não lidas
 $total_nao_lidas = 0;
@@ -353,6 +396,15 @@ foreach ($conversas as $conversa) {
             font-weight: 600;
         }
         
+        .badge-tipo {
+            background: #17a2b8;
+            color: white;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        
         .conversa-data {
             font-size: 13px;
             color: #999;
@@ -544,7 +596,7 @@ foreach ($conversas as $conversa) {
     <div class="main-content">
         <div class="page-header">
             <h1><i class="fas fa-comments"></i> Meus Chats</h1>
-            <p>Gerencie suas conversas com compradores interessados em seus produtos</p>
+            <p>Gerencie todas as suas conversas - vendas e compras</p>
             
             <div class="stats-bar">
                 <div class="stat-item">
@@ -583,8 +635,16 @@ foreach ($conversas as $conversa) {
                         $imagem_produto = $conversa['produto_imagem'] ? htmlspecialchars($conversa['produto_imagem']) : '../../img/placeholder.png';
                         $tem_nao_lidas = $conversa['mensagens_nao_lidas'] > 0;
                         $data_formatada = $conversa['ultima_mensagem_data'] ? date('d/m/Y H:i', strtotime($conversa['ultima_mensagem_data'])) : '';
+                        $eh_vendedor_chat = $conversa['tipo_chat'] === 'vendedor';
+                        
+                        // Definir URL do chat
+                        if ($eh_vendedor_chat) {
+                            $chat_url = "../chat/chat.php?produto_id={$conversa['produto_id']}&conversa_id={$conversa['conversa_id']}";
+                        } else {
+                            $chat_url = "../chat/chat.php?produto_id={$conversa['produto_id']}&ref=meus_chats";
+                        }
                     ?>
-                        <a href="../chat/chat.php?produto_id=<?php echo $conversa['produto_id']; ?>&conversa_id=<?php echo $conversa['conversa_id']; ?>" 
+                        <a href="<?php echo $chat_url; ?>" 
                            class="conversa-card <?php echo $tem_nao_lidas ? 'nao-lida' : ''; ?>"
                            data-tipo="<?php echo $tem_nao_lidas ? 'nao-lida' : 'lida'; ?>">
                             <div class="produto-thumb">
@@ -594,8 +654,9 @@ foreach ($conversas as $conversa) {
                             <div class="conversa-info">
                                 <div class="conversa-top">
                                     <div class="comprador-nome">
-                                        <i class="fas fa-user-circle"></i>
-                                        <?php echo htmlspecialchars($conversa['comprador_nome']); ?>
+                                        <i class="fas fa-<?php echo $eh_vendedor_chat ? 'user-circle' : 'store'; ?>"></i>
+                                        <?php echo htmlspecialchars($conversa['outro_usuario_nome']); ?>
+                                        <span class="badge-tipo"><?php echo $eh_vendedor_chat ? 'Venda' : 'Compra'; ?></span>
                                         <?php if ($tem_nao_lidas): ?>
                                             <span class="badge-novo"><?php echo $conversa['mensagens_nao_lidas']; ?> nova<?php echo $conversa['mensagens_nao_lidas'] > 1 ? 's' : ''; ?></span>
                                         <?php endif; ?>
@@ -631,7 +692,7 @@ foreach ($conversas as $conversa) {
                     <div class="empty-state">
                         <i class="fas fa-comments"></i>
                         <h3>Nenhuma conversa ainda</h3>
-                        <p>Quando compradores entrarem em contato sobre seus produtos, as conversas aparecerão aqui.</p>
+                        <p>Quando você conversar com compradores ou vendedores, as conversas aparecerão aqui.</p>
                     </div>
                 <?php endif; ?>
             </div>

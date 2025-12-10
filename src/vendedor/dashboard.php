@@ -173,13 +173,13 @@ try {
                     <p>Ver</p>
                 </div>
             </a>
-            <a href="../comprador/minhas_propostas.php">
+            <!-- <a href="../comprador/minhas_propostas.php">
                 <div class="card">
                     <i class="fa-solid fa-paper-plane"></i>
                     <h3>Minhas Propostas</h3>
                     <p>Ver</p>
                 </div>
-            </a>
+            </a> -->
         </section>
 
         <section class="section-anuncios">

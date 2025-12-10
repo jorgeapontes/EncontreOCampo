@@ -15,7 +15,7 @@ $usuario_tipo = $_SESSION['usuario_tipo'];
 $produto_id = isset($_GET['produto_id']) ? (int)$_GET['produto_id'] : 0;
 $conversa_id_get = isset($_GET['conversa_id']) ? (int)$_GET['conversa_id'] : 0;
 
-// NOVO: Capturar de onde o usuário veio
+// Capturar de onde o usuário veio
 $referrer = isset($_GET['ref']) ? $_GET['ref'] : '';
 
 if ($produto_id <= 0) {
@@ -49,11 +49,9 @@ $eh_vendedor_produto = ($vendedor_usuario_id == $usuario_id);
 
 // Lógica para VENDEDOR
 if ($eh_vendedor_produto) {
-    // Se veio com conversa_id específica na URL
     if ($conversa_id_get > 0) {
         $conversa_id = $conversa_id_get;
         
-        // Buscar informações do comprador desta conversa
         $sql_conversa = "SELECT c.comprador_id, u.nome AS comprador_nome
                         FROM chat_conversas c
                         JOIN usuarios u ON c.comprador_id = u.id
@@ -73,13 +71,11 @@ if ($eh_vendedor_produto) {
             $outro_usuario_nome = null;
         }
     } else {
-        // Sem conversa_id, mostrar lista de conversas
         $conversa_id = null;
         $outro_usuario_id = null;
         $outro_usuario_nome = null;
     }
     
-    // Buscar todas as conversas deste produto
     $sql_conversas = "SELECT DISTINCT c.*, 
                       u.nome AS comprador_nome,
                       (SELECT COUNT(*) FROM chat_mensagens 
@@ -97,24 +93,20 @@ if ($eh_vendedor_produto) {
     $conversas = $stmt_conversas->fetchAll(PDO::FETCH_ASSOC);
     
 } else {
-    // COMPRADOR - criar/obter conversa única
+    // COMPRADOR
     $conversa_id = obterOuCriarConversa($conn, $produto_id, $usuario_id, $vendedor_usuario_id);
     $outro_usuario_id = $vendedor_usuario_id;
     $outro_usuario_nome = $produto['nome_vendedor'] ?: $produto['vendedor_nome'];
     $conversas = null;
 }
 
-// NOVO: Determinar URL de volta baseado na origem
+// Determinar URL de volta
 if ($eh_vendedor_produto) {
-    // Vendedor sempre volta para chats.php
     $url_voltar = "../../src/vendedor/chats.php";
 } else {
-    // Comprador: verificar de onde veio
     if ($referrer === 'meus_chats') {
-        // Veio da lista de chats
         $url_voltar = "../comprador/meus_chats.php";
     } else {
-        // Veio do produto (proposta_nova.php)
         $url_voltar = "../comprador/proposta_nova.php?anuncio_id=" . $produto_id;
     }
 }
@@ -127,12 +119,19 @@ if ($eh_vendedor_produto) {
     <title>Chat - <?php echo htmlspecialchars($produto['nome']); ?></title>
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f0f2f5;
             height: 100vh;
             overflow: hidden;
         }
@@ -142,37 +141,47 @@ if ($eh_vendedor_produto) {
             height: 100vh;
             max-width: 1400px;
             margin: 0 auto;
-            background: white;
+            background: #ffffff;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
         
         /* Sidebar */
         .chat-sidebar {
-            width: 350px;
-            border-right: 1px solid #e0e0e0;
+            width: 360px;
+            background: #ffffff;
+            border-right: 1px solid #e4e6eb;
             display: flex;
             flex-direction: column;
-            background: #fafafa;
         }
         
         .sidebar-header {
             padding: 20px;
             background: #2E7D32;
             color: white;
-            border-bottom: 1px solid #1B5E20;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         
         .sidebar-header h2 {
             font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
             margin-bottom: 5px;
         }
         
+        .sidebar-header small {
+            font-size: 13px;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+        
         .produto-info-sidebar {
-            padding: 15px;
-            background: white;
-            border-bottom: 1px solid #e0e0e0;
+            padding: 16px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e4e6eb;
             display: flex;
-            gap: 15px;
+            gap: 12px;
             align-items: center;
         }
         
@@ -181,6 +190,7 @@ if ($eh_vendedor_produto) {
             height: 60px;
             object-fit: cover;
             border-radius: 8px;
+            border: 1px solid #e4e6eb;
         }
         
         .produto-info-sidebar .info {
@@ -189,13 +199,15 @@ if ($eh_vendedor_produto) {
         
         .produto-info-sidebar .info h3 {
             font-size: 14px;
-            margin-bottom: 5px;
-            color: #333;
+            margin-bottom: 4px;
+            color: #1c1e21;
+            font-weight: 600;
         }
         
         .produto-info-sidebar .info .preco {
             color: #2E7D32;
-            font-weight: bold;
+            font-weight: 700;
+            font-size: 16px;
         }
         
         .conversas-lista {
@@ -203,9 +215,26 @@ if ($eh_vendedor_produto) {
             overflow-y: auto;
         }
         
+        .conversas-lista::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .conversas-lista::-webkit-scrollbar-track {
+            background: #f0f2f5;
+        }
+        
+        .conversas-lista::-webkit-scrollbar-thumb {
+            background: #c5c7ca;
+            border-radius: 10px;
+        }
+        
+        .conversas-lista::-webkit-scrollbar-thumb:hover {
+            background: #a8abaf;
+        }
+        
         .conversa-item {
-            padding: 15px;
-            border-bottom: 1px solid #e0e0e0;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e4e6eb;
             cursor: pointer;
             transition: background 0.2s;
             display: flex;
@@ -214,39 +243,37 @@ if ($eh_vendedor_produto) {
         }
         
         .conversa-item:hover {
-            background: #f0f0f0;
+            background: #f0f2f5;
         }
         
         .conversa-item.ativa {
-            background: #e8f5e9;
-            border-left: 3px solid #2E7D32;
+            background: #e7f3e8;
+            border-left: 4px solid #2E7D32;
         }
         
         .conversa-item .nome {
             font-weight: 600;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
+            color: #1c1e21;
+            font-size: 15px;
         }
         
         .conversa-item .ultima-msg {
             font-size: 13px;
-            color: #666;
+            color: #65676b;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 200px;
+            max-width: 220px;
         }
         
         .conversa-item .badge-nao-lidas {
             background: #2E7D32;
             color: white;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            border-radius: 12px;
+            padding: 4px 8px;
             font-size: 12px;
-            font-weight: bold;
+            font-weight: 700;
         }
         
         /* Área do Chat */
@@ -254,86 +281,129 @@ if ($eh_vendedor_produto) {
             flex: 1;
             display: flex;
             flex-direction: column;
+            background: #ffffff;
         }
         
         .chat-header {
-            padding: 20px;
-            background: #2E7D32;
-            color: white;
+            padding: 16px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid #e4e6eb;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .chat-header h3 {
-            font-size: 18px;
         }
         
         .chat-header .usuario-info {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+        }
+        
+        .chat-header .avatar {
+            width: 44px;
+            height: 44px;
+            background: #2E7D32;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+        
+        .chat-header h3 {
+            font-size: 17px;
+            font-weight: 600;
+            color: #1c1e21;
+            margin-bottom: 2px;
+        }
+        
+        .chat-header small {
+            font-size: 13px;
+            color: #65676b;
+            font-weight: 400;
         }
         
         .btn-voltar {
-            background: rgba(255,255,255,0.2);
-            color: white;
+            background: #f0f2f5;
+            color: #1c1e21;
             border: none;
             padding: 10px 20px;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
             text-decoration: none;
             transition: background 0.2s;
+            font-weight: 500;
+            font-size: 14px;
         }
         
         .btn-voltar:hover {
-            background: rgba(255,255,255,0.3);
+            background: #e4e6eb;
         }
         
         .chat-messages {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
-            background: #fff;
+            background: #f0f2f5;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 8px;
+        }
+        
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #c5c7ca;
+            border-radius: 10px;
         }
         
         .message {
             max-width: 70%;
-            padding: 12px 16px;
-            border-radius: 12px;
+            padding: 10px 14px;
+            border-radius: 18px;
             word-wrap: break-word;
-            animation: fadeIn 0.3s;
+            animation: fadeIn 0.3s ease;
+            font-size: 15px;
+            line-height: 1.4;
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { 
+                opacity: 0; 
+                transform: translateY(10px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0);
+            }
         }
         
         .message.sent {
             align-self: flex-end;
             background: #2E7D32;
             color: white;
-            border-bottom-right-radius: 4px;
         }
         
         .message.received {
             align-self: flex-start;
-            background: #f1f1f1;
-            color: #333;
-            border-bottom-left-radius: 4px;
+            background: #ffffff;
+            color: #1c1e21;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         
         .message .time {
             font-size: 11px;
-            margin-top: 5px;
+            margin-top: 4px;
             opacity: 0.7;
         }
         
@@ -342,42 +412,51 @@ if ($eh_vendedor_produto) {
         }
         
         .chat-input {
-            padding: 20px;
-            background: white;
-            border-top: 1px solid #e0e0e0;
+            padding: 16px 20px;
+            background: #ffffff;
+            border-top: 1px solid #e4e6eb;
             display: flex;
             gap: 10px;
         }
         
         .chat-input input {
             flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 25px;
-            font-size: 14px;
+            padding: 12px 16px;
+            border: 1px solid #ccd0d5;
+            border-radius: 24px;
+            font-size: 15px;
             outline: none;
+            transition: border 0.2s;
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
         }
         
         .chat-input input:focus {
             border-color: #2E7D32;
+            background: #ffffff;
         }
         
         .chat-input button {
             background: #2E7D32;
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 25px;
+            padding: 12px 24px;
+            border-radius: 24px;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 8px;
             font-weight: 600;
+            font-size: 15px;
             transition: background 0.2s;
         }
         
         .chat-input button:hover {
             background: #1B5E20;
+        }
+        
+        .chat-input button:active {
+            transform: scale(0.98);
         }
         
         .chat-placeholder {
@@ -386,13 +465,27 @@ if ($eh_vendedor_produto) {
             align-items: center;
             justify-content: center;
             flex-direction: column;
-            color: #999;
-            gap: 15px;
+            color: #65676b;
+            gap: 16px;
+            background: #f0f2f5;
         }
         
         .chat-placeholder i {
-            font-size: 80px;
+            font-size: 64px;
             opacity: 0.3;
+            color: #8a8d91;
+        }
+        
+        .chat-placeholder p {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .chat-sidebar {
+                width: 320px;
+            }
         }
         
         @media (max-width: 768px) {
@@ -404,6 +497,22 @@ if ($eh_vendedor_produto) {
             .chat-area {
                 display: <?php echo $conversa_id ? 'flex' : 'none'; ?>;
             }
+            
+            .message {
+                max-width: 85%;
+            }
+            
+            .chat-header {
+                padding: 12px 16px;
+            }
+            
+            .chat-messages {
+                padding: 16px;
+            }
+            
+            .chat-input {
+                padding: 12px 16px;
+            }
         }
     </style>
 </head>
@@ -412,8 +521,11 @@ if ($eh_vendedor_produto) {
         <!-- Sidebar -->
         <div class="chat-sidebar">
             <div class="sidebar-header">
-                <h2><i class="fas fa-comments"></i> Chat</h2>
-                <small>Produto: <?php echo htmlspecialchars($produto['nome']); ?></small>
+                <h2>
+                    <i class="fas fa-comments"></i>
+                    Chat
+                </h2>
+                <small><?php echo htmlspecialchars($produto['nome']); ?></small>
             </div>
             
             <div class="produto-info-sidebar">
@@ -430,7 +542,7 @@ if ($eh_vendedor_produto) {
                         <?php foreach ($conversas as $conv): ?>
                             <div class="conversa-item <?php echo ($conversa_id && $conv['id'] == $conversa_id) ? 'ativa' : ''; ?>" 
                                  onclick="location.href='chat.php?produto_id=<?php echo $produto_id; ?>&conversa_id=<?php echo $conv['id']; ?>'">
-                                <div>
+                                <div style="flex: 1;">
                                     <div class="nome"><?php echo htmlspecialchars($conv['comprador_nome']); ?></div>
                                     <?php if ($conv['ultima_mensagem']): ?>
                                         <div class="ultima-msg"><?php echo htmlspecialchars($conv['ultima_mensagem']); ?></div>
@@ -442,8 +554,9 @@ if ($eh_vendedor_produto) {
                             </div>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <div style="padding: 20px; text-align: center; color: #999;">
-                            Nenhuma conversa ainda
+                        <div style="padding: 40px 20px; text-align: center; color: #65676b;">
+                            <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 12px; opacity: 0.3;"></i>
+                            <p style="font-size: 14px;">Nenhuma conversa ainda</p>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -451,7 +564,10 @@ if ($eh_vendedor_produto) {
                 <div class="conversas-lista">
                     <div class="conversa-item ativa">
                         <div>
-                            <div class="nome"><?php echo htmlspecialchars($outro_usuario_nome); ?></div>
+                            <div class="nome">
+                                <i class="fas fa-store" style="margin-right: 8px;"></i>
+                                <?php echo htmlspecialchars($outro_usuario_nome); ?>
+                            </div>
                             <div class="ultima-msg">Conversa com o vendedor</div>
                         </div>
                     </div>
@@ -464,14 +580,17 @@ if ($eh_vendedor_produto) {
             <?php if ($conversa_id && $outro_usuario_id): ?>
                 <div class="chat-header">
                     <div class="usuario-info">
-                        <i class="fas fa-user-circle" style="font-size: 32px;"></i>
+                        <div class="avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
                         <div>
                             <h3><?php echo htmlspecialchars($outro_usuario_nome); ?></h3>
                             <small><?php echo $eh_vendedor_produto ? 'Comprador' : 'Vendedor'; ?></small>
                         </div>
                     </div>
                     <a href="<?php echo $url_voltar; ?>" class="btn-voltar">
-                        <i class="fas fa-arrow-left"></i> Voltar
+                        <i class="fas fa-arrow-left"></i>
+                        Voltar
                     </a>
                 </div>
                 
@@ -480,7 +599,8 @@ if ($eh_vendedor_produto) {
                 <div class="chat-input">
                     <input type="text" id="message-input" placeholder="Digite sua mensagem..." autocomplete="off">
                     <button type="button" id="send-btn">
-                        <i class="fas fa-paper-plane"></i> Enviar
+                        <i class="fas fa-paper-plane"></i>
+                        Enviar
                     </button>
                 </div>
             <?php else: ?>
@@ -489,7 +609,8 @@ if ($eh_vendedor_produto) {
                     <p><?php echo $eh_vendedor_produto ? 'Selecione uma conversa para começar' : 'Carregando chat...'; ?></p>
                     <?php if ($eh_vendedor_produto): ?>
                         <a href="<?php echo $url_voltar; ?>" class="btn-voltar" style="margin-top: 20px;">
-                            <i class="fas fa-arrow-left"></i> Voltar para Chats
+                            <i class="fas fa-arrow-left"></i>
+                            Voltar para Chats
                         </a>
                     <?php endif; ?>
                 </div>

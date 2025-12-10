@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 09/12/2025 às 20:41
+-- Tempo de geração: 10/12/2025 às 15:37
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -105,15 +105,6 @@ CREATE TABLE `chat_conversas` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Despejando dados para a tabela `chat_conversas`
---
-
-INSERT INTO `chat_conversas` (`id`, `produto_id`, `comprador_id`, `vendedor_id`, `ultima_mensagem`, `ultima_mensagem_data`, `comprador_lido`, `vendedor_lido`, `status`, `data_criacao`) VALUES
-(1, 10, 3, 4, 'kkk', '2025-12-09 19:38:20', 0, 1, 'ativo', '2025-12-09 19:28:06'),
-(2, 11, 8, 4, 'ok]', '2025-12-09 19:39:06', 0, 1, 'ativo', '2025-12-09 19:38:53'),
-(3, 8, 4, 9, 'quero isso', '2025-12-09 19:39:54', 1, 0, 'ativo', '2025-12-09 19:39:51');
-
 -- --------------------------------------------------------
 
 --
@@ -128,20 +119,6 @@ CREATE TABLE `chat_mensagens` (
   `lida` tinyint(1) DEFAULT 0,
   `data_envio` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Despejando dados para a tabela `chat_mensagens`
---
-
-INSERT INTO `chat_mensagens` (`id`, `conversa_id`, `remetente_id`, `mensagem`, `lida`, `data_envio`) VALUES
-(1, 1, 3, 'teste', 1, '2025-12-09 19:28:13'),
-(2, 1, 3, 'ok', 1, '2025-12-09 19:28:48'),
-(3, 1, 3, 'quero por 15', 1, '2025-12-09 19:38:01'),
-(4, 1, 4, 'ok', 1, '2025-12-09 19:38:12'),
-(5, 1, 4, 'kkk', 1, '2025-12-09 19:38:20'),
-(6, 2, 8, 'quero isso', 1, '2025-12-09 19:38:57'),
-(7, 2, 4, 'ok]', 1, '2025-12-09 19:39:06'),
-(8, 3, 4, 'quero isso', 0, '2025-12-09 19:39:54');
 
 -- --------------------------------------------------------
 
@@ -210,14 +187,6 @@ CREATE TABLE `favoritos` (
   `produto_id` int(11) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Despejando dados para a tabela `favoritos`
---
-
-INSERT INTO `favoritos` (`id`, `usuario_id`, `produto_id`, `data_criacao`) VALUES
-(3, 3, 2, '2025-11-20 17:35:23'),
-(8, 3, 10, '2025-12-09 12:13:36');
 
 -- --------------------------------------------------------
 
@@ -295,13 +264,34 @@ CREATE TABLE `produtos` (
 --
 
 INSERT INTO `produtos` (`id`, `vendedor_id`, `nome`, `descricao`, `preco`, `preco_desconto`, `desconto_percentual`, `desconto_ativo`, `desconto_data_inicio`, `desconto_data_fim`, `categoria`, `imagem_url`, `estoque`, `unidade_medida`, `status`, `data_criacao`, `data_atualizacao`) VALUES
-(2, 1, 'uvas', 'uvas verdes', 3.33, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_691527af8dea16.84286255.jpg', 10, NULL, 'ativo', '2025-11-13 00:34:55', NULL),
-(7, 1, 'Teste esgotar estoque', '', 5.00, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_691d3821c54958.39837631.jpeg', 0, NULL, 'ativo', '2025-11-19 03:23:13', '2025-11-20 22:10:44'),
-(8, 2, 'banana', 'bananas amarelas', 2.22, NULL, 0.00, 0, NULL, NULL, 'Frutas Tropicais', '../uploads/produtos/prod_691f52c5b25cb6.01137275.jpeg', 12, NULL, 'ativo', '2025-11-20 17:41:25', NULL),
-(9, 2, 'melancia', 'melancias', 1.11, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_691f52db2a3106.65007213.jpg', 1, NULL, 'ativo', '2025-11-20 17:41:47', NULL),
-(10, 1, 'teste', '', 20.00, 18.00, 10.00, 1, NULL, NULL, 'Frutas Tropicais', '../uploads/produtos/prod_692ce592138434.75940422.jpeg', 1, NULL, 'ativo', '2025-11-20 17:43:41', '2025-12-01 12:43:39'),
-(11, 1, 'Mamao', 'mamao tropical', 100.00, NULL, 0.00, 0, NULL, NULL, 'Frutas Tropicais', '../uploads/produtos/prod_692e48c33210d6.50109901.png', 100, NULL, 'ativo', '2025-12-02 02:02:43', '2025-12-05 01:45:29'),
-(12, 3, 'testando', 'Lorem ipsum dolor sit amet consectetur, adipisicing elit. Laudantium ipsam similique illo pariatur minus? Inventore, repellendus placeat. Vitae illum architecto, animi et a ex sit aspernatur assumenda saepe necessitatibus incidunt! Quisquam, dicta.', 0.01, NULL, 0.00, 0, NULL, NULL, 'Frutas Exóticas', '../uploads/produtos/prod_692ee095e98983.96559895.jpg', 1, NULL, 'ativo', '2025-12-02 12:50:29', NULL);
+(15, 1, 'teste 1', '1', 0.01, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_69398052be9755.34966564.jpeg', 1, NULL, 'ativo', '2025-12-10 14:14:42', '2025-12-10 14:15:18'),
+(16, 1, 'teste x', '1', 10.00, 8.00, 20.00, 1, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_69398067b3f823.59696952.jpg', 1, NULL, 'ativo', '2025-12-10 14:15:03', '2025-12-10 14:24:29'),
+(17, 1, 'testenovop', '1', 0.01, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_693983f26c4a61.72410777.jpg', 1, NULL, 'ativo', '2025-12-10 14:30:10', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `produto_imagens`
+--
+
+CREATE TABLE `produto_imagens` (
+  `id` int(11) NOT NULL,
+  `produto_id` int(11) NOT NULL,
+  `imagem_url` varchar(500) NOT NULL,
+  `ordem` int(11) DEFAULT 0,
+  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `produto_imagens`
+--
+
+INSERT INTO `produto_imagens` (`id`, `produto_id`, `imagem_url`, `ordem`, `data_criacao`) VALUES
+(5, 15, '../uploads/produtos/prod_69398052be9755.34966564.jpeg', 0, '2025-12-10 14:14:42'),
+(6, 16, '../uploads/produtos/prod_69398067b3f823.59696952.jpg', 0, '2025-12-10 14:15:03'),
+(7, 16, '../uploads/produtos/prod_69398067b417a9.84436515.jpeg', 1, '2025-12-10 14:15:03'),
+(8, 16, '../uploads/produtos/prod_69398067b43918.23298783.jpg', 2, '2025-12-10 14:15:03'),
+(9, 17, '../uploads/produtos/prod_693983f26c4a61.72410777.jpg', 0, '2025-12-10 14:30:10');
 
 -- --------------------------------------------------------
 
@@ -344,13 +334,6 @@ CREATE TABLE `propostas_negociacao` (
   `data_atualizacao` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Despejando dados para a tabela `propostas_negociacao`
---
-
-INSERT INTO `propostas_negociacao` (`id`, `produto_id`, `proposta_comprador_id`, `proposta_vendedor_id`, `preco_final`, `quantidade_final`, `status`, `data_criacao`, `data_atualizacao`) VALUES
-(57, 10, 59, NULL, NULL, NULL, 'negociacao', '2025-12-09 13:17:17', NULL);
-
 -- --------------------------------------------------------
 
 --
@@ -371,15 +354,6 @@ CREATE TABLE `propostas_negociacao_old` (
   `observacoes_vendedor` text DEFAULT NULL,
   `observacoes_vendedor_teste` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Despejando dados para a tabela `propostas_negociacao_old`
---
-
-INSERT INTO `propostas_negociacao_old` (`id`, `produto_id`, `comprador_id`, `preco_proposto`, `quantidade_proposta`, `condicoes_comprador`, `status`, `data_proposta`, `data_resposta`, `data_atualizacao`, `observacoes_vendedor`, `observacoes_vendedor_teste`) VALUES
-(6, 2, 1, 11.00, 1, 'teste', '', '2025-11-14 19:13:44', '2025-11-15 16:17:19', '2025-11-15 19:17:19', NULL, NULL),
-(7, 2, 2, 10.00, 5, 'testando proposta', 'pendente', '2025-11-17 19:20:14', NULL, NULL, NULL, NULL),
-(16, 7, 2, 5.00, 10, NULL, 'aceita', '2025-11-19 03:23:36', '2025-11-19 00:23:59', '2025-11-19 03:23:59', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -631,6 +605,13 @@ ALTER TABLE `produtos`
   ADD KEY `vendedor_id` (`vendedor_id`);
 
 --
+-- Índices de tabela `produto_imagens`
+--
+ALTER TABLE `produto_imagens`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_produto_id` (`produto_id`);
+
+--
 -- Índices de tabela `propostas_comprador`
 --
 ALTER TABLE `propostas_comprador`
@@ -711,13 +692,13 @@ ALTER TABLE `admin_acoes`
 -- AUTO_INCREMENT de tabela `chat_conversas`
 --
 ALTER TABLE `chat_conversas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de tabela `chat_mensagens`
 --
 ALTER TABLE `chat_mensagens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de tabela `compradores`
@@ -735,7 +716,7 @@ ALTER TABLE `conversas`
 -- AUTO_INCREMENT de tabela `favoritos`
 --
 ALTER TABLE `favoritos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de tabela `mensagens`
@@ -753,7 +734,13 @@ ALTER TABLE `notificacoes`
 -- AUTO_INCREMENT de tabela `produtos`
 --
 ALTER TABLE `produtos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+
+--
+-- AUTO_INCREMENT de tabela `produto_imagens`
+--
+ALTER TABLE `produto_imagens`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de tabela `propostas_comprador`
@@ -874,6 +861,12 @@ ALTER TABLE `notificacoes`
 --
 ALTER TABLE `produtos`
   ADD CONSTRAINT `produtos_ibfk_1` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `produto_imagens`
+--
+ALTER TABLE `produto_imagens`
+  ADD CONSTRAINT `produto_imagens_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE;
 
 --
 -- Restrições para tabelas `propostas_comprador`

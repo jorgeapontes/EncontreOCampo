@@ -1995,3 +1995,82 @@ input:focus::placeholder {
     font-weight: normal;
     font-style: italic;
 }
+
+/* =============================================== */
+/* ESTILOS PARA BUSCA AUTOMÁTICA DE CEP           */
+/* =============================================== */
+
+/* Estados do botão de CEP */
+.cep-btn.loading {
+    background-color: #ff9800 !important;
+    cursor: wait !important;
+}
+
+.cep-btn.success {
+    background-color: #4CAF50 !important;
+}
+
+.cep-btn.error {
+    background-color: #f44336 !important;
+}
+
+/* Feedback visual para campos preenchidos automaticamente */
+input.cep-preenchido {
+    background-color: #f0fff0 !important;
+    border-color: #4CAF50 !important;
+    transition: all 0.5s ease;
+}
+
+/* Indicador de busca automática */
+.cep-auto-indicator {
+    font-size: 11px;
+    color: #666;
+    margin-top: 3px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.cep-auto-indicator.visible {
+    opacity: 1;
+}
+
+/* Container para CEP com ícone */
+.cep-container {
+    position: relative;
+}
+
+.cep-container i {
+    position: absolute;
+    right: 70px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.cep-container input:focus + i {
+    color: #4CAF50;
+}
+
+/* Animações */
+@keyframes cepSuccess {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.cep-success-animation {
+    animation: cepSuccess 0.5s ease;
+}
+
+/* Responsividade para busca automática */
+@media (max-width: 768px) {
+    .cep-auto-indicator {
+        font-size: 10px;
+    }
+    
+    .cep-container i {
+        display: none;
+    }
+}

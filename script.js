@@ -308,15 +308,60 @@ function prevStep(type) {
     }
 }
 
-// Função para buscar CEP - COMPRADOR
-function buscarCEPComprador() {
-    const cepInput = document.getElementById('cepComprador');
-    if (!cepInput) {
-        console.error('❌ cepComprador não encontrado');
-        alert('Erro: campo CEP não encontrado');
-        return;
-    }
+// MÁSCARA CEP COM BUSCA AUTOMÁTICA
+function aplicarMascaraCEP(cepInput, tipo) {
+    if (!cepInput) return;
     
+    let ultimoValor = '';
+    let timeoutId;
+    
+    cepInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        
+        // Aplica máscara
+        if (value.length > 5) {
+            value = value.substring(0, 5) + '-' + value.substring(5, 8);
+        }
+        
+        e.target.value = value;
+        
+        const cepLimpo = value.replace(/\D/g, '');
+        
+        // Limpa timeout anterior
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+        
+        // Verifica se tem 8 dígitos e é diferente do último valor
+        if (cepLimpo.length === 8 && cepLimpo !== ultimoValor) {
+            // Configura timeout para buscar automaticamente após 800ms
+            timeoutId = setTimeout(() => {
+                ultimoValor = cepLimpo;
+                buscarCEP(cepInput, tipo);
+            }, 800); // Aumentei para 800ms para dar mais tempo
+        }
+    });
+    
+    // Busca ao perder o foco
+    cepInput.addEventListener('blur', function(e) {
+        const cepLimpo = e.target.value.replace(/\D/g, '');
+        if (cepLimpo.length === 8 && cepLimpo !== ultimoValor) {
+            ultimoValor = cepLimpo;
+            buscarCEP(cepInput, tipo);
+        }
+    });
+    
+    // Mantém a busca com Enter
+    cepInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            buscarCEP(cepInput, tipo);
+        }
+    });
+}
+
+// Função genérica para buscar CEP
+function buscarCEP(cepInput, tipo) {
     const cep = cepInput.value.replace(/\D/g, '');
     
     if (cep.length !== 8) {
@@ -324,12 +369,37 @@ function buscarCEPComprador() {
         return;
     }
     
-    const btnBuscar = cepInput.parentElement.querySelector('button');
+    // Identifica qual tipo de formulário
+    if (tipo === 'comprador') {
+        buscarCEPComprador(cepInput);
+    } else if (tipo === 'vendedor') {
+        buscarCEPVendedor(cepInput);
+    }
+}
+
+// Função para buscar CEP - COMPRADOR (atualizada para receber parâmetro)
+function buscarCEPComprador(cepInput = null) {
+    const inputElement = cepInput || document.getElementById('cepComprador');
+    if (!inputElement) {
+        console.error('❌ cepComprador não encontrado');
+        alert('Erro: campo CEP não encontrado');
+        return;
+    }
+    
+    const cep = inputElement.value.replace(/\D/g, '');
+    
+    if (cep.length !== 8) {
+        alert('❌ CEP inválido! Digite 8 números.');
+        return;
+    }
+    
+    const btnBuscar = inputElement.closest('.cep-container').querySelector('button');
     let originalText = 'Buscar CEP';
     if (btnBuscar) {
         originalText = btnBuscar.textContent;
         btnBuscar.textContent = 'Buscando...';
         btnBuscar.disabled = true;
+        btnBuscar.classList.add('loading');
     }
         
     fetch(`https://viacep.com.br/ws/${cep}/json/`)
@@ -342,6 +412,9 @@ function buscarCEPComprador() {
                 if (btnBuscar) {
                     btnBuscar.textContent = originalText;
                     btnBuscar.disabled = false;
+                    btnBuscar.classList.remove('loading');
+                    btnBuscar.classList.add('error');
+                    setTimeout(() => btnBuscar.classList.remove('error'), 2000);
                 }
                 return;
             }
@@ -352,11 +425,13 @@ function buscarCEPComprador() {
             
             if (btnBuscar) {
                 btnBuscar.textContent = '✓ Encontrado';
-                btnBuscar.style.backgroundColor = '#4CAF50';
+                btnBuscar.classList.remove('loading');
+                btnBuscar.classList.add('success');
+                btnBuscar.disabled = false;
+                
                 setTimeout(() => {
                     btnBuscar.textContent = originalText;
-                    btnBuscar.disabled = false;
-                    btnBuscar.style.backgroundColor = '';
+                    btnBuscar.classList.remove('success');
                 }, 2000);
             }
         })
@@ -366,32 +441,36 @@ function buscarCEPComprador() {
             if (btnBuscar) {
                 btnBuscar.textContent = originalText;
                 btnBuscar.disabled = false;
+                btnBuscar.classList.remove('loading');
+                btnBuscar.classList.add('error');
+                setTimeout(() => btnBuscar.classList.remove('error'), 2000);
             }
         });
 }
 
-// Função para buscar CEP - VENDEDOR
-function buscarCEPVendedor() {
-    const cepInput = document.getElementById('cepVendedor');
-    if (!cepInput) {
+// Função para buscar CEP - VENDEDOR (atualizada para receber parâmetro)
+function buscarCEPVendedor(cepInput = null) {
+    const inputElement = cepInput || document.getElementById('cepVendedor');
+    if (!inputElement) {
         console.error('❌ cepVendedor não encontrado');
         alert('Erro: campo CEP não encontrado');
         return;
     }
     
-    const cep = cepInput.value.replace(/\D/g, '');
+    const cep = inputElement.value.replace(/\D/g, '');
     
     if (cep.length !== 8) {
         alert('❌ CEP inválido! Digite 8 números.');
         return;
     }
     
-    const btnBuscar = cepInput.parentElement.querySelector('button');
+    const btnBuscar = inputElement.closest('.cep-container').querySelector('button');
     let originalText = 'Buscar CEP';
     if (btnBuscar) {
         originalText = btnBuscar.textContent;
         btnBuscar.textContent = 'Buscando...';
         btnBuscar.disabled = true;
+        btnBuscar.classList.add('loading');
     }
         
     fetch(`https://viacep.com.br/ws/${cep}/json/`)
@@ -404,6 +483,9 @@ function buscarCEPVendedor() {
                 if (btnBuscar) {
                     btnBuscar.textContent = originalText;
                     btnBuscar.disabled = false;
+                    btnBuscar.classList.remove('loading');
+                    btnBuscar.classList.add('error');
+                    setTimeout(() => btnBuscar.classList.remove('error'), 2000);
                 }
                 return;
             }
@@ -414,11 +496,13 @@ function buscarCEPVendedor() {
             
             if (btnBuscar) {
                 btnBuscar.textContent = '✓ Encontrado';
-                btnBuscar.style.backgroundColor = '#4CAF50';
+                btnBuscar.classList.remove('loading');
+                btnBuscar.classList.add('success');
+                btnBuscar.disabled = false;
+                
                 setTimeout(() => {
                     btnBuscar.textContent = originalText;
-                    btnBuscar.disabled = false;
-                    btnBuscar.style.backgroundColor = '';
+                    btnBuscar.classList.remove('success');
                 }, 2000);
             }
         })
@@ -428,6 +512,9 @@ function buscarCEPVendedor() {
             if (btnBuscar) {
                 btnBuscar.textContent = originalText;
                 btnBuscar.disabled = false;
+                btnBuscar.classList.remove('loading');
+                btnBuscar.classList.add('error');
+                setTimeout(() => btnBuscar.classList.remove('error'), 2000);
             }
         });
 }
@@ -529,32 +616,6 @@ async function buscarPlacaVeiculo() {
         
         alert(`Erro ao consultar a placa: ${error.message}\nPreencha o modelo manualmente.`);
     }
-}
-
-// MÁSCARA SIMPLES E EFICIENTE PARA CEP
-function aplicarMascaraCEP(cepInput, tipo) {
-    if (!cepInput) return;
-    
-    cepInput.addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\D/g, '');
-        
-        if (value.length > 5) {
-            value = value.substring(0, 5) + '-' + value.substring(5, 8);
-        }
-        
-        e.target.value = value;
-    });
-    
-    cepInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            if (tipo === 'comprador') {
-                buscarCEPComprador();
-            } else if (tipo === 'vendedor') {
-                buscarCEPVendedor();
-            }
-        }
-    });
 }
 
 // Funções para carregar estados e cidades

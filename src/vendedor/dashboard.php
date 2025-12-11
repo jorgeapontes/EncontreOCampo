@@ -1,71 +1,131 @@
 <?php
 // src/vendedor/dashboard.php
-require_once 'auth.php';
+require_once __DIR__ . '/../permissions.php';
+require_once __DIR__ . '/../conexao.php'; // Adicione se necessário
 
-// Lógica para buscar os anúncios ATIVOS do vendedor
-$anuncios = [];
+session_start();
 
-$query_anuncios = "SELECT id, nome, estoque, preco, status, data_criacao 
-                   FROM produtos 
-                   WHERE vendedor_id = :vendedor_id 
-                   AND status = 'ativo' 
-                   ORDER BY data_criacao DESC";
-                   
-$stmt_anuncios = $db->prepare($query_anuncios);
-$stmt_anuncios->bindParam(':vendedor_id', $vendedor['id']);
-$stmt_anuncios->execute();
-$anuncios = $stmt_anuncios->fetchAll(PDO::FETCH_ASSOC);
-
-$total_anuncios = count($anuncios);
-
-// CONTADOR DE PROPOSTAS PENDENTES - ATUALIZADO PARA NOVA ESTRUTURA
-$total_propostas_pendentes = 0;
-
-// CONTADOR DE PROPOSTAS PENDENTES - CORRIGIDA
-// CONTADOR DE PROPOSTAS PENDENTES - CORRIGIDA
-try {
-    $query_propostas = "SELECT COUNT(pc.id) as total_pendentes
-                        FROM propostas_comprador pc
-                        INNER JOIN propostas_negociacao pn ON pc.id = pn.proposta_comprador_id
-                        INNER JOIN produtos p ON pn.produto_id = p.id
-                        WHERE p.vendedor_id = :vendedor_id 
-                        AND pc.status = 'enviada'
-                        AND pn.status = 'negociacao'"; 
-                        
-    $stmt_propostas = $db->prepare($query_propostas);
-    $stmt_propostas->bindParam(':vendedor_id', $vendedor['id']);
-    $stmt_propostas->execute();
-    $resultado = $stmt_propostas->fetch(PDO::FETCH_ASSOC);
-    
-    $total_propostas_pendentes = $resultado['total_pendentes'] ?? 0;
-    
-} catch (PDOException $e) {
-    error_log("Erro ao contar propostas pendentes: " . $e->getMessage());
-    $total_propostas_pendentes = 0;
+// 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA
+if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor') {
+    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Vendedor."));
+    exit();
 }
 
-// CONTADOR DE MENSAGENS NÃO LIDAS DO VENDEDOR
-$total_mensagens_nao_lidas = 0;
+// Verificar se o usuário tem permissão para ver dashboard completo
+$usuario_status = $_SESSION['usuario_status'] ?? 'pendente';
+$is_pendente = ($usuario_status === 'pendente');
+
+$usuario_nome = htmlspecialchars($_SESSION['vendedor_nome'] ?? 'Vendedor');
+$usuario_id = $_SESSION['usuario_id'];
+
+// Conexão com o banco de dados
+$database = new Database();
+$db = $database->getConnection();
+
+// Buscar dados do vendedor
+$vendedor_id = null;
+$vendedor_nome_comercial = '';
+
 try {
-    $query_mensagens = "SELECT COUNT(DISTINCT cm.conversa_id) as total_conversas_nao_lidas
-                        FROM chat_mensagens cm
-                        INNER JOIN chat_conversas cc ON cm.conversa_id = cc.id
-                        INNER JOIN produtos p ON cc.produto_id = p.id
-                        WHERE p.vendedor_id = :vendedor_id 
-                        AND cm.remetente_id != :usuario_id
-                        AND cm.lida = 0";
-                        
-    $stmt_mensagens = $db->prepare($query_mensagens);
-    $stmt_mensagens->bindParam(':vendedor_id', $vendedor['id'], PDO::PARAM_INT);
-    $stmt_mensagens->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
-    $stmt_mensagens->execute();
-    $resultado_msg = $stmt_mensagens->fetch(PDO::FETCH_ASSOC);
+    $sql_vendedor = "SELECT id, nome_comercial FROM vendedores WHERE usuario_id = :usuario_id";
+    $stmt_vendedor = $db->prepare($sql_vendedor);
+    $stmt_vendedor->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt_vendedor->execute();
+    $vendedor = $stmt_vendedor->fetch(PDO::FETCH_ASSOC);
     
-    $total_mensagens_nao_lidas = $resultado_msg['total_conversas_nao_lidas'] ?? 0;
-    
+    if ($vendedor) {
+        $vendedor_id = $vendedor['id'];
+        $vendedor_nome_comercial = $vendedor['nome_comercial'] ?? $usuario_nome;
+    }
 } catch (PDOException $e) {
-    error_log("Erro ao contar mensagens não lidas: " . $e->getMessage());
-    $total_mensagens_nao_lidas = 0;
+    error_log("Erro ao buscar dados do vendedor: " . $e->getMessage());
+}
+
+// Inicializar variáveis para não causar erros
+$total_anuncios = 0;
+$total_propostas_pendentes = 0;
+$total_mensagens_nao_lidas = 0;
+$total_favoritos = 0;
+
+// Só busca estatísticas se o vendedor for ativo
+if (!$is_pendente && $vendedor_id) {
+    // Lógica para buscar os anúncios ATIVOS do vendedor
+    $anuncios = [];
+
+    $query_anuncios = "SELECT id, nome, estoque, preco, status, data_criacao 
+                       FROM produtos 
+                       WHERE vendedor_id = :vendedor_id 
+                       AND status = 'ativo' 
+                       ORDER BY data_criacao DESC";
+                       
+    $stmt_anuncios = $db->prepare($query_anuncios);
+    $stmt_anuncios->bindParam(':vendedor_id', $vendedor_id);
+    $stmt_anuncios->execute();
+    $anuncios = $stmt_anuncios->fetchAll(PDO::FETCH_ASSOC);
+
+    $total_anuncios = count($anuncios);
+
+    // CONTADOR DE PROPOSTAS PENDENTES
+    try {
+        $query_propostas = "SELECT COUNT(pc.id) as total_pendentes
+                            FROM propostas_comprador pc
+                            INNER JOIN propostas_negociacao pn ON pc.id = pn.proposta_comprador_id
+                            INNER JOIN produtos p ON pn.produto_id = p.id
+                            WHERE p.vendedor_id = :vendedor_id 
+                            AND pc.status = 'enviada'
+                            AND pn.status = 'negociacao'";
+                            
+        $stmt_propostas = $db->prepare($query_propostas);
+        $stmt_propostas->bindParam(':vendedor_id', $vendedor_id);
+        $stmt_propostas->execute();
+        $resultado = $stmt_propostas->fetch(PDO::FETCH_ASSOC);
+        
+        $total_propostas_pendentes = $resultado['total_pendentes'] ?? 0;
+        
+    } catch (PDOException $e) {
+        error_log("Erro ao contar propostas pendentes: " . $e->getMessage());
+        $total_propostas_pendentes = 0;
+    }
+
+    // CONTADOR DE MENSAGENS NÃO LIDAS DO VENDEDOR
+    try {
+        $query_mensagens = "SELECT COUNT(DISTINCT cm.conversa_id) as total_conversas_nao_lidas
+                            FROM chat_mensagens cm
+                            INNER JOIN chat_conversas cc ON cm.conversa_id = cc.id
+                            INNER JOIN produtos p ON cc.produto_id = p.id
+                            WHERE p.vendedor_id = :vendedor_id 
+                            AND cm.remetente_id != :usuario_id
+                            AND cm.lida = 0";
+                            
+        $stmt_mensagens = $db->prepare($query_mensagens);
+        $stmt_mensagens->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
+        $stmt_mensagens->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+        $stmt_mensagens->execute();
+        $resultado_msg = $stmt_mensagens->fetch(PDO::FETCH_ASSOC);
+        
+        $total_mensagens_nao_lidas = $resultado_msg['total_conversas_nao_lidas'] ?? 0;
+        
+    } catch (PDOException $e) {
+        error_log("Erro ao contar mensagens não lidas: " . $e->getMessage());
+        $total_mensagens_nao_lidas = 0;
+    }
+}
+
+// BUSCA DO TOTAL DE FAVORITOS (disponível para todos)
+try {
+    $sql_favoritos = "SELECT COUNT(id) AS total_favoritos FROM favoritos 
+                      WHERE usuario_id = :usuario_id";
+    
+    $stmt_favoritos = $db->prepare($sql_favoritos);
+    $stmt_favoritos->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt_favoritos->execute();
+    $resultado_favoritos = $stmt_favoritos->fetch(PDO::FETCH_ASSOC);
+
+    $total_favoritos = $resultado_favoritos ? $resultado_favoritos['total_favoritos'] : 0;
+
+} catch (PDOException $e) {
+    error_log("Erro ao carregar total de favoritos: " . $e->getMessage());
+    $total_favoritos = 0;
 }
 ?>
 <!DOCTYPE html>
@@ -109,10 +169,8 @@ try {
                             <?php
                             // Contar notificações não lidas
                             if (isset($_SESSION['usuario_id'])) {
-                                $database = new Database();
-                                $conn = $database->getConnection();
                                 $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
-                                $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
+                                $stmt_nao_lidas = $db->prepare($sql_nao_lidas);
                                 $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
                                 $stmt_nao_lidas->execute();
                                 $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
@@ -140,48 +198,80 @@ try {
     <div class="main-content">
         <section class="header">
             <center>
-                <h1>Bem-vindo(a), <?php echo htmlspecialchars($_SESSION['vendedor_nome']); ?>!</h1>
+                <h1>Bem-vindo(a), <?php echo htmlspecialchars($vendedor_nome_comercial); ?>!</h1>
+                <?php if ($is_pendente): ?>
+                    <p class="subtitulo">(Cadastro aguardando aprovação)</p>
+                <?php endif; ?>
             </center>
         </section>
 
+        <?php if ($is_pendente): ?>
+            <div class="aviso-status">
+                <i class="fas fa-info-circle"></i>
+                <strong>Seu cadastro está aguardando aprovação.</strong> 
+                Enquanto isso, você pode visualizar anúncios, favoritar produtos e editar seus dados.
+                <br>
+            </div>
+        <?php endif; ?>
+        
         <section class="info-cards">
-            <a href="anuncios.php">
-                <div class="card">
-                    <i class="fas fa-bullhorn"></i>
-                    <h3>Anúncios Ativos</h3>
-                    <p><?php echo $total_anuncios; ?></p>
-                </div>
-            </a>
-            <a href="chats.php">
-    <div class="card">
-        <i class="fas fa-comments"></i>
-        <h3>Chats</h3>
-        <p><?php echo $total_mensagens_nao_lidas; ?> não lidas</p>
-    </div>
-</a>
-            <a href="vendas.php">
-                <div class="card">
-                    <i class="fas fa-dollar-sign"></i>
-                    <h3>Minhas vendas</h3>
-                    <p>Ver</p>
-                </div>
-            </a>
-            <a href="#">
-                <div class="card">
-                    <i class="fa-solid fa-bag-shopping"></i>
-                    <h3>Minhas Compras</h3>
-                    <p>Ver</p>
-                </div>
-            </a>
-            <!-- <a href="../comprador/minhas_propostas.php">
-                <div class="card">
-                    <i class="fa-solid fa-paper-plane"></i>
-                    <h3>Minhas Propostas</h3>
-                    <p>Ver</p>
-                </div>
-            </a> -->
+            <?php if (!$is_pendente): ?>
+                <!-- Cards apenas para vendedores ativos -->
+                <a href="anuncios.php">
+                    <div class="card">
+                        <i class="fas fa-bullhorn"></i>
+                        <h3>Anúncios Ativos</h3>
+                        <p><?php echo $total_anuncios; ?></p>
+                    </div>
+                </a>
+                <a href="chats.php">
+                    <div class="card">
+                        <i class="fas fa-comments"></i>
+                        <h3>Chats</h3>
+                        <p><?php echo $total_mensagens_nao_lidas; ?> não lidas</p>
+                    </div>
+                </a>
+                <a href="vendas.php">
+                    <div class="card">
+                        <i class="fas fa-dollar-sign"></i>
+                        <h3>Minhas vendas</h3>
+                        <p>Ver</p>
+                    </div>
+                </a>
+                <a href="#"> 
+                    <div class="card"> 
+                        <i class="fa-solid fa-bag-shopping"></i> 
+                        <h3>Minhas Compras</h3> 
+                        <p>Ver</p> 
+                    </div> 
+                </a>
+            <?php endif; ?>
         </section>
 
+        <section class="header sub">
+            <center>
+                <h3>Ações rápidas</h3>
+            </center>
+        </section>
+
+        <section class="acoes-rapidas">
+            <a href="../anuncios.php">
+                <i class="fa-solid fa-dollar-sign"></i>
+                <span>Ver Anúncios</span>
+            </a>
+            
+                <a href="../comprador/favoritos.php">
+                    <i class="fas fa-heart"></i>
+                    <span>Favoritos</span>
+                </a>
+            
+            <a href="perfil.php">
+                <i class="fas fa-user-circle"></i>
+                <span>Dados</span>
+            </a>
+        </section>
+
+        <?php if (!$is_pendente && $vendedor_id && $total_anuncios > 0): ?>
         <section class="section-anuncios">
             <div id="header">
                 <h2>Anúncios ativos (<?php echo $total_anuncios; ?>)</h2>
@@ -230,24 +320,27 @@ try {
                 <?php endif; ?>
             </div>
         </section>
+        <?php endif; ?>
         
     </div>
 
     <script>
-        // Script para menu hamburger (copiado do index.php)
+        // Script para menu hamburger
         const hamburger = document.querySelector(".hamburger");
         const navMenu = document.querySelector(".nav-menu");
 
-        hamburger.addEventListener("click", () => {
-            hamburger.classList.toggle("active");
-            navMenu.classList.toggle("active");
-        });
+        if (hamburger) {
+            hamburger.addEventListener("click", () => {
+                hamburger.classList.toggle("active");
+                navMenu.classList.toggle("active");
+            });
 
-        // Fechar menu mobile ao clicar em um link
-        document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
-            hamburger.classList.remove("active");
-            navMenu.classList.remove("active");
-        }));
+            // Fechar menu mobile ao clicar em um link
+            document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
+                hamburger.classList.remove("active");
+                navMenu.classList.remove("active");
+            }));
+        }
     </script>
 </body>
 </html>

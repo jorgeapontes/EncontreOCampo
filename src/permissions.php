@@ -1,48 +1,38 @@
 <?php
-// src/permissions.php
+// src/permissions.php (adicione esta função ou ajuste as existentes)
 
-function verificarPermissao($acaoPermitidaPara = 'ativo') {
-    if (!isset($_SESSION['usuario_status'])) {
+// Função específica para verificar permissão do vendedor
+function vendedorPode($acao) {
+    if (!isset($_SESSION['usuario_status']) || !isset($_SESSION['usuario_tipo'])) {
         return false;
     }
     
     $status = $_SESSION['usuario_status'];
     $tipo = $_SESSION['usuario_tipo'];
     
-    // Se ação é permitida apenas para ativos
-    if ($acaoPermitidaPara === 'ativo') {
-        return $status === 'ativo';
+    // Verifica se é vendedor
+    if ($tipo !== 'vendedor') {
+        return false;
     }
     
-    // Se ação é permitida para pendentes também
-    if ($acaoPermitidaPara === 'ambos') {
-        return $status === 'ativo' || $status === 'pendente';
+    // Lista de ações permitidas para vendedores pendentes
+    $acoesPermitidasPendentes = [
+        'ver_anuncios',
+        'favoritar',
+        'ver_perfil',
+        'editar_perfil'
+    ];
+    
+    // Se for ativo, todas ações são permitidas
+    if ($status === 'ativo') {
+        return true;
+    }
+    
+    // Se for pendente, verifica se a ação está na lista permitida
+    if ($status === 'pendente') {
+        return in_array($acao, $acoesPermitidasPendentes);
     }
     
     return false;
-}
-
-function restringirAcesso($pagina, $statusPermitido = 'ativo') {
-    if (!verificarPermissao($statusPermitido)) {
-        $_SESSION['erro_acesso'] = "Você precisa ter sua conta aprovada para acessar esta funcionalidade.";
-        header("Location: ../index.php");
-        exit();
-    }
-}
-
-// Função para verificar se usuário pode interagir
-function usuarioPodeComprar() {
-    if (!isset($_SESSION['usuario_status']) || $_SESSION['usuario_status'] !== 'ativo') {
-        return false;
-    }
-    return true;
-}
-
-// Função para verificar se usuário pode conversar
-function usuarioPodeConversar() {
-    if (!isset($_SESSION['usuario_status']) || $_SESSION['usuario_status'] !== 'ativo') {
-        return false;
-    }
-    return true;
 }
 ?>

@@ -4,7 +4,7 @@ session_start();
 require_once __DIR__ . '/../conexao.php';
 
 // Verificar se o usuário está logado como comprador
-if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'comprador') {
+if (!isset($_SESSION['usuario_id']) ) {
     header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador."));
     exit();
 }

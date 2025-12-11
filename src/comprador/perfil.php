@@ -234,8 +234,6 @@ try {
                         </div>
                     </div>
 
-                    
-
                     <div class="form-group-row">
                         <div class="form-group">
                             <label for="rua" class="required">Rua</label>
@@ -269,9 +267,41 @@ try {
                     <input type="hidden" name="comprador_id" value="<?php echo $comprador_data['id'] ?? ''; ?>">
                     
                     <button type="submit" class="big-button"><i class="fas fa-save"></i> Salvar Alterações</button>
+                    
+                    <!-- Botão para deletar conta -->
+                    <center>
+                        <a href="#" id="delete-account-link" style="display: inline-block; margin-top: 20px; color: #666; text-decoration: none; font-size: 0.9rem;">
+                            <i class="fas fa-trash-alt"></i> Apagar minha conta
+                        </a>
+                    </center>
                 </div>
             </form>
         </section>
+    </div>
+
+    <!-- Modal de confirmação para deletar conta -->
+    <div id="delete-account-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%;">
+            <h3 style="color: #c62828; margin-bottom: 15px;">
+                <i class="fas fa-exclamation-triangle"></i> Confirmar exclusão da conta
+            </h3>
+            <p style="margin-bottom: 20px;">Tem certeza que deseja apagar sua conta? Esta ação <strong>não poderá ser desfeita</strong>.</p>
+            <!-- <p style="margin-bottom: 25px; font-size: 0.9rem; color: #666;">
+                <i class="fas fa-info-circle"></i> Observação: Seus chats e mensagens serão mantidos no sistema, apenas seu perfil será removido.
+            </p> -->
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button id="cancel-delete" style="padding: 10px 20px; border: 1px solid #ddd; background: #f5f5f5; border-radius: 4px; cursor: pointer;">
+                    Cancelar
+                </button>
+                <form id="delete-account-form" method="POST" action="deletar_conta.php" style="margin: 0;">
+                    <input type="hidden" name="usuario_id" value="<?php echo $usuario_id; ?>">
+                    <input type="hidden" name="comprador_id" value="<?php echo $comprador_data['id'] ?? ''; ?>">
+                    <button type="submit" style="padding: 10px 20px; background: #c62828; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        <i class="fas fa-trash-alt"></i> Sim, apagar conta
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -334,6 +364,33 @@ try {
                 if (cep.length === 8) {
                     // Formatar CEP
                     this.value = cep.substring(0, 5) + '-' + cep.substring(5);
+                }
+            });
+        }
+
+        // Modal de deletar conta
+        const deleteAccountLink = document.getElementById('delete-account-link');
+        const deleteAccountModal = document.getElementById('delete-account-modal');
+        const cancelDeleteBtn = document.getElementById('cancel-delete');
+
+        if (deleteAccountLink) {
+            deleteAccountLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                deleteAccountModal.style.display = 'flex';
+            });
+        }
+
+        if (cancelDeleteBtn) {
+            cancelDeleteBtn.addEventListener('click', function() {
+                deleteAccountModal.style.display = 'none';
+            });
+        }
+
+        // Fechar modal ao clicar fora
+        if (deleteAccountModal) {
+            deleteAccountModal.addEventListener('click', function(e) {
+                if (e.target === deleteAccountModal) {
+                    deleteAccountModal.style.display = 'none';
                 }
             });
         }

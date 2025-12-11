@@ -102,6 +102,46 @@ if ($usuario_tipo === 'vendedor') {
     }
 }
 
+// 4. VERIFICAR LOGÍSTICA DE ENTREGA - NOVO CÓDIGO
+$estado_comprador = '';
+$estados_atendidos = [];
+$entrega_disponivel = true; // Assume true por padrão
+
+try {
+    // Buscar estado do comprador
+    $sql_estado_comprador = "SELECT estado FROM compradores WHERE usuario_id = :usuario_id";
+    $stmt_estado = $conn->prepare($sql_estado_comprador);
+    $stmt_estado->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt_estado->execute();
+    
+    if ($comprador_estado = $stmt_estado->fetch(PDO::FETCH_ASSOC)) {
+        $estado_comprador = strtoupper(trim($comprador_estado['estado']));
+    }
+    
+    // Buscar estados atendidos pelo vendedor
+    $sql_estados_vendedor = "SELECT estados_atendidos FROM vendedores WHERE id = :vendedor_id";
+    $stmt_estados = $conn->prepare($sql_estados_vendedor);
+    $stmt_estados->bindParam(':vendedor_id', $anuncio['vendedor_sistema_id'], PDO::PARAM_INT);
+    $stmt_estados->execute();
+    
+    if ($vendedor_estados = $stmt_estados->fetch(PDO::FETCH_ASSOC)) {
+        $estados_json = $vendedor_estados['estados_atendidos'];
+        
+        if (!empty($estados_json) && $estados_json !== 'null') {
+            $estados_atendidos = json_decode($estados_json, true) ?: [];
+            
+            // Verificar se o vendedor definiu uma lista branca
+            if (!empty($estados_atendidos) && !empty($estado_comprador)) {
+                // Verificar se o estado do comprador está na lista
+                $entrega_disponivel = in_array($estado_comprador, $estados_atendidos);
+            }
+        }
+    }
+} catch (PDOException $e) {
+    error_log("Erro ao verificar logística: " . $e->getMessage());
+    // Em caso de erro, mantém a entrega como disponível
+}
+
 // 5. BUSCAR O COMPRADOR_ID CORRETAMENTE (COM CRIAÇÃO AUTOMÁTICA)
 $comprador_id = null;
 try {
@@ -302,6 +342,7 @@ $preco_display = number_format($preco_unitario, 2, ',', '.');
 $unidade = htmlspecialchars($anuncio['unidade_medida']);
 $imagePath = !empty($imagens_produto[0]['url']) ? htmlspecialchars($imagens_produto[0]['url']) : '../../img/placeholder.png';
 ?>
+
 
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -852,6 +893,43 @@ $imagePath = !empty($imagens_produto[0]['url']) ? htmlspecialchars($imagens_prod
                     </div>
                 </div>
             </div>
+
+                    <!-- ALERTA DE LOGÍSTICA - NOVA SEÇÃO -->
+        <?php if (!$entrega_disponivel && !empty($estado_comprador) && !empty($estados_atendidos)): ?>
+        <div class="alerta-logistica alerta-aviso">
+            <div class="alerta-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h4>Atenção: Verifique a disponibilidade de entrega</h4>
+            </div>
+            <div class="alerta-body">
+                <p>
+                    O vendedor <strong><?php echo htmlspecialchars($anuncio['nome_vendedor']); ?></strong> 
+                    informou que <strong>não realiza entregas para o estado de <?php echo $estado_comprador; ?></strong>.
+                </p>
+                <p class="alerta-detalhes">
+                    <i class="fas fa-info-circle"></i>
+                    Estados atendidos: 
+                    <?php echo implode(', ', $estados_atendidos); ?>
+                </p>
+                <p class="alerta-aviso-importante">
+                    <strong>⚠️ Prossiga com a proposta por sua conta e risco</strong> 
+                    ou entre em contato com o vendedor antes de negociar.
+                </p>
+            </div>
+        </div>
+        <?php elseif ($entrega_disponivel && !empty($estado_comprador) && !empty($estados_atendidos)): ?>
+        <div class="alerta-logistica alerta-sucesso">
+            <div class="alerta-header">
+                <i class="fas fa-check-circle"></i>
+                <h4>Entrega disponível para sua região</h4>
+            </div>
+            <div class="alerta-body">
+                <p>
+                    Este vendedor atende ao seu estado (<strong><?php echo $estado_comprador; ?></strong>).
+                </p>
+            </div>
+        </div>
+        <?php endif; ?>
 
             <!-- Descrição do Produto -->
             <?php if ($anuncio['descricao']): ?>

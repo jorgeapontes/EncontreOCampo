@@ -245,10 +245,17 @@ try {
                         <p>Ver</p> 
                     </div> 
                 </a>
+                <a href="config_logistica.php"> 
+                    <div class="card"> 
+                        <i class="fas fa-truck"></i> 
+                        <h3>Regiões de entrega</h3> 
+                        <p>Ver</p> 
+                    </div> 
+                </a>
             <?php endif; ?>
         </section>
 
-        <section class="header sub">
+        <!-- <section class="header sub">
             <center>
                 <h3>Ações rápidas</h3>
             </center>
@@ -269,7 +276,7 @@ try {
                 <i class="fas fa-user-circle"></i>
                 <span>Dados</span>
             </a>
-        </section>
+        </section> -->
 
         <?php if (!$is_pendente && $vendedor_id && $total_anuncios > 0): ?>
         <section class="section-anuncios">

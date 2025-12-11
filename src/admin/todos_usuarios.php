@@ -123,6 +123,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
         <div class="nav-links">
             <a href="dashboard.php" class="nav-link">Dashboard</a>
             <a href="todos_usuarios.php" class="nav-link active">Todos os Usuários</a>
+            <a href="chats_admin.php" class="nav-link">Chats</a>
             <a href="../../index.php" class="nav-link">Home</a>
             <a href="../logout.php" class="nav-link logout">Sair</a>
         </div>

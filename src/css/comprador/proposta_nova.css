@@ -109,6 +109,20 @@ ul {
     transition: color 0.3s ease;
 }
 
+.nav-link.login-button {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 8px 20px;
+    border-radius: 20px;
+    transition: background-color 0.3s ease;
+    margin-left: 15px;
+}
+
+.nav-link.login-button:hover {
+    background-color: var(--primary-dark);
+    color: var(--white);
+}
+
 .nav-link::after {
     content: '';
     position: absolute;

@@ -446,12 +446,19 @@ foreach ($anuncios as &$a) {
                             <p class="estoque"><i class="fas fa-box"></i> <?= htmlspecialchars($anuncio['quantidade_disponivel']) ?> disponíveis</p>
                         </div>
                         <div class="card-actions">
-                            <?php if ($is_logged_in && ($usuario_tipo === 'comprador' || $usuario_tipo === 'vendedor')): ?>
-                                <a href="comprador/proposta_nova.php?anuncio_id=<?= $anuncio['id'] ?>" class="btn btn-primary"><i class="fas fa-handshake"></i> Comprar</a>
-                            <?php elseif (!$is_logged_in): ?>
-                                <button class="btn btn-primary open-login-modal" data-target="#loginModal"><i class="fas fa-handshake"></i> Comprar</button>
+                            <?php if ($is_logged_in): ?>
+                                <?php if ($usuario_tipo === 'comprador' || $usuario_tipo === 'vendedor'): ?>
+                                    <a href="comprador/proposta_nova.php?anuncio_id=<?= $anuncio['id'] ?>" class="btn btn-primary">
+                                        <i class="fas fa-handshake"></i> Comprar
+                                    </a>
+                                <?php else: ?>
+                                    <button class="btn btn-primary" disabled>Apenas Compradores</button>
+                                <?php endif; ?>
                             <?php else: ?>
-                                <button class="btn btn-primary" disabled>Apenas Compradores</button>
+                                <!-- Link público para visualização do anúncio -->
+                                <a href="visualizar_anuncio.php?anuncio_id=<?= $anuncio['id'] ?>" class="btn btn-primary">
+                                    <i class="fas fa-eye"></i> Ver Detalhes
+                                </a>
                             <?php endif; ?>
                         </div>
                     </div>

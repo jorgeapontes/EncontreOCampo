@@ -1091,26 +1091,70 @@ function renderCarousel() {
         const card = document.createElement('div');
         card.className = 'product-card';
         
-        const precoFormatado = parseFloat(produto.preco).toLocaleString('pt-BR', {
+        // Calcular desconto se existir
+        const preco = parseFloat(produto.preco);
+        const precoDesconto = parseFloat(produto.preco_desconto) || 0;
+        const dataExpiracao = produto.desconto_data_fim;
+        
+        let temDesconto = false;
+        let precoFinal = preco;
+        let porcentagemDesconto = 0;
+        
+        // Verificar se tem desconto válido
+        if (precoDesconto > 0 && precoDesconto < preco) {
+            const agora = new Date();
+            const dataExpiracaoObj = dataExpiracao ? new Date(dataExpiracao) : null;
+            
+            if (!dataExpiracaoObj || dataExpiracaoObj > agora) {
+                temDesconto = true;
+                precoFinal = precoDesconto;
+                porcentagemDesconto = Math.round(((preco - precoDesconto) / preco) * 100);
+            }
+        }
+        
+        // Formatar preços
+        const precoFormatado = precoFinal.toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        
+        const precoOriginalFormatado = preco.toLocaleString('pt-BR', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
 
         let imagemUrl = produto.imagem_url;
         
-        console.log(`🖼️ Imagem do produto ${produto.id}:`, imagemUrl);
+        // Verificar se a imagem existe, caso contrário usar placeholder
+        if (!imagemUrl || imagemUrl.trim() === '') {
+            imagemUrl = 'img/placeholder.png';
+        }
 
         card.innerHTML = `
             <div class="product-image" style="background-image: url('${imagemUrl}')">
+                ${temDesconto ? `<div class="badge-desconto">-${porcentagemDesconto}%</div>` : ''}
                 ${produto.estoque < 10 ? `<div class="product-badge">Poucas unidades</div>` : ''}
             </div>
             <div class="product-info">
                 <h3>${produto.nome}</h3>
                 <p>${produto.descricao || 'Produto fresco direto do produtor'}</p>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                    <span class="price">R$ ${precoFormatado}</span>
-                    <small style="color: #666;">Estoque: ${produto.estoque}</small>
+                
+                <div class="price-container" style="margin-top: 15px;">
+                    ${temDesconto ? `
+                        <div class="price-original" style="text-decoration: line-through; color: #999; font-size: 0.9em;">
+                            R$ ${precoOriginalFormatado}
+                        </div>
+                    ` : '<p style="padding-top: 13px;"></p>'}
+                    
+                    <div class="price-display" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="price" style="color: ${temDesconto ? '#6167ea' : '#4CAF50'}; font-weight: bold; font-size: 1.1em;">
+                            R$ ${precoFormatado}
+                        </span>
+                        <small style="color: #666; font-size: 0.9em;">Estoque: ${produto.estoque}</small>
+                    </div>
+
                 </div>
+                
                 <button class="buy-btn" onclick="verAnuncio(${produto.id})">Ver Detalhes</button>
             </div>
         `;

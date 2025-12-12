@@ -34,6 +34,8 @@ try {
             p.preco,
             p.imagem_url,
             p.estoque,
+            p.preco_desconto,
+            p.desconto_data_fim,
             p.categoria,
             v.nome_comercial as vendedor_nome
         FROM produtos p 

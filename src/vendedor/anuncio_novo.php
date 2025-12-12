@@ -405,12 +405,12 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
                         <div class="form-group">
                             <label for="modo_precificacao" class="required">Modo de Precificação</label>
                             <select id="modo_precificacao" name="modo_precificacao">
-                                <option value="caixa_unidades" <?php echo ($modo_precificacao === 'caixa_unidades') ? 'selected' : ''; ?>>Caixa com X unidades</option>
-                                <option value="caixa_quilos" <?php echo ($modo_precificacao === 'caixa_quilos') ? 'selected' : ''; ?>>Caixa com X quilos</option>
-                                <option value="saco_unidades" <?php echo ($modo_precificacao === 'saco_unidades') ? 'selected' : ''; ?>>Saco com X unidades</option>
-                                <option value="saco_quilos" <?php echo ($modo_precificacao === 'saco_quilos') ? 'selected' : ''; ?>>Saco com X quilos</option>
-                                <option value="por_unidade" <?php echo ($modo_precificacao === 'por_unidade') ? 'selected' : ''; ?>>x unidades</option>
-                                <option value="por_quilo" <?php echo ($modo_precificacao === 'por_quilo') ? 'selected' : ''; ?>>x quilos</option>
+                                <option value="por_quilo" <?php echo ($modo_precificacao === 'por_quilo') ? 'selected' : ''; ?>>Por quilo</option>
+                                <option value="por_unidade" <?php echo ($modo_precificacao === 'por_unidade') ? 'selected' : ''; ?>>Por unidade</option>
+                                <option value="caixa_unidades" <?php echo ($modo_precificacao === 'caixa_unidades') ? 'selected' : ''; ?>>Por caixa com X unidades</option>
+                                <option value="caixa_quilos" <?php echo ($modo_precificacao === 'caixa_quilos') ? 'selected' : ''; ?>>Por caixa com X quilos</option>
+                                <option value="saco_unidades" <?php echo ($modo_precificacao === 'saco_unidades') ? 'selected' : ''; ?>>Por saco com X unidades</option>
+                                <option value="saco_quilos" <?php echo ($modo_precificacao === 'saco_quilos') ? 'selected' : ''; ?>>Por saco com X quilos</option>
                             </select>
                         </div>
 
@@ -427,7 +427,7 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
 
                     <div class="form-group">
                         <label for="quantidade_embalagem" id="labelQuantidadeEmb">Quantidade por embalagem (se aplicável)</label>
-                        <input type="text" id="quantidade_embalagem" name="quantidade_embalagem" value="<?php echo htmlspecialchars($quantidade_embalagem); ?>" placeholder="Ex: 10 (unidades) ou 5,5 (kg)">
+                        <input type="number" id="quantidade_embalagem" name="quantidade_embalagem" value="<?php echo htmlspecialchars($quantidade_embalagem); ?>">
                     </div>
 
                     <div class="form-group">

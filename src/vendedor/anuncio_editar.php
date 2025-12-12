@@ -126,32 +126,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $embalagem_peso_kg = null;
             $embalagem_unidades = null;
             $estoque_unidades = null;
+            $unidade_medida = 'kg'; // padrão
 
             switch ($modo_precificacao) {
                 case 'por_unidade':
+                    $unidade_medida = 'unidade';
                     $estoque_unidades = (int)$estoque_db;
                     $embalagem_unidades = $quantidade_embalagem ? (int)$quantidade_embalagem : null;
                     break;
                 case 'por_quilo':
+                    $unidade_medida = 'kg';
                     $estoque_db = (float)str_replace(',', '.', $estoque_db);
                     break;
                 case 'caixa_unidades':
+                    $unidade_medida = 'caixa';
                     $embalagem_unidades = $quantidade_embalagem ? (int)$quantidade_embalagem : null;
                     $estoque_unidades = (int)$estoque_db;
                     break;
                 case 'caixa_quilos':
+                    $unidade_medida = 'caixa';
                     $embalagem_peso_kg = $quantidade_embalagem ? (float)str_replace(',', '.', $quantidade_embalagem) : null;
                     $estoque_db = (float)str_replace(',', '.', $estoque_db);
                     break;
                 case 'saco_unidades':
+                    $unidade_medida = 'saco';
                     $embalagem_unidades = $quantidade_embalagem ? (int)$quantidade_embalagem : null;
                     $estoque_unidades = (int)$estoque_db;
                     break;
                 case 'saco_quilos':
+                    $unidade_medida = 'saco';
                     $embalagem_peso_kg = $quantidade_embalagem ? (float)str_replace(',', '.', $quantidade_embalagem) : null;
                     $estoque_db = (float)str_replace(',', '.', $estoque_db);
                     break;
                 default:
+                    $unidade_medida = 'kg';
                     $estoque_db = (float)str_replace(',', '.', $estoque_db);
             }
 
@@ -193,7 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':mp' => $modo_precificacao,
                 ':epk' => $embalagem_peso_kg,
                 ':euq' => $embalagem_unidades,
-                ':um' => ($modo_precificacao === 'por_unidade' ? 'unidade' : ($modo_precificacao === 'por_quilo' ? 'kg' : ($modo_precificacao === 'caixa_unidades' || $modo_precificacao === 'saco_unidades' ? 'unidade' : 'caixa'))),
+                ':um' => $unidade_medida,
                 ':id' => $anuncio_id, 
                 ':vid' => $vendedor_id_fk
             ]);
@@ -563,6 +571,17 @@ $categorias_disponiveis = [
 
                     <div class="form-row">
                         <div class="form-group">
+                            <label for="modo_precificacao">Modo de Precificação</label>
+                            <select id="modo_precificacao" name="modo_precificacao">
+                                <option value="por_quilo" <?php echo ($anuncio['modo_precificacao'] === 'por_quilo' || empty($anuncio['modo_precificacao'])) ? 'selected' : ''; ?>>Por quilo</option>
+                                <option value="por_unidade" <?php echo ($anuncio['modo_precificacao'] === 'por_unidade') ? 'selected' : ''; ?>>Por unidade</option>
+                                <option value="caixa_unidades" <?php echo ($anuncio['modo_precificacao'] === 'caixa_unidades') ? 'selected' : ''; ?>>Por caixa com X unidades</option>
+                                <option value="caixa_quilos" <?php echo ($anuncio['modo_precificacao'] === 'caixa_quilos') ? 'selected' : ''; ?>>Por caixa com X quilos</option>
+                                <option value="saco_unidades" <?php echo ($anuncio['modo_precificacao'] === 'saco_unidades') ? 'selected' : ''; ?>>Por saco com X unidades</option>
+                                <option value="saco_quilos" <?php echo ($anuncio['modo_precificacao'] === 'saco_quilos') ? 'selected' : ''; ?>>Por Saco com X quilos</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
                             <label for="preco" class="required">Preço</label>
                             <input type="text" id="preco" name="preco" value="<?php echo htmlspecialchars($preco_formatado); ?>" required>
                             <?php if ($anuncio['desconto_ativo'] && $anuncio['desconto_percentual'] > 0): ?>
@@ -572,25 +591,13 @@ $categorias_disponiveis = [
                             <?php endif; ?>
                         </div>
                         <div class="form-group">
-                            <label for="modo_precificacao">Modo de Precificação</label>
-                            <select id="modo_precificacao" name="modo_precificacao">
-                                <option value="caixa_unidades" <?php echo ($anuncio['modo_precificacao'] === 'caixa_unidades') ? 'selected' : ''; ?>>Caixa com X unidades</option>
-                                <option value="caixa_quilos" <?php echo ($anuncio['modo_precificacao'] === 'caixa_quilos') ? 'selected' : ''; ?>>Caixa com X quilos</option>
-                                <option value="saco_unidades" <?php echo ($anuncio['modo_precificacao'] === 'saco_unidades') ? 'selected' : ''; ?>>Saco com X unidades</option>
-                                <option value="saco_quilos" <?php echo ($anuncio['modo_precificacao'] === 'saco_quilos') ? 'selected' : ''; ?>>Saco com X quilos</option>
-                                <option value="por_unidade" <?php echo ($anuncio['modo_precificacao'] === 'por_unidade') ? 'selected' : ''; ?>>x unidades</option>
-                                <option value="por_quilo" <?php echo ($anuncio['modo_precificacao'] === 'por_quilo' || empty($anuncio['modo_precificacao'])) ? 'selected' : ''; ?>>x quilos</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
                             <label for="estoque" class="required">Estoque</label>
                             <input type="number" id="estoque" name="estoque" value="<?php echo htmlspecialchars($anuncio['estoque']); ?>" required>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="quantidade_embalagem">Quantidade por embalagem (se aplicável)</label>
-                        <input type="text" id="quantidade_embalagem" name="quantidade_embalagem" value="<?php echo htmlspecialchars(!empty($anuncio['embalagem_unidades']) ? $anuncio['embalagem_unidades'] : (!empty($anuncio['embalagem_peso_kg']) ? $anuncio['embalagem_peso_kg'] : '')); ?>" placeholder="Ex: 10 ou 5,5">
+                        <label for="quantidade_embalagem"></label>
+                        <input type="number" id="quantidade_embalagem" name="quantidade_embalagem" value="<?php echo htmlspecialchars(!empty($anuncio['embalagem_unidades']) ? $anuncio['embalagem_unidades'] : (!empty($anuncio['embalagem_peso_kg']) ? $anuncio['embalagem_peso_kg'] : '')); ?>">
                     </div>
                     
                     <!-- SEÇÃO DE DESCONTO -->
@@ -838,6 +845,69 @@ $categorias_disponiveis = [
             const tipoDescontoRadios = document.querySelectorAll('input[name="tipo_desconto"]');
             const descontoHelp = document.getElementById('desconto-help');
             const descontoCalculado = document.getElementById('desconto-calculado');
+
+            // Script para modo de precificação
+            const modoSelect = document.getElementById('modo_precificacao');
+            const quantidadeEmbInput = document.getElementById('quantidade_embalagem');
+            const estoqueInput = document.getElementById('estoque');
+            
+            // Criar labels dinâmicos se não existirem
+            let labelPreco = document.querySelector('label[for="preco"]');
+            let labelEstoque = document.querySelector('label[for="estoque"]');
+            let labelQuantidadeEmb = document.querySelector('label[for="quantidade_embalagem"]');
+
+            function updatePrecificacaoUI() {
+                const modo = modoSelect.value;
+                if (modo === 'por_quilo') {
+                    if (labelPreco) labelPreco.textContent = 'Preço por Kg (R$)';
+                    if (labelEstoque) labelEstoque.textContent = 'Estoque em Kg';
+                    if (labelQuantidadeEmb) labelQuantidadeEmb.style.display = 'none';
+                    quantidadeEmbInput.style.display = 'none';
+                } else if (modo === 'por_unidade') {
+                    if (labelPreco) labelPreco.textContent = 'Preço por Unidade (R$)';
+                    if (labelEstoque) labelEstoque.textContent = 'Estoque em Unidades';
+                    if (labelQuantidadeEmb) labelQuantidadeEmb.style.display = 'none';
+                    quantidadeEmbInput.style.display = 'none';
+                } else if (modo === 'caixa_unidades') {
+                    if (labelPreco) labelPreco.textContent = 'Preço por Caixa (R$)';
+                    if (labelEstoque) labelEstoque.textContent = 'Estoque em Caixas';
+                    if (labelQuantidadeEmb) {
+                        labelQuantidadeEmb.style.display = 'block';
+                        labelQuantidadeEmb.textContent = 'Unidades por Caixa (ex: 10)';
+                    }
+                    quantidadeEmbInput.style.display = 'block';
+                } else if (modo === 'caixa_quilos') {
+                    if (labelPreco) labelPreco.textContent = 'Preço por Caixa (R$)';
+                    if (labelEstoque) labelEstoque.textContent = 'Estoque em Caixas';
+                    if (labelQuantidadeEmb) {
+                        labelQuantidadeEmb.style.display = 'block';
+                        labelQuantidadeEmb.textContent = 'Kg por Caixa (ex: 5,5)';
+                    }
+                    quantidadeEmbInput.style.display = 'block';
+                } else if (modo === 'saco_unidades') {
+                    if (labelPreco) labelPreco.textContent = 'Preço por Saco (R$)';
+                    if (labelEstoque) labelEstoque.textContent = 'Estoque em Sacos';
+                    if (labelQuantidadeEmb) {
+                        labelQuantidadeEmb.style.display = 'block';
+                        labelQuantidadeEmb.textContent = 'Unidades por Saco (ex: 10)';
+                    }
+                    quantidadeEmbInput.style.display = 'block';
+                } else if (modo === 'saco_quilos') {
+                    if (labelPreco) labelPreco.textContent = 'Preço por Saco (R$)';
+                    if (labelEstoque) labelEstoque.textContent = 'Estoque em Sacos';
+                    if (labelQuantidadeEmb) {
+                        labelQuantidadeEmb.style.display = 'block';
+                        labelQuantidadeEmb.textContent = 'Kg por Saco (ex: 5,5)';
+                    }
+                    quantidadeEmbInput.style.display = 'block';
+                }
+            }
+
+            // Listener para mudanças no modo de precificação
+            modoSelect.addEventListener('change', updatePrecificacaoUI);
+
+            // Inicializar UI ao carregar a página
+            updatePrecificacaoUI();
 
             // Máscara para preço
             precoInput.addEventListener('input', function(e) {

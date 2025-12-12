@@ -23,7 +23,7 @@ if (!$conn) {
 
 // 1. COLETAR E VALIDAR DADOS
 $solicitacao_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
-$acao = filter_input(INPUT_GET, 'acao', );
+$acao = filter_input(INPUT_GET, 'acao');
 $admin_id = $_SESSION['usuario_id'] ?? 1; 
 
 if ($solicitacao_id === null || $solicitacao_id === false || !in_array($acao, ['aprovar', 'rejeitar'])) {
@@ -36,7 +36,41 @@ $novo_status = ($acao === 'aprovar') ? 'aprovado' : 'rejeitado';
 // 2. FUNÇÃO DE LIMPEZA E MAPEAMENTO (Corrigida)
 function map_data_to_columns($data, $tipo_usuario) {
     $map = [];
-    $exclude_keys = ['senha_hash', 'message', 'nome', 'email', 'tipo_solicitacao']; 
+    
+    // Lista de campos que NÃO devem ser mapeados para as tabelas específicas
+    $exclude_keys = [
+        'senha_hash', 'message', 'nome', 'email', 'tipo_solicitacao',
+        'name', 'subject', 'tipo_pessoa_comprador'
+    ]; 
+    
+    // Adiciona campos específicos por tipo que devem ser excluídos
+    $exclude_by_type = [
+        'comprador' => ['estadoVendedor', 'nomeComercialVendedor', 'cpfCnpjVendedor', 
+                       'cipVendedor', 'telefone1Vendedor', 'telefone2Vendedor',
+                       'planoVendedor', 'cepVendedor', 'ruaVendedor', 'numeroVendedor',
+                       'complementoVendedor', 'estadoVendedor', 'cidadeVendedor',
+                       'telefoneTransportador', 'numeroANTT', 'placaVeiculo',
+                       'modeloVeiculo', 'descricaoVeiculo', 'estadoTransportador', 'cidadeTransportador'],
+        'vendedor' => ['tipoPessoaComprador', 'cpfCnpjComprador', 'nomeComercialComprador',
+                      'cipComprador', 'telefone1Comprador', 'telefone2Comprador',
+                      'planoComprador', 'cepComprador', 'ruaComprador', 'numeroComprador',
+                      'complementoComprador', 'estadoComprador', 'cidadeComprador',
+                      'telefoneTransportador', 'numeroANTT', 'placaVeiculo',
+                      'modeloVeiculo', 'descricaoVeiculo', 'estadoTransportador', 'cidadeTransportador'],
+        'transportador' => ['tipoPessoaComprador', 'cpfCnpjComprador', 'nomeComercialComprador',
+                           'cipComprador', 'telefone1Comprador', 'telefone2Comprador',
+                           'planoComprador', 'cepComprador', 'ruaComprador', 'numeroComprador',
+                           'complementoComprador', 'estadoComprador', 'cidadeComprador',
+                           'nomeComercialVendedor', 'cpfCnpjVendedor', 'cipVendedor',
+                           'telefone1Vendedor', 'telefone2Vendedor', 'planoVendedor',
+                           'cepVendedor', 'ruaVendedor', 'numeroVendedor', 'complementoVendedor',
+                           'estadoVendedor', 'cidadeVendedor']
+    ];
+    
+    // Adiciona campos específicos do tipo à lista de exclusão
+    if (isset($exclude_by_type[$tipo_usuario])) {
+        $exclude_keys = array_merge($exclude_keys, $exclude_by_type[$tipo_usuario]);
+    }
     
     // Mapeamento específico de campos baseado no tipo de usuário
     $prefix_map = [
@@ -48,6 +82,7 @@ function map_data_to_columns($data, $tipo_usuario) {
     $prefix = $prefix_map[$tipo_usuario] ?? '';
     
     foreach ($data as $key => $value) {
+        // Verifica se o campo deve ser excluído
         if (in_array($key, $exclude_keys) || empty($value)) {
             continue;
         }
@@ -80,6 +115,11 @@ function map_data_to_columns($data, $tipo_usuario) {
             $cleaned_key = 'cpf_cnpj';
         }
         
+        // Trata tipo_pessoa para comprador
+        if ($tipo_usuario === 'comprador' && $cleaned_key === 'tipo_pessoa') {
+            $cleaned_key = 'tipo_pessoa';
+        }
+        
         $map[$cleaned_key] = $value;
     }
     
@@ -106,7 +146,7 @@ try {
     // 3.2. Se for APROVAR:
 
     // 3.2.1. Busca os dados da solicitação
-    $sql_fetch = "SELECT nome, email, tipo_solicitacao, dados_json FROM solicitacoes_cadastro WHERE id = :id AND status = 'pendente'";
+    $sql_fetch = "SELECT id, nome, email, tipo_solicitacao, dados_json FROM solicitacoes_cadastro WHERE id = :id AND status = 'pendente'";
     $stmt_fetch = $conn->prepare($sql_fetch);
     $stmt_fetch->bindParam(':id', $solicitacao_id, PDO::PARAM_INT);
     $stmt_fetch->execute();
@@ -118,78 +158,254 @@ try {
     
     $dados_json = json_decode($solicitacao['dados_json'], true);
     $tipo_usuario = $solicitacao['tipo_solicitacao'];
+    $email = $solicitacao['email'];
     $senha_hash = $dados_json['senha_hash'] ?? null;
 
     if (!$senha_hash) {
         throw new Exception("Erro: Senha criptografada não encontrada no JSON da solicitação.");
     }
 
-    // 3.2.2. INSERIR NA TABELA 'USUARIOS'
-    $sql_user = "INSERT INTO usuarios (nome, email, senha, tipo, status) 
-                 VALUES (:nome, :email, :senha, :tipo, 'ativo')";
-    $stmt_user = $conn->prepare($sql_user);
-    $stmt_user->bindParam(':nome', $solicitacao['nome']);
-    $stmt_user->bindParam(':email', $solicitacao['email']);
-    $stmt_user->bindParam(':senha', $senha_hash);
-    $stmt_user->bindParam(':tipo', $tipo_usuario);
+    // VERIFICAR SE O EMAIL JÁ EXISTE NA TABELA USUARIOS
+    $sql_check_email = "SELECT id FROM usuarios WHERE email = :email";
+    $stmt_check = $conn->prepare($sql_check_email);
+    $stmt_check->bindParam(':email', $email);
+    $stmt_check->execute();
     
-    if (!$stmt_user->execute()) {
-        throw new Exception("Erro ao criar usuário: " . implode(", ", $stmt_user->errorInfo()));
-    }
-    
-    $novo_usuario_id = $conn->lastInsertId();
-
-    // 3.2.3. INSERIR NAS TABELAS ESPECÍFICAS
-    $plural_mapping = [
-        'comprador' => 'compradores',
-        'vendedor' => 'vendedores',
-        'transportador' => 'transportadores'
-    ];
-    
-    if (!isset($plural_mapping[$tipo_usuario])) {
-        throw new Exception("Tipo de usuário inválido para aprovação: " . $tipo_usuario);
-    }
-    
-    $tabela_especifica = $plural_mapping[$tipo_usuario];
-    $dados_para_inserir = map_data_to_columns($dados_json, $tipo_usuario);
-    $dados_para_inserir['usuario_id'] = $novo_usuario_id;
-    
-    // DEBUG: Log dos dados mapeados
-    error_log("Dados mapeados para $tipo_usuario: " . print_r($dados_para_inserir, true));
-    
-    // Validação de campos obrigatórios
-    if ($tipo_usuario === 'vendedor') {
-        if (!isset($dados_para_inserir['cpf_cnpj']) || empty($dados_para_inserir['cpf_cnpj'])) {
-            // Tenta encontrar o campo com nomes alternativos
-            $cpf_cnpj_keys = ['cpfCnpjVendedor', 'cpfCnpj', 'cpf_cnpj'];
-            foreach ($cpf_cnpj_keys as $key) {
-                if (isset($dados_json[$key]) && !empty($dados_json[$key])) {
-                    $dados_para_inserir['cpf_cnpj'] = $dados_json[$key];
-                    break;
+    if ($stmt_check->rowCount() > 0) {
+        // Email já existe, vamos apenas atualizar a solicitação
+        $usuario_existente = $stmt_check->fetch(PDO::FETCH_ASSOC);
+        $novo_usuario_id = $usuario_existente['id'];
+        
+        // Atualizar o usuário existente
+        $sql_update_user = "UPDATE usuarios SET tipo = :tipo, status = 'ativo', nome = :nome WHERE id = :id";
+        $stmt_update_user = $conn->prepare($sql_update_user);
+        $stmt_update_user->bindParam(':tipo', $tipo_usuario);
+        $stmt_update_user->bindParam(':nome', $solicitacao['nome']);
+        $stmt_update_user->bindParam(':id', $novo_usuario_id, PDO::PARAM_INT);
+        
+        if (!$stmt_update_user->execute()) {
+            throw new Exception("Erro ao atualizar usuário existente: " . implode(", ", $stmt_update_user->errorInfo()));
+        }
+        
+        // Verificar se já existe registro na tabela específica
+        $plural_mapping = [
+            'comprador' => 'compradores',
+            'vendedor' => 'vendedores',
+            'transportador' => 'transportadores'
+        ];
+        
+        $tabela_especifica = $plural_mapping[$tipo_usuario];
+        $sql_check_especifico = "SELECT id FROM {$tabela_especifica} WHERE usuario_id = :usuario_id";
+        $stmt_check_especifico = $conn->prepare($sql_check_especifico);
+        $stmt_check_especifico->bindParam(':usuario_id', $novo_usuario_id, PDO::PARAM_INT);
+        $stmt_check_especifico->execute();
+        
+        if ($stmt_check_especifico->rowCount() > 0) {
+            // Já existe registro na tabela específica, fazer UPDATE
+            $dados_para_inserir = map_data_to_columns($dados_json, $tipo_usuario);
+            
+            // DEBUG: Log dos dados mapeados
+            error_log("Dados mapeados para UPDATE $tipo_usuario: " . print_r($dados_para_inserir, true));
+            
+            // Remove campos que não existem na tabela
+            $colunas_validas = [
+                'comprador' => ['tipo_pessoa', 'nome_comercial', 'cpf_cnpj', 'cip', 'cep', 'rua', 
+                               'numero', 'complemento', 'estado', 'cidade', 'telefone1', 'telefone2', 'plano'],
+                'vendedor' => ['tipo_pessoa', 'nome_comercial', 'cpf_cnpj', 'razao_social', 'cip', 'cep', 'rua',
+                              'numero', 'complemento', 'estado', 'cidade', 'telefone1', 'telefone2', 'plano'],
+                'transportador' => ['nome_comercial', 'telefone', 'antt', 'numero_antt', 'placa_veiculo',
+                                   'modelo_veiculo', 'descricao_veiculo', 'estado', 'cidade', 'plano']
+            ];
+            
+            $colunas_permitidas = $colunas_validas[$tipo_usuario] ?? [];
+            $dados_filtrados = [];
+            
+            foreach ($dados_para_inserir as $key => $value) {
+                if (in_array($key, $colunas_permitidas)) {
+                    $dados_filtrados[$key] = $value;
                 }
             }
             
-            if (!isset($dados_para_inserir['cpf_cnpj']) || empty($dados_para_inserir['cpf_cnpj'])) {
-                throw new Exception("Campo obrigatório 'cpf_cnpj' não encontrado para vendedor.");
+            // Se não houver dados válidos após filtragem
+            if (empty($dados_filtrados)) {
+                throw new Exception("Nenhum dado válido para atualizar na tabela $tabela_especifica.");
+            }
+            
+            // Constrói a query UPDATE
+            $update_fields = [];
+            foreach ($dados_filtrados as $key => $value) {
+                $update_fields[] = "$key = :$key";
+            }
+            
+            $sql_update_especifico = "UPDATE {$tabela_especifica} SET " . implode(', ', $update_fields) . " WHERE usuario_id = :usuario_id";
+            $stmt_update_especifico = $conn->prepare($sql_update_especifico);
+            
+            // Bind dos parâmetros
+            foreach ($dados_filtrados as $key => $value) {
+                $stmt_update_especifico->bindValue(':' . $key, $value);
+            }
+            $stmt_update_especifico->bindParam(':usuario_id', $novo_usuario_id, PDO::PARAM_INT);
+            
+            if (!$stmt_update_especifico->execute()) {
+                $errorInfo = $stmt_update_especifico->errorInfo();
+                throw new Exception("Erro ao atualizar na tabela $tabela_especifica: " . $errorInfo[2]);
+            }
+        } else {
+            // Não existe registro na tabela específica, fazer INSERT
+            $dados_para_inserir = map_data_to_columns($dados_json, $tipo_usuario);
+            $dados_para_inserir['usuario_id'] = $novo_usuario_id;
+            
+            // Validação de campos obrigatórios
+            if ($tipo_usuario === 'vendedor') {
+                if (!isset($dados_para_inserir['cpf_cnpj']) || empty($dados_para_inserir['cpf_cnpj'])) {
+                    // Tenta encontrar o campo com nomes alternativos
+                    $cpf_cnpj_keys = ['cpfCnpjVendedor', 'cpfCnpj', 'cpf_cnpj'];
+                    foreach ($cpf_cnpj_keys as $key) {
+                        if (isset($dados_json[$key]) && !empty($dados_json[$key])) {
+                            $dados_para_inserir['cpf_cnpj'] = $dados_json[$key];
+                            break;
+                        }
+                    }
+                    
+                    if (!isset($dados_para_inserir['cpf_cnpj']) || empty($dados_para_inserir['cpf_cnpj'])) {
+                        throw new Exception("Campo obrigatório 'cpf_cnpj' não encontrado para vendedor.");
+                    }
+                }
+            }
+            
+            // Filtra apenas colunas válidas para a tabela
+            $colunas_validas = [
+                'comprador' => ['usuario_id', 'tipo_pessoa', 'nome_comercial', 'cpf_cnpj', 'cip', 'cep', 'rua', 
+                               'numero', 'complemento', 'estado', 'cidade', 'telefone1', 'telefone2', 'plano'],
+                'vendedor' => ['usuario_id', 'tipo_pessoa', 'nome_comercial', 'cpf_cnpj', 'razao_social', 'cip', 'cep', 'rua',
+                              'numero', 'complemento', 'estado', 'cidade', 'telefone1', 'telefone2', 'plano'],
+                'transportador' => ['usuario_id', 'nome_comercial', 'telefone', 'antt', 'numero_antt', 'placa_veiculo',
+                                   'modelo_veiculo', 'descricao_veiculo', 'estado', 'cidade', 'plano']
+            ];
+            
+            $colunas_permitidas = $colunas_validas[$tipo_usuario] ?? [];
+            $dados_filtrados = [];
+            
+            foreach ($dados_para_inserir as $key => $value) {
+                if (in_array($key, $colunas_permitidas)) {
+                    $dados_filtrados[$key] = $value;
+                }
+            }
+            
+            if (empty($dados_filtrados)) {
+                throw new Exception("Nenhum dado válido para inserir na tabela $tabela_especifica.");
+            }
+            
+            // Constrói a query de forma dinâmica
+            $colunas = implode(', ', array_keys($dados_filtrados));
+            $placeholders = ':' . implode(', :', array_keys($dados_filtrados));
+            
+            $sql_especifico = "INSERT INTO {$tabela_especifica} ({$colunas}) VALUES ({$placeholders})";
+            $stmt_especifico = $conn->prepare($sql_especifico);
+            
+            // Bind dos parâmetros
+            foreach ($dados_filtrados as $key => $value) {
+                $stmt_especifico->bindValue(':' . $key, $value);
+            }
+            
+            if (!$stmt_especifico->execute()) {
+                $errorInfo = $stmt_especifico->errorInfo();
+                throw new Exception("Erro ao inserir na tabela $tabela_especifica: " . $errorInfo[2]);
             }
         }
-    }
-    
-    // Constrói a query de forma dinâmica
-    $colunas = implode(', ', array_keys($dados_para_inserir));
-    $placeholders = ':' . implode(', :', array_keys($dados_para_inserir));
-    
-    $sql_especifico = "INSERT INTO {$tabela_especifica} ({$colunas}) VALUES ({$placeholders})";
-    $stmt_especifico = $conn->prepare($sql_especifico);
-    
-    // Bind dos parâmetros
-    foreach ($dados_para_inserir as $key => $value) {
-        $stmt_especifico->bindValue(':' . $key, $value);
-    }
-    
-    if (!$stmt_especifico->execute()) {
-        $errorInfo = $stmt_especifico->errorInfo();
-        throw new Exception("Erro ao inserir na tabela $tabela_especifica: " . $errorInfo[2]);
+        
+    } else {
+        // Email não existe, criar novo usuário
+        // 3.2.2. INSERIR NA TABELA 'USUARIOS'
+        $sql_user = "INSERT INTO usuarios (nome, email, senha, tipo, status) 
+                     VALUES (:nome, :email, :senha, :tipo, 'ativo')";
+        $stmt_user = $conn->prepare($sql_user);
+        $stmt_user->bindParam(':nome', $solicitacao['nome']);
+        $stmt_user->bindParam(':email', $solicitacao['email']);
+        $stmt_user->bindParam(':senha', $senha_hash);
+        $stmt_user->bindParam(':tipo', $tipo_usuario);
+        
+        if (!$stmt_user->execute()) {
+            throw new Exception("Erro ao criar usuário: " . implode(", ", $stmt_user->errorInfo()));
+        }
+        
+        $novo_usuario_id = $conn->lastInsertId();
+
+        // 3.2.3. INSERIR NAS TABELAS ESPECÍFICAS
+        $plural_mapping = [
+            'comprador' => 'compradores',
+            'vendedor' => 'vendedores',
+            'transportador' => 'transportadores'
+        ];
+        
+        if (!isset($plural_mapping[$tipo_usuario])) {
+            throw new Exception("Tipo de usuário inválido para aprovação: " . $tipo_usuario);
+        }
+        
+        $tabela_especifica = $plural_mapping[$tipo_usuario];
+        $dados_para_inserir = map_data_to_columns($dados_json, $tipo_usuario);
+        $dados_para_inserir['usuario_id'] = $novo_usuario_id;
+        
+        // DEBUG: Log dos dados mapeados
+        error_log("Dados mapeados para INSERT $tipo_usuario: " . print_r($dados_para_inserir, true));
+        
+        // Validação de campos obrigatórios
+        if ($tipo_usuario === 'vendedor') {
+            if (!isset($dados_para_inserir['cpf_cnpj']) || empty($dados_para_inserir['cpf_cnpj'])) {
+                // Tenta encontrar o campo com nomes alternativos
+                $cpf_cnpj_keys = ['cpfCnpjVendedor', 'cpfCnpj', 'cpf_cnpj'];
+                foreach ($cpf_cnpj_keys as $key) {
+                    if (isset($dados_json[$key]) && !empty($dados_json[$key])) {
+                        $dados_para_inserir['cpf_cnpj'] = $dados_json[$key];
+                        break;
+                    }
+                }
+                
+                if (!isset($dados_para_inserir['cpf_cnpj']) || empty($dados_para_inserir['cpf_cnpj'])) {
+                    throw new Exception("Campo obrigatório 'cpf_cnpj' não encontrado para vendedor.");
+                }
+            }
+        }
+        
+        // Filtra apenas colunas válidas para a tabela
+        $colunas_validas = [
+            'comprador' => ['usuario_id', 'tipo_pessoa', 'nome_comercial', 'cpf_cnpj', 'cip', 'cep', 'rua', 
+                           'numero', 'complemento', 'estado', 'cidade', 'telefone1', 'telefone2', 'plano'],
+            'vendedor' => ['usuario_id', 'tipo_pessoa', 'nome_comercial', 'cpf_cnpj', 'razao_social', 'cip', 'cep', 'rua',
+                          'numero', 'complemento', 'estado', 'cidade', 'telefone1', 'telefone2', 'plano'],
+            'transportador' => ['usuario_id', 'nome_comercial', 'telefone', 'antt', 'numero_antt', 'placa_veiculo',
+                               'modelo_veiculo', 'descricao_veiculo', 'estado', 'cidade', 'plano']
+        ];
+        
+        $colunas_permitidas = $colunas_validas[$tipo_usuario] ?? [];
+        $dados_filtrados = [];
+        
+        foreach ($dados_para_inserir as $key => $value) {
+            if (in_array($key, $colunas_permitidas)) {
+                $dados_filtrados[$key] = $value;
+            }
+        }
+        
+        if (empty($dados_filtrados)) {
+            throw new Exception("Nenhum dado válido para inserir na tabela $tabela_especifica.");
+        }
+        
+        // Constrói a query de forma dinâmica
+        $colunas = implode(', ', array_keys($dados_filtrados));
+        $placeholders = ':' . implode(', :', array_keys($dados_filtrados));
+        
+        $sql_especifico = "INSERT INTO {$tabela_especifica} ({$colunas}) VALUES ({$placeholders})";
+        $stmt_especifico = $conn->prepare($sql_especifico);
+        
+        // Bind dos parâmetros
+        foreach ($dados_filtrados as $key => $value) {
+            $stmt_especifico->bindValue(':' . $key, $value);
+        }
+        
+        if (!$stmt_especifico->execute()) {
+            $errorInfo = $stmt_especifico->errorInfo();
+            throw new Exception("Erro ao inserir na tabela $tabela_especifica: " . $errorInfo[2]);
+        }
     }
 
     // 3.2.4. ATUALIZAR STATUS DA SOLICITAÇÃO
@@ -219,7 +435,7 @@ try {
 
     // 3.2.6. FINALIZAR TRANSAÇÃO
     $conn->commit();
-    header('Location: dashboard.php?msg=' . urlencode('Solicitação aprovada e usuário criado com sucesso!'));
+    header('Location: dashboard.php?msg=' . urlencode('Solicitação aprovada e usuário criado/atualizado com sucesso!'));
 
 } catch (Exception $e) {
     // 4. EM CASO DE ERRO, REVERTER TUDO

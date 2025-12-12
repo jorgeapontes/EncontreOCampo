@@ -78,6 +78,103 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
             position: static !important;
             margin-left: auto;
         }
+        
+        /* Estilos para o modal de confirmação */
+        #confirmModal {
+            display: none;
+            position: fixed;
+            z-index: 1002;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .confirm-modal-content {
+            background-color: #fff;
+            margin: 15% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .confirm-modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .confirm-modal-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+        
+        .confirm-modal-body {
+            padding: 25px;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #333;
+        }
+        
+        .confirm-modal-body strong {
+            color: #667eea;
+        }
+        
+        .confirm-modal-footer {
+            padding: 20px;
+            text-align: center;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .btn-confirm {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+        
+        .btn-confirm-yes {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-confirm-yes:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .btn-confirm-no {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-confirm-no:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+        }
+        
+        .btn-cancel {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-cancel:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -190,8 +287,20 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
                         </button>
                     </td>
                     <td class="actions">
-                        <a href="processar_admin_acao.php?id=<?= $s['id'] ?>&acao=aprovar" class="btn btn-success btn-sm">Aprovar</a>
-                        <a href="processar_admin_acao.php?id=<?= $s['id'] ?>&acao=rejeitar" class="btn btn-danger btn-sm">Rejeitar</a>
+                        <button class="btn btn-success btn-sm btn-aprovar" 
+                                data-id="<?= $s['id'] ?>"
+                                data-nome="<?= htmlspecialchars($s['nome']) ?>"
+                                data-tipo="<?= $s['tipo_solicitacao'] ?>"
+                                data-acao="aprovar">
+                            Aprovar
+                        </button>
+                        <button class="btn btn-danger btn-sm btn-rejeitar"
+                                data-id="<?= $s['id'] ?>"
+                                data-nome="<?= htmlspecialchars($s['nome']) ?>"
+                                data-tipo="<?= $s['tipo_solicitacao'] ?>"
+                                data-acao="rejeitar">
+                            Rejeitar
+                        </button>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -209,7 +318,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
     <?php endif; ?>
 </div>
 
-<!-- MODAL -->
+<!-- MODAL DE DETALHES -->
 <div id="detalhesModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -221,6 +330,23 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
         </div>
         <div class="modal-body" id="modal-corpo-completo">
             <!-- Conteúdo será preenchido dinamicamente -->
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE CONFIRMAÇÃO -->
+<div id="confirmModal" class="modal">
+    <div class="confirm-modal-content">
+        <div class="confirm-modal-header">
+            <h3 id="confirmModalTitle">Confirmar Ação</h3>
+        </div>
+        <div class="confirm-modal-body">
+            <p id="confirmModalMessage">Você tem certeza que deseja realizar esta ação?</p>
+        </div>
+        <div class="confirm-modal-footer">
+            <button id="confirmYes" class="btn-confirm btn-confirm-yes">Sim</button>
+            <button id="confirmNo" class="btn-confirm btn-confirm-no">Não</button>
+            <button id="confirmCancel" class="btn-confirm btn-cancel">Cancelar</button>
         </div>
     </div>
 </div>
@@ -482,6 +608,97 @@ document.addEventListener("DOMContentLoaded", function () {
     document.addEventListener("keydown", e => {
         if (e.key === "Escape" && modal.style.display === "block") {
             modal.style.display = "none";
+        }
+    });
+});
+
+// ==========================
+// CONFIRMAÇÃO DE AÇÃO (APROVAR/REJEITAR)
+// ==========================
+document.addEventListener("DOMContentLoaded", function() {
+    const confirmModal = document.getElementById("confirmModal");
+    const confirmModalTitle = document.getElementById("confirmModalTitle");
+    const confirmModalMessage = document.getElementById("confirmModalMessage");
+    const confirmYes = document.getElementById("confirmYes");
+    const confirmNo = document.getElementById("confirmNo");
+    const confirmCancel = document.getElementById("confirmCancel");
+    
+    let currentAction = null;
+    let currentId = null;
+    let currentUrl = null;
+    
+    // Função para abrir o modal de confirmação
+    function openConfirmModal(id, nome, tipo, acao) {
+        currentId = id;
+        currentAction = acao;
+        
+        // Define a mensagem com base na ação
+        const acaoTexto = acao === 'aprovar' ? 'APROVAR' : 'REJEITAR';
+        const tipoTexto = tipo === 'vendedor' ? 'vendedor' : 
+                         tipo === 'comprador' ? 'comprador' : 
+                         tipo === 'transportador' ? 'transportador' : 'usuário';
+        
+        confirmModalTitle.textContent = acao === 'aprovar' ? 'Confirmar Aprovação' : 'Confirmar Rejeição';
+        confirmModalMessage.innerHTML = `Você tem certeza que deseja <strong>${acaoTexto}</strong> a solicitação de <strong>${nome}</strong> como ${tipoTexto}?`;
+        
+        // Mostra o modal
+        confirmModal.style.display = "block";
+    }
+    
+    // Adiciona eventos aos botões de Aprovar
+    document.querySelectorAll('.btn-aprovar').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const nome = this.getAttribute('data-nome');
+            const tipo = this.getAttribute('data-tipo');
+            
+            openConfirmModal(id, nome, tipo, 'aprovar');
+        });
+    });
+    
+    // Adiciona eventos aos botões de Rejeitar
+    document.querySelectorAll('.btn-rejeitar').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const nome = this.getAttribute('data-nome');
+            const tipo = this.getAttribute('data-tipo');
+            
+            openConfirmModal(id, nome, tipo, 'rejeitar');
+        });
+    });
+    
+    // Botão SIM - Confirma a ação
+    confirmYes.addEventListener('click', function() {
+        if (currentId && currentAction) {
+            // Redireciona para processar a ação
+            window.location.href = `processar_admin_acao.php?id=${currentId}&acao=${currentAction}`;
+        }
+        confirmModal.style.display = "none";
+    });
+    
+    // Botão NÃO - Nega a ação
+    confirmNo.addEventListener('click', function() {
+        confirmModal.style.display = "none";
+    });
+    
+    // Botão CANCELAR - Fecha o modal
+    confirmCancel.addEventListener('click', function() {
+        confirmModal.style.display = "none";
+    });
+    
+    // Fecha o modal ao clicar fora dele
+    window.addEventListener('click', function(e) {
+        if (e.target === confirmModal) {
+            confirmModal.style.display = "none";
+        }
+    });
+    
+    // Fecha o modal com a tecla ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && confirmModal.style.display === 'block') {
+            confirmModal.style.display = "none";
         }
     });
 });

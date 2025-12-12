@@ -13,6 +13,8 @@ $preco = '';
 $categoria = 'Frutas Cítricas';
 $estoque = '';
 $status = 'ativo'; // CORREÇÃO: Já definido como ativo por padrão
+$modo_precificacao = 'por_quilo';
+$quantidade_embalagem = '';
 
 // Categorias disponíveis
 $categorias_disponiveis = [
@@ -36,12 +38,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $preco = sanitizeInput($_POST['preco']);
     $categoria = sanitizeInput($_POST['categoria']);
     $estoque = sanitizeInput($_POST['estoque']);
+    $modo_precificacao = sanitizeInput($_POST['modo_precificacao'] ?? 'por_quilo');
+    $quantidade_embalagem = sanitizeInput($_POST['quantidade_embalagem'] ?? '');
     // CORREÇÃO: Obtém o status do POST, se não enviado, mantém 'ativo'
     $status = sanitizeInput($_POST['status'] ?? 'ativo');
 
     // Conversão de tipos
     $preco_db = str_replace(',', '.', $preco);
-    $estoque_db = (int)$estoque;
+    $estoque_db = $estoque; // leave as string, will convert depending on modo
+    // quantidade por embalagem (unidades ou kg)
+    $quantidade_embalagem_db = str_replace(',', '.', $quantidade_embalagem);
 
     // Validação básica
     if (empty($nome) || empty($preco) || empty($estoque)) {
@@ -103,8 +109,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // A primeira imagem do array (que foi ordenada pelo JS) é a principal
             $imagem_principal = $imagens_temp[0];
             
-            $query = "INSERT INTO produtos (vendedor_id, nome, descricao, preco, categoria, estoque, status, imagem_url, data_criacao)
-                      VALUES (:vendedor_id, :nome, :descricao, :preco, :categoria, :estoque, :status, :imagem_url, NOW())";
+            // Define campos adicionais para o novo modo de precificação
+            // unidade_medida será usada para exibir '/kg', '/unid', '/caixa' etc.
+            $unidade_medida = 'kg';
+            $embalagem_peso_kg = null;
+            $embalagem_unidades = null;
+            $estoque_unidades = null;
+
+            switch ($modo_precificacao) {
+                case 'por_unidade':
+                    $unidade_medida = 'unidade';
+                    $estoque_unidades = (int)$estoque_db;
+                    $embalagem_unidades = $quantidade_embalagem_db ? (int)$quantidade_embalagem_db : null;
+                    break;
+                case 'por_quilo':
+                    $unidade_medida = 'kg';
+                    $estoque_db = (float)str_replace(',', '.', $estoque_db);
+                    break;
+                case 'caixa_unidades':
+                    $unidade_medida = 'caixa';
+                    $embalagem_unidades = $quantidade_embalagem_db ? (int)$quantidade_embalagem_db : null;
+                    $estoque_unidades = (int)$estoque_db; // number of boxes
+                    break;
+                case 'caixa_quilos':
+                    $unidade_medida = 'caixa';
+                    $embalagem_peso_kg = $quantidade_embalagem_db ? (float)$quantidade_embalagem_db : null;
+                    $estoque_db = (float)str_replace(',', '.', $estoque_db); // total kg available
+                    break;
+                case 'saco_unidades':
+                    $unidade_medida = 'saco';
+                    $embalagem_unidades = $quantidade_embalagem_db ? (int)$quantidade_embalagem_db : null;
+                    $estoque_unidades = (int)$estoque_db;
+                    break;
+                case 'saco_quilos':
+                    $unidade_medida = 'saco';
+                    $embalagem_peso_kg = $quantidade_embalagem_db ? (float)$quantidade_embalagem_db : null;
+                    $estoque_db = (float)str_replace(',', '.', $estoque_db);
+                    break;
+                default:
+                    $unidade_medida = 'kg';
+                    $estoque_db = (float)str_replace(',', '.', $estoque_db);
+            }
+
+            $query = "INSERT INTO produtos (vendedor_id, nome, descricao, preco, categoria, estoque, estoque_unidades, status, imagem_url, data_criacao, modo_precificacao, embalagem_peso_kg, embalagem_unidades, unidade_medida)
+                      VALUES (:vendedor_id, :nome, :descricao, :preco, :categoria, :estoque, :estoque_unidades, :status, :imagem_url, NOW(), :modo_precificacao, :embalagem_peso_kg, :embalagem_unidades, :unidade_medida)";
 
             $stmt = $db->prepare($query);
             $stmt->bindParam(':vendedor_id', $vendedor_id_fk);
@@ -112,9 +160,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindParam(':descricao', $descricao);
             $stmt->bindParam(':preco', $preco_db);
             $stmt->bindParam(':categoria', $categoria);
-            $stmt->bindParam(':estoque', $estoque_db, PDO::PARAM_INT);
+            // Bind estoque (kg) and estoque_unidades depending on mode
+            $stmt->bindValue(':estoque', isset($estoque_db) ? $estoque_db : null);
+            $stmt->bindValue(':estoque_unidades', isset($estoque_unidades) ? $estoque_unidades : null, PDO::PARAM_INT);
             $stmt->bindParam(':status', $status);
             $stmt->bindParam(':imagem_url', $imagem_principal);
+            $stmt->bindParam(':modo_precificacao', $modo_precificacao);
+            $stmt->bindValue(':embalagem_peso_kg', $embalagem_peso_kg);
+            $stmt->bindValue(':embalagem_unidades', $embalagem_unidades, PDO::PARAM_INT);
+            $stmt->bindParam(':unidade_medida', $unidade_medida);
 
             if ($stmt->execute()) {
                 $produto_id = $db->lastInsertId();
@@ -300,8 +354,8 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
                             <div class="foto-produto-container">
                                 <div class="foto-produto-display" id="imagemPrincipalPreview">
                                     <div class="default-image">
-                                        <i class="fas fa-image" style="font-size: 4rem; color: #ccc;"></i>
-                                        <p style="color: #999; margin-top: 10px;">Imagem Principal</p>
+                                        <i class="fas fa-image"></i>
+                                        <p>Capa</p>
                                     </div>
                                 </div>
                             </div>
@@ -349,14 +403,31 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
 
                     <div class="form-group-row">
                         <div class="form-group">
-                            <label for="preco" class="required">Preço por Kg (R$)</label>
+                            <label for="modo_precificacao" class="required">Modo de Precificação</label>
+                            <select id="modo_precificacao" name="modo_precificacao">
+                                <option value="caixa_unidades" <?php echo ($modo_precificacao === 'caixa_unidades') ? 'selected' : ''; ?>>Caixa com X unidades</option>
+                                <option value="caixa_quilos" <?php echo ($modo_precificacao === 'caixa_quilos') ? 'selected' : ''; ?>>Caixa com X quilos</option>
+                                <option value="saco_unidades" <?php echo ($modo_precificacao === 'saco_unidades') ? 'selected' : ''; ?>>Saco com X unidades</option>
+                                <option value="saco_quilos" <?php echo ($modo_precificacao === 'saco_quilos') ? 'selected' : ''; ?>>Saco com X quilos</option>
+                                <option value="por_unidade" <?php echo ($modo_precificacao === 'por_unidade') ? 'selected' : ''; ?>>x unidades</option>
+                                <option value="por_quilo" <?php echo ($modo_precificacao === 'por_quilo') ? 'selected' : ''; ?>>x quilos</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="preco" class="required" id="labelPreco">Preço por Kg (R$)</label>
                             <input type="text" id="preco" name="preco" value="<?php echo htmlspecialchars($preco_formatado); ?>" required>
                         </div>
 
                         <div class="form-group">
-                            <label for="estoque" class="required">Estoque em Kg</label>
-                            <input type="number" id="estoque" name="estoque" value="<?php echo htmlspecialchars($estoque); ?>" min="1" required>
+                            <label for="estoque" class="required" id="labelEstoque">Estoque em Kg</label>
+                            <input type="number" id="estoque" name="estoque" value="<?php echo htmlspecialchars($estoque); ?>" min="0" required>
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quantidade_embalagem" id="labelQuantidadeEmb">Quantidade por embalagem (se aplicável)</label>
+                        <input type="text" id="quantidade_embalagem" name="quantidade_embalagem" value="<?php echo htmlspecialchars($quantidade_embalagem); ?>" placeholder="Ex: 10 (unidades) ou 5,5 (kg)">
                     </div>
 
                     <div class="form-group">
@@ -395,6 +466,54 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
                 }
                 e.target.value = value;
             });
+
+            const modoSelect = document.getElementById('modo_precificacao');
+            const labelPreco = document.getElementById('labelPreco');
+            const labelEstoque = document.getElementById('labelEstoque');
+            const quantidadeEmbInput = document.getElementById('quantidade_embalagem');
+            const labelQuantidadeEmb = document.getElementById('labelQuantidadeEmb');
+
+            function updatePrecificacaoUI() {
+                const modo = modoSelect.value;
+                if (modo === 'por_quilo') {
+                    labelPreco.textContent = 'Preço por Kg (R$)';
+                    labelEstoque.textContent = 'Estoque em Kg';
+                    labelQuantidadeEmb.style.display = 'none';
+                    quantidadeEmbInput.style.display = 'none';
+                } else if (modo === 'por_unidade') {
+                    labelPreco.textContent = 'Preço por Unidade (R$)';
+                    labelEstoque.textContent = 'Estoque em Unidades';
+                    labelQuantidadeEmb.style.display = 'none';
+                    quantidadeEmbInput.style.display = 'none';
+                } else if (modo === 'caixa_unidades') {
+                    labelPreco.textContent = 'Preço por Caixa (R$)';
+                    labelEstoque.textContent = 'Estoque em Caixas';
+                    labelQuantidadeEmb.style.display = 'block';
+                    quantidadeEmbInput.style.display = 'block';
+                    labelQuantidadeEmb.textContent = 'Unidades por Caixa (ex: 10)';
+                } else if (modo === 'caixa_quilos') {
+                    labelPreco.textContent = 'Preço por Caixa (R$)';
+                    labelEstoque.textContent = 'Estoque em Caixas';
+                    labelQuantidadeEmb.style.display = 'block';
+                    quantidadeEmbInput.style.display = 'block';
+                    labelQuantidadeEmb.textContent = 'Kg por Caixa (ex: 5,5)';
+                } else if (modo === 'saco_unidades') {
+                    labelPreco.textContent = 'Preço por Saco (R$)';
+                    labelEstoque.textContent = 'Estoque em Sacos';
+                    labelQuantidadeEmb.style.display = 'block';
+                    quantidadeEmbInput.style.display = 'block';
+                    labelQuantidadeEmb.textContent = 'Unidades por Saco (ex: 10)';
+                } else if (modo === 'saco_quilos') {
+                    labelPreco.textContent = 'Preço por Saco (R$)';
+                    labelEstoque.textContent = 'Estoque em Sacos';
+                    labelQuantidadeEmb.style.display = 'block';
+                    quantidadeEmbInput.style.display = 'block';
+                    labelQuantidadeEmb.textContent = 'Kg por Saco (ex: 5,5)';
+                }
+            }
+
+            modoSelect.addEventListener('change', updatePrecificacaoUI);
+            updatePrecificacaoUI();
 
             // --- Upload Click ---
             uploadArea.addEventListener('click', () => fileInput.click());

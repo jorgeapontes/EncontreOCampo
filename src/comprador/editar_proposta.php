@@ -31,8 +31,12 @@ try {
                 pn.produto_id,
                 p.nome AS produto_nome, 
                 p.preco AS preco_original, 
+                p.estoque AS estoque_kg,
+                p.estoque_unidades,
+                p.modo_precificacao,
+                p.embalagem_peso_kg,
+                p.embalagem_unidades,
                 p.unidade_medida,
-                p.estoque AS estoque_disponivel, 
                 pv.condicoes_venda
             FROM propostas_negociacao pn
             JOIN propostas_comprador pc ON pn.proposta_comprador_id = pc.id
@@ -64,6 +68,23 @@ try {
     
 } catch (PDOException $e) {
     die("Erro ao carregar proposta: " . $e->getMessage());
+}
+
+// Ajustar estoque e unidade para exibição conforme modo de precificação
+$modo = $proposta['modo_precificacao'] ?? 'por_quilo';
+if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
+    $proposta['estoque_disponivel'] = $proposta['estoque_unidades'] ?? 0;
+} else {
+    $proposta['estoque_disponivel'] = $proposta['estoque_kg'] ?? 0;
+}
+
+switch ($modo) {
+    case 'por_unidade': $proposta['unidade_medida'] = 'unidade'; break;
+    case 'por_quilo': $proposta['unidade_medida'] = 'kg'; break;
+    case 'caixa_unidades': $proposta['unidade_medida'] = 'caixa' . (!empty($proposta['embalagem_unidades']) ? " ({$proposta['embalagem_unidades']} unid)" : ''); break;
+    case 'caixa_quilos': $proposta['unidade_medida'] = 'caixa' . (!empty($proposta['embalagem_peso_kg']) ? " ({$proposta['embalagem_peso_kg']} kg)" : ''); break;
+    case 'saco_unidades': $proposta['unidade_medida'] = 'saco' . (!empty($proposta['embalagem_unidades']) ? " ({$proposta['embalagem_unidades']} unid)" : ''); break;
+    case 'saco_quilos': $proposta['unidade_medida'] = 'saco' . (!empty($proposta['embalagem_peso_kg']) ? " ({$proposta['embalagem_peso_kg']} kg)" : ''); break;
 }
 
 // Processar o formulário de edição

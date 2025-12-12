@@ -33,9 +33,13 @@ try {
                 pv.quantidade_proposta AS quantidade_vendedor,
                 pv.condicoes_venda AS condicoes_vendedor,
                 p.nome AS produto_nome,
-                p.unidade_medida,
                 p.preco AS preco_original,
-                p.estoque AS estoque_disponivel 
+                p.estoque AS estoque_kg,
+                p.estoque_unidades,
+                p.modo_precificacao,
+                p.embalagem_peso_kg,
+                p.embalagem_unidades,
+                p.unidade_medida 
             FROM propostas_negociacao pn
             JOIN propostas_comprador pc ON pn.proposta_comprador_id = pc.id
             JOIN produtos p ON pn.produto_id = p.id
@@ -63,6 +67,23 @@ try {
     
 } catch (PDOException $e) {
     die("Erro ao carregar negociação: " . $e->getMessage());
+}
+
+// Ajustar estoque e unidade para exibição conforme modo de precificação
+$modo = $negociacao['modo_precificacao'] ?? 'por_quilo';
+if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
+    $negociacao['estoque_disponivel'] = $negociacao['estoque_unidades'] ?? 0;
+} else {
+    $negociacao['estoque_disponivel'] = $negociacao['estoque_kg'] ?? 0;
+}
+
+switch ($modo) {
+    case 'por_unidade': $negociacao['unidade_medida'] = 'unidade'; break;
+    case 'por_quilo': $negociacao['unidade_medida'] = 'kg'; break;
+    case 'caixa_unidades': $negociacao['unidade_medida'] = 'caixa' . (!empty($negociacao['embalagem_unidades']) ? " ({$negociacao['embalagem_unidades']} unid)" : ''); break;
+    case 'caixa_quilos': $negociacao['unidade_medida'] = 'caixa' . (!empty($negociacao['embalagem_peso_kg']) ? " ({$negociacao['embalagem_peso_kg']} kg)" : ''); break;
+    case 'saco_unidades': $negociacao['unidade_medida'] = 'saco' . (!empty($negociacao['embalagem_unidades']) ? " ({$negociacao['embalagem_unidades']} unid)" : ''); break;
+    case 'saco_quilos': $negociacao['unidade_medida'] = 'saco' . (!empty($negociacao['embalagem_peso_kg']) ? " ({$negociacao['embalagem_peso_kg']} kg)" : ''); break;
 }
 
 // Processar o formulário

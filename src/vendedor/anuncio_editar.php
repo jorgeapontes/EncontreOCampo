@@ -48,6 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $categoria = sanitizeInput($_POST['categoria']);
     $estoque = sanitizeInput($_POST['estoque']);
     $status = sanitizeInput($_POST['status']);
+    $modo_precificacao = sanitizeInput($_POST['modo_precificacao'] ?? 'por_quilo');
+    $quantidade_embalagem = sanitizeInput($_POST['quantidade_embalagem'] ?? '');
     
     // Dados de desconto
     $desconto_ativo = isset($_POST['desconto_ativo']) ? 1 : 0;
@@ -120,7 +122,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $preco_desconto_db = null;
             }
             
-            // Update Dados Básicos incluindo desconto
+            // Definir campos relacionados à embalagem/estoque conforme modo de precificação
+            $embalagem_peso_kg = null;
+            $embalagem_unidades = null;
+            $estoque_unidades = null;
+
+            switch ($modo_precificacao) {
+                case 'por_unidade':
+                    $estoque_unidades = (int)$estoque_db;
+                    $embalagem_unidades = $quantidade_embalagem ? (int)$quantidade_embalagem : null;
+                    break;
+                case 'por_quilo':
+                    $estoque_db = (float)str_replace(',', '.', $estoque_db);
+                    break;
+                case 'caixa_unidades':
+                    $embalagem_unidades = $quantidade_embalagem ? (int)$quantidade_embalagem : null;
+                    $estoque_unidades = (int)$estoque_db;
+                    break;
+                case 'caixa_quilos':
+                    $embalagem_peso_kg = $quantidade_embalagem ? (float)str_replace(',', '.', $quantidade_embalagem) : null;
+                    $estoque_db = (float)str_replace(',', '.', $estoque_db);
+                    break;
+                case 'saco_unidades':
+                    $embalagem_unidades = $quantidade_embalagem ? (int)$quantidade_embalagem : null;
+                    $estoque_unidades = (int)$estoque_db;
+                    break;
+                case 'saco_quilos':
+                    $embalagem_peso_kg = $quantidade_embalagem ? (float)str_replace(',', '.', $quantidade_embalagem) : null;
+                    $estoque_db = (float)str_replace(',', '.', $estoque_db);
+                    break;
+                default:
+                    $estoque_db = (float)str_replace(',', '.', $estoque_db);
+            }
+
+            // Update Dados Básicos incluindo desconto e campos de embalagem
             $query = "UPDATE produtos SET 
                         nome=:n, 
                         descricao=:d, 
@@ -128,11 +163,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         preco_desconto=:pd,
                         categoria=:c, 
                         estoque=:e, 
+                        estoque_unidades=:eu,
                         status=:s,
                         desconto_ativo=:da,
                         desconto_percentual=:dp,
                         desconto_data_inicio=:ddi,
                         desconto_data_fim=:ddf,
+                        modo_precificacao=:mp,
+                        embalagem_peso_kg=:epk,
+                        embalagem_unidades=:euq,
+                        unidade_medida=:um,
                         data_atualizacao=NOW() 
                       WHERE id=:id AND vendedor_id=:vid";
             
@@ -144,11 +184,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':pd' => $preco_desconto_db,
                 ':c' => $categoria, 
                 ':e' => $estoque_db, 
+                ':eu' => $estoque_unidades,
                 ':s' => $status,
                 ':da' => $desconto_ativo_db,
                 ':dp' => $desconto_percentual,
                 ':ddi' => $desconto_data_inicio_db,
                 ':ddf' => $desconto_data_fim_db,
+                ':mp' => $modo_precificacao,
+                ':epk' => $embalagem_peso_kg,
+                ':euq' => $embalagem_unidades,
+                ':um' => ($modo_precificacao === 'por_unidade' ? 'unidade' : ($modo_precificacao === 'por_quilo' ? 'kg' : ($modo_precificacao === 'caixa_unidades' || $modo_precificacao === 'saco_unidades' ? 'unidade' : 'caixa'))),
                 ':id' => $anuncio_id, 
                 ':vid' => $vendedor_id_fk
             ]);
@@ -527,9 +572,25 @@ $categorias_disponiveis = [
                             <?php endif; ?>
                         </div>
                         <div class="form-group">
+                            <label for="modo_precificacao">Modo de Precificação</label>
+                            <select id="modo_precificacao" name="modo_precificacao">
+                                <option value="caixa_unidades" <?php echo ($anuncio['modo_precificacao'] === 'caixa_unidades') ? 'selected' : ''; ?>>Caixa com X unidades</option>
+                                <option value="caixa_quilos" <?php echo ($anuncio['modo_precificacao'] === 'caixa_quilos') ? 'selected' : ''; ?>>Caixa com X quilos</option>
+                                <option value="saco_unidades" <?php echo ($anuncio['modo_precificacao'] === 'saco_unidades') ? 'selected' : ''; ?>>Saco com X unidades</option>
+                                <option value="saco_quilos" <?php echo ($anuncio['modo_precificacao'] === 'saco_quilos') ? 'selected' : ''; ?>>Saco com X quilos</option>
+                                <option value="por_unidade" <?php echo ($anuncio['modo_precificacao'] === 'por_unidade') ? 'selected' : ''; ?>>x unidades</option>
+                                <option value="por_quilo" <?php echo ($anuncio['modo_precificacao'] === 'por_quilo' || empty($anuncio['modo_precificacao'])) ? 'selected' : ''; ?>>x quilos</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
                             <label for="estoque" class="required">Estoque</label>
                             <input type="number" id="estoque" name="estoque" value="<?php echo htmlspecialchars($anuncio['estoque']); ?>" required>
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantidade_embalagem">Quantidade por embalagem (se aplicável)</label>
+                        <input type="text" id="quantidade_embalagem" name="quantidade_embalagem" value="<?php echo htmlspecialchars(!empty($anuncio['embalagem_unidades']) ? $anuncio['embalagem_unidades'] : (!empty($anuncio['embalagem_peso_kg']) ? $anuncio['embalagem_peso_kg'] : '')); ?>" placeholder="Ex: 10 ou 5,5">
                     </div>
                     
                     <!-- SEÇÃO DE DESCONTO -->

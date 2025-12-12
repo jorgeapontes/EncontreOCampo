@@ -46,8 +46,13 @@ try {
                 pn.status AS negociacao_status,
                 pn.produto_id,
                 p.nome AS produto_nome,
-                p.unidade_medida,
                 p.preco AS preco_anuncio_original,
+                p.estoque AS estoque_kg,
+                p.estoque_unidades,
+                p.modo_precificacao,
+                p.embalagem_peso_kg,
+                p.embalagem_unidades,
+                p.unidade_medida,
                 p.vendedor_id,
                 u.nome AS nome_comprador,
                 -- Subconsulta para obter a última contraproposta do vendedor
@@ -75,7 +80,23 @@ try {
     $stmt->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
     $stmt->execute();
     $propostas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+    // Ajustar exibição de estoque/unidade conforme modo de precificação
+    foreach ($propostas as &$pp) {
+        $modo = $pp['modo_precificacao'] ?? 'por_quilo';
+        if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
+            $pp['quantidade_disponivel'] = $pp['estoque_unidades'] ?? 0;
+        } else {
+            $pp['quantidade_disponivel'] = $pp['estoque_kg'] ?? 0;
+        }
+        switch ($modo) {
+            case 'por_unidade': $pp['unidade_medida'] = 'unidade'; break;
+            case 'por_quilo': $pp['unidade_medida'] = 'kg'; break;
+            case 'caixa_unidades': $pp['unidade_medida'] = 'caixa' . (!empty($pp['embalagem_unidades']) ? " ({$pp['embalagem_unidades']} unid)" : ''); break;
+            case 'caixa_quilos': $pp['unidade_medida'] = 'caixa' . (!empty($pp['embalagem_peso_kg']) ? " ({$pp['embalagem_peso_kg']} kg)" : ''); break;
+            case 'saco_unidades': $pp['unidade_medida'] = 'saco' . (!empty($pp['embalagem_unidades']) ? " ({$pp['embalagem_unidades']} unid)" : ''); break;
+            case 'saco_quilos': $pp['unidade_medida'] = 'saco' . (!empty($pp['embalagem_peso_kg']) ? " ({$pp['embalagem_peso_kg']} kg)" : ''); break;
+        }
+    }
 } catch (PDOException $e) {
     die("Erro ao carregar propostas: " . $e->getMessage()); 
 }

@@ -308,6 +308,10 @@ CREATE TABLE `produtos` (
   `nome` varchar(255) NOT NULL,
   `descricao` text DEFAULT NULL,
   `preco` decimal(10,2) NOT NULL,
+  `modo_precificacao` varchar(50) DEFAULT 'por_quilo',
+  `embalagem_peso_kg` decimal(8,3) DEFAULT NULL,
+  `embalagem_unidades` int(11) DEFAULT NULL,
+  `estoque_unidades` int(11) DEFAULT 0,
   `preco_desconto` decimal(10,2) DEFAULT NULL,
   `desconto_percentual` decimal(5,2) DEFAULT 0.00,
   `desconto_ativo` tinyint(1) DEFAULT 0,
@@ -326,11 +330,11 @@ CREATE TABLE `produtos` (
 -- Despejando dados para a tabela `produtos`
 --
 
-INSERT INTO `produtos` (`id`, `vendedor_id`, `nome`, `descricao`, `preco`, `preco_desconto`, `desconto_percentual`, `desconto_ativo`, `desconto_data_inicio`, `desconto_data_fim`, `categoria`, `imagem_url`, `estoque`, `unidade_medida`, `status`, `data_criacao`, `data_atualizacao`) VALUES
-(15, 1, 'teste 1', '1', 0.01, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_69398052be9755.34966564.jpeg', 1, NULL, 'ativo', '2025-12-10 14:14:42', '2025-12-10 14:15:18'),
-(16, 1, 'teste x', '', 10.00, 8.00, 20.00, 1, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_69398067b3f823.59696952.jpg', 1, NULL, 'ativo', '2025-12-10 14:15:03', '2025-12-11 14:50:11'),
-(17, 1, 'testenovop', '1', 0.01, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_693983f26c4a61.72410777.jpg', 1, NULL, 'ativo', '2025-12-10 14:30:10', NULL),
-(19, 2, 'testando', '', 1.11, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_6939a7f7bde745.04338148.jpeg', 11, NULL, 'ativo', '2025-12-10 17:03:51', NULL);
+INSERT INTO `produtos` (`id`, `vendedor_id`, `nome`, `descricao`, `preco`, `modo_precificacao`, `embalagem_peso_kg`, `embalagem_unidades`, `estoque_unidades`, `preco_desconto`, `desconto_percentual`, `desconto_ativo`, `desconto_data_inicio`, `desconto_data_fim`, `categoria`, `imagem_url`, `estoque`, `unidade_medida`, `status`, `data_criacao`, `data_atualizacao`) VALUES
+(15, 1, 'teste 1', '1', 0.01, 'por_quilo', NULL, NULL, 0, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_69398052be9755.34966564.jpeg', 1, NULL, 'ativo', '2025-12-10 14:14:42', '2025-12-10 14:15:18'),
+(16, 1, 'teste x', '', 10.00, 'por_quilo', NULL, NULL, 0, 8.00, 20.00, 1, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_69398067b3f823.59696952.jpg', 1, NULL, 'ativo', '2025-12-10 14:15:03', '2025-12-11 14:50:11'),
+(17, 1, 'testenovop', '1', 0.01, 'por_quilo', NULL, NULL, 0, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_693983f26c4a61.72410777.jpg', 1, NULL, 'ativo', '2025-12-10 14:30:10', NULL),
+(19, 2, 'testando', '', 1.11, 'por_quilo', NULL, NULL, 0, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_6939a7f7bde745.04338148.jpeg', 11, NULL, 'ativo', '2025-12-10 17:03:51', NULL);
 
 -- --------------------------------------------------------
 

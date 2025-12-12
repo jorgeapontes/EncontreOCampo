@@ -83,21 +83,44 @@ try {
     }
 
     // Buscar anúncios do vendedor (Incluindo colunas de desconto)
-    $sql_anuncios = "SELECT p.id, p.nome AS produto, 
-                            p.preco, 
-                            p.preco_desconto,             -- NOVO
-                            p.desconto_data_fim,    -- NOVO
-                            p.estoque AS quantidade_disponivel, 
-                            p.unidade_medida, p.descricao, p.imagem_url 
-                     FROM produtos p 
-                     WHERE p.vendedor_id IN (SELECT id FROM vendedores WHERE usuario_id = ?) 
-                     AND p.status = 'ativo'";
+        $sql_anuncios = "SELECT p.id, p.nome AS produto, 
+                    p.preco, 
+                    p.preco_desconto,             -- NOVO
+                    p.desconto_data_fim,    -- NOVO
+                    p.estoque AS estoque_kg,
+                    p.estoque_unidades,
+                    p.modo_precificacao,
+                    p.embalagem_peso_kg,
+                    p.embalagem_unidades,
+                    p.unidade_medida, p.descricao, p.imagem_url 
+                FROM produtos p 
+                WHERE p.vendedor_id IN (SELECT id FROM vendedores WHERE usuario_id = ?) 
+                AND p.status = 'ativo'";
     
     $stmt_anuncios = $conn->prepare($sql_anuncios);
     $stmt_anuncios->execute([$vendedor_id]);
     $anuncios_vendedor = $stmt_anuncios->fetchAll(PDO::FETCH_ASSOC);
     
     $total_anuncios = count($anuncios_vendedor);
+
+    // Ajustar exibição de estoque/unidade para compatibilidade
+    foreach ($anuncios_vendedor as &$av) {
+        $modo = $av['modo_precificacao'] ?? 'por_quilo';
+        if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
+            $av['quantidade_disponivel'] = $av['estoque_unidades'] ?? 0;
+        } else {
+            $av['quantidade_disponivel'] = $av['estoque_kg'] ?? 0;
+        }
+
+        switch ($modo) {
+            case 'por_unidade': $av['unidade_medida'] = 'unidade'; break;
+            case 'por_quilo': $av['unidade_medida'] = 'kg'; break;
+            case 'caixa_unidades': $av['unidade_medida'] = 'caixa' . (!empty($av['embalagem_unidades']) ? " ({$av['embalagem_unidades']} unid)" : ''); break;
+            case 'caixa_quilos': $av['unidade_medida'] = 'caixa' . (!empty($av['embalagem_peso_kg']) ? " ({$av['embalagem_peso_kg']} kg)" : ''); break;
+            case 'saco_unidades': $av['unidade_medida'] = 'saco' . (!empty($av['embalagem_unidades']) ? " ({$av['embalagem_unidades']} unid)" : ''); break;
+            case 'saco_quilos': $av['unidade_medida'] = 'saco' . (!empty($av['embalagem_peso_kg']) ? " ({$av['embalagem_peso_kg']} kg)" : ''); break;
+        }
+    }
 
 } catch (PDOException $e) {
     die("Erro ao carregar informações: " . $e->getMessage());

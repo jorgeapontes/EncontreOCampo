@@ -49,10 +49,14 @@ try {
                 p.id, 
                 p.nome AS produto, 
                 p.descricao,
-                p.estoque AS quantidade_disponivel, 
-                p.preco, 
+                p.preco,
                 p.preco_desconto,
                 p.desconto_data_fim,
+                p.estoque AS estoque_kg,
+                p.estoque_unidades,
+                p.modo_precificacao,
+                p.embalagem_peso_kg,
+                p.embalagem_unidades,
                 p.unidade_medida,
                 p.imagem_url, 
                 v.id AS vendedor_sistema_id, 
@@ -74,6 +78,22 @@ try {
     }
 } catch (PDOException $e) {
     die("Erro ao carregar anúncio: " . $e->getMessage()); 
+}
+
+// Ajustar campos de exibição conforme modo de precificação
+$modo = $anuncio['modo_precificacao'] ?? 'por_quilo';
+if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
+    $anuncio['quantidade_disponivel'] = $anuncio['estoque_unidades'] ?? 0;
+} else {
+    $anuncio['quantidade_disponivel'] = $anuncio['estoque_kg'] ?? 0;
+}
+switch ($modo) {
+    case 'por_unidade': $anuncio['unidade_medida'] = 'unidade'; break;
+    case 'por_quilo': $anuncio['unidade_medida'] = 'kg'; break;
+    case 'caixa_unidades': $anuncio['unidade_medida'] = 'caixa' . (!empty($anuncio['embalagem_unidades']) ? " ({$anuncio['embalagem_unidades']} unid)" : ''); break;
+    case 'caixa_quilos': $anuncio['unidade_medida'] = 'caixa' . (!empty($anuncio['embalagem_peso_kg']) ? " ({$anuncio['embalagem_peso_kg']} kg)" : ''); break;
+    case 'saco_unidades': $anuncio['unidade_medida'] = 'saco' . (!empty($anuncio['embalagem_unidades']) ? " ({$anuncio['embalagem_unidades']} unid)" : ''); break;
+    case 'saco_quilos': $anuncio['unidade_medida'] = 'saco' . (!empty($anuncio['embalagem_peso_kg']) ? " ({$anuncio['embalagem_peso_kg']} kg)" : ''); break;
 }
 
 // 4. VERIFICAR SE O VENDEDOR ESTÁ TENTANDO COMPRAR DE SI MESMO

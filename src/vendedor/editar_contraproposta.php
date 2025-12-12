@@ -34,11 +34,12 @@ try {
 
     $vendedor_id = $vendedor['id'];
 
-    // Buscar a contraproposta atual com estoque do produto
-    $sql = "SELECT pv.*, pc.status AS status_comprador, pn.status AS negociacao_status, 
-                   p.estoque AS estoque_disponivel, p.unidade_medida, 
-                   p.nome AS produto_nome, p.preco AS preco_original
-            FROM propostas_vendedor pv
+        // Buscar a contraproposta atual com estoque do produto
+        $sql = "SELECT pv.*, pc.status AS status_comprador, pn.status AS negociacao_status, 
+                 p.estoque AS estoque_kg, p.estoque_unidades, p.modo_precificacao, p.embalagem_peso_kg, p.embalagem_unidades,
+                 p.unidade_medida, 
+                 p.nome AS produto_nome, p.preco AS preco_original
+             FROM propostas_vendedor pv
             JOIN propostas_comprador pc ON pv.proposta_comprador_id = pc.id
             JOIN propostas_negociacao pn ON pv.proposta_comprador_id = pn.proposta_comprador_id
             JOIN produtos p ON pn.produto_id = p.id
@@ -66,6 +67,22 @@ try {
     
 } catch (PDOException $e) {
     die("Erro ao carregar contraproposta: " . $e->getMessage());
+}
+
+// Ajustar estoque/unidade para exibição
+$modo = $contraproposta['modo_precificacao'] ?? 'por_quilo';
+if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
+    $contraproposta['estoque_disponivel'] = $contraproposta['estoque_unidades'] ?? 0;
+} else {
+    $contraproposta['estoque_disponivel'] = $contraproposta['estoque_kg'] ?? 0;
+}
+switch ($modo) {
+    case 'por_unidade': $contraproposta['unidade_medida'] = 'unidade'; break;
+    case 'por_quilo': $contraproposta['unidade_medida'] = 'kg'; break;
+    case 'caixa_unidades': $contraproposta['unidade_medida'] = 'caixa' . (!empty($contraproposta['embalagem_unidades']) ? " ({$contraproposta['embalagem_unidades']} unid)" : ''); break;
+    case 'caixa_quilos': $contraproposta['unidade_medida'] = 'caixa' . (!empty($contraproposta['embalagem_peso_kg']) ? " ({$contraproposta['embalagem_peso_kg']} kg)" : ''); break;
+    case 'saco_unidades': $contraproposta['unidade_medida'] = 'saco' . (!empty($contraproposta['embalagem_unidades']) ? " ({$contraproposta['embalagem_unidades']} unid)" : ''); break;
+    case 'saco_quilos': $contraproposta['unidade_medida'] = 'saco' . (!empty($contraproposta['embalagem_peso_kg']) ? " ({$contraproposta['embalagem_peso_kg']} kg)" : ''); break;
 }
 
 // Processar o formulário de edição

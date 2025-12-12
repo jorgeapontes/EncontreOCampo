@@ -198,7 +198,6 @@ body {
     display: grid;
 }
 
-/* Container da imagem do produto */
 .foto-produto-container {
     position: relative;
     display: inline-block;

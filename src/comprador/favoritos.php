@@ -36,6 +36,23 @@ try {
     $stmt->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
     $stmt->execute();
     $favoritos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Ajustar exibição de estoque/unidade para cada produto
+    foreach ($favoritos as &$pf) {
+        $modo = $pf['modo_precificacao'] ?? 'por_quilo';
+        if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
+            $pf['quantidade_disponivel'] = $pf['estoque_unidades'] ?? 0;
+        } else {
+            $pf['quantidade_disponivel'] = $pf['estoque'] ?? 0;
+        }
+        switch ($modo) {
+            case 'por_unidade': $pf['unidade_medida'] = 'unidade'; break;
+            case 'por_quilo': $pf['unidade_medida'] = 'kg'; break;
+            case 'caixa_unidades': $pf['unidade_medida'] = 'caixa' . (!empty($pf['embalagem_unidades']) ? " ({$pf['embalagem_unidades']} unid)" : ''); break;
+            case 'caixa_quilos': $pf['unidade_medida'] = 'caixa' . (!empty($pf['embalagem_peso_kg']) ? " ({$pf['embalagem_peso_kg']} kg)" : ''); break;
+            case 'saco_unidades': $pf['unidade_medida'] = 'saco' . (!empty($pf['embalagem_unidades']) ? " ({$pf['embalagem_unidades']} unid)" : ''); break;
+            case 'saco_quilos': $pf['unidade_medida'] = 'saco' . (!empty($pf['embalagem_peso_kg']) ? " ({$pf['embalagem_peso_kg']} kg)" : ''); break;
+        }
+    }
 } catch (PDOException $e) {
     $erro = "Erro ao carregar favoritos: " . $e->getMessage();
 }
@@ -213,7 +230,7 @@ try {
 
                                 <p class="estoque">
                                     <i class="fas fa-box"></i>
-                                    <?php echo htmlspecialchars($produto['estoque']); ?> disponíveis
+                                    <?php echo htmlspecialchars($produto['quantidade_disponivel'] ?? $produto['estoque']); ?> disponíveis
                                 </p>
                                 
                                 <p class="descricao">

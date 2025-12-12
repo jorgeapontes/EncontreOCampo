@@ -41,6 +41,27 @@ $stmt->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
 $stmt->execute();
 $anuncios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Ajusta campos para exibição compatível com o novo modo de precificação
+foreach ($anuncios as &$a) {
+    $modo = $a['modo_precificacao'] ?? 'por_quilo';
+    if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
+        $a['quantidade_disponivel'] = $a['estoque_unidades'] ?? 0;
+    } else {
+        $a['quantidade_disponivel'] = $a['estoque'] ?? 0;
+    }
+
+    switch ($modo) {
+        case 'por_unidade': $a['unidade_medida_exib'] = 'unidade'; break;
+        case 'por_quilo': $a['unidade_medida_exib'] = 'kg'; break;
+        case 'caixa_unidades': $a['unidade_medida_exib'] = 'caixa' . (!empty($a['embalagem_unidades']) ? " ({$a['embalagem_unidades']} unid)" : ''); break;
+        case 'caixa_quilos': $a['unidade_medida_exib'] = 'caixa' . (!empty($a['embalagem_peso_kg']) ? " ({$a['embalagem_peso_kg']} kg)" : ''); break;
+        case 'saco_unidades': $a['unidade_medida_exib'] = 'saco' . (!empty($a['embalagem_unidades']) ? " ({$a['embalagem_unidades']} unid)" : ''); break;
+        case 'saco_quilos': $a['unidade_medida_exib'] = 'saco' . (!empty($a['embalagem_peso_kg']) ? " ({$a['embalagem_peso_kg']} kg)" : ''); break;
+        default: $a['unidade_medida_exib'] = $a['unidade_medida'] ?? 'kg';
+    }
+    $a['unidade_medida'] = $a['unidade_medida_exib'];
+}
+
 // Opcionalmente, se você quiser verificar se a tabela propostas existe antes de usar:
 try {
     // Testar se a tabela propostas existe
@@ -246,7 +267,7 @@ try {
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <?php echo htmlspecialchars($anuncio['estoque']); ?>
+                                    <?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?>
                                     <small><?php echo htmlspecialchars($anuncio['unidade_medida']); ?></small>
                                 </td>
                                 <td>

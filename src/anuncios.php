@@ -89,7 +89,11 @@ try {
                 p.desconto_ativo,
                 p.desconto_data_inicio,
                 p.desconto_data_fim,
-                p.estoque AS quantidade_disponivel, 
+                p.estoque AS estoque_kg,
+                p.estoque_unidades,
+                p.modo_precificacao,
+                p.embalagem_peso_kg,
+                p.embalagem_unidades,
                 p.unidade_medida, 
                 p.descricao, 
                 p.imagem_url, 
@@ -109,6 +113,47 @@ try {
     $anuncios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     die("Erro ao carregar anúncios: " . $e->getMessage()); 
+}
+
+// Ajusta campos de exibição para compatibilidade com o novo modo de precificação
+foreach ($anuncios as &$a) {
+    $modo = $a['modo_precificacao'] ?? 'por_quilo';
+    // quantidade disponível: se for por unidade/embalagem, usa estoque_unidades, senão usa estoque_kg
+    if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
+        $a['quantidade_disponivel'] = $a['estoque_unidades'] ?? 0;
+    } else {
+        $a['quantidade_disponivel'] = $a['estoque_kg'] ?? 0;
+    }
+
+    // unidade de medida para exibição
+    switch ($modo) {
+        case 'por_unidade':
+            $a['unidade_medida_exib'] = 'unidade';
+            break;
+        case 'por_quilo':
+            $a['unidade_medida_exib'] = 'kg';
+            break;
+        case 'caixa_unidades':
+            $emb_u = $a['embalagem_unidades'] ? intval($a['embalagem_unidades']) : '';
+            $a['unidade_medida_exib'] = 'caixa' . ($emb_u ? " ({$emb_u} unid)" : '');
+            break;
+        case 'caixa_quilos':
+            $emb_k = $a['embalagem_peso_kg'] ? $a['embalagem_peso_kg'] : '';
+            $a['unidade_medida_exib'] = 'caixa' . ($emb_k ? " ({$emb_k} kg)" : '');
+            break;
+        case 'saco_unidades':
+            $emb_u = $a['embalagem_unidades'] ? intval($a['embalagem_unidades']) : '';
+            $a['unidade_medida_exib'] = 'saco' . ($emb_u ? " ({$emb_u} unid)" : '');
+            break;
+        case 'saco_quilos':
+            $emb_k = $a['embalagem_peso_kg'] ? $a['embalagem_peso_kg'] : '';
+            $a['unidade_medida_exib'] = 'saco' . ($emb_k ? " ({$emb_k} kg)" : '');
+            break;
+        default:
+            $a['unidade_medida_exib'] = $a['unidade_medida'] ?? 'kg';
+    }
+    // para compatibilidade com o restante do template, defina 'unidade_medida' e 'quantidade_disponivel'
+    $a['unidade_medida'] = $a['unidade_medida_exib'];
 }
 ?>
 

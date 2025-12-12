@@ -45,9 +45,13 @@ try {
             pn.status AS negociacao_status,
             pn.produto_id,
             p.nome AS produto_nome,
-            p.unidade_medida,
             p.preco AS preco_anuncio_original,
-            p.estoque AS estoque_disponivel,
+            p.estoque AS estoque_kg,
+            p.estoque_unidades,
+            p.modo_precificacao,
+            p.embalagem_peso_kg,
+            p.embalagem_unidades,
+            p.unidade_medida,
             u.nome AS nome_comprador,
             c.nome_comercial AS loja_comprador,
             pc.condicoes_compra AS condicoes_comprador
@@ -80,6 +84,22 @@ try {
 
 } catch (PDOException $e) {
     die("Erro ao carregar detalhes: " . $e->getMessage()); 
+}
+
+// Ajustar exibição de estoque e unidade conforme modo de precificação
+$modo = $proposta['modo_precificacao'] ?? 'por_quilo';
+if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
+    $proposta['quantidade_disponivel'] = $proposta['estoque_unidades'] ?? 0;
+} else {
+    $proposta['quantidade_disponivel'] = $proposta['estoque_kg'] ?? 0;
+}
+switch ($modo) {
+    case 'por_unidade': $proposta['unidade_medida'] = 'unidade'; break;
+    case 'por_quilo': $proposta['unidade_medida'] = 'kg'; break;
+    case 'caixa_unidades': $proposta['unidade_medida'] = 'caixa' . (!empty($proposta['embalagem_unidades']) ? " ({$proposta['embalagem_unidades']} unid)" : ''); break;
+    case 'caixa_quilos': $proposta['unidade_medida'] = 'caixa' . (!empty($proposta['embalagem_peso_kg']) ? " ({$proposta['embalagem_peso_kg']} kg)" : ''); break;
+    case 'saco_unidades': $proposta['unidade_medida'] = 'saco' . (!empty($proposta['embalagem_unidades']) ? " ({$proposta['embalagem_unidades']} unid)" : ''); break;
+    case 'saco_quilos': $proposta['unidade_medida'] = 'saco' . (!empty($proposta['embalagem_peso_kg']) ? " ({$proposta['embalagem_peso_kg']} kg)" : ''); break;
 }
 
 // Função para traduzir o status - ATUALIZADA para vendedor

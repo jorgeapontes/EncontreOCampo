@@ -976,7 +976,7 @@ async function submitForm(e) {
         }
         
         if (response.ok && result.success) {
-            alert('✅ Solicitação de Cadastro enviada com sucesso!\n\nEm breve você receberá um email com as instruções.\nSua conta será ativada após aprovação do administrador.');
+            alert('✅ Cadastro realizado com sucesso!\n\nVocê já pode fazer login na sua conta.\n\n⚠️ **Atenção:**\nVocê só poderá realizar negócios após a aprovação do administrador.\nVocê receberá um e-mail quando isso acontecer.');
             
             mainForm.reset();
             

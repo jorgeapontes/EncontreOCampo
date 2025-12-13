@@ -436,6 +436,19 @@ if ($eh_vendedor_produto) {
         .message.sent .time {
             text-align: right;
         }
+
+        /* Debug de imagens - remover depois */
+.message img {
+    border: 2px solid red;
+}
+
+.message img[src*="data:image"] {
+    border: 2px solid blue;
+}
+
+.message img[data-src] {
+    border: 2px solid green;
+}
         
         .chat-input {
             padding: 16px 20px;

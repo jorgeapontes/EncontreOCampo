@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 11/12/2025 às 20:47
+-- Tempo de geração: 13/12/2025 às 19:40
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -20,28 +20,6 @@ SET time_zone = "+00:00";
 --
 -- Banco de dados: `encontre_ocampo`
 --
-
--- --------------------------------------------------------
-
---
--- Estrutura para tabela `acordos`
---
-
-CREATE TABLE `acordos` (
-  `id` int(11) NOT NULL,
-  `conversa_id` int(11) NOT NULL,
-  `produto_id` int(11) NOT NULL,
-  `quantidade` decimal(10,2) NOT NULL,
-  `preco_unitario` decimal(10,2) NOT NULL,
-  `preco_total` decimal(10,2) NOT NULL,
-  `condicoes` text DEFAULT NULL,
-  `status` enum('pendente','aceito','recusado','expirado') DEFAULT 'pendente',
-  `valido_ate` datetime DEFAULT NULL,
-  `criado_por` int(11) NOT NULL,
-  `aceito_por` int(11) DEFAULT NULL,
-  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
-  `data_aceitacao` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -108,7 +86,15 @@ CREATE TABLE `chat_auditoria` (
 --
 
 INSERT INTO `chat_auditoria` (`id`, `conversa_id`, `usuario_id`, `acao`, `detalhes`, `ip_address`, `user_agent`, `data_acao`) VALUES
-(1, 7, 3, 'enviar_mensagem', 'Mensagem ID: 15 - Conteúdo: teset', NULL, NULL, '2025-12-11 19:37:57');
+(1, 7, 3, 'enviar_mensagem', 'Mensagem ID: 15 - Conteúdo: teset', NULL, NULL, '2025-12-11 19:37:57'),
+(2, 5, 3, 'enviar_mensagem', 'Mensagem ID: 16 - Conteúdo: ok', NULL, NULL, '2025-12-13 00:29:49'),
+(3, 5, 3, 'enviar_mensagem', 'Mensagem ID: 17 - Conteúdo: ok]', NULL, NULL, '2025-12-13 00:30:05'),
+(4, 5, 4, 'enviar_mensagem', 'Mensagem ID: 18 - Conteúdo: teste', NULL, NULL, '2025-12-13 00:33:22'),
+(5, 5, 3, 'enviar_mensagem', 'Mensagem ID: 19 - Conteúdo: kkkkkk', NULL, NULL, '2025-12-13 00:33:35'),
+(6, 5, 3, 'enviar_mensagem', 'Mensagem ID: 20 - Conteúdo: /uploads/chat/img_693d7a51040dd_1765636689.jpeg', NULL, NULL, '2025-12-13 14:38:09'),
+(7, 5, 3, 'enviar_mensagem', 'Mensagem ID: 21 - Conteúdo: /uploads/chat/img_693db0ae72df3_1765650606.jpg', NULL, NULL, '2025-12-13 18:30:06'),
+(8, 5, 3, 'enviar_mensagem', 'Mensagem ID: 22 - Conteúdo: /EncontreOCampo/uploads/chat/img_693db2dcce582_1765651164.jpg', NULL, NULL, '2025-12-13 18:39:24'),
+(9, 7, 3, 'enviar_mensagem', 'Mensagem ID: 23 - Conteúdo: /EncontreOCampo/uploads/chat/img_693db2fe18ed7_1765651198.jpeg', NULL, NULL, '2025-12-13 18:39:58');
 
 -- --------------------------------------------------------
 
@@ -129,17 +115,23 @@ CREATE TABLE `chat_conversas` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   `deletado` tinyint(1) DEFAULT 0,
   `data_delecao` timestamp NULL DEFAULT NULL,
-  `usuario_deletou` int(11) DEFAULT NULL
+  `usuario_deletou` int(11) DEFAULT NULL,
+  `favorito_comprador` tinyint(1) DEFAULT 0,
+  `favorito_vendedor` tinyint(1) DEFAULT 0,
+  `ultimo_ip_comprador` varchar(45) DEFAULT NULL,
+  `ultimo_ip_vendedor` varchar(45) DEFAULT NULL,
+  `ultimo_user_agent_comprador` text DEFAULT NULL,
+  `ultimo_user_agent_vendedor` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Despejando dados para a tabela `chat_conversas`
 --
 
-INSERT INTO `chat_conversas` (`id`, `produto_id`, `comprador_id`, `vendedor_id`, `ultima_mensagem`, `ultima_mensagem_data`, `comprador_lido`, `vendedor_lido`, `status`, `data_criacao`, `deletado`, `data_delecao`, `usuario_deletou`) VALUES
-(5, 16, 3, 4, 'teste', '2025-12-10 16:47:05', 1, 0, 'ativo', '2025-12-10 16:46:53', 0, NULL, NULL),
-(6, 19, 4, 9, 'ok', '2025-12-10 17:04:15', 0, 1, 'ativo', '2025-12-10 17:04:03', 0, NULL, NULL),
-(7, 19, 3, 9, 'teset', '2025-12-11 19:37:57', 1, 0, 'ativo', '2025-12-11 19:37:54', 0, NULL, NULL);
+INSERT INTO `chat_conversas` (`id`, `produto_id`, `comprador_id`, `vendedor_id`, `ultima_mensagem`, `ultima_mensagem_data`, `comprador_lido`, `vendedor_lido`, `status`, `data_criacao`, `deletado`, `data_delecao`, `usuario_deletou`, `favorito_comprador`, `favorito_vendedor`, `ultimo_ip_comprador`, `ultimo_ip_vendedor`, `ultimo_user_agent_comprador`, `ultimo_user_agent_vendedor`) VALUES
+(5, 16, 3, 4, '[Imagem]', '2025-12-13 18:39:24', 1, 0, 'ativo', '2025-12-10 16:46:53', 0, NULL, NULL, 0, 0, NULL, NULL, NULL, NULL),
+(6, 19, 4, 9, 'ok', '2025-12-10 17:04:15', 0, 1, 'ativo', '2025-12-10 17:04:03', 0, NULL, NULL, 0, 0, NULL, NULL, NULL, NULL),
+(7, 19, 3, 9, '[Imagem]', '2025-12-13 18:39:58', 1, 0, 'ativo', '2025-12-11 19:37:54', 0, NULL, NULL, 0, 0, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -152,22 +144,34 @@ CREATE TABLE `chat_mensagens` (
   `conversa_id` int(11) NOT NULL,
   `remetente_id` int(11) NOT NULL,
   `mensagem` text NOT NULL,
+  `tipo` enum('texto','imagem') NOT NULL DEFAULT 'texto',
   `lida` tinyint(1) DEFAULT 0,
   `data_envio` timestamp NOT NULL DEFAULT current_timestamp(),
   `deletado` tinyint(1) DEFAULT 0,
   `data_delecao` timestamp NULL DEFAULT NULL,
-  `usuario_deletou` int(11) DEFAULT NULL
+  `usuario_deletou` int(11) DEFAULT NULL,
+  `tipo_mensagem` enum('texto','imagem','arquivo') DEFAULT 'texto',
+  `anexo_url` varchar(500) DEFAULT NULL,
+  `palavras_ofensivas` text DEFAULT NULL COMMENT 'Palavras ofensivas detectadas na mensagem'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Despejando dados para a tabela `chat_mensagens`
 --
 
-INSERT INTO `chat_mensagens` (`id`, `conversa_id`, `remetente_id`, `mensagem`, `lida`, `data_envio`, `deletado`, `data_delecao`, `usuario_deletou`) VALUES
-(12, 5, 3, 'teste', 0, '2025-12-10 16:47:05', 0, NULL, NULL),
-(13, 6, 4, 'quero', 1, '2025-12-10 17:04:06', 0, NULL, NULL),
-(14, 6, 9, 'ok', 1, '2025-12-10 17:04:15', 0, NULL, NULL),
-(15, 7, 3, 'teset', 0, '2025-12-11 19:37:57', 0, NULL, NULL);
+INSERT INTO `chat_mensagens` (`id`, `conversa_id`, `remetente_id`, `mensagem`, `tipo`, `lida`, `data_envio`, `deletado`, `data_delecao`, `usuario_deletou`, `tipo_mensagem`, `anexo_url`, `palavras_ofensivas`) VALUES
+(12, 5, 3, 'teste', 'texto', 1, '2025-12-10 16:47:05', 0, NULL, NULL, 'texto', NULL, NULL),
+(13, 6, 4, 'quero', 'texto', 1, '2025-12-10 17:04:06', 0, NULL, NULL, 'texto', NULL, NULL),
+(14, 6, 9, 'ok', 'texto', 1, '2025-12-10 17:04:15', 0, NULL, NULL, 'texto', NULL, NULL),
+(15, 7, 3, 'teset', 'texto', 0, '2025-12-11 19:37:57', 0, NULL, NULL, 'texto', NULL, NULL),
+(16, 5, 3, 'ok', 'texto', 1, '2025-12-13 00:29:49', 0, NULL, NULL, 'texto', NULL, NULL),
+(17, 5, 3, 'ok]', 'texto', 1, '2025-12-13 00:30:05', 0, NULL, NULL, 'texto', NULL, NULL),
+(18, 5, 4, 'teste', 'texto', 1, '2025-12-13 00:33:22', 0, NULL, NULL, 'texto', NULL, NULL),
+(19, 5, 3, 'kkkkkk', 'texto', 1, '2025-12-13 00:33:35', 0, NULL, NULL, 'texto', NULL, NULL),
+(20, 5, 3, '/uploads/chat/img_693d7a51040dd_1765636689.jpeg', 'imagem', 1, '2025-12-13 14:38:09', 0, NULL, NULL, 'texto', NULL, NULL),
+(21, 5, 3, '/uploads/chat/img_693db0ae72df3_1765650606.jpg', 'imagem', 0, '2025-12-13 18:30:06', 0, NULL, NULL, 'texto', NULL, NULL),
+(22, 5, 3, '/EncontreOCampo/uploads/chat/img_693db2dcce582_1765651164.jpg', 'imagem', 0, '2025-12-13 18:39:24', 0, NULL, NULL, 'texto', NULL, NULL),
+(23, 7, 3, '/EncontreOCampo/uploads/chat/img_693db2fe18ed7_1765651198.jpeg', 'imagem', 0, '2025-12-13 18:39:58', 0, NULL, NULL, 'texto', NULL, NULL);
 
 --
 -- Acionadores `chat_mensagens`
@@ -599,14 +603,6 @@ INSERT INTO `vendedores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, `
 --
 
 --
--- Índices de tabela `acordos`
---
-ALTER TABLE `acordos`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `conversa_id` (`conversa_id`),
-  ADD KEY `produto_id` (`produto_id`);
-
---
 -- Índices de tabela `admin_acoes`
 --
 ALTER TABLE `admin_acoes`
@@ -763,12 +759,6 @@ ALTER TABLE `vendedores`
 --
 
 --
--- AUTO_INCREMENT de tabela `acordos`
---
-ALTER TABLE `acordos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT de tabela `admin_acoes`
 --
 ALTER TABLE `admin_acoes`
@@ -778,7 +768,7 @@ ALTER TABLE `admin_acoes`
 -- AUTO_INCREMENT de tabela `chat_auditoria`
 --
 ALTER TABLE `chat_auditoria`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de tabela `chat_conversas`
@@ -790,7 +780,7 @@ ALTER TABLE `chat_conversas`
 -- AUTO_INCREMENT de tabela `chat_mensagens`
 --
 ALTER TABLE `chat_mensagens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT de tabela `compradores`
@@ -885,13 +875,6 @@ ALTER TABLE `vendedores`
 --
 -- Restrições para tabelas despejadas
 --
-
---
--- Restrições para tabelas `acordos`
---
-ALTER TABLE `acordos`
-  ADD CONSTRAINT `acordos_ibfk_1` FOREIGN KEY (`conversa_id`) REFERENCES `conversas` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `acordos_ibfk_2` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE;
 
 --
 -- Restrições para tabelas `admin_acoes`

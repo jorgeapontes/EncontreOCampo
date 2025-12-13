@@ -62,7 +62,7 @@ $destination = $uploadDir . $newFilename;
 if (move_uploaded_file($file['tmp_name'], $destination)) {
     // CORRIGIDO: Caminho relativo à raiz do projeto
     // Se seu arquivo index.php está na raiz, use este caminho:
-    $webPath = 'uploads/chat/' . $newFilename;
+   $webPath = '/EncontreOCampo/uploads/chat/' . $newFilename;
     
     // Se precisar de caminho absoluto da web, descomente e ajuste:
     // $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
@@ -101,4 +101,20 @@ if (move_uploaded_file($file['tmp_name'], $destination)) {
 } else {
     echo json_encode(['success' => false, 'error' => 'Falha ao mover arquivo.']);
 }
+
+if (move_uploaded_file($file['tmp_name'], $destination)) {
+    // DEBUG - REMOVER DEPOIS
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
+    $host = $_SERVER['HTTP_HOST'];
+    $documentRoot = $_SERVER['DOCUMENT_ROOT'];
+    
+    error_log("=== DEBUG UPLOAD ===");
+    error_log("Document Root: " . $documentRoot);
+    error_log("Upload Dir: " . $uploadDir);
+    error_log("Destination: " . $destination);
+    error_log("File exists: " . (file_exists($destination) ? 'SIM' : 'NÃO'));
+    error_log("URL completa: " . $protocol . "://" . $host . "../uploads/chat/" . $newFilename);
+    // FIM DEBUG
+    
+    $webPath = '../uploads/chat/' . $newFilename;}
 ?>

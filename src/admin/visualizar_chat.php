@@ -117,6 +117,13 @@ try {
             margin: 0 auto;
         }
         
+        .top-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
         .btn-back {
             display: inline-flex;
             align-items: center;
@@ -126,12 +133,28 @@ try {
             color: white;
             text-decoration: none;
             border-radius: 5px;
-            margin-bottom: 20px;
             font-weight: 600;
         }
         
         .btn-back:hover {
             background: #5a6268;
+        }
+
+        .btn-export {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #dc3545; /* Cor de PDF padrão */
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn-export:hover {
+            background: #b02a37;
         }
         
         .header {
@@ -308,9 +331,15 @@ try {
 </head>
 <body>
     <div class="container">
-        <a href="chats_admin.php" class="btn-back">
-            <i class="fas fa-arrow-left"></i> Voltar para Lista
-        </a>
+        <div class="top-controls">
+            <a href="chats_admin.php" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Voltar para Lista
+            </a>
+            
+            <a href="exportar_pdf.php?conversa_id=<?php echo $conversa_id; ?>" target="_blank" class="btn-export">
+                <i class="fas fa-file-pdf"></i> Exportar PDF
+            </a>
+        </div>
         
         <div class="header">
             <h1>

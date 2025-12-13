@@ -51,8 +51,10 @@ try {
     }
 
     // Mensagens
+    // ALTERAÇÃO AQUI: Adicionado o campo 'tipo'
     $sql_mensagens = "SELECT 
                 cm.*,
+                cm.tipo,
                 u.nome AS remetente_nome,
                 DATE_FORMAT(cm.data_envio, '%d/%m/%Y %H:%i') as data_formatada
             FROM chat_mensagens cm
@@ -71,10 +73,12 @@ try {
 
 // 3. Configuração do PDF extendendo a classe para criar Header/Footer
 class PDF extends FPDF {
+    // ... (restante da classe Header e Footer permanecem os mesmos) ...
     function Header() {
         // Logo (ajuste o caminho se necessário)
         $logoPath = '../../img/logo-nova.png';
         if(file_exists($logoPath)){
+            // Tenta usar a imagem, se existir no caminho. Ajuste o caminho.
             $this->Image($logoPath, 10, 6, 30);
         }
         
@@ -95,7 +99,7 @@ class PDF extends FPDF {
     }
     
     // Função auxiliar para quebra de linha com fundo colorido
-    function MessageRow($remetente, $data, $mensagem, $isComprador, $isDeletada) {
+    function MessageRow($remetente, $data, $mensagem, $tipo, $isComprador, $isDeletada) {
         $this->SetFont('Arial', 'B', 10);
         
         // Cores de fundo
@@ -108,15 +112,44 @@ class PDF extends FPDF {
         }
 
         // Cabeçalho da mensagem
-        $tipo = $isComprador ? "(Comprador)" : "(Vendedor)";
-        $headerText = "$remetente $tipo - $data";
+        $tipo_usuario = $isComprador ? "(Comprador)" : "(Vendedor)";
+        $headerText = "$remetente $tipo_usuario - $data";
         if($isDeletada) $headerText .= " [MENSAGEM DELETADA]";
         
         $this->Cell(0, 7, utf8_decode($headerText), 0, 1, 'L', true);
         
         // Conteúdo
         $this->SetFont('Arial', '', 10);
-        $this->MultiCell(0, 6, utf8_decode($mensagem), 0, 'L', true);
+        
+        if ($tipo === 'imagem') {
+            $caminho_local = __DIR__ . '/../../' . $mensagem; // Ajuste o caminho relativo aqui
+            $texto_conteudo = utf8_decode('[IMAGEM ANEXADA] - Caminho: ' . $mensagem);
+            
+            $this->MultiCell(0, 6, $texto_conteudo, 0, 'L', true);
+            
+            // Tentativa de incluir miniatura da imagem no PDF
+            if (file_exists($caminho_local) && !$isDeletada) {
+                // Tenta calcular o tamanho da imagem para manter a proporção
+                list($width, $height) = getimagesize($caminho_local);
+                $w_max = 50; // Largura máxima da miniatura em mm
+                $h_max = 50; // Altura máxima da miniatura em mm
+                
+                $ratio = min($w_max / $width, $h_max / $height);
+                $w = $width * $ratio;
+                $h = $height * $ratio;
+                
+                // Verifica se tem espaço suficiente na página
+                if ($this->GetY() + $h < 270) { 
+                    $this->Image($caminho_local, $this->GetX(), $this->GetY(), $w, $h);
+                    $this->Ln($h + 2); // Pula para depois da imagem
+                } else {
+                    $this->Ln(2); // Apenas pula linha
+                }
+            }
+        } else {
+            // Mensagem de Texto
+            $this->MultiCell(0, 6, utf8_decode($mensagem), 0, 'L', true);
+        }
         
         // Espaço após mensagem
         $this->Ln(2);
@@ -180,6 +213,7 @@ if (count($mensagens) > 0) {
             $msg['remetente_nome'], 
             $msg['data_formatada'], 
             $msg['mensagem'], 
+            $msg['tipo'], // Passa o tipo da mensagem
             $ehComprador,
             $msg['deletado']
         );

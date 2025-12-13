@@ -73,8 +73,11 @@ try {
 
 // Buscar TODAS as mensagens (incluindo deletadas)
 try {
+    // ALTERAÇÃO AQUI: Adicionado 'tipo' e 'data_delecao' no SELECT
     $sql_mensagens = "SELECT 
                 cm.*,
+                cm.tipo, 
+                cm.data_delecao,
                 u.nome AS remetente_nome,
                 DATE_FORMAT(cm.data_envio, '%d/%m/%Y %H:%i:%s') as data_formatada
             FROM chat_mensagens cm
@@ -296,6 +299,17 @@ try {
             word-wrap: break-word;
         }
         
+        /* Estilos para Imagem */
+        .message-imagem {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+        
         .message-deletada-info {
             margin-top: 8px;
             font-size: 11px;
@@ -404,7 +418,13 @@ try {
                             <span class="message-data"><?php echo $msg['data_formatada']; ?></span>
                         </div>
                         <div class="message-conteudo">
-                            <?php echo nl2br(htmlspecialchars($msg['mensagem'])); ?>
+                            <?php if ($msg['tipo'] === 'imagem'): ?>
+                                <a href="<?php echo htmlspecialchars($msg['mensagem']); ?>" target="_blank">
+                                    <img src="<?php echo htmlspecialchars($msg['mensagem']); ?>" alt="Imagem Enviada" class="message-imagem">
+                                </a>
+                            <?php else: ?>
+                                <?php echo nl2br(htmlspecialchars($msg['mensagem'])); ?>
+                            <?php endif; ?>
                         </div>
                         <?php if ($msg['deletado']): ?>
                             <div class="message-deletada-info">

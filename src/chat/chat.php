@@ -375,6 +375,32 @@ if ($eh_vendedor_produto) {
             animation: fadeIn 0.3s ease;
             font-size: 15px;
             line-height: 1.4;
+            position: relative;
+        }
+
+        /* Estilos para imagem no chat */
+        .message .chat-image-container {
+            margin: -5px -9px; /* Compensa o padding da mensagem para a imagem ficar maior */
+        }
+
+        .message .chat-image {
+            max-width: 100%;
+            border-radius: 12px;
+            display: block;
+            min-height: 100px; /* Altura mínima enquanto carrega */
+            background: #f0f2f5;
+            transition: opacity 0.3s ease-in;
+        }
+
+        /* Classe para lazy load */
+        .chat-image.lazy-loading {
+            opacity: 0.5;
+            filter: blur(2px);
+        }
+
+        .chat-image.lazy-loaded {
+            opacity: 1;
+            filter: blur(0);
         }
         
         @keyframes fadeIn {
@@ -417,9 +443,10 @@ if ($eh_vendedor_produto) {
             border-top: 1px solid #e4e6eb;
             display: flex;
             gap: 10px;
+            align-items: center;
         }
         
-        .chat-input input {
+        .chat-input input[type="text"] {
             flex: 1;
             padding: 12px 16px;
             border: 1px solid #ccd0d5;
@@ -431,12 +458,42 @@ if ($eh_vendedor_produto) {
             background: #f0f2f5;
         }
         
-        .chat-input input:focus {
+        .chat-input input[type="text"]:focus {
             border-color: #2E7D32;
             background: #ffffff;
         }
+
+        /* Botão de Anexo */
+        .btn-attach {
+            background: #f0f2f5;
+            color: #65676b;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .btn-attach:hover {
+            background: #e4e6eb;
+            color: #2E7D32;
+        }
+
+        .btn-attach.loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+             100% { transform: rotate(360deg); }
+        }
         
-        .chat-input button {
+        .chat-input .btn-send {
             background: #2E7D32;
             color: white;
             border: none;
@@ -449,13 +506,14 @@ if ($eh_vendedor_produto) {
             font-weight: 600;
             font-size: 15px;
             transition: background 0.2s;
+            flex-shrink: 0;
         }
         
-        .chat-input button:hover {
+        .chat-input .btn-send:hover {
             background: #1B5E20;
         }
         
-        .chat-input button:active {
+        .chat-input .btn-send:active {
             transform: scale(0.98);
         }
         
@@ -512,13 +570,25 @@ if ($eh_vendedor_produto) {
             
             .chat-input {
                 padding: 12px 16px;
+                gap: 8px;
             }
+
+             .chat-input .btn-send {
+                 padding: 12px;
+             }
+             .chat-input .btn-send span {
+                 display: none; /* Esconde texto "Enviar" no mobile */
+             }
+             .btn-attach {
+                 width: 36px;
+                 height: 36px;
+                 font-size: 16px;
+             }
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
-        <!-- Sidebar -->
         <div class="chat-sidebar">
             <div class="sidebar-header">
                 <h2>
@@ -575,7 +645,6 @@ if ($eh_vendedor_produto) {
             <?php endif; ?>
         </div>
         
-        <!-- Área do Chat -->
         <div class="chat-area">
             <?php if ($conversa_id && $outro_usuario_id): ?>
                 <div class="chat-header">
@@ -597,10 +666,16 @@ if ($eh_vendedor_produto) {
                 <div class="chat-messages" id="chat-messages"></div>
                 
                 <div class="chat-input">
+                    <input type="file" id="image-input" accept="image/jpeg,image/png,image/gif,image/webp" style="display: none;">
+                    
+                    <button type="button" class="btn-attach" id="btn-attach-image" title="Enviar Imagem">
+                        <i class="fas fa-camera"></i>
+                    </button>
+
                     <input type="text" id="message-input" placeholder="Digite sua mensagem..." autocomplete="off">
-                    <button type="button" id="send-btn">
+                    <button type="button" id="send-btn" class="btn-send">
                         <i class="fas fa-paper-plane"></i>
-                        Enviar
+                        <span>Enviar</span>
                     </button>
                 </div>
             <?php else: ?>
@@ -624,33 +699,90 @@ if ($eh_vendedor_produto) {
         const usuarioId = <?php echo $usuario_id; ?>;
         let ultimaMensagemId = 0;
         let carregandoMensagens = false;
-        
+
+        // Configuração do Lazy Loading usando Intersection Observer
+        // Usa uma imagem de placeholder leve enquanto a real não carrega
+        const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23f0f2f5'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%23a8abaf'%3ECarregando...%3C/text%3E%3C/svg%3E";
+
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    const src = img.getAttribute('data-src');
+                    if (src) {
+                        img.src = src;
+                        img.onload = () => {
+                            img.classList.remove('lazy-loading');
+                            img.classList.add('lazy-loaded');
+                        };
+                        img.removeAttribute('data-src');
+                    }
+                    observer.unobserve(img);
+                }
+            });
+        }, {
+            root: document.getElementById('chat-messages'), // Observa em relação ao container do chat
+            rootMargin: '200px 0px', // Começa a carregar 200px antes de aparecer
+            threshold: 0.01
+        });
+
         function carregarMensagens() {
             if (carregandoMensagens) return;
             carregandoMensagens = true;
             
+            // IMPORTANTE: Seu get_messages.php deve retornar a coluna 'tipo' agora
             fetch(`get_messages.php?conversa_id=${conversaId}&ultimo_id=${ultimaMensagemId}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.mensagens.length > 0) {
                         const messagesDiv = document.getElementById('chat-messages');
-                        const estavaNaBase = messagesDiv.scrollHeight - messagesDiv.scrollTop <= messagesDiv.clientHeight + 100;
-                        
+                        // Verifica se o usuário estava perto do fim antes de adicionar novas mensagens
+                        const estavaNaBase = messagesDiv.scrollHeight - messagesDiv.scrollTop <= messagesDiv.clientHeight + 150;
+                        let novasImagens = [];
+
                         data.mensagens.forEach(msg => {
                             if (msg.id > ultimaMensagemId) {
                                 const div = document.createElement('div');
                                 div.className = 'message ' + (msg.remetente_id == usuarioId ? 'sent' : 'received');
+                                
+                                let conteudoMensagem = '';
+                                // Verifica o tipo da mensagem
+                                if (msg.tipo === 'imagem') {
+                                    // Estrutura para Lazy Load
+                                    conteudoMensagem = `
+                                        <div class="chat-image-container">
+                                            <img src="${placeholderImage}" 
+                                                 data-src="${msg.mensagem}" 
+                                                 class="chat-image lazy-loading" 
+                                                 alt="Imagem enviada"
+                                                 loading="lazy">
+                                        </div>`;
+                                } else {
+                                    conteudoMensagem = `<div>${escapeHtml(msg.mensagem)}</div>`;
+                                }
+
                                 div.innerHTML = `
-                                    <div>${escapeHtml(msg.mensagem)}</div>
+                                    ${conteudoMensagem}
                                     <div class="time">${msg.data_formatada}</div>
                                 `;
                                 messagesDiv.appendChild(div);
                                 ultimaMensagemId = msg.id;
+
+                                // Se for imagem, adiciona ao array para observar depois
+                                if (msg.tipo === 'imagem') {
+                                    novasImagens.push(div.querySelector('.chat-image'));
+                                }
                             }
                         });
                         
+                        // Inicia observação das novas imagens para lazy load
+                        novasImagens.forEach(img => imageObserver.observe(img));
+
                         if (estavaNaBase) {
-                            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                             // Pequeno delay para garantir que o DOM atualizou antes de rolar
+                             setTimeout(() => {
+                                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                             }, 50);
                         }
                     }
                     carregandoMensagens = false;
@@ -662,6 +794,7 @@ if ($eh_vendedor_produto) {
         }
         
         function escapeHtml(text) {
+            if (!text) return '';
             const map = {
                 '&': '&amp;',
                 '<': '&lt;',
@@ -672,6 +805,7 @@ if ($eh_vendedor_produto) {
             return text.replace(/[&<>"']/g, m => map[m]);
         }
         
+        // --- Lógica de Envio de Texto ---
         function enviarMensagem() {
             const input = document.getElementById('message-input');
             const mensagem = input.value.trim();
@@ -693,8 +827,57 @@ if ($eh_vendedor_produto) {
             .catch(err => console.error('Erro ao enviar mensagem:', err));
         }
         
+        // --- Lógica de Envio de Imagem ---
+        const btnAttach = document.getElementById('btn-attach-image');
+        const fileInput = document.getElementById('image-input');
+        const attachIcon = btnAttach.querySelector('i');
+
+        btnAttach.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', function() {
+            if (this.files.length === 0) return;
+            const file = this.files[0];
+            uploadImagem(file);
+        });
+
+        function uploadImagem(file) {
+            // Feedback visual de carregamento no botão
+            btnAttach.classList.add('loading');
+            attachIcon.className = 'fas fa-spinner';
+            btnAttach.disabled = true;
+
+            const formData = new FormData();
+            formData.append('imagem', file);
+            formData.append('conversa_id', conversaId);
+
+            fetch('upload_image.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Limpa o input file e recarrega mensagens
+                    fileInput.value = '';
+                    carregarMensagens();
+                } else {
+                    alert('Erro ao enviar imagem: ' + (data.error || 'Erro desconhecido'));
+                }
+            })
+            .catch(err => {
+                console.error('Erro no upload:', err);
+                alert('Erro de conexão ao enviar imagem.');
+            })
+            .finally(() => {
+                // Remove feedback visual
+                btnAttach.classList.remove('loading');
+                attachIcon.className = 'fas fa-camera';
+                btnAttach.disabled = false;
+            });
+        }
+
+        // Event Listeners existentes
         document.getElementById('send-btn').addEventListener('click', enviarMensagem);
-        
         document.getElementById('message-input').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 enviarMensagem();
@@ -704,8 +887,8 @@ if ($eh_vendedor_produto) {
         // Carregar mensagens iniciais
         carregarMensagens();
         
-        // Atualizar a cada 1 segundo
-        setInterval(carregarMensagens, 1000);
+        // Atualizar a cada 2 segundos (aumentei um pouco para não sobrecarregar com imagens)
+        setInterval(carregarMensagens, 2000);
     </script>
     <?php endif; ?>
 </body>

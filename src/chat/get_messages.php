@@ -36,7 +36,8 @@ try {
     // Buscar mensagens
     if ($ultimo_id > 0) {
         // Buscar apenas mensagens novas
-        $sql = "SELECT id, remetente_id, mensagem, 
+        // CORRIGIDO: Adicionado o campo 'tipo' no SELECT
+        $sql = "SELECT id, remetente_id, mensagem, tipo,
                 DATE_FORMAT(data_envio, '%d/%m %H:%i') as data_formatada,
                 lida
                 FROM chat_mensagens 
@@ -45,7 +46,8 @@ try {
                 ORDER BY id ASC";
     } else {
         // Buscar todas as mensagens
-        $sql = "SELECT id, remetente_id, mensagem, 
+        // CORRIGIDO: Adicionado o campo 'tipo' no SELECT
+        $sql = "SELECT id, remetente_id, mensagem, tipo,
                 DATE_FORMAT(data_envio, '%d/%m %H:%i') as data_formatada,
                 lida
                 FROM chat_mensagens 

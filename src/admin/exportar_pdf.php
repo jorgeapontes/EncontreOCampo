@@ -224,6 +224,6 @@ if (count($mensagens) > 0) {
 }
 
 // Saída do arquivo (D = Download)
-$nomeArquivo = 'Chat_' . $conversa_id . '_' . date('Ymd_Hi') . '.pdf';
+$nomeArquivo = 'ChatEOC_' . $conversa_id . '_' . date('Ymd_Hi') . '.pdf';
 $pdf->Output('D', $nomeArquivo);
 ?>

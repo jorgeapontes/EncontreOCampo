@@ -96,14 +96,49 @@ switch ($modo) {
 // Calcular desconto do produto principal
 $info_desconto = calcularDesconto($anuncio['preco'], $anuncio['preco_desconto'], $anuncio['desconto_data_fim']);
 
-// BUSCAR IMAGENS DO PRODUTO
+// BUSCAR IMAGENS DO PRODUTO - USANDO A MESMA LÓGICA DO CÓDIGO ORIGINAL
 $imagens_produto = [];
-if (!empty($anuncio['imagem_url'])) {
+
+// Primeiro, verificar se existe uma tabela de imagens múltiplas (igual ao proposta_nova.php)
+$tabela_imagens_existe = false;
+try {
+    // Verificar se a tabela produto_imagens existe
+    $sql_verifica_tabela = "SHOW TABLES LIKE 'produto_imagens'";
+    $stmt_verifica = $conn->query($sql_verifica_tabela);
+    $tabela_imagens_existe = $stmt_verifica->rowCount() > 0;
+} catch (Exception $e) {
+    $tabela_imagens_existe = false;
+}
+
+if ($tabela_imagens_existe) {
+    // Se a tabela existe, buscar todas as imagens
+    try {
+        $sql_imagens = "SELECT imagem_url FROM produto_imagens WHERE produto_id = :anuncio_id ORDER BY ordem ASC";
+        $stmt_imagens = $conn->prepare($sql_imagens);
+        $stmt_imagens->bindParam(':anuncio_id', $anuncio_id, PDO::PARAM_INT);
+        $stmt_imagens->execute();
+        $imagens_temp = $stmt_imagens->fetchAll(PDO::FETCH_ASSOC);
+        
+        foreach ($imagens_temp as $imagem) {
+            $imagens_produto[] = [
+                'url' => $imagem['imagem_url'],
+                'principal' => false
+            ];
+        }
+    } catch (PDOException $e) {
+        error_log("Erro ao buscar imagens do produto: " . $e->getMessage());
+    }
+}
+
+// Se não encontrou imagens múltiplas, usar a imagem principal do produto (igual ao original)
+if (empty($imagens_produto) && !empty($anuncio['imagem_url'])) {
     $imagens_produto[] = [
         'url' => $anuncio['imagem_url'],
         'principal' => true
     ];
 }
+
+// Se ainda não tem imagens, usar um placeholder (igual ao original)
 if (empty($imagens_produto)) {
     $imagens_produto[] = [
         'url' => '../img/placeholder.png',
@@ -179,8 +214,6 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
             margin-bottom: 15px;
         }
         
-        .texto-aviso
-
         .botoes-login {
             display: flex;
             gap: 15px;
@@ -305,6 +338,211 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
         .status-info i, .status-alert i {
             margin-right: 5px;
         }
+        
+        /* Estilos para o carrossel de imagens (mantendo o mesmo estilo do original) */
+        .carrossel-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f5f5f5;
+        }
+        
+        .carrossel-slides {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s ease-in-out;
+        }
+        
+        .carrossel-slide {
+            min-width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .carrossel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .carrossel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            z-index: 10;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        .carrossel-btn:hover {
+            background: #4CAF50;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .carrossel-btn.prev {
+            left: 15px;
+        }
+        
+        .carrossel-btn.next {
+            right: 15px;
+        }
+        
+        .carrossel-btn:disabled {
+            background: rgba(76, 175, 80, 0.5);
+            cursor: not-allowed;
+            transform: translateY(-50%);
+        }
+        
+        .carrossel-btn:disabled:hover {
+            transform: translateY(-50%);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        .carrossel-indicators {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+        
+        .carrossel-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .carrossel-indicator.active {
+            background: #4CAF50;
+            transform: scale(1.2);
+        }
+        
+        .carrossel-indicator:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .carrossel-counter {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 10;
+        }
+        
+        .badge-desconto {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #4CAF50;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1rem;
+            z-index: 11;
+        }
+        
+        /* Miniaturas das imagens */
+        .carrossel-miniaturas {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            overflow-x: auto;
+            padding: 5px 0;
+        }
+        
+        .miniatura {
+            width: 80px;
+            height: 60px;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .miniatura:hover {
+            border-color: #4CAF50;
+            transform: translateY(-2px);
+        }
+        
+        .miniatura.active {
+            border-color: #4CAF50;
+            box-shadow: 0 3px 8px rgba(76, 175, 80, 0.3);
+        }
+        
+        .miniatura img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        @media (max-width: 768px) {
+            .carrossel-container {
+                height: 300px;
+            }
+            
+            .carrossel-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+            
+            .miniatura {
+                width: 60px;
+                height: 45px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .carrossel-container {
+                height: 250px;
+            }
+            
+            .carrossel-indicators {
+                bottom: 10px;
+            }
+            
+            .carrossel-indicator {
+                width: 10px;
+                height: 10px;
+            }
+        }
+        
+        /* Quando só tem uma imagem, esconder controles */
+        .single-image .carrossel-btn,
+        .single-image .carrossel-indicators,
+        .single-image .carrossel-counter {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -370,27 +608,79 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
 
         <div class="produto-container">
             <div class="produto-content">
-                <!-- Seção de Imagem do Produto -->
+                <!-- Seção de Imagem do Produto - CARROSSEL COM A MESMA LÓGICA DO ORIGINAL -->
                 <div class="produto-imagem">
-                    <div class="carrossel-container">
+                    <div class="carrossel-container <?php echo count($imagens_produto) <= 1 ? 'single-image' : ''; ?>" id="carrossel-container">
                         <?php if ($info_desconto['ativo']): ?>
                             <div class="badge-desconto">-<?php echo $info_desconto['porcentagem']; ?>%</div>
                         <?php endif; ?>
                         
-                        <div class="carrossel-slides">
-                            <?php foreach ($imagens_produto as $index => $imagem): ?>
+                        <div class="carrossel-slides" id="carrossel-slides">
+                            <?php foreach ($imagens_produto as $index => $imagem): 
+                                // USANDO A MESMA LÓGICA DO CÓDIGO ORIGINAL PARA AJUSTAR O CAMINHO
+                                $imagePath = $imagem['url'];
+                                if (strpos($imagePath, '../') === 0) {
+                                    $imagePath = substr($imagePath, 3); // Remove o '../' do início
+                                }
+                                // Verifica se o arquivo existe no servidor
+                                if ($imagem['url'] && !file_exists($imagePath)) {
+                                    $imagePath = '../img/placeholder.png';
+                                }
+                            ?>
                                 <div class="carrossel-slide">
-                                    <?php 
-                            $imagePath = $anuncio['imagem_url'] ? htmlspecialchars($anuncio['imagem_url']) : '../img/placeholder.png';
-                            if (strpos($imagePath, '../') === 0) $imagePath = substr($imagePath, 3);
-                            if ($anuncio['imagem_url'] && !file_exists($imagePath)) $imagePath = '../img/placeholder.png';
-                        ?>
-                        <img src="<?= $imagePath ?>" alt="<?= htmlspecialchars($anuncio['produto']) ?>" onerror="this.src='../img/placeholder.png'">
-
+                                    <img src="<?php echo htmlspecialchars($imagePath); ?>" 
+                                         alt="<?php echo htmlspecialchars($anuncio['produto']); ?> - Imagem <?php echo $index + 1; ?>"
+                                         onerror="this.src='../img/placeholder.png'">
                                 </div>
                             <?php endforeach; ?>
                         </div>
+                        
+                        <!-- Botões de navegação -->
+                        <?php if (count($imagens_produto) > 1): ?>
+                            <button class="carrossel-btn prev" id="carrossel-prev">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="carrossel-btn next" id="carrossel-next">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            
+                            <!-- Contador de imagens -->
+                            <div class="carrossel-counter" id="carrossel-counter">
+                                1/<?php echo count($imagens_produto); ?>
+                            </div>
+                            
+                            <!-- Indicadores -->
+                            <div class="carrossel-indicators" id="carrossel-indicators">
+                                <?php for ($i = 0; $i < count($imagens_produto); $i++): ?>
+                                    <div class="carrossel-indicator <?php echo $i === 0 ? 'active' : ''; ?>" 
+                                         data-index="<?php echo $i; ?>"></div>
+                                <?php endfor; ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
+                    
+                    <!-- Miniaturas -->
+                    <?php if (count($imagens_produto) > 1): ?>
+                        <div class="carrossel-miniaturas" id="carrossel-miniaturas">
+                            <?php foreach ($imagens_produto as $index => $imagem): 
+                                // USANDO A MESMA LÓGICA DO CÓDIGO ORIGINAL PARA AJUSTAR O CAMINHO
+                                $imagePath = $imagem['url'];
+                                if (strpos($imagePath, '../') === 0) {
+                                    $imagePath = substr($imagePath, 3);
+                                }
+                                if ($imagem['url'] && !file_exists($imagePath)) {
+                                    $imagePath = '../img/placeholder.png';
+                                }
+                            ?>
+                                <div class="miniatura <?php echo $index === 0 ? 'active' : ''; ?>" 
+                                     data-index="<?php echo $index; ?>">
+                                    <img src="<?php echo htmlspecialchars($imagePath); ?>" 
+                                         alt="Miniatura <?php echo $index + 1; ?>"
+                                         onerror="this.src='../img/placeholder.png'">
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Informações do Produto -->
@@ -493,9 +783,14 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                 <div class="anuncios-grid">
                     <?php foreach ($produtos_relacionados as $produto): 
                         $desc_rel = calcularDesconto($produto['preco'], $produto['preco_desconto'], $produto['desconto_data_fim']);
+                        // USANDO A MESMA LÓGICA DO CÓDIGO ORIGINAL
                         $imagem_produto = $produto['imagem_url'] ? htmlspecialchars($produto['imagem_url']) : '../img/placeholder.png';
-                            if (strpos($imagem_produto, '../') === 0) $imagem_produto = substr($imagem_produto, 3);
-                            if ($produto['imagem_url'] && !file_exists($imagem_produto)) $imagem_produto = '../img/placeholder.png';
+                        if (strpos($imagem_produto, '../') === 0) {
+                            $imagem_produto = substr($imagem_produto, 3);
+                        }
+                        if ($produto['imagem_url'] && !file_exists($imagem_produto)) {
+                            $imagem_produto = '../img/placeholder.png';
+                        }
                     ?>
                         <div class="anuncio-card <?php echo $desc_rel['ativo'] ? 'card-desconto' : ''; ?>">
                             <a href="visualizar_anuncio.php?anuncio_id=<?php echo $produto['id']; ?>" class="produto-link">
@@ -503,7 +798,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                                     <?php if ($desc_rel['ativo']): ?>
                                         <div class="badge-desconto">-<?php echo $desc_rel['porcentagem']; ?>%</div>
                                     <?php endif; ?>
-                                    <img src="<?php echo $imagem_produto; ?>" alt="<?php echo htmlspecialchars($produto['nome']); ?>">
+                                    <img src="<?php echo $imagem_produto; ?>" alt="<?php echo htmlspecialchars($produto['nome']); ?>" onerror="this.src='../img/placeholder.png'">
                                 </div>
                                 <div class="card-content">
                                     <div class="card-header">
@@ -590,6 +885,116 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                     this.style.opacity = '0.6';
                 });
             });
+            
+            // SCRIPT DO CARROSSEL - FUNCIONAL
+            const carrosselSlides = document.getElementById('carrossel-slides');
+            const carrosselPrev = document.getElementById('carrossel-prev');
+            const carrosselNext = document.getElementById('carrossel-next');
+            const carrosselCounter = document.getElementById('carrossel-counter');
+            const carrosselIndicators = document.querySelectorAll('.carrossel-indicator');
+            const carrosselMiniaturas = document.querySelectorAll('.miniatura');
+            const totalSlides = <?php echo count($imagens_produto); ?>;
+            
+            let currentSlide = 0;
+            
+            // Atualizar carrossel
+            function updateCarrossel() {
+                // Mover slides
+                if (carrosselSlides) {
+                    carrosselSlides.style.transform = `translateX(-${currentSlide * 100}%)`;
+                }
+                
+                // Atualizar contador
+                if (carrosselCounter) {
+                    carrosselCounter.textContent = `${currentSlide + 1}/${totalSlides}`;
+                }
+                
+                // Atualizar indicadores
+                carrosselIndicators.forEach((indicator, index) => {
+                    if (index === currentSlide) {
+                        indicator.classList.add('active');
+                    } else {
+                        indicator.classList.remove('active');
+                    }
+                });
+                
+                // Atualizar miniaturas
+                carrosselMiniaturas.forEach((miniatura, index) => {
+                    if (index === currentSlide) {
+                        miniatura.classList.add('active');
+                        // Rolar para a miniatura ativa
+                        miniatura.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    } else {
+                        miniatura.classList.remove('active');
+                    }
+                });
+                
+                // Atualizar botões de navegação
+                if (carrosselPrev) {
+                    carrosselPrev.disabled = currentSlide === 0;
+                }
+                if (carrosselNext) {
+                    carrosselNext.disabled = currentSlide === totalSlides - 1;
+                }
+            }
+            
+            // Só inicializar o carrossel se tiver mais de uma imagem
+            if (totalSlides > 1 && carrosselPrev && carrosselNext) {
+                // Event listeners para botões
+                carrosselPrev.addEventListener('click', () => {
+                    if (currentSlide > 0) {
+                        currentSlide--;
+                        updateCarrossel();
+                    }
+                });
+                
+                carrosselNext.addEventListener('click', () => {
+                    if (currentSlide < totalSlides - 1) {
+                        currentSlide++;
+                        updateCarrossel();
+                    }
+                });
+                
+                // Event listeners para indicadores
+                carrosselIndicators.forEach(indicator => {
+                    indicator.addEventListener('click', () => {
+                        const index = parseInt(indicator.getAttribute('data-index'));
+                        if (index !== currentSlide) {
+                            currentSlide = index;
+                            updateCarrossel();
+                        }
+                    });
+                });
+                
+                // Event listeners para miniaturas
+                carrosselMiniaturas.forEach(miniatura => {
+                    miniatura.addEventListener('click', () => {
+                        const index = parseInt(miniatura.getAttribute('data-index'));
+                        if (index !== currentSlide) {
+                            currentSlide = index;
+                            updateCarrossel();
+                        }
+                    });
+                });
+                
+                // Navegação por teclado
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowLeft') {
+                        if (currentSlide > 0) {
+                            currentSlide--;
+                            updateCarrossel();
+                        }
+                    } else if (e.key === 'ArrowRight') {
+                        if (currentSlide < totalSlides - 1) {
+                            currentSlide++;
+                            updateCarrossel();
+                        }
+                    }
+                });
+                
+                // Inicializar estado dos botões
+                updateCarrossel();
+            }
         });
     </script>
 </body>

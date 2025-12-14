@@ -50,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status = sanitizeInput($_POST['status']);
     $modo_precificacao = sanitizeInput($_POST['modo_precificacao'] ?? 'por_quilo');
     $quantidade_embalagem = sanitizeInput($_POST['quantidade_embalagem'] ?? '');
+    $paletizado = isset($_POST['paletizado']) ? 1 : 0;
     
     // Dados de desconto
     $desconto_ativo = isset($_POST['desconto_ativo']) ? 1 : 0;
@@ -164,6 +165,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // Update Dados Básicos incluindo desconto e campos de embalagem
+            // Garantir que a coluna `paletizado` existe
+            try {
+                $col = $db->query("SHOW COLUMNS FROM produtos LIKE 'paletizado'")->fetch(PDO::FETCH_ASSOC);
+                if (!$col) {
+                    $db->exec("ALTER TABLE produtos ADD COLUMN paletizado TINYINT(1) NOT NULL DEFAULT 0");
+                }
+            } catch (Exception $e) {
+            }
+
             $query = "UPDATE produtos SET 
                         nome=:n, 
                         descricao=:d, 
@@ -180,8 +190,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         modo_precificacao=:mp,
                         embalagem_peso_kg=:epk,
                         embalagem_unidades=:euq,
-                        unidade_medida=:um,
-                        data_atualizacao=NOW() 
+                                                unidade_medida=:um,
+                                                paletizado=:pal,
+                                                data_atualizacao=NOW() 
                       WHERE id=:id AND vendedor_id=:vid";
             
             $stmt = $db->prepare($query);
@@ -202,6 +213,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':epk' => $embalagem_peso_kg,
                 ':euq' => $embalagem_unidades,
                 ':um' => $unidade_medida,
+                ':pal' => $paletizado,
                 ':id' => $anuncio_id, 
                 ':vid' => $vendedor_id_fk
             ]);
@@ -596,8 +608,16 @@ $categorias_disponiveis = [
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="quantidade_embalagem"></label>
-                        <input type="number" id="quantidade_embalagem" name="quantidade_embalagem" value="<?php echo htmlspecialchars(!empty($anuncio['embalagem_unidades']) ? $anuncio['embalagem_unidades'] : (!empty($anuncio['embalagem_peso_kg']) ? $anuncio['embalagem_peso_kg'] : '')); ?>">
+                        <label for="quantidade_embalagem" id="labelQuantidadeEmb">Quantidade por embalagem (se aplicável)</label>
+                        <input type="text" id="quantidade_embalagem" name="quantidade_embalagem" value="<?php echo htmlspecialchars(!empty($anuncio['embalagem_unidades']) ? $anuncio['embalagem_unidades'] : (!empty($anuncio['embalagem_peso_kg']) ? $anuncio['embalagem_peso_kg'] : '')); ?>" placeholder="Ex: 10 ou 5,5">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="paletizado">Paletizado</label>
+                        <label class="checkbox-inline">
+                            <input type="checkbox" id="paletizado" name="paletizado" value="1" <?php echo !empty($anuncio['paletizado']) ? 'checked' : ''; ?>> Produto será paletizado
+                        </label>
+                        <div class="help-text">Marque se este produto é paletizado.</div>
                     </div>
                     
                     <!-- SEÇÃO DE DESCONTO -->

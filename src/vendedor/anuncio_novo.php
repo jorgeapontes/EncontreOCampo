@@ -15,6 +15,7 @@ $estoque = '';
 $status = 'ativo'; // CORREÇÃO: Já definido como ativo por padrão
 $modo_precificacao = 'por_quilo';
 $quantidade_embalagem = '';
+$paletizado = 0; // 0 = não, 1 = sim
 
 // Categorias disponíveis
 $categorias_disponiveis = [
@@ -40,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $estoque = sanitizeInput($_POST['estoque']);
     $modo_precificacao = sanitizeInput($_POST['modo_precificacao'] ?? 'por_quilo');
     $quantidade_embalagem = sanitizeInput($_POST['quantidade_embalagem'] ?? '');
+    $paletizado = isset($_POST['paletizado']) ? 1 : 0;
     // CORREÇÃO: Obtém o status do POST, se não enviado, mantém 'ativo'
     $status = sanitizeInput($_POST['status'] ?? 'ativo');
 
@@ -104,6 +106,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Inserção no banco
     if (empty($mensagem_erro) && count($imagens_temp) > 0) {
         try {
+            // Garantir que a coluna `paletizado` existe na tabela produtos
+            try {
+                $col = $db->query("SHOW COLUMNS FROM produtos LIKE 'paletizado'")->fetch(PDO::FETCH_ASSOC);
+                if (!$col) {
+                    $db->exec("ALTER TABLE produtos ADD COLUMN paletizado TINYINT(1) NOT NULL DEFAULT 0");
+                }
+            } catch (Exception $e) {
+                // Não interrompe o fluxo; coluna pode já existir ou permissões não permitirem alteração automatizada
+            }
+
             $db->beginTransaction();
 
             // A primeira imagem do array (que foi ordenada pelo JS) é a principal
@@ -151,8 +163,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $estoque_db = (float)str_replace(',', '.', $estoque_db);
             }
 
-            $query = "INSERT INTO produtos (vendedor_id, nome, descricao, preco, categoria, estoque, estoque_unidades, status, imagem_url, data_criacao, modo_precificacao, embalagem_peso_kg, embalagem_unidades, unidade_medida)
-                      VALUES (:vendedor_id, :nome, :descricao, :preco, :categoria, :estoque, :estoque_unidades, :status, :imagem_url, NOW(), :modo_precificacao, :embalagem_peso_kg, :embalagem_unidades, :unidade_medida)";
+            $query = "INSERT INTO produtos (vendedor_id, nome, descricao, preco, categoria, estoque, estoque_unidades, status, imagem_url, data_criacao, modo_precificacao, embalagem_peso_kg, embalagem_unidades, unidade_medida, paletizado)
+                      VALUES (:vendedor_id, :nome, :descricao, :preco, :categoria, :estoque, :estoque_unidades, :status, :imagem_url, NOW(), :modo_precificacao, :embalagem_peso_kg, :embalagem_unidades, :unidade_medida, :paletizado)";
 
             $stmt = $db->prepare($query);
             $stmt->bindParam(':vendedor_id', $vendedor_id_fk);
@@ -169,6 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindValue(':embalagem_peso_kg', $embalagem_peso_kg);
             $stmt->bindValue(':embalagem_unidades', $embalagem_unidades, PDO::PARAM_INT);
             $stmt->bindParam(':unidade_medida', $unidade_medida);
+            $stmt->bindValue(':paletizado', $paletizado, PDO::PARAM_INT);
 
             if ($stmt->execute()) {
                 $produto_id = $db->lastInsertId();
@@ -429,6 +442,13 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
                         <label for="quantidade_embalagem" id="labelQuantidadeEmb">Quantidade por embalagem (se aplicável)</label>
                         <input type="number" id="quantidade_embalagem" name="quantidade_embalagem" value="<?php echo htmlspecialchars($quantidade_embalagem); ?>">
                     </div>
+
+                                    <div class="form-group">
+                                        <label class="checkbox-inline">
+                                            <input type="checkbox" id="paletizado" name="paletizado" value="1" <?php echo ($paletizado) ? 'checked' : ''; ?>> Produto será paletizado
+                                        </label>
+                                        <div class="help-text">Marque se este produto será entregue em paletes.</div>
+                                    </div>
 
                     <div class="form-group">
                         <label for="descricao">Descrição</label>

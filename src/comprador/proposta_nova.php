@@ -58,6 +58,7 @@ try {
                 p.modo_precificacao,
                 p.embalagem_peso_kg,
                 p.embalagem_unidades,
+                p.paletizado,
                 p.unidade_medida,
                 p.imagem_url, 
                 v.id AS vendedor_sistema_id, 
@@ -878,8 +879,10 @@ $imagePath = !empty($imagens_produto[0]['url']) ? htmlspecialchars($imagens_prod
                             </div>
                             <span class="unidade-info"><?php echo $unidade; ?></span>
                         </div>
+                        
 
                         <div class="botoes-compra">
+                            <?php if (!empty($anuncio['paletizado']) && $anuncio['paletizado'] == 1): ?><div class=""><i class="fas fa-cube"></i> Paletizado</div><?php endif; ?>
                             <?php if (isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo'): ?>
                                 <button type="button" class="btn-comprar" id="btn-comprar">
                                     <i class="fas fa-shopping-cart"></i>

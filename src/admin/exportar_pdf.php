@@ -79,7 +79,7 @@ class PDF extends FPDF {
         $logoPath = '../../img/logo-nova.png';
         if(file_exists($logoPath)){
             // Tenta usar a imagem, se existir no caminho. Ajuste o caminho.
-            $this->Image($logoPath, 10, 6, 30);
+            $this->Image($logoPath, 10, 6, 15);
         }
         
         $this->SetFont('Arial', 'B', 15);
@@ -122,7 +122,7 @@ class PDF extends FPDF {
         $this->SetFont('Arial', '', 10);
         
         if ($tipo === 'imagem') {
-            $caminho_local = __DIR__ . '/../../' . $mensagem; // Ajuste o caminho relativo aqui
+            $caminho_local = realpath(__DIR__ . '/../../../' . $mensagem); // Ajuste o caminho relativo aqui
             $texto_conteudo = utf8_decode('[IMAGEM ANEXADA] - Caminho: ' . $mensagem);
             
             $this->MultiCell(0, 6, $texto_conteudo, 0, 'L', true);

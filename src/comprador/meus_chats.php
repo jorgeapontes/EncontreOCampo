@@ -15,10 +15,63 @@ $usuario_nome = htmlspecialchars($_SESSION['usuario_nome'] ?? 'Comprador');
 $database = new Database();
 $conn = $database->getConnection();
 
-// Verificar se tem filtro na URL
+// Verificar se está visualizando arquivados ou ativos
+$aba = isset($_GET['aba']) ? $_GET['aba'] : 'ativos';
+$mostrar_arquivados = ($aba === 'arquivados');
+
+// Processar arquivamento/restauração de conversa
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['action'])) {
+        $conversa_id = $_POST['conversa_id'] ?? 0;
+        $tipo_chat = 'comprador'; // Comprador sempre usa tipo 'comprador'
+        
+        if ($conversa_id > 0) {
+            try {
+                if ($_POST['action'] === 'arquivar_conversa') {
+                    // Arquivar para o comprador
+                    $sql = "UPDATE chat_conversas SET favorito_comprador = 1 WHERE id = :conversa_id";
+                    $mensagem_sucesso = "Conversa arquivada com sucesso!";
+                } elseif ($_POST['action'] === 'restaurar_conversa') {
+                    // Restaurar para o comprador
+                    $sql = "UPDATE chat_conversas SET favorito_comprador = 0 WHERE id = :conversa_id";
+                    $mensagem_sucesso = "Conversa restaurada com sucesso!";
+                }
+                
+                if (isset($sql)) {
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);
+                    $stmt->execute();
+                    
+                    // Registrar na auditoria
+                    $acao = ($_POST['action'] === 'arquivar_conversa') ? 'arquivar_conversa' : 'restaurar_conversa';
+                    $sql_audit = "INSERT INTO chat_auditoria (conversa_id, usuario_id, acao, detalhes) 
+                                 VALUES (:conversa_id, :usuario_id, :acao, 'Ação realizada pelo comprador')";
+                    $stmt_audit = $conn->prepare($sql_audit);
+                    $stmt_audit->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);
+                    $stmt_audit->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+                    $stmt_audit->bindParam(':acao', $acao);
+                    $stmt_audit->execute();
+                    
+                    // Redirecionar para evitar reenvio do formulário
+                    header("Location: meus_chats.php?aba=" . $aba . "&success=1&msg=" . urlencode($mensagem_sucesso));
+                    exit();
+                }
+            } catch (PDOException $e) {
+                error_log("Erro ao processar conversa: " . $e->getMessage());
+                $error = "Erro ao processar conversa. Tente novamente.";
+            }
+        }
+    }
+}
+
+// Verificar se veio de um redirecionamento com sucesso
+$success = isset($_GET['success']) && $_GET['success'] == 1;
+$success_msg = isset($_GET['msg']) ? urldecode($_GET['msg']) : '';
+
+// Verificar se tem filtro na URL (mantendo compatibilidade com filtro antigo)
 $filtro = isset($_GET['filtro']) ? $_GET['filtro'] : 'todas';
 
-// Buscar todas as conversas do comprador
+// BUSCAR CONVERSAS DO COMPRADOR
 try {
     $sql = "SELECT 
                 cc.id AS conversa_id,
@@ -32,6 +85,7 @@ try {
                 u.id AS vendedor_usuario_id,
                 u.nome AS vendedor_nome,
                 v.nome_comercial AS vendedor_nome_comercial,
+                cc.favorito_comprador AS arquivado,
                 (SELECT COUNT(*) 
                  FROM chat_mensagens cm 
                  WHERE cm.conversa_id = cc.id 
@@ -42,8 +96,15 @@ try {
             INNER JOIN vendedores v ON p.vendedor_id = v.id
             INNER JOIN usuarios u ON v.usuario_id = u.id
             WHERE cc.comprador_id = :usuario_id
-            AND cc.status = 'ativo'
-            ORDER BY cc.ultima_mensagem_data DESC";
+            AND cc.status = 'ativo'";
+    
+    if ($mostrar_arquivados) {
+        $sql .= " AND cc.favorito_comprador = 1";
+    } else {
+        $sql .= " AND cc.favorito_comprador = 0";
+    }
+    
+    $sql .= " ORDER BY cc.ultima_mensagem_data DESC";
     
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
@@ -55,6 +116,14 @@ try {
     $conversas = [];
 }
 
+// Filtrar conversas por não lidas se necessário (apenas na aba ativos)
+$conversas_filtradas = $conversas;
+if (!$mostrar_arquivados && $filtro === 'nao-lidos') {
+    $conversas_filtradas = array_filter($conversas, function($conv) {
+        return $conv['mensagens_nao_lidas'] > 0;
+    });
+}
+
 // Contar totais
 $total_conversas = count($conversas);
 $total_nao_lidas = 0;
@@ -62,12 +131,22 @@ foreach ($conversas as $conversa) {
     $total_nao_lidas += $conversa['mensagens_nao_lidas'];
 }
 
-// Filtrar conversas se necessário
-$conversas_filtradas = $conversas;
-if ($filtro === 'nao-lidos') {
-    $conversas_filtradas = array_filter($conversas, function($conv) {
-        return $conv['mensagens_nao_lidas'] > 0;
-    });
+// Contar conversas arquivadas para mostrar no badge
+try {
+    $sql_arquivadas = "SELECT COUNT(*) as total 
+                      FROM chat_conversas cc
+                      WHERE cc.comprador_id = :usuario_id 
+                      AND cc.status = 'ativo'
+                      AND cc.favorito_comprador = 1";
+    
+    $stmt_arquivadas = $conn->prepare($sql_arquivadas);
+    $stmt_arquivadas->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt_arquivadas->execute();
+    $total_arquivadas = $stmt_arquivadas->fetch(PDO::FETCH_ASSOC)['total'];
+    
+} catch (PDOException $e) {
+    error_log("Erro ao contar conversas arquivadas: " . $e->getMessage());
+    $total_arquivadas = 0;
 }
 ?>
 <!DOCTYPE html>
@@ -256,10 +335,80 @@ if ($filtro === 'nao-lidos') {
             color: #2E7D32;
         }
         
+        /* Mensagens de Sucesso/Erro */
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .alert-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        /* Abas */
+        .abas-container {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 0;
+        }
+        
+        .aba {
+            padding: 15px 30px;
+            background: #f9f9f9;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 15px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .aba:hover {
+            background: #f0f0f0;
+            color: #2E7D32;
+        }
+        
+        .aba.active {
+            background: white;
+            color: #2E7D32;
+            border-bottom-color: #2E7D32;
+        }
+        
+        .badge-aba {
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
         /* Conversas Container */
         .conversas-container {
             background: white;
-            border-radius: 10px;
+            border-radius: 0 10px 10px 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             overflow: hidden;
         }
@@ -293,6 +442,7 @@ if ($filtro === 'nao-lidos') {
             transition: all 0.3s;
             text-decoration: none;
             color: #333;
+            border: none;
         }
         
         .filter-btn:hover {
@@ -321,6 +471,7 @@ if ($filtro === 'nao-lidos') {
             cursor: pointer;
             text-decoration: none;
             color: inherit;
+            position: relative;
         }
         
         .conversa-card:hover {
@@ -329,6 +480,33 @@ if ($filtro === 'nao-lidos') {
         
         .conversa-card.nao-lida {
             background: #e8f5e9;
+        }
+        
+        /* Estilo para conversas arquivadas (sem link clicável) */
+        .conversa-card.arquivado {
+            background: #f8f9fa;
+            border-left: 4px solid #6c757d;
+            opacity: 0.8;
+        }
+        
+        .conversa-card.arquivado:hover {
+            background: #f8f9fa;
+            cursor: default;
+        }
+        
+        /* Desativar hover nos elementos internos das conversas arquivadas */
+        .conversa-card.arquivado .produto-thumb img {
+            filter: grayscale(50%);
+        }
+        
+        .conversa-card.arquivado .produto-nome-principal,
+        .conversa-card.arquivado .vendedor-info,
+        .conversa-card.arquivado .ultima-mensagem {
+            color: #6c757d;
+        }
+        
+        .conversa-card.arquivado .produto-preco {
+            color: #28a745;
         }
         
         .produto-thumb {
@@ -370,6 +548,15 @@ if ($filtro === 'nao-lidos') {
             background: #dc3545;
             color: white;
             font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-arquivado {
+            background: #6c757d;
+            color: white;
+            font-size: 10px;
             padding: 3px 8px;
             border-radius: 12px;
             font-weight: 600;
@@ -428,12 +615,60 @@ if ($filtro === 'nao-lidos') {
             gap: 8px;
             transition: all 0.3s;
             white-space: nowrap;
+            border: none;
+            cursor: pointer;
         }
         
         .btn-chat:hover {
             background: #1B5E20;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3);
+        }
+        
+        .btn-arquivar {
+            background: #6c757d;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+            white-space: nowrap;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-arquivar:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+        }
+        
+        .btn-restaurar {
+            background: #28a745;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+            white-space: nowrap;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-restaurar:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
         }
         
         .empty-state {
@@ -478,6 +713,110 @@ if ($filtro === 'nao-lidos') {
             box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3);
         }
         
+        /* Modal de Confirmação */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .modal-header h3 {
+            font-size: 20px;
+        }
+        
+        .modal-arquivar .modal-header h3 {
+            color: #6c757d;
+        }
+        
+        .modal-restaurar .modal-header h3 {
+            color: #28a745;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .modal-body p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .btn-cancel {
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .btn-cancel:hover {
+            background: #f8f9fa;
+        }
+        
+        .btn-confirm-arquivar {
+            padding: 10px 20px;
+            border: none;
+            background: #6c757d;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-confirm-arquivar:hover {
+            background: #5a6268;
+        }
+        
+        .btn-confirm-restaurar {
+            padding: 10px 20px;
+            border: none;
+            background: #28a745;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-confirm-restaurar:hover {
+            background: #218838;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .hamburger {
@@ -501,6 +840,19 @@ if ($filtro === 'nao-lidos') {
                 left: 0;
             }
             
+            .abas-container {
+                flex-direction: column;
+            }
+            
+            .aba {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .conversas-container {
+                border-radius: 0 0 10px 10px;
+            }
+            
             .conversa-card {
                 flex-direction: column;
                 align-items: flex-start;
@@ -514,9 +866,12 @@ if ($filtro === 'nao-lidos') {
             .conversa-actions {
                 width: 100%;
                 align-items: stretch;
+                flex-direction: row;
+                justify-content: space-between;
             }
             
-            .btn-chat {
+            .btn-chat, .btn-arquivar, .btn-restaurar {
+                flex: 1;
                 justify-content: center;
             }
             
@@ -526,6 +881,10 @@ if ($filtro === 'nao-lidos') {
             
             .stats-bar {
                 flex-wrap: wrap;
+            }
+            
+            .modal-content {
+                width: 95%;
             }
         }
     </style>
@@ -593,31 +952,76 @@ if ($filtro === 'nao-lidos') {
                 <div class="stat-item">
                     <i class="fas fa-comments"></i>
                     <div>
-                        <div class="label">Total de Conversas</div>
-                        <div class="value"><?php echo $total_conversas; ?></div>
+                        <div class="label">Conversas Ativas</div>
+                        <div class="value"><?php echo $mostrar_arquivados ? 0 : count($conversas); ?></div>
                     </div>
                 </div>
+                <?php if (!$mostrar_arquivados): ?>
                 <div class="stat-item">
                     <i class="fas fa-envelope"></i>
                     <div>
-                        <div class="label">Mensagens Novas</div>
+                        <div class="label">Não Lidas</div>
                         <div class="value"><?php echo $total_nao_lidas; ?></div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                <div class="stat-item">
+                    <i class="fas fa-archive"></i>
+                    <div>
+                        <div class="label">Arquivadas</div>
+                        <div class="value"><?php echo $total_arquivadas; ?></div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <?php if ($success): ?>
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <?php echo $success_msg; ?>
+            </div>
+        <?php endif; ?>
+        
+        <?php if (isset($error)): ?>
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <?php echo $error; ?>
+            </div>
+        <?php endif; ?>
+
+        <div class="abas-container">
+            <button class="aba <?php echo !$mostrar_arquivados ? 'active' : ''; ?>" 
+                    onclick="window.location.href='meus_chats.php?aba=ativos'">
+                <i class="fas fa-comments"></i>
+                Conversas Ativas
+            </button>
+            <button class="aba <?php echo $mostrar_arquivados ? 'active' : ''; ?>" 
+                    onclick="window.location.href='meus_chats.php?aba=arquivados'">
+                <i class="fas fa-archive"></i>
+                Arquivadas
+                <?php if ($total_arquivadas > 0): ?>
+                    <span class="badge-aba"><?php echo $total_arquivadas; ?></span>
+                <?php endif; ?>
+            </button>
+        </div>
+
         <div class="conversas-container">
             <div class="conversas-header">
-                <h2>Conversas Recentes</h2>
+                <h2>
+                    <?php echo $mostrar_arquivados ? 'Conversas Arquivadas' : 'Conversas Recentes'; ?>
+                </h2>
+                <?php if (!$mostrar_arquivados): ?>
                 <div class="filter-buttons">
-                    <a href="meus_chats.php" class="filter-btn <?php echo $filtro === 'todas' ? 'active' : ''; ?>">
+                    <button class="filter-btn <?php echo $filtro === 'todas' ? 'active' : ''; ?>" 
+                            onclick="filtrarConversas('todas')">
                         <i class="fas fa-list"></i> Todas
-                    </a>
-                    <a href="meus_chats.php?filtro=nao-lidos" class="filter-btn <?php echo $filtro === 'nao-lidos' ? 'active' : ''; ?>">
+                    </button>
+                    <button class="filter-btn <?php echo $filtro === 'nao-lidos' ? 'active' : ''; ?>" 
+                            onclick="filtrarConversas('nao-lidas')">
                         <i class="fas fa-envelope"></i> Não Lidas
-                    </a>
+                    </button>
                 </div>
+                <?php endif; ?>
             </div>
             
             <div class="conversas-list">
@@ -627,71 +1031,178 @@ if ($filtro === 'nao-lidos') {
                         $tem_nao_lidas = $conversa['mensagens_nao_lidas'] > 0;
                         $data_formatada = $conversa['ultima_mensagem_data'] ? date('d/m/Y H:i', strtotime($conversa['ultima_mensagem_data'])) : '';
                         $vendedor_display = $conversa['vendedor_nome_comercial'] ?: $conversa['vendedor_nome'];
+                        $esta_arquivado = $conversa['arquivado'] == 1;
+                        
+                        // NÃO DEFINIR URL DO CHAT PARA CONVERSAS ARQUIVADAS
+                        if ($mostrar_arquivados || $esta_arquivado) {
+                            $chat_url = '#';
+                        } else {
+                            $chat_url = "../chat/chat.php?produto_id={$conversa['produto_id']}&ref=meus_chats&aba=" . ($mostrar_arquivados ? 'arquivados' : 'ativos');
+                        }
                     ?>
-                        <a href="../chat/chat.php?produto_id=<?php echo $conversa['produto_id']; ?>&ref=meus_chats" 
-                           class="conversa-card <?php echo $tem_nao_lidas ? 'nao-lida' : ''; ?>">
-                            <div class="produto-thumb">
-                                <img src="<?php echo $imagem_produto; ?>" alt="<?php echo htmlspecialchars($conversa['produto_nome']); ?>">
-                            </div>
+                        <div class="conversa-card <?php echo $tem_nao_lidas ? 'nao-lida' : ''; ?> <?php echo $esta_arquivado ? 'arquivado' : ''; ?>" 
+                             data-tipo="<?php echo $tem_nao_lidas ? 'nao-lida' : 'lida'; ?>"
+                             id="conversa-<?php echo $conversa['conversa_id']; ?>">
                             
-                            <div class="conversa-info">
-                                <div class="conversa-top">
-                                    <div class="produto-nome-principal">
-                                        <i class="fas fa-box"></i>
-                                        <?php echo htmlspecialchars($conversa['produto_nome']); ?>
-                                        <?php if ($tem_nao_lidas): ?>
-                                            <span class="badge-novo"><?php echo $conversa['mensagens_nao_lidas']; ?> nova<?php echo $conversa['mensagens_nao_lidas'] > 1 ? 's' : ''; ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="conversa-data">
-                                        <i class="far fa-clock"></i> <?php echo $data_formatada; ?>
-                                    </div>
+                            <?php if (!$mostrar_arquivados && !$esta_arquivado): ?>
+                                <!-- Para conversas ativas: link para abrir o chat -->
+                                <a href="<?php echo $chat_url; ?>" style="display: flex; gap: 1.5rem; align-items: center; text-decoration: none; color: inherit; flex: 1;">
+                            <?php else: ?>
+                                <!-- Para conversas arquivadas: apenas informações (sem link) -->
+                                <div style="display: flex; gap: 1.5rem; align-items: center; flex: 1; cursor: default;">
+                            <?php endif; ?>
+                                
+                                <div class="produto-thumb">
+                                    <img src="<?php echo $imagem_produto; ?>" alt="<?php echo htmlspecialchars($conversa['produto_nome']); ?>">
                                 </div>
                                 
-                                <div class="vendedor-info">
-                                    <i class="fas fa-store"></i>
-                                    Vendedor: <?php echo htmlspecialchars($vendedor_display); ?>
-                                    <span class="produto-preco">- R$ <?php echo number_format($conversa['produto_preco'], 2, ',', '.'); ?></span>
-                                </div>
-                                
-                                <?php if ($conversa['ultima_mensagem']): ?>
-                                    <div class="ultima-mensagem">
-                                        <i class="fas fa-comment"></i>
-                                        <?php echo htmlspecialchars($conversa['ultima_mensagem']); ?>
+                                <div class="conversa-info">
+                                    <div class="conversa-top">
+                                        <div class="produto-nome-principal">
+                                            <i class="fas fa-box"></i>
+                                            <?php echo htmlspecialchars($conversa['produto_nome']); ?>
+                                            <?php if ($esta_arquivado): ?>
+                                                <span class="badge-arquivado"><i class="fas fa-archive"></i> Arquivado</span>
+                                            <?php endif; ?>
+                                            <?php if ($tem_nao_lidas && !$mostrar_arquivados && !$esta_arquivado): ?>
+                                                <span class="badge-novo"><?php echo $conversa['mensagens_nao_lidas']; ?> nova<?php echo $conversa['mensagens_nao_lidas'] > 1 ? 's' : ''; ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="conversa-data">
+                                            <i class="far fa-clock"></i> <?php echo $data_formatada; ?>
+                                        </div>
                                     </div>
-                                <?php endif; ?>
-                            </div>
+                                    
+                                    <div class="vendedor-info">
+                                        <i class="fas fa-store"></i>
+                                        Vendedor: <?php echo htmlspecialchars($vendedor_display); ?>
+                                        <span class="produto-preco">- R$ <?php echo number_format($conversa['produto_preco'], 2, ',', '.'); ?></span>
+                                    </div>
+                                    
+                                    <?php if ($conversa['ultima_mensagem']): ?>
+                                        <div class="ultima-mensagem">
+                                            <i class="fas fa-comment"></i>
+                                            <?php 
+                                            if (strpos($conversa['ultima_mensagem'], '[Imagem]') !== false) {
+                                                echo '<i class="fas fa-image"></i> [Imagem]';
+                                            } else {
+                                                echo htmlspecialchars($conversa['ultima_mensagem']);
+                                            }
+                                            ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            
+                            <?php if (!$mostrar_arquivados && !$esta_arquivado): ?>
+                                </a>
+                            <?php else: ?>
+                                </div>
+                            <?php endif; ?>
                             
                             <div class="conversa-actions">
-                                <div class="btn-chat">
-                                    <i class="fas fa-comments"></i>
-                                    Abrir Chat
-                                </div>
+                                <?php if ($mostrar_arquivados || $esta_arquivado): ?>
+                                    <!-- Apenas botão de Restaurar para conversas arquivadas -->
+                                    <button type="button" class="btn-restaurar" 
+                                            onclick="confirmarRestauracao(<?php echo $conversa['conversa_id']; ?>)">
+                                        <i class="fas fa-box-open"></i>
+                                        Restaurar
+                                    </button>
+                                <?php else: ?>
+                                    <!-- Para conversas ativas: botões de Abrir Chat e Arquivar -->
+                                    <a href="<?php echo $chat_url; ?>" class="btn-chat">
+                                        <i class="fas fa-comments"></i>
+                                        Abrir Chat
+                                    </a>
+                                    <button type="button" class="btn-arquivar" 
+                                            onclick="confirmarArquivamento(<?php echo $conversa['conversa_id']; ?>)">
+                                        <i class="fas fa-archive"></i>
+                                        Arquivar
+                                    </button>
+                                <?php endif; ?>
                             </div>
-                        </a>
+                        </div>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <div class="empty-state">
-                        <i class="fas fa-comments"></i>
-                        <h3>Nenhuma conversa <?php echo $filtro === 'nao-lidos' ? 'não lida' : 'encontrada'; ?></h3>
+                        <i class="fas fa-<?php echo $mostrar_arquivados ? 'archive' : 'comments'; ?>"></i>
+                        <h3>
+                            <?php echo $mostrar_arquivados ? 'Nenhuma conversa arquivada' : 'Nenhuma conversa ' . ($filtro === 'nao-lidos' ? 'não lida' : 'encontrada'); ?>
+                        </h3>
                         <p>
-                            <?php if ($filtro === 'nao-lidos'): ?>
+                            <?php if ($mostrar_arquivados): ?>
+                                As conversas que você arquivar aparecerão aqui.
+                            <?php elseif ($filtro === 'nao-lidos'): ?>
                                 Você não tem mensagens novas no momento.
                             <?php else: ?>
                                 Quando você conversar com vendedores sobre produtos, as conversas aparecerão aqui.
                             <?php endif; ?>
                         </p>
-                        <?php if ($filtro === 'todas'): ?>
+                        <?php if (!$mostrar_arquivados && $filtro === 'todas'): ?>
                             <a href="../anuncios.php" class="btn-anuncios">
                                 <i class="fas fa-shopping-bag"></i> Ver Anúncios
                             </a>
-                        <?php else: ?>
-                            <a href="meus_chats.php" class="btn-anuncios">
+                        <?php elseif (!$mostrar_arquivados && $filtro === 'nao-lidos'): ?>
+                            <a href="meus_chats.php?aba=ativos" class="btn-anuncios">
                                  Ver Todas as Conversas
                             </a>
                         <?php endif; ?>
                     </div>
                 <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Arquivamento -->
+    <div class="modal-overlay modal-arquivar" id="arquivarModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-archive"></i> Arquivar Conversa</h3>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja arquivar esta conversa? <strong>Após arquivar:</strong></p>
+                <ul style="margin-left: 20px; margin-top: 10px; color: #666;">
+                    <li>A conversa será movida para a seção "Arquivadas"</li>
+                    <li>Você não poderá mais visualizar o histórico de mensagens</li>
+                    <li>Para voltar a conversar, será necessário restaurar a conversa</li>
+                    <li>O arquivamento é apenas para você. O vendedor continuará vendo a conversa normalmente</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="fecharModal('arquivar')">Cancelar</button>
+                <form id="arquivarForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="action" value="arquivar_conversa">
+                    <input type="hidden" id="conversa_id_arquivar" name="conversa_id">
+                    <button type="submit" class="btn-confirm-arquivar">
+                        <i class="fas fa-archive"></i> Sim, Arquivar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Restauração -->
+    <div class="modal-overlay modal-restaurar" id="restaurarModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-box-open"></i> Restaurar Conversa</h3>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja restaurar esta conversa? <strong>Após restaurar:</strong></p>
+                <ul style="margin-left: 20px; margin-top: 10px; color: #666;">
+                    <li>A conversa será movida de volta para a lista principal</li>
+                    <li>Você poderá visualizar e continuar a conversa normalmente</li>
+                    <li>Você poderá enviar e receber novas mensagens</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="fecharModal('restaurar')">Cancelar</button>
+                <form id="restaurarForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="action" value="restaurar_conversa">
+                    <input type="hidden" id="conversa_id_restaurar" name="conversa_id">
+                    <button type="submit" class="btn-confirm-restaurar">
+                        <i class="fas fa-box-open"></i> Sim, Restaurar
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -712,6 +1223,90 @@ if ($filtro === 'nao-lidos') {
                 navMenu.classList.remove("active");
             }));
         }
+        
+        // Filtrar conversas (apenas na aba ativos)
+        function filtrarConversas(tipo) {
+            const cards = document.querySelectorAll('.conversa-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.filter-btn').classList.add('active');
+            
+            cards.forEach(card => {
+                if (tipo === 'todas') {
+                    card.style.display = 'flex';
+                } else if (tipo === 'nao-lidas') {
+                    if (card.dataset.tipo === 'nao-lida') {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            });
+        }
+        
+        // Modal de arquivamento
+        function confirmarArquivamento(conversaId) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            document.getElementById('conversa_id_arquivar').value = conversaId;
+            document.getElementById('arquivarModal').style.display = 'flex';
+        }
+        
+        // Modal de restauração
+        function confirmarRestauracao(conversaId) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            document.getElementById('conversa_id_restaurar').value = conversaId;
+            document.getElementById('restaurarModal').style.display = 'flex';
+        }
+        
+        function fecharModal(tipo) {
+            if (tipo === 'arquivar') {
+                document.getElementById('arquivarModal').style.display = 'none';
+            } else if (tipo === 'restaurar') {
+                document.getElementById('restaurarModal').style.display = 'none';
+            }
+        }
+        
+        // Fechar modal ao clicar fora
+        document.getElementById('arquivarModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharModal('arquivar');
+            }
+        });
+        
+        document.getElementById('restaurarModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharModal('restaurar');
+            }
+        });
+        
+        // Fechar modal com ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (document.getElementById('arquivarModal').style.display === 'flex') {
+                    fecharModal('arquivar');
+                }
+                if (document.getElementById('restaurarModal').style.display === 'flex') {
+                    fecharModal('restaurar');
+                }
+            }
+        });
+        
+        // Auto-fechar mensagem de sucesso após 5 segundos
+        <?php if ($success): ?>
+        setTimeout(function() {
+            const alert = document.querySelector('.alert-success');
+            if (alert) {
+                alert.style.transition = 'opacity 0.5s';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            }
+        }, 5000);
+        <?php endif; ?>
     </script>
 </body>
 </html>

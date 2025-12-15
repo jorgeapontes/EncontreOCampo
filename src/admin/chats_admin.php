@@ -17,61 +17,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['excluir_conversa'])) 
     $conversa_id_excluir = (int)$_POST['conversa_id'];
     
     try {
-        // Soft delete da conversa
-        $sql_delete_conversa = "UPDATE chat_conversas 
-                                SET deletado = 1, 
-                                    data_delecao = NOW(), 
-                                    usuario_deletou = :admin_id 
-                                WHERE id = :conversa_id";
+        // Iniciar transação para garantir que tudo seja excluído corretamente
+        $conn->beginTransaction();
         
-        $stmt_delete = $conn->prepare($sql_delete_conversa);
-        $stmt_delete->bindParam(':admin_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
-        $stmt_delete->bindParam(':conversa_id', $conversa_id_excluir, PDO::PARAM_INT);
-        $stmt_delete->execute();
+        // 1. Excluir todas as mensagens da conversa
+        $sql_delete_mensagens = "DELETE FROM chat_mensagens WHERE conversa_id = :conversa_id";
+        $stmt_delete_mensagens = $conn->prepare($sql_delete_mensagens);
+        $stmt_delete_mensagens->bindParam(':conversa_id', $conversa_id_excluir, PDO::PARAM_INT);
+        $stmt_delete_mensagens->execute();
         
-        // Soft delete de todas as mensagens da conversa
-        $sql_delete_msgs = "UPDATE chat_mensagens 
-                            SET deletado = 1, 
-                                data_delecao = NOW(), 
-                                usuario_deletou = :admin_id 
-                            WHERE conversa_id = :conversa_id";
+        // 2. Excluir registros de auditoria relacionados à conversa
+        $sql_delete_auditoria = "DELETE FROM chat_auditoria WHERE conversa_id = :conversa_id";
+        $stmt_delete_auditoria = $conn->prepare($sql_delete_auditoria);
+        $stmt_delete_auditoria->bindParam(':conversa_id', $conversa_id_excluir, PDO::PARAM_INT);
+        $stmt_delete_auditoria->execute();
         
-        $stmt_delete_msgs = $conn->prepare($sql_delete_msgs);
-        $stmt_delete_msgs->bindParam(':admin_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
-        $stmt_delete_msgs->bindParam(':conversa_id', $conversa_id_excluir, PDO::PARAM_INT);
-        $stmt_delete_msgs->execute();
+        // 3. Excluir a conversa
+        $sql_delete_conversa = "DELETE FROM chat_conversas WHERE id = :conversa_id";
+        $stmt_delete_conversa = $conn->prepare($sql_delete_conversa);
+        $stmt_delete_conversa->bindParam(':conversa_id', $conversa_id_excluir, PDO::PARAM_INT);
+        $stmt_delete_conversa->execute();
         
-        // Registrar no log de auditoria
-        $sql_log = "INSERT INTO chat_auditoria (conversa_id, usuario_id, acao, detalhes) 
-                    VALUES (:conversa_id, :admin_id, 'deletar_conversa', 'Conversa deletada pelo admin')";
+        // Registrar no log de auditoria (se quiser manter um histórico)
+        // Antes de excluir tudo, podemos salvar em uma tabela de backup se necessário
         
-        $stmt_log = $conn->prepare($sql_log);
-        $stmt_log->bindParam(':conversa_id', $conversa_id_excluir, PDO::PARAM_INT);
-        $stmt_log->bindParam(':admin_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
-        $stmt_log->execute();
+        $conn->commit();
         
-        $mensagem_sucesso = "Conversa excluída com sucesso!";
+        $mensagem_sucesso = "Conversa excluída permanentemente do banco de dados!";
+        
+        // Redirecionar para evitar reenvio do formulário
+        header("Location: chats_admin.php?success=1&msg=" . urlencode($mensagem_sucesso));
+        exit();
         
     } catch (PDOException $e) {
+        // Reverter em caso de erro
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
+        
         error_log("Erro ao excluir conversa: " . $e->getMessage());
         $mensagem_erro = "Erro ao excluir conversa. Tente novamente.";
     }
 }
 
+// Verificar se veio de um redirecionamento com sucesso
+$success = isset($_GET['success']) && $_GET['success'] == 1;
+$success_msg = isset($_GET['msg']) ? urldecode($_GET['msg']) : '';
+
 $filtro_busca = isset($_GET['busca']) ? trim($_GET['busca']) : '';
 $ordenacao = isset($_GET['ordenacao']) ? $_GET['ordenacao'] : 'recente';
 
-// Buscar TODAS as conversas (incluindo deletadas)
+// Buscar TODAS as conversas (EXCLUÍDAS NÃO APARECEM MAIS)
 try {
     $sql = "SELECT 
                 cc.id AS conversa_id,
                 cc.produto_id,
                 cc.ultima_mensagem,
                 cc.ultima_mensagem_data,
-                cc.deletado,
-                cc.data_delecao,
                 p.nome AS produto_nome,
                 p.imagem_url AS produto_imagem,
+                p.preco AS produto_preco,
                 uc.id AS comprador_id,
                 uc.nome AS comprador_nome,
                 uc.email AS comprador_email,
@@ -81,7 +86,7 @@ try {
                 uv.email AS vendedor_email,
                 vend.cpf_cnpj AS vendedor_cpf_cnpj,
                 (SELECT COUNT(*) FROM chat_mensagens 
-                 WHERE conversa_id = cc.id AND deletado = 0) AS total_mensagens
+                 WHERE conversa_id = cc.id) AS total_mensagens
             FROM chat_conversas cc
             INNER JOIN produtos p ON cc.produto_id = p.id
             INNER JOIN usuarios uc ON cc.comprador_id = uc.id
@@ -89,9 +94,6 @@ try {
             LEFT JOIN vendedores vend ON p.vendedor_id = vend.id
             LEFT JOIN usuarios uv ON vend.usuario_id = uv.id
             WHERE 1=1";
-    
-    // Sempre mostrar apenas conversas NÃO deletadas
-    $sql .= " AND cc.deletado = 0";
     
     // Filtro de busca
     if ($filtro_busca) {
@@ -368,11 +370,6 @@ try {
             align-items: flex-start;
         }
         
-        .conversa-item.deletada {
-            background: #ffe0e0;
-            opacity: 0.7;
-        }
-        
         .produto-thumb {
             width: 80px;
             height: 80px;
@@ -439,11 +436,6 @@ try {
             font-size: 11px;
             font-weight: 600;
             margin-left: 8px;
-        }
-        
-        .badge-deletada {
-            background: #dc3545;
-            color: white;
         }
         
         .badge-mensagens {
@@ -545,6 +537,9 @@ try {
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .alert-success {
@@ -564,6 +559,32 @@ try {
             color: #999;
             font-style: italic;
             margin-top: 5px;
+        }
+        
+        /* Estilo para o botão de limpar busca */
+        .search-wrapper {
+            position: relative;
+        }
+        
+        .btn-clear-search {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            display: none;
+            padding: 0;
+        }
+        
+        .btn-clear-search.show {
+            display: block;
+        }
+        
+        .btn-clear-search:hover {
+            color: #dc3545;
         }
         
         @media (max-width: 992px) {
@@ -607,12 +628,9 @@ try {
     </nav>
     
     <div class="container">
-        <!-- <a href="dashboard.php" class="btn btn-back">
-            <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
-        </a> -->
-        <?php if (isset($mensagem_sucesso)): ?>
+        <?php if ($success): ?>
             <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i> <?php echo $mensagem_sucesso; ?>
+                <i class="fas fa-check-circle"></i> <?php echo $success_msg; ?>
             </div>
         <?php endif; ?>
         
@@ -674,7 +692,7 @@ try {
                 <?php foreach ($conversas as $conversa): 
                     $imagem = $conversa['produto_imagem'] ?: '../../img/placeholder.png';
                 ?>
-                    <div class="conversa-item <?php echo $conversa['deletado'] ? 'deletada' : ''; ?>">
+                    <div class="conversa-item">
                         <div class="produto-thumb">
                             <img src="<?php echo htmlspecialchars($imagem); ?>" alt="Produto">
                         </div>
@@ -685,11 +703,6 @@ try {
                                     <span class="produto-nome">
                                         <?php echo htmlspecialchars($conversa['produto_nome']); ?>
                                     </span>
-                                    <?php if ($conversa['deletado']): ?>
-                                        <span class="badge badge-deletada">
-                                            <i class="fas fa-trash"></i> DELETADA
-                                        </span>
-                                    <?php endif; ?>
                                     <span class="badge badge-mensagens">
                                         <?php echo $conversa['total_mensagens']; ?> mensagens
                                     </span>
@@ -734,13 +747,6 @@ try {
                                     <?php endif; ?>
                                 </div>
                             </div>
-                            
-                            <?php if ($conversa['deletado'] && $conversa['data_delecao']): ?>
-                                <div style="margin-top: 10px; color: #dc3545; font-size: 13px;">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    Deletada em: <?php echo date('d/m/Y H:i', strtotime($conversa['data_delecao'])); ?>
-                                </div>
-                            <?php endif; ?>
                         </div>
                         
                         <div class="actions">
@@ -749,14 +755,12 @@ try {
                                 <i class="fas fa-eye"></i> Visualizar Completo
                             </a>
                             
-                            <?php if (!$conversa['deletado']): ?>
-                                <form method="POST" style="margin: 0;" onsubmit="return confirmarExclusao();">
-                                    <input type="hidden" name="conversa_id" value="<?php echo $conversa['conversa_id']; ?>">
-                                    <button type="submit" name="excluir_conversa" class="btn btn-delete">
-                                        <i class="fas fa-trash"></i> Excluir
-                                    </button>
-                                </form>
-                            <?php endif; ?>
+                            <form method="POST" style="margin: 0;" onsubmit="return confirmarExclusaoPermanente();">
+                                <input type="hidden" name="conversa_id" value="<?php echo $conversa['conversa_id']; ?>">
+                                <button type="submit" name="excluir_conversa" class="btn btn-delete">
+                                    <i class="fas fa-trash"></i> Excluir 
+                                </button>
+                            </form>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -771,13 +775,19 @@ try {
     </div>
     
     <script>
-        function confirmarExclusao() {
-            return confirm('⚠️ ATENÇÃO!\n\nVocê tem certeza que deseja excluir esta conversa?\n\n' +
-                          '• A conversa será marcada como deletada\n' +
-                          '• Todas as mensagens serão marcadas como deletadas\n' +
-                          '• Os dados permanecerão no sistema para auditoria\n' +
-                          '• Esta ação será registrada no log\n\n' +
-                          'Deseja continuar?');
+        function confirmarExclusaoPermanente() {
+            return confirm('🚨 ALERTA CRÍTICO!\n\nVocê está prestes a EXCLUIR PERMANENTEMENTE esta conversa!\n\n' +
+                          '⚠️  ESTA AÇÃO É IRREVERSÍVEL!\n\n' +
+                          '• Todas as mensagens serão EXCLUÍDAS DO BANCO DE DADOS\n' +
+                          '• A conversa será REMOVIDA PERMANENTEMENTE\n' +
+                          '• NÃO HAVERÁ BACKUP AUTOMÁTICO\n' +
+                          '• Os usuários NÃO terão mais acesso ao histórico\n\n' +
+                          'Tem absoluta certeza que deseja continuar?\n\n' +
+                          'Digite "EXCLUIR" para confirmar:');
+            
+            // Para adicionar validação extra, você pode usar:
+            // var confirmacao = prompt('Digite "EXCLUIR" para confirmar a exclusão permanente:');
+            // return confirmacao === 'EXCLUIR';
         }
         
         // Limpar busca
@@ -812,6 +822,18 @@ try {
                 document.getElementById('formFiltros').submit();
             });
         }
+        
+        // Auto-fechar mensagem de sucesso após 5 segundos
+        <?php if ($success): ?>
+        setTimeout(function() {
+            const alert = document.querySelector('.alert-success');
+            if (alert) {
+                alert.style.transition = 'opacity 0.5s';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            }
+        }, 5000);
+        <?php endif; ?>
     </script>
 </body>
 </html>

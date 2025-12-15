@@ -445,7 +445,7 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
 
                                     <div class="form-group">
                                         <label class="checkbox-inline">
-                                            <input type="checkbox" id="paletizado" name="paletizado" value="1" <?php echo ($paletizado) ? 'checked' : ''; ?>> Produto será paletizado
+                                            <input type="checkbox" id="paletizado" name="paletizado" value="1" <?php echo ($paletizado) ? 'checked' : ''; ?>> Produto será paletizado?
                                         </label>
                                         <div class="help-text">Marque se este produto será entregue em paletes.</div>
                                     </div>

@@ -239,6 +239,14 @@ $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
                             <input type="text" id="telefone1" name="telefone1" value="<?php echo htmlspecialchars($vendedor['telefone1'] ?? ''); ?>" required>
                         </div>
                     </div>
+
+                    <div class="form-group">
+                        <label for="plano">Plano Atual</label>
+                        <input type="text" id="plano" name="plano" 
+                            value="<?php echo htmlspecialchars($comprador_data['plano'] ?? 'free'); ?>" 
+                            disabled>
+                        <small>Altere aqui seu plano.</small>
+                    </div>
                 
                     <button type="submit" class="big-button"><i class="fas fa-save"></i> Salvar Alterações</button>
                     

@@ -927,7 +927,7 @@ $imagePath = !empty($imagens_produto[0]['url']) ? htmlspecialchars($imagens_prod
             <div class="alerta-body">
                 <p>
                     O vendedor <strong><?php echo htmlspecialchars($anuncio['nome_vendedor']); ?></strong> 
-                    informou que <strong>não realiza entregas para o estado de <?php echo $estado_comprador; ?></strong>.
+                    informou que <strong>não se responsabiliza por entregas para o estado de <?php echo $estado_comprador; ?></strong>.
                 </p>
                 <p class="alerta-detalhes">
                     <i class="fas fa-info-circle"></i>
@@ -935,8 +935,8 @@ $imagePath = !empty($imagens_produto[0]['url']) ? htmlspecialchars($imagens_prod
                     <?php echo implode(', ', $estados_atendidos); ?>
                 </p>
                 <p class="alerta-aviso-importante">
-                    <strong>⚠️ Prossiga com a proposta por sua conta e risco</strong> 
-                    ou entre em contato com o vendedor antes de negociar.
+                    ⚠️ Entre em contato com o vendedor por meio do chat 
+                   <strong> ou utilize nossa função de encontrar um transportador.</strong>
                 </p>
             </div>
         </div>

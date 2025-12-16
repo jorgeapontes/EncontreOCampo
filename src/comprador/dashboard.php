@@ -291,13 +291,13 @@ try {
             
             <?php if (!$is_pendente): ?>
                 <!-- Apenas para usuários ativos -->
-                <a href="meus_chats.php">
-                    <i class="fas fa-comments"></i>
-                    <span>Minhas Conversas</span>
-                </a>
-                <a href="#">
+                 <a href="#">
                     <i class="fas fa-truck"></i>
                     <span>Solicitar Transporte</span>
+                </a>
+                <a href="meus_chats.php">
+                    <i class="fas fa-comments"></i>
+                    <span>Meus chats</span>
                 </a>
             <?php endif; ?>
             
@@ -305,6 +305,7 @@ try {
                 <i class="fas fa-user-circle"></i>
                 <span>Dados</span>
             </a>
+            
         </section>
     </div>
     <script>

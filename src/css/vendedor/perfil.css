@@ -190,9 +190,19 @@ body {
 .forms-area {
     background-color: var(--white);
     padding: 30px;
-    padding-top: 60px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.forms-area h2{
+    font-size: 1.4rem;
+    font-weight: 600;
+    align-items: center;
+    gap: 10px;
+    font-family: "Montserrat", sans-serif;
+    line-height: 1.6;
+    padding-top: 15px;
+    padding-bottom: 30px;
 }
 
 .perfil-form {
@@ -378,6 +388,12 @@ body {
     background-color: #ffebee;
     color: #c62828;
     border: 1px solid #ffcdd2;
+}
+
+.content-container {
+    padding-top: 120px;
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
 /* --- Media Queries --- */

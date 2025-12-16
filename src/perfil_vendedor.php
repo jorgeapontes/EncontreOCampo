@@ -141,6 +141,7 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
     <link rel="stylesheet" href="css/vendedor/perfil.css">
     <link rel="shortcut icon" href="../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -177,7 +178,7 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
         </nav>
     </header>
 
-    <main class="container">
+    <main class="container content-container">
         <div class="page-header">
             <h2>Perfil do Vendedor</h2>
         </div>
@@ -263,13 +264,14 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                                             <!-- Exibição de Preço com Lógica de Desconto -->
                                             <div class="card-price-container">
                                                 <?php if ($has_discount): ?>
-                                                    <span class="price-original">R$ <?php echo number_format($info_preco['original'], 2, ',', '.'); ?></span>
-                                                    <span class="price-desconto">R$ <?php echo number_format($info_preco['efetivo'], 2, ',', '.'); ?></span>
-                                                    <span style="font-size: 0.9rem; color: #7f8c8d;">/<?php echo htmlspecialchars($anuncio['unidade_medida']); ?></span>
+                                                    <span class="preco-original">R$ <?php echo number_format($info_preco['original'], 2, ',', '.');?></span>
+                                                    <span class="price price-desconto">R$ <?php echo number_format($info_preco['efetivo'], 2, ',', '.');?>
+                                                        <span style="font-size: 0.9rem; color: #7f8c8d;">/<?php echo htmlspecialchars($anuncio['unidade_medida']);?></span>
+                                                    </span>
                                                 <?php else: ?>
-                                                    <span class="price-normal">
+                                                    <span class="price">
                                                         R$ <?php echo number_format($info_preco['efetivo'], 2, ',', '.'); ?>
-                                                        <span style="font-size: 0.9rem; color: #7f8c8d; font-weight: normal;">/<?php echo htmlspecialchars($anuncio['unidade_medida']); ?></span>
+                                                        <span style="font-size: 0.9rem; color: #7f8c8d;">/<?php echo htmlspecialchars($anuncio['unidade_medida']);?></span>
                                                     </span>
                                                 <?php endif; ?>
                                             </div>
@@ -279,13 +281,7 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                                                 <?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?> disponíveis
                                             </p>
                                             
-                                            <!-- Descrição cortada -->
-                                            <p class="descricao">
-                                                <?php 
-                                                $descricao = $anuncio['descricao'] ?? 'Sem descrição.';
-                                                echo htmlspecialchars(strlen($descricao) > 120 ? substr($descricao, 0, 120) . '...' : $descricao);
-                                                ?>
-                                            </p>
+                                            
                                         </div>
                                         <div class="card-actions">
                                             <?php if ($is_comprador): ?>

@@ -142,9 +142,6 @@ try {
             <?php if (empty($anuncios)): ?>
                 <div class="empty-state">
                     <p>Você ainda não tem anúncios cadastrados.</p>
-                    <a href="anuncio_cadastrar.php" class="cta-button" style="margin-top: 15px;">
-                        <i class="fas fa-plus"></i> Criar Primeiro Anúncio
-                    </a>
                 </div>
             <?php else: ?>
                 <table>

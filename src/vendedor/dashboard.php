@@ -563,56 +563,66 @@ try {
             <?php endif; ?>
         </section>
 
-        <?php if (!$is_pendente && $vendedor_id && $total_anuncios > 0): ?>
-        <section class="section-anuncios">
-            <div id="header">
-                <h2>Anúncios ativos (<?php echo $total_anuncios; ?>)</h2>
-                <a href="anuncio_novo.php" class="cta-button"><i class="fas fa-plus"></i> Novo Anúncio</a>
-                <a href="anuncios.php" class="cta-button"><i class="fas fa-list"></i> Todos os Anúncios</a>
-            </div>
-            
-            <div class="tabela-anuncios">
-                <?php if ($total_anuncios > 0): ?>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Fruta/Produto</th>
-                                <th>Estoque (Kg)</th>
-                                <th>Preço/Kg</th>
-                                <th>Status</th>
-                                <th>Criação</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($anuncios as $anuncio): ?>
-                            <tr>
-                                <td><?php echo $anuncio['id']; ?></td>
-                                <td><?php echo htmlspecialchars($anuncio['nome']); ?></td>
-                                <td><?php echo number_format($anuncio['estoque'], 0, ',', '.'); ?></td>
-                                <td>R$ <?php echo number_format($anuncio['preco'], 2, ',', '.'); ?></td>
-                                <td><span class="status <?php echo $anuncio['status']; ?>"><?php echo ucfirst($anuncio['status']); ?></span></td>
-                                <td><?php echo date('d/m/Y', strtotime($anuncio['data_criacao'])); ?></td>
-                                <td>
-                                    <a href="anuncio_editar.php?id=<?php echo $anuncio['id']; ?>" class="action-btn edit" title="Editar"><i class="fas fa-edit"></i></a>
-                                    <form method="POST" action="processar_anuncio.php" style="display: inline;">
-                                        <input type="hidden" name="anuncio_id" value="<?php echo $anuncio['id']; ?>">
-                                        <button type="submit" name="acao" value="deletar" class="action-btn delete" title="Excluir Definitivamente" onclick="return confirm('Tem certeza que deseja DELETAR este anúncio? Esta ação é irreversível.');">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                <?php else: ?>
-                    <p class="empty-state">Você ainda não tem anúncios ativos. Crie seu primeiro anúncio!</p>
-                <?php endif; ?>
-            </div>
-        </section>
-        <?php endif; ?>
+        <?php if (!$is_pendente && $vendedor_id): ?>
+            <section class="section-anuncios">
+                <div id="header">
+                    <h2>Anúncios ativos (<?php echo $total_anuncios; ?>)</h2>
+                    <a href="anuncio_novo.php" class="cta-button"><i class="fas fa-plus"></i> Novo Anúncio</a>
+                    <a href="anuncios.php" class="cta-button"><i class="fas fa-list"></i> Todos os Anúncios</a>
+                </div>
+                
+                <div class="tabela-anuncios">
+                    <?php if ($total_anuncios > 0): ?>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Fruta/Produto</th>
+                                    <th>Estoque (Kg)</th>
+                                    <th>Preço/Kg</th>
+                                    <th>Status</th>
+                                    <th>Criação</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($anuncios as $anuncio): ?>
+                                <tr>
+                                    <td><?php echo $anuncio['id']; ?></td>
+                                    <td><?php echo htmlspecialchars($anuncio['nome']); ?></td>
+                                    <td><?php echo number_format($anuncio['estoque'], 0, ',', '.'); ?></td>
+                                    <td>R$ <?php echo number_format($anuncio['preco'], 2, ',', '.'); ?></td>
+                                    <td><span class="status <?php echo $anuncio['status']; ?>"><?php echo ucfirst($anuncio['status']); ?></span></td>
+                                    <td><?php echo date('d/m/Y', strtotime($anuncio['data_criacao'])); ?></td>
+                                    <td>
+                                        <a href="anuncio_editar.php?id=<?php echo $anuncio['id']; ?>" class="action-btn edit" title="Editar"><i class="fas fa-edit"></i></a>
+                                        <form method="POST" action="processar_anuncio.php" style="display: inline;">
+                                            <input type="hidden" name="anuncio_id" value="<?php echo $anuncio['id']; ?>">
+                                            <button type="submit" name="acao" value="deletar" class="action-btn delete" title="Excluir Definitivamente" onclick="return confirm('Tem certeza que deseja DELETAR este anúncio? Esta ação é irreversível.');">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php else: ?>
+                        <div class="empty-state-container">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
+                            <h3>Você ainda não tem anúncios ativos</h3>
+                            <p>Comece a vender seus produtos anunciando no Encontre O campo!<br>
+                            Crie seu primeiro anúncio e alcance mais clientes.</p>
+                            <a href="anuncio_novo.php" class="empty-state-button">
+                                <i class="fas fa-plus"></i> Criar Primeiro Anúncio
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </section>
+            <?php endif; ?>
         
     </div>
 

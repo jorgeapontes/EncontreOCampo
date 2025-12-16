@@ -1,7 +1,7 @@
 <?php
 // src/vendedor/dashboard.php
 require_once __DIR__ . '/../permissions.php';
-require_once __DIR__ . '/../conexao.php'; // Adicione se necessário
+require_once __DIR__ . '/../conexao.php';
 
 session_start();
 
@@ -39,6 +39,22 @@ try {
     }
 } catch (PDOException $e) {
     error_log("Erro ao buscar dados do vendedor: " . $e->getMessage());
+}
+
+// VERIFICAR PREFERÊNCIAS DE AVISOS DO USUÁRIO
+$exibir_aviso_regioes = true;
+try {
+    $sql_avisos = "SELECT aviso_regioes_entrega FROM usuario_avisos_preferencias WHERE usuario_id = :usuario_id";
+    $stmt_avisos = $db->prepare($sql_avisos);
+    $stmt_avisos->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt_avisos->execute();
+    $preferencias_avisos = $stmt_avisos->fetch(PDO::FETCH_ASSOC);
+    
+    if ($preferencias_avisos) {
+        $exibir_aviso_regioes = (bool)$preferencias_avisos['aviso_regioes_entrega'];
+    }
+} catch (PDOException $e) {
+    error_log("Erro ao buscar preferências de avisos: " . $e->getMessage());
 }
 
 // Inicializar variáveis para não causar erros
@@ -140,6 +156,243 @@ try {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos do Pop-up de Avisos */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9998;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .popup-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .popup-container {
+            background: white;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+            position: relative;
+        }
+        
+        .popup-header {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+            position: relative;
+        }
+        
+        .popup-header h2 {
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .popup-header i {
+            font-size: 28px;
+        }
+        
+        .popup-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .popup-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+        
+        .popup-body {
+            padding: 30px;
+        }
+        
+        .aviso-item {
+            background: #f8f9fa;
+            border-left: 4px solid #4CAF50;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .aviso-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .aviso-item h3 {
+            color: #4CAF50;
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .aviso-item p {
+            color: #555;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .aviso-item a {
+            color: #4CAF50;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .aviso-item a:hover {
+            color: #45a049;
+            text-decoration: underline;
+        }
+        
+        .popup-footer {
+            padding: 20px 30px;
+            border-top: 1px solid #e0e0e0;
+            background: #f8f9fa;
+            border-radius: 0 0 15px 15px;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+        
+        .checkbox-container input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #4CAF50;
+        }
+        
+        .checkbox-container label {
+            color: #555;
+            font-size: 14px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .popup-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .btn-popup {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #555;
+        }
+        
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .popup-container {
+                width: 95%;
+                max-height: 90vh;
+            }
+            
+            .popup-header {
+                padding: 20px;
+            }
+            
+            .popup-header h2 {
+                font-size: 20px;
+            }
+            
+            .popup-body {
+                padding: 20px;
+            }
+            
+            .aviso-item {
+                padding: 15px;
+            }
+            
+            .popup-actions {
+                flex-direction: column;
+            }
+            
+            .btn-popup {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -195,6 +448,61 @@ try {
         </nav>
     </header>
     <br>
+
+    <!-- POP-UP DE AVISOS -->
+    <?php if (!$is_pendente && $exibir_aviso_regioes): ?>
+    <div class="popup-overlay" id="popupAvisos">
+        <div class="popup-container">
+            <div class="popup-header">
+                <h2><i class="fas fa-info-circle"></i> Avisos Importantes</h2>
+                <button class="popup-close" onclick="fecharPopup()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="popup-body">
+                <!-- Aviso sobre Regiões de Entrega -->
+                <div class="aviso-item">
+                    <h3><i class="fas fa-truck"></i> Configure suas Regiões de Entrega</h3>
+                    <p>
+                        Não se esqueça de configurar as regiões onde você realiza entregas! 
+                        Isso é importante para que os compradores saibam onde você atende e possam 
+                        fazer pedidos adequadamente.
+                    </p>
+                    <p style="margin-top: 10px;">
+                        <i class="fas fa-arrow-right"></i> 
+                        <a href="config_logistica.php">Clique aqui para configurar agora</a>
+                    </p>
+                </div>
+                
+                <!-- Você pode adicionar mais avisos aqui no futuro -->
+                <!--
+                <div class="aviso-item">
+                    <h3><i class="fas fa-bell"></i> Outro Aviso</h3>
+                    <p>Conteúdo do outro aviso...</p>
+                </div>
+                -->
+            </div>
+            
+            <div class="popup-footer">
+                <div class="checkbox-container">
+                    <input type="checkbox" id="naoExibirNovamente" name="naoExibirNovamente">
+                    <label for="naoExibirNovamente">Não exibir esta mensagem novamente</label>
+                </div>
+                
+                <div class="popup-actions">
+                    <button class="btn-popup btn-secondary" onclick="fecharPopup()">
+                        Fechar
+                    </button>
+                    <button class="btn-popup btn-primary" onclick="salvarPreferencia()">
+                        Entendi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <div class="main-content">
         <section class="header">
             <center>
@@ -254,29 +562,6 @@ try {
                 </a>
             <?php endif; ?>
         </section>
-
-        <!-- <section class="header sub">
-            <center>
-                <h3>Ações rápidas</h3>
-            </center>
-        </section>
-
-        <section class="acoes-rapidas">
-            <a href="../anuncios.php">
-                <i class="fa-solid fa-dollar-sign"></i>
-                <span>Ver Anúncios</span>
-            </a>
-            
-                <a href="../comprador/favoritos.php">
-                    <i class="fas fa-heart"></i>
-                    <span>Favoritos</span>
-                </a>
-            
-            <a href="perfil.php">
-                <i class="fas fa-user-circle"></i>
-                <span>Dados</span>
-            </a>
-        </section> -->
 
         <?php if (!$is_pendente && $vendedor_id && $total_anuncios > 0): ?>
         <section class="section-anuncios">
@@ -348,6 +633,66 @@ try {
                 navMenu.classList.remove("active");
             }));
         }
+
+        // Scripts do Pop-up de Avisos
+        <?php if (!$is_pendente && $exibir_aviso_regioes): ?>
+        // Exibir popup automaticamente ao carregar a página
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                document.getElementById('popupAvisos').classList.add('active');
+            }, 500);
+        });
+
+        // Fechar popup
+        function fecharPopup() {
+            document.getElementById('popupAvisos').classList.remove('active');
+        }
+
+        // Fechar popup ao clicar fora dele
+        document.getElementById('popupAvisos').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharPopup();
+            }
+        });
+
+        // Fechar popup com tecla ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                fecharPopup();
+            }
+        });
+
+        // Salvar preferência
+        function salvarPreferencia() {
+            const naoExibir = document.getElementById('naoExibirNovamente').checked;
+            
+            if (naoExibir) {
+                // Enviar requisição para salvar a preferência
+                fetch('processar_aviso.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'tipo_aviso=regioes_entrega'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Preferência salva com sucesso');
+                    } else {
+                        console.error('Erro ao salvar preferência:', data.message);
+                    }
+                    fecharPopup();
+                })
+                .catch(error => {
+                    console.error('Erro na requisição:', error);
+                    fecharPopup();
+                });
+            } else {
+                fecharPopup();
+            }
+        }
+        <?php endif; ?>
     </script>
 </body>
 </html>

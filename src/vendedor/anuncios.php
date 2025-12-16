@@ -105,9 +105,6 @@ try {
                     <a href="anuncios.php" class="nav-link active">Meus Anúncios</a>
                 </li>
                 <li class="nav-item">
-                    <a href="propostas.php" class="nav-link">Propostas</a>
-                </li>
-                <li class="nav-item">
                     <a href="perfil.php" class="nav-link">Perfil</a>
                 </li>
                 <li class="nav-item">

@@ -411,6 +411,7 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
                             <div class="imagens-preview" id="imagensPreview"></div>
                             
                             <input type="file" id="imagens" name="imagens[]" accept="image/*" multiple style="display: none;" required>
+                            <p>*Clique na estrela para tornar a respectiva imagem capa do anúncio.</p>
                         </div>
                     </div>
 

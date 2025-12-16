@@ -254,14 +254,6 @@ try {
                         <input type="text" id="complemento" name="complemento" 
                             value="<?php echo htmlspecialchars($comprador_data['complemento'] ?? ''); ?>">
                     </div>
-
-                    <div class="form-group">
-                        <label for="plano">Plano Atual</label>
-                        <input type="text" id="plano" name="plano" 
-                            value="<?php echo htmlspecialchars($comprador_data['plano'] ?? 'free'); ?>" 
-                            disabled>
-                        <small>Altere aqui seu plano.</small>
-                    </div>
                     
                     <input type="hidden" name="usuario_id" value="<?php echo $usuario_id; ?>">
                     <input type="hidden" name="comprador_id" value="<?php echo $comprador_data['id'] ?? ''; ?>">

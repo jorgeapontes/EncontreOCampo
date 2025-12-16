@@ -469,10 +469,18 @@ try {
                         Isso é importante para que os compradores saibam onde você atende e possam 
                         fazer pedidos adequadamente.
                     </p>
-                    <p style="margin-top: 10px;">
-                        <i class="fas fa-arrow-right"></i> 
+                    <p style="margin-top: 10px;"> 
                         <a href="config_logistica.php">Clique aqui para configurar agora</a>
                     </p>
+                </div>
+
+                <div class="aviso-item">
+                    <h3><i class="fas fa-bell"></i> Plano de assinatura</h3>
+                    <p>Caso queria ter mais anúncios ativos na plataforma, você pode alterar seu plano em "Meu Perfil".</p>
+                    <p style="margin-top: 10px;">
+                        <a href="perfil.php">Alterar plano</a>
+                    </p>
+                    
                 </div>
                 
                 <!-- Você pode adicionar mais avisos aqui no futuro -->

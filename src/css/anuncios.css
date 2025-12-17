@@ -1000,3 +1000,51 @@ body {
         overflow-y: auto;
     }
 }
+
+@media (max-width: 576px) {
+    .anuncios-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Ajuste dos botões de filtro para mobile */
+    .filtros-botoes {
+        flex-direction: row; /* Mantém na mesma linha */
+        flex-wrap: nowrap; /* Não quebra linha */
+        gap: 8px; /* Espaço menor entre botões */
+        justify-content: space-between; /* Distribui igualmente */
+        width: 100%;
+    }
+    
+    .filtro-btn {
+        flex: 1; /* Cada botão ocupa espaço igual */
+        min-width: 0; /* Permite encolher */
+        padding: 0 10px; /* Padding horizontal reduzido */
+        height: 48px; /* Altura um pouco menor */
+        font-size: 0.85rem; /* Fonte menor */
+        white-space: nowrap; /* Evita quebra de texto */
+        overflow: hidden;
+        text-overflow: ellipsis; /* Adiciona "..." se texto muito longo */
+    }
+    
+    .filtro-btn i {
+        font-size: 0.9rem; /* Ícones menores */
+    }
+    
+    /* Ajusta a área de filtros ativos */
+    .filtros-ativos {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-top: 15px;
+    }
+    
+    .dropdown-content {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) !important;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+}

@@ -738,6 +738,10 @@
     .feature-item {
         flex-direction: column;
         text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
         gap: 15px;
     }
     
@@ -761,6 +765,10 @@
         padding-top: 90px;
         padding-bottom: 30px;
     }
+
+    .page-header{
+        padding-top: 120px;
+    }
     
     .hero-text h1 {
         font-size: 1.8rem;
@@ -776,6 +784,13 @@
     .mvw-section,
     .cta-section {
         padding: 30px 20px;
+    }
+
+    .features-item{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
     }
     
     .section-header {

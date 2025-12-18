@@ -778,11 +778,6 @@ th:last-child {
     .card {
         text-align: left;
     }
-    
-    .card p {
-        display: inline-block;
-        margin-left: 10px;
-    }
 }
 
 /* ============================================
@@ -841,28 +836,28 @@ th:last-child {
     }
     
     /* --- Cards de Informação --- */
-    .info-cards {
-        flex-direction: column;
-        gap: 10px;
-    }
-    
     .info-cards a {
         padding: 15px 0;
         width: 100%;
+        text-align: left; /* Alinha todo o conteúdo à esquerda */
     }
-    
+
     .card i {
         font-size: 1.5rem;
         margin-bottom: 5px;
+        margin-left: 15px; /* Margem à esquerda para o ícone */
     }
-    
+
     .card h3 {
         font-size: 1rem;
         margin-bottom: 5px;
+        margin-left: 15px; /* Margem à esquerda para o título */
     }
-    
+
     .card p {
         font-size: 1.5rem;
+        margin-left: 15px; /* Margem à esquerda para o número */
+        display: block; /* Garante que fique em bloco, não inline */
     }
     
     /* --- Seção de Anúncios --- */

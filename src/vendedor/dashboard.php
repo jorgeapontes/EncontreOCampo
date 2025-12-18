@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../permissions.php';
 require_once __DIR__ . '/../conexao.php';
 
-session_start();
+
 
 // 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor') {
@@ -615,6 +615,61 @@ try {
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
+                        <!-- Versão Mobile - Cards -->
+                        <div class="cards-anuncios-mobile">
+                            <?php foreach ($anuncios as $anuncio): ?>
+                            <div class="card-anuncio">
+                                <div class="card-anuncio-header">
+                                    <div class="card-anuncio-title">
+                                        <h3><?php echo htmlspecialchars($anuncio['nome']); ?></h3>
+                                        <span class="card-anuncio-id">ID: <?php echo $anuncio['id']; ?></span>
+                                    </div>
+                                    <span class="card-anuncio-status status <?php echo $anuncio['status']; ?>">
+                                        <?php echo ucfirst($anuncio['status']); ?>
+                                    </span>
+                                </div>
+                                
+                                <div class="card-anuncio-body">
+                                    <div class="card-info-item">
+                                        <span class="card-info-label">Estoque</span>
+                                        <span class="card-info-value">
+                                            <?php echo number_format($anuncio['estoque'], 0, ',', '.'); ?> 
+                                            <small>Kg</small>
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="card-info-item">
+                                        <span class="card-info-label">Preço/Kg</span>
+                                        <span class="card-info-value">
+                                            R$ <?php echo number_format($anuncio['preco'], 2, ',', '.'); ?>
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="card-anuncio-data">
+                                        <i class="far fa-calendar"></i> 
+                                        <?php echo date('d/m/Y', strtotime($anuncio['data_criacao'])); ?>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-anuncio-actions">
+                                    <a href="anuncio_editar.php?id=<?php echo $anuncio['id']; ?>" 
+                                    class="card-action-btn edit" 
+                                    title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    
+                                    <form method="POST" action="processar_anuncio.php" 
+                                        onsubmit="return confirm('Tem certeza que deseja DELETAR este anúncio? Esta ação é irreversível.');">
+                                        <input type="hidden" name="anuncio_id" value="<?php echo $anuncio['id']; ?>">
+                                        <input type="hidden" name="acao" value="deletar">
+                                        <button type="submit" class="card-action-btn delete" title="Excluir Definitivamente">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
                     <?php else: ?>
                         <div class="empty-state-container">
                             <div class="empty-state-icon">

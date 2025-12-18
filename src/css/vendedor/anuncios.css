@@ -675,3 +675,283 @@ th:last-child {
         margin-left: 10px;
     }
 }
+
+/* ===== RESPONSIVO PARA TELAS 480px ===== */
+@media (max-width: 480px) {
+    /* Ajustes gerais */
+    .main-content {
+        padding: 10px;
+        margin-top: 50px;
+    }
+
+    /* Logo e navbar */
+    .nav-container {
+        padding: 10px 15px;
+    }
+
+    .logo {
+        gap: 8px;
+    }
+
+    .logo img {
+        height: 45px;
+        padding-right: 3px;
+    }
+
+    .logo h1 {
+        font-size: 1.2rem;
+        line-height: 1.4;
+    }
+
+    .logo h2 {
+        font-size: 0.9rem;
+        margin-top: -8px;
+        line-height: 1.2;
+    }
+
+    .hamburger {
+        display: block;
+    }
+
+    .nav-menu {
+        position: fixed;
+        left: -100%;
+        top: 60px;
+        flex-direction: column;
+        background-color: var(--white);
+        width: 100%;
+        text-align: center;
+        transition: 0.3s;
+        box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
+        padding: 10px 0;
+    }
+
+    .nav-menu.active {
+        left: 0;
+    }
+
+    .nav-item {
+        margin: 10px 0;
+    }
+
+    /* Header */
+    .header h1 {
+        font-size: 1.8rem;
+        margin-bottom: 5px;
+    }
+
+    .header p {
+        font-size: 0.9rem;
+    }
+
+    /* Botão Novo Anúncio */
+    .cta-button {
+        float: none;
+        width: 100%;
+        justify-content: center;
+        margin: 15px 0;
+        padding: 12px;
+        font-size: 1rem;
+    }
+
+    /* Tabela transformada em cards */
+    table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table thead {
+        display: none; /* Esconde cabeçalho em mobile */
+    }
+
+    table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    table tr {
+        display: block;
+        margin-bottom: 20px;
+        background: var(--white);
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 5px;
+        border-bottom: 1px solid #eee;
+        text-align: right;
+    }
+
+    table td:last-child {
+        border-bottom: none;
+        justify-content: center;
+        gap: 10px;
+        padding-top: 15px;
+    }
+
+    /* Adiciona labels antes de cada campo */
+    table td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        text-align: left;
+        color: var(--dark-color);
+        font-size: 0.9rem;
+        flex: 1;
+    }
+
+    /* Remove o before da última coluna (ações) */
+    table td:last-child::before {
+        display: none;
+    }
+
+    /* Adiciona data-label via JavaScript será necessário */
+    /* Por enquanto vamos esconder algumas colunas e reorganizar */
+    
+    /* Para mobile, vamos mostrar apenas informações essenciais */
+    table td:nth-child(2), /* Categoria */
+    table td:nth-child(3), /* Preço */
+    table td:nth-child(4), /* Estoque */
+    table td:nth-child(5), /* Status */
+    table td:nth-child(6) { /* Propostas */
+        display: flex;
+    }
+
+    /* Ajusta a coluna do produto */
+    table td:first-child {
+        flex-direction: column;
+        align-items: flex-start;
+        padding-bottom: 15px;
+    }
+
+    table td:first-child::before {
+        content: "Produto";
+        margin-bottom: 5px;
+    }
+
+    table td:first-child .status {
+        align-self: flex-start;
+        margin-top: 5px;
+    }
+
+    /* Imagem do produto */
+    table td:first-child img {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 8px;
+    }
+
+    /* Status em mobile */
+    .status {
+        font-size: 0.8rem;
+        padding: 4px 10px;
+    }
+
+    /* Botões de ação */
+    .action-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 5px;
+        background: var(--gray);
+    }
+
+    .action-btn i {
+        font-size: 1rem;
+    }
+
+    /* Seção de anúncios */
+    .section-anuncios {
+        padding: 15px;
+    }
+
+    .section-anuncios h2 {
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+    }
+
+    /* Cards de informação */
+    .info-cards {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .card {
+        padding: 15px;
+    }
+
+    .card i {
+        font-size: 1.5rem;
+    }
+
+    .card h3 {
+        font-size: 1rem;
+    }
+
+    .card p {
+        font-size: 1.8rem;
+    }
+
+    /* Formulários */
+    .form-section {
+        padding: 15px;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .anuncio-form .form-group input,
+    .anuncio-form .form-group select,
+    .anuncio-form .form-group textarea {
+        padding: 10px;
+        font-size: 16px; /* Evita zoom no iOS */
+    }
+
+    .anuncio-form .big-button {
+        padding: 15px;
+        font-size: 1rem;
+    }
+
+    /* Estado vazio */
+    .empty-state {
+        padding: 30px 15px;
+        font-size: 0.95rem;
+    }
+}
+
+/* Ajustes específicos para telas muito pequenas */
+@media (max-width: 360px) {
+    .logo h1 {
+        font-size: 1rem;
+    }
+
+    .logo h2 {
+        font-size: 0.8rem;
+    }
+
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .action-btn {
+        width: 35px;
+        height: 35px;
+        margin: 0 3px;
+    }
+
+    table td {
+        padding: 8px 5px;
+        font-size: 0.9rem;
+    }
+}

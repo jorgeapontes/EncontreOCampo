@@ -692,6 +692,69 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
                 loadingOverlay.style.display = 'flex';
             });
         });
+        // Adiciona botão flutuante de voltar para dispositivos móveis
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verifica se é um dispositivo móvel
+            const isMobile = window.innerWidth <= 480;
+            
+            if (isMobile) {
+                // Cria o botão flutuante de voltar
+                const floatingBackButton = document.createElement('button');
+                floatingBackButton.className = 'floating-back-button';
+                floatingBackButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
+                floatingBackButton.title = 'Voltar ao Painel';
+                
+                // Adiciona evento de clique
+                floatingBackButton.addEventListener('click', function() {
+                    window.location.href = 'dashboard.php';
+                });
+                
+                // Adiciona ao body
+                document.body.appendChild(floatingBackButton);
+                
+                // Remove o menu de navegação original
+                const navMenu = document.querySelector('.nav-menu');
+                if (navMenu) {
+                    navMenu.style.display = 'none';
+                }
+            }
+            
+            // Ajusta dinamicamente a altura da capa com base na largura da tela
+            function adjustCapaHeight() {
+                const capaElements = document.querySelectorAll('.foto-produto-display, .foto-overlay, .default-image');
+                const screenWidth = window.innerWidth;
+                
+                if (screenWidth <= 360) {
+                    // Telas muito pequenas
+                    capaElements.forEach(el => {
+                        el.style.height = '180px';
+                        if (el.tagName === 'IMG') {
+                            el.style.height = '180px';
+                        }
+                    });
+                } else if (screenWidth <= 480) {
+                    // Telas de 480px
+                    capaElements.forEach(el => {
+                        el.style.height = '200px';
+                        if (el.tagName === 'IMG') {
+                            el.style.height = '200px';
+                        }
+                    });
+                } else {
+                    // Telas maiores (reset)
+                    capaElements.forEach(el => {
+                        el.style.height = '';
+                        if (el.tagName === 'IMG') {
+                            el.style.height = '';
+                        }
+                    });
+                }
+            }
+            
+            // Executa ao carregar e ao redimensionar
+            adjustCapaHeight();
+            window.addEventListener('resize', adjustCapaHeight);
+        });
     </script>
 </body>
 </html>

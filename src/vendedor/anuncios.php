@@ -410,6 +410,22 @@ try {
             });
         }
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.innerWidth <= 480) {
+            const thElements = document.querySelectorAll('table thead th');
+            const tdRows = document.querySelectorAll('table tbody tr');
+            
+            tdRows.forEach(row => {
+                const tds = row.querySelectorAll('td');
+                tds.forEach((td, index) => {
+                    if (thElements[index]) {
+                        td.setAttribute('data-label', thElements[index].textContent);
+                    }
+                });
+            });
+        }
+    });
     </script>
 </body>
 </html>

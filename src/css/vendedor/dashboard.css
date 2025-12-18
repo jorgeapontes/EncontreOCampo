@@ -784,3 +784,597 @@ th:last-child {
         margin-left: 10px;
     }
 }
+
+/* ============================================
+   RESPONSIVIDADE PARA TELAS ATÉ 480px
+   ============================================ */
+
+@media screen and (max-width: 480px) {
+    
+    /* --- Layout Geral --- */
+    .main-content {
+        padding: 10px;
+        margin-top: 50px;
+    }
+    
+    /* --- Navbar --- */
+    .nav-container {
+        padding: 10px 15px;
+    }
+    
+    .logo img {
+        height: 40px;
+    }
+    
+    .logo h1 {
+        font-size: 1.2rem;
+        margin-top: 2px;
+    }
+    
+    .logo h2 {
+        font-size: 0.9rem;
+        margin-top: -8px;
+    }
+    
+    .nav-menu {
+        top: 60px;
+    }
+    
+    /* --- Header --- */
+    .header h1 {
+        font-size: 1.8rem;
+        text-align: center;
+        padding: 0 10px;
+    }
+    
+    .subtitulo {
+        font-size: 14px;
+        text-align: center;
+    }
+    
+    /* --- Aviso de Status --- */
+    .aviso-status {
+        padding: 10px;
+        margin: 15px 0;
+        font-size: 14px;
+        text-align: center;
+    }
+    
+    /* --- Cards de Informação --- */
+    .info-cards {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .info-cards a {
+        padding: 15px 0;
+        width: 100%;
+    }
+    
+    .card i {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+    
+    .card h3 {
+        font-size: 1rem;
+        margin-bottom: 5px;
+    }
+    
+    .card p {
+        font-size: 1.5rem;
+    }
+    
+    /* --- Seção de Anúncios --- */
+    .section-anuncios {
+        padding: 15px;
+        margin: 0;
+        border-radius: 5px;
+    }
+    
+    .section-anuncios #header {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .section-anuncios h2 {
+        font-size: 1.3rem;
+        text-align: center;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .cta-button {
+        float: none;
+        width: 100%;
+        margin: 5px 0;
+        padding: 12px;
+        justify-content: center;
+        font-size: 14px;
+    }
+    
+    /* --- Tabela de Anúncios (scroll horizontal) --- */
+    .tabela-anuncios {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -15px;
+        padding: 0 15px;
+    }
+    
+    table {
+        min-width: 600px; /* Força o scroll horizontal */
+        font-size: 14px;
+    }
+    
+    th, td {
+        padding: 8px 10px;
+    }
+    
+    th {
+        font-size: 12px;
+    }
+    
+    .status {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+    
+    .action-btn {
+        font-size: 14px;
+        margin-right: 5px;
+    }
+    
+    /* --- Estado Vazio --- */
+    .empty-state-container {
+        padding: 30px 15px;
+    }
+    
+    .empty-state-icon {
+        font-size: 36px;
+        margin-bottom: 15px;
+    }
+    
+    .empty-state-container h3 {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+    
+    .empty-state-container p {
+        font-size: 14px;
+        line-height: 1.4;
+        margin-bottom: 20px;
+    }
+    
+    .empty-state-button {
+        padding: 10px 20px;
+        font-size: 14px;
+        width: 100%;
+        text-align: center;
+    }
+    
+    /* --- Pop-up de Avisos --- */
+    .popup-container {
+        width: 95%;
+        margin: 0 10px;
+        max-height: 85vh;
+    }
+    
+    .popup-header {
+        padding: 15px;
+    }
+    
+    .popup-header h2 {
+        font-size: 18px;
+    }
+    
+    .popup-header i {
+        font-size: 22px;
+    }
+    
+    .popup-body {
+        padding: 15px;
+    }
+    
+    .aviso-item {
+        padding: 12px;
+        margin-bottom: 15px;
+    }
+    
+    .aviso-item h3 {
+        font-size: 16px;
+    }
+    
+    .aviso-item p {
+        font-size: 14px;
+    }
+    
+    .popup-footer {
+        padding: 15px;
+    }
+    
+    .checkbox-container label {
+        font-size: 12px;
+    }
+    
+    .btn-popup {
+        padding: 10px 15px;
+        font-size: 13px;
+    }
+    
+    /* --- Menu Hamburger Ajustes --- */
+    .hamburger {
+        padding: 5px;
+    }
+    
+    .bar {
+        width: 20px;
+        height: 2px;
+        margin: 4px auto;
+    }
+    
+    /* --- Ações Rápidas --- */
+    .acoes-rapidas {
+        gap: 10px;
+        margin: 20px 0;
+    }
+    
+    .acoes-rapidas a {
+        width: calc(50% - 10px);
+        padding: 15px 10px;
+    }
+    
+    .acoes-rapidas i {
+        font-size: 24px;
+        margin-bottom: 5px;
+    }
+    
+    /* --- Formulários --- */
+    .form-section {
+        padding: 15px;
+    }
+    
+    .form-section h2 {
+        font-size: 1.2rem;
+    }
+    
+    .form-section h3 {
+        font-size: 1rem;
+    }
+    
+    .anuncio-form .form-group input[type="text"],
+    .anuncio-form .form-group input[type="number"],
+    .anuncio-form .form-group input[type="file"],
+    .anuncio-form .form-group select,
+    .anuncio-form .form-group textarea {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    /* --- Botões de Sair --- */
+    .nav-link.exit-button {
+        padding: 6px 15px;
+        font-size: 14px;
+        margin-left: 10px;
+    }
+    
+    /* --- Notificações --- */
+    .notificacao-badge {
+        font-size: 11px;
+        padding: 2px 6px;
+        top: -8px;
+        right: -8px;
+    }
+}
+
+/* Ajustes extras para telas muito pequenas (até 360px) */
+@media screen and (max-width: 360px) {
+    .logo h1 {
+        font-size: 1rem;
+    }
+    
+    .logo h2 {
+        font-size: 0.8rem;
+    }
+    
+    .header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .card h3 {
+        font-size: 0.9rem;
+    }
+    
+    .card p {
+        font-size: 1.3rem;
+    }
+    
+    .acoes-rapidas a {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Container da tabela */
+    .tabela-anuncios {
+        overflow-x: visible;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* Esconde a tabela tradicional em mobile */
+    table {
+        display: none;
+    }
+    
+    /* Mostra a versão em cards */
+    .cards-anuncios-mobile {
+        display: block !important;
+    }
+    
+    /* Cards de anúncios */
+    .card-anuncio {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-left: 4px solid var(--primary-color);
+        transition: transform 0.2s ease;
+    }
+    
+    .card-anuncio:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    /* Header do card */
+    .card-anuncio-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .card-anuncio-title {
+        flex: 1;
+    }
+    
+    .card-anuncio-title h3 {
+        font-size: 1.1rem;
+        color: var(--dark-color);
+        margin: 0 0 5px 0;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+    
+    .card-anuncio-id {
+        font-size: 0.8rem;
+        color: #666;
+        background: #f5f5f5;
+        padding: 2px 8px;
+        border-radius: 10px;
+        display: inline-block;
+    }
+    
+    /* Status no header */
+    .card-anuncio-status {
+        font-size: 0.75rem;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-weight: bold;
+        white-space: nowrap;
+        margin-left: 10px;
+    }
+    
+    .status.ativo {
+        background-color: var(--primary-light);
+        color: var(--primary-dark);
+    }
+    
+    /* Corpo do card */
+    .card-anuncio-body {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .card-info-item {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .card-info-label {
+        font-size: 0.8rem;
+        color: #666;
+        margin-bottom: 3px;
+        font-weight: 500;
+    }
+    
+    .card-info-value {
+        font-size: 1rem;
+        color: var(--text-color);
+        font-weight: 600;
+    }
+    
+    .card-info-value small {
+        font-size: 0.8rem;
+        color: #666;
+        font-weight: normal;
+    }
+    
+    /* Data de criação */
+    .card-anuncio-data {
+        grid-column: span 2;
+        text-align: center;
+        font-size: 0.85rem;
+        color: #666;
+        padding-top: 8px;
+        border-top: 1px dashed #eee;
+    }
+    
+    /* Ações do card */
+    .card-anuncio-actions {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+    
+    .card-action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+    
+    .card-action-btn.edit {
+        background: var(--secondary-color);
+        color: white;
+    }
+    
+    .card-action-btn.delete {
+        background: #f44336;
+        color: white;
+    }
+    
+    .card-action-btn:hover {
+        transform: scale(1.1);
+        opacity: 0.9;
+    }
+    
+    /* Botões de ação */
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9rem;
+        margin: 0 3px;
+    }
+    
+    .action-btn.edit {
+        background: var(--secondary-color);
+        color: white;
+    }
+    
+    .action-btn.delete {
+        background: #f44336;
+        color: white;
+    }
+    
+    /* Seção de anúncios */
+    .section-anuncios {
+        padding: 15px;
+    }
+    
+    .section-anuncios h2 {
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    
+    /* Header da seção com botões */
+    .section-anuncios #header {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .cta-button {
+        width: 100%;
+        margin: 5px 0;
+        padding: 12px;
+        justify-content: center;
+        font-size: 14px;
+        border-radius: 8px;
+    }
+    
+    /* Estado vazio */
+    .empty-state-container {
+        padding: 25px 15px;
+    }
+    
+    .empty-state-icon {
+        font-size: 36px;
+        margin-bottom: 15px;
+    }
+    
+    .empty-state-container h3 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+    }
+    
+    .empty-state-container p {
+        font-size: 0.95rem;
+        line-height: 1.4;
+        margin-bottom: 20px;
+    }
+    
+    .empty-state-button {
+        padding: 12px 20px;
+        font-size: 14px;
+        width: 100%;
+        text-align: center;
+    }
+    
+    /* Ajuste para o título dos cards */
+    .card-anuncio-title h3 {
+        font-size: 1rem;
+        word-break: break-word;
+    }
+}
+
+/* Ajustes para telas muito pequenas */
+@media (max-width: 360px) {
+    .card-anuncio-body {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .card-anuncio-data {
+        grid-column: span 1;
+    }
+    
+    .card-action-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+    
+    .card-anuncio {
+        padding: 12px;
+    }
+}
+
+/* Container para cards mobile (inicialmente escondido) */
+.cards-anuncios-mobile {
+    display: none;
+}
+
+/* Para garantir que a tabela não apareça em mobile */
+@media (max-width: 480px) {
+    table {
+        display: none;
+    }
+    
+    .cards-anuncios-mobile {
+        display: block;
+    }
+}

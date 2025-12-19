@@ -241,12 +241,84 @@ $foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
                     </div>
 
                     <div class="form-group">
-                        <label for="plano">Plano Atual</label>
-                        <input type="text" id="plano" name="plano" 
-                            value="<?php echo htmlspecialchars($comprador_data['plano'] ?? 'free'); ?>" 
-                            disabled>
-                        <small>Altere aqui seu plano.</small>
-                    </div>
+    <label for="plano">Plano Atual</label>
+    <div class="plano-info">
+        <?php
+        // Buscar plano atual do vendedor
+        $plano_atual = 'Free';
+        $plano_id_atual = 1;
+        
+        if (isset($vendedor['plano_id'])) {
+            $query_plano = "SELECT * FROM planos WHERE id = :plano_id";
+            $stmt_plano = $db->prepare($query_plano);
+            $stmt_plano->bindParam(':plano_id', $vendedor['plano_id']);
+            $stmt_plano->execute();
+            $plano_dados = $stmt_plano->fetch(PDO::FETCH_ASSOC);
+            
+            if ($plano_dados) {
+                $plano_atual = $plano_dados['nome'];
+                $plano_id_atual = $plano_dados['id'];
+            }
+        }
+        ?>
+        <input type="text" value="<?php echo htmlspecialchars($plano_atual); ?>" disabled>
+        <small>
+            <?php if ($plano_id_atual > 1): ?>
+                <a href="escolher_plano.php" class="change-plan-link">Alterar plano</a> | 
+                <a href="gerenciar_assinatura.php" class="manage-subscription-link">Gerenciar assinatura</a>
+            <?php else: ?>
+                <a href="escolher_plano.php" class="upgrade-plan-link">Fazer upgrade do plano</a>
+            <?php endif; ?>
+        </small>
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="anuncios_disponiveis">Anúncios Disponíveis</label>
+    <?php
+    // Calcular anúncios disponíveis
+    $total_disponivel = 0;
+    $utilizados = 0;
+    
+    if (isset($vendedor['plano_id'])) {
+        // Buscar limite do plano
+        $query_limite = "SELECT limite_total_anuncios FROM planos WHERE id = :plano_id";
+        $stmt_limite = $db->prepare($query_limite);
+        $stmt_limite->bindParam(':plano_id', $vendedor['plano_id']);
+        $stmt_limite->execute();
+        $limite = $stmt_limite->fetch(PDO::FETCH_ASSOC);
+        
+        // Contar anúncios ativos do vendedor
+        $query_anuncios = "SELECT COUNT(*) as total FROM anuncios WHERE vendedor_id = :vendedor_id AND status = 'ativo'";
+        $stmt_anuncios = $db->prepare($query_anuncios);
+        $stmt_anuncios->bindParam(':vendedor_id', $vendedor_id_fk);
+        $stmt_anuncios->execute();
+        $anuncios_ativos = $stmt_anuncios->fetch(PDO::FETCH_ASSOC);
+        
+        $total_disponivel = $limite['limite_total_anuncios'] ?? 1;
+        $utilizados = $anuncios_ativos['total'] ?? 0;
+    }
+    ?>
+    <div class="anuncios-progress">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: <?php echo min(100, ($utilizados / $total_disponivel) * 100); ?>%"></div>
+        </div>
+        <div class="progress-text">
+            <?php echo $utilizados; ?> de <?php echo $total_disponivel; ?> anúncios utilizados
+        </div>
+        <?php if ($utilizados >= $total_disponivel && $plano_id_atual < 5): ?>
+            <small style="color: #e74c3c; display: block; margin-top: 5px;">
+                <i class="fas fa-exclamation-circle"></i> Limite atingido. 
+                <a href="escolher_plano.php">Faça upgrade para mais anúncios</a>
+            </small>
+        <?php elseif ($plano_id_atual == 5 && $utilizados >= 5): ?>
+            <small style="color: #3498db; display: block; margin-top: 5px;">
+                <i class="fas fa-plus-circle"></i> 
+                <a href="comprar_unidades_extras.php">Comprar unidades extras</a>
+            </small>
+        <?php endif; ?>
+    </div>
+</div>
                 
                     <button type="submit" class="big-button"><i class="fas fa-save"></i> Salvar Alterações</button>
                     

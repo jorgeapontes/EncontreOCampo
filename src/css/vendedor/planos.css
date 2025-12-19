@@ -1,0 +1,56 @@
+/* Estilos para as páginas de planos e assinatura */
+
+.alert {
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border-left: 5px solid;
+}
+
+.success-alert {
+    background: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.error-alert {
+    background: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.anuncios-progress {
+    margin-top: 10px;
+}
+
+.progress-bar {
+    height: 10px;
+    background: #e0e0e0;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3498db, #2ecc71);
+    transition: width 0.3s;
+}
+
+.progress-text {
+    margin-top: 5px;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.change-plan-link, 
+.manage-subscription-link,
+.upgrade-plan-link {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.change-plan-link:hover,
+.manage-subscription-link:hover,
+.upgrade-plan-link:hover {
+    text-decoration: underline;
+}

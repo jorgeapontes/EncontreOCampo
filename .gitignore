@@ -3,6 +3,7 @@
 Thumbs.db
 *.log
 /vendor/
+.env
 
 # ARQUIVOS DE CONFIGURAÇÃO DE SEGURANÇA (CRUCIAL!)
 # Não envie credenciais do banco de dados

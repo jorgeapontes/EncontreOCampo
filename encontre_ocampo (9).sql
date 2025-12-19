@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 16/12/2025 às 02:02
+-- Tempo de geração: 19/12/2025 às 17:11
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -102,7 +102,20 @@ INSERT INTO `chat_auditoria` (`id`, `conversa_id`, `usuario_id`, `acao`, `detalh
 (14, 6, 4, '', 'Ação realizada pelo usuário', NULL, NULL, '2025-12-16 00:39:14'),
 (15, 6, 4, '', 'Ação realizada pelo usuário', NULL, NULL, '2025-12-16 00:39:18'),
 (16, 5, 4, '', 'Ação realizada pelo usuário', NULL, NULL, '2025-12-16 00:50:48'),
-(17, 5, 4, '', 'Ação realizada pelo usuário', NULL, NULL, '2025-12-16 00:50:54');
+(17, 5, 4, '', 'Ação realizada pelo usuário', NULL, NULL, '2025-12-16 00:50:54'),
+(18, 5, 3, '', 'Ação realizada pelo comprador', NULL, NULL, '2025-12-16 14:55:20'),
+(19, 5, 3, '', 'Ação realizada pelo comprador', NULL, NULL, '2025-12-16 14:55:23'),
+(20, 8, 3, 'enviar_mensagem', 'Mensagem ID: 24 - Conteúdo: quero isso', NULL, NULL, '2025-12-16 17:30:14'),
+(21, 8, 4, 'enviar_mensagem', 'Mensagem ID: 25 - Conteúdo: ok', NULL, NULL, '2025-12-16 17:30:21'),
+(22, 8, 3, 'enviar_mensagem', 'Mensagem ID: 26 - Conteúdo: produzindo', NULL, NULL, '2025-12-16 17:30:27'),
+(23, 8, 4, '', 'Ação realizada pelo usuário', NULL, NULL, '2025-12-16 17:30:37'),
+(24, 8, 4, '', 'Ação realizada pelo usuário', NULL, NULL, '2025-12-16 17:30:45'),
+(25, 9, 3, 'enviar_mensagem', 'Mensagem ID: 27 - Conteúdo: teste', NULL, NULL, '2025-12-16 20:38:50'),
+(26, 9, 4, 'enviar_mensagem', 'Mensagem ID: 28 - Conteúdo: ok', NULL, NULL, '2025-12-16 20:39:08'),
+(27, 9, 4, 'enviar_mensagem', 'Mensagem ID: 29 - Conteúdo: testando mensagem', NULL, NULL, '2025-12-16 20:39:18'),
+(28, 9, 3, 'enviar_mensagem', 'Mensagem ID: 30 - Conteúdo: ok', NULL, NULL, '2025-12-16 20:39:22'),
+(29, 10, 3, 'enviar_mensagem', 'Mensagem ID: 31 - Conteúdo: ok', NULL, NULL, '2025-12-16 21:08:10'),
+(30, 10, 4, 'enviar_mensagem', 'Mensagem ID: 32 - Conteúdo: teste', NULL, NULL, '2025-12-16 21:08:26');
 
 -- --------------------------------------------------------
 
@@ -141,7 +154,10 @@ CREATE TABLE `chat_conversas` (
 INSERT INTO `chat_conversas` (`id`, `produto_id`, `comprador_id`, `vendedor_id`, `ultima_mensagem`, `ultima_mensagem_data`, `comprador_lido`, `vendedor_lido`, `status`, `data_criacao`, `deletado`, `data_delecao`, `usuario_deletou`, `favorito_comprador`, `favorito_vendedor`, `comprador_excluiu`, `vendedor_excluiu`, `ultimo_ip_comprador`, `ultimo_ip_vendedor`, `ultimo_user_agent_comprador`, `ultimo_user_agent_vendedor`) VALUES
 (5, 16, 3, 4, '[Imagem]', '2025-12-13 18:39:24', 1, 0, 'ativo', '2025-12-10 16:46:53', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL),
 (6, 19, 4, 9, 'ok', '2025-12-10 17:04:15', 0, 1, 'ativo', '2025-12-10 17:04:03', 0, NULL, NULL, 0, 0, 1, 0, NULL, NULL, NULL, NULL),
-(7, 19, 3, 9, '[Imagem]', '2025-12-13 18:39:58', 1, 0, 'ativo', '2025-12-11 19:37:54', 0, NULL, NULL, 1, 0, 1, 0, NULL, NULL, NULL, NULL);
+(7, 19, 3, 9, '[Imagem]', '2025-12-13 18:39:58', 1, 0, 'ativo', '2025-12-11 19:37:54', 0, NULL, NULL, 1, 0, 1, 0, NULL, NULL, NULL, NULL),
+(8, 25, 3, 4, 'produzindo', '2025-12-16 17:30:27', 1, 0, 'ativo', '2025-12-16 17:30:09', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL),
+(9, 20, 3, 4, 'ok', '2025-12-16 20:39:22', 1, 0, 'ativo', '2025-12-16 20:38:44', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL),
+(10, 24, 3, 4, 'teste', '2025-12-16 21:08:26', 0, 1, 'ativo', '2025-12-16 21:08:06', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -181,7 +197,16 @@ INSERT INTO `chat_mensagens` (`id`, `conversa_id`, `remetente_id`, `mensagem`, `
 (20, 5, 3, '/uploads/chat/img_693d7a51040dd_1765636689.jpeg', 'imagem', 1, '2025-12-13 14:38:09', 0, NULL, NULL, 'texto', NULL, NULL),
 (21, 5, 3, '/uploads/chat/img_693db0ae72df3_1765650606.jpg', 'imagem', 1, '2025-12-13 18:30:06', 0, NULL, NULL, 'texto', NULL, NULL),
 (22, 5, 3, '/EncontreOCampo/uploads/chat/img_693db2dcce582_1765651164.jpg', 'imagem', 1, '2025-12-13 18:39:24', 0, NULL, NULL, 'texto', NULL, NULL),
-(23, 7, 3, '/EncontreOCampo/uploads/chat/img_693db2fe18ed7_1765651198.jpeg', 'imagem', 0, '2025-12-13 18:39:58', 0, NULL, NULL, 'texto', NULL, NULL);
+(23, 7, 3, '/EncontreOCampo/uploads/chat/img_693db2fe18ed7_1765651198.jpeg', 'imagem', 0, '2025-12-13 18:39:58', 0, NULL, NULL, 'texto', NULL, NULL),
+(24, 8, 3, 'quero isso', 'texto', 1, '2025-12-16 17:30:14', 0, NULL, NULL, 'texto', NULL, NULL),
+(25, 8, 4, 'ok', 'texto', 1, '2025-12-16 17:30:21', 0, NULL, NULL, 'texto', NULL, NULL),
+(26, 8, 3, 'produzindo', 'texto', 1, '2025-12-16 17:30:27', 0, NULL, NULL, 'texto', NULL, NULL),
+(27, 9, 3, 'teste', 'texto', 1, '2025-12-16 20:38:50', 0, NULL, NULL, 'texto', NULL, NULL),
+(28, 9, 4, 'ok', 'texto', 1, '2025-12-16 20:39:08', 0, NULL, NULL, 'texto', NULL, NULL),
+(29, 9, 4, 'testando mensagem', 'texto', 1, '2025-12-16 20:39:18', 0, NULL, NULL, 'texto', NULL, NULL),
+(30, 9, 3, 'ok', 'texto', 1, '2025-12-16 20:39:22', 0, NULL, NULL, 'texto', NULL, NULL),
+(31, 10, 3, 'ok', 'texto', 1, '2025-12-16 21:08:10', 0, NULL, NULL, 'texto', NULL, NULL),
+(32, 10, 4, 'teste', 'texto', 1, '2025-12-16 21:08:26', 0, NULL, NULL, 'texto', NULL, NULL);
 
 --
 -- Acionadores `chat_mensagens`
@@ -313,6 +338,55 @@ INSERT INTO `notificacoes` (`id`, `usuario_id`, `mensagem`, `tipo`, `lida`, `url
 -- --------------------------------------------------------
 
 --
+-- Estrutura para tabela `pagamentos`
+--
+
+CREATE TABLE `pagamentos` (
+  `id` int(11) NOT NULL,
+  `vendedor_id` int(11) NOT NULL,
+  `assinatura_id` int(11) DEFAULT NULL,
+  `valor` decimal(10,2) NOT NULL,
+  `status` varchar(50) DEFAULT NULL,
+  `metodo_pagamento` varchar(50) DEFAULT NULL,
+  `id_mercadopago` varchar(255) DEFAULT NULL,
+  `data_pagamento` timestamp NULL DEFAULT NULL,
+  `descricao` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `planos`
+--
+
+CREATE TABLE `planos` (
+  `id` int(11) NOT NULL,
+  `nome` varchar(50) NOT NULL,
+  `descricao` varchar(255) DEFAULT NULL,
+  `preco_mensal` decimal(10,2) NOT NULL,
+  `quantidade_anuncios_pagos` int(11) NOT NULL,
+  `quantidade_anuncios_gratis` int(11) NOT NULL DEFAULT 1,
+  `limite_total_anuncios` int(11) NOT NULL,
+  `ativo` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `planos`
+--
+
+INSERT INTO `planos` (`id`, `nome`, `descricao`, `preco_mensal`, `quantidade_anuncios_pagos`, `quantidade_anuncios_gratis`, `limite_total_anuncios`, `ativo`, `created_at`) VALUES
+(1, 'Free', 'Plano Básico Gratuito', 0.00, 0, 1, 1, 1, '2025-12-19 14:40:55'),
+(2, 'Plano 1', '2 anúncios no total', 19.90, 1, 1, 2, 1, '2025-12-19 14:40:55'),
+(3, 'Plano 2', '3 anúncios no total', 29.90, 2, 1, 3, 1, '2025-12-19 14:40:55'),
+(4, 'Plano 3', '4 anúncios no total', 39.90, 3, 1, 4, 1, '2025-12-19 14:40:55'),
+(5, 'Plano 4', '5 anúncios no total', 49.90, 4, 1, 5, 1, '2025-12-19 14:40:55'),
+(6, 'Plano 5', 'Plano Flexível', 59.90, 4, 1, 0, 1, '2025-12-19 14:40:55');
+
+-- --------------------------------------------------------
+
+--
 -- Estrutura para tabela `produtos`
 --
 
@@ -349,7 +423,13 @@ INSERT INTO `produtos` (`id`, `vendedor_id`, `nome`, `descricao`, `preco`, `modo
 (15, 1, 'teste 1', '1', 0.01, 'por_quilo', NULL, NULL, 0, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_69398052be9755.34966564.jpeg', 1, NULL, 0, 'ativo', '2025-12-10 14:14:42', '2025-12-10 14:15:18'),
 (16, 1, 'teste x', '', 10.00, 'por_quilo', NULL, NULL, 0, 8.00, 20.00, 1, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_69398067b3f823.59696952.jpg', 1, NULL, 0, 'ativo', '2025-12-10 14:15:03', '2025-12-11 14:50:11'),
 (17, 1, 'testenovop', '1', 0.01, 'por_quilo', NULL, NULL, 0, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_693983f26c4a61.72410777.jpg', 1, NULL, 0, 'ativo', '2025-12-10 14:30:10', NULL),
-(19, 2, 'testando', '', 1.11, 'por_quilo', NULL, NULL, 0, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_6939a7f7bde745.04338148.jpeg', 11, NULL, 0, 'ativo', '2025-12-10 17:03:51', NULL);
+(19, 2, 'testando', '', 1.11, 'por_quilo', NULL, NULL, 0, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_6939a7f7bde745.04338148.jpeg', 11, NULL, 0, 'ativo', '2025-12-10 17:03:51', NULL),
+(20, 1, 'novo anúncio', 'teste novo *anúncio*', 10.00, 'caixa_quilos', 2.000, NULL, NULL, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_6941720cc53d18.11334749.jpg', 25, 'caixa', 1, 'ativo', '2025-12-16 14:51:56', NULL),
+(21, 1, 'unidade', '', 1.00, 'por_unidade', NULL, NULL, 250, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_694195ae5e5541.02524533.jpg', 250, 'unidade', 1, 'ativo', '2025-12-16 17:23:58', NULL),
+(22, 1, 'caixa unidades', '', 50.00, 'caixa_unidades', NULL, 12, 23, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_694195d13a9663.37007865.jpg', 23, 'caixa', 1, 'ativo', '2025-12-16 17:24:33', NULL),
+(23, 1, 'saco unidades', '', 3.00, 'saco_unidades', NULL, 10, 120, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_694195f134ac04.46666560.jpg', 120, 'saco', 1, 'ativo', '2025-12-16 17:25:05', NULL),
+(24, 1, 'saco kgs', '', 0.01, 'saco_quilos', 3.000, NULL, NULL, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_694196076e7db4.43222171.jpg', 1223, 'saco', 1, 'ativo', '2025-12-16 17:25:27', '2025-12-16 19:55:16'),
+(25, 1, 'unidadde', '', 0.01, 'por_unidade', NULL, NULL, 1221, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_6941964169b844.40818529.jpg', 1221, 'unidade', 1, 'ativo', '2025-12-16 17:26:25', NULL);
 
 -- --------------------------------------------------------
 
@@ -375,7 +455,15 @@ INSERT INTO `produto_imagens` (`id`, `produto_id`, `imagem_url`, `ordem`, `data_
 (7, 16, '../uploads/produtos/prod_69398067b417a9.84436515.jpeg', 1, '2025-12-10 14:15:03'),
 (8, 16, '../uploads/produtos/prod_69398067b43918.23298783.jpg', 2, '2025-12-10 14:15:03'),
 (9, 17, '../uploads/produtos/prod_693983f26c4a61.72410777.jpg', 0, '2025-12-10 14:30:10'),
-(11, 19, '../uploads/produtos/prod_6939a7f7bde745.04338148.jpeg', 0, '2025-12-10 17:03:51');
+(11, 19, '../uploads/produtos/prod_6939a7f7bde745.04338148.jpeg', 0, '2025-12-10 17:03:51'),
+(12, 20, '../uploads/produtos/prod_6941720cc53d18.11334749.jpg', 0, '2025-12-16 14:51:56'),
+(13, 20, '../uploads/produtos/prod_6941720cc560f0.22236072.jpeg', 1, '2025-12-16 14:51:56'),
+(14, 20, '../uploads/produtos/prod_6941720cc57d82.52133605.jpg', 2, '2025-12-16 14:51:56'),
+(15, 21, '../uploads/produtos/prod_694195ae5e5541.02524533.jpg', 0, '2025-12-16 17:23:58'),
+(16, 22, '../uploads/produtos/prod_694195d13a9663.37007865.jpg', 0, '2025-12-16 17:24:33'),
+(17, 23, '../uploads/produtos/prod_694195f134ac04.46666560.jpg', 0, '2025-12-16 17:25:05'),
+(18, 24, '../uploads/produtos/prod_694196076e7db4.43222171.jpg', 0, '2025-12-16 17:25:27'),
+(19, 25, '../uploads/produtos/prod_6941964169b844.40818529.jpg', 0, '2025-12-16 17:26:25');
 
 -- --------------------------------------------------------
 
@@ -573,6 +661,20 @@ INSERT INTO `usuarios` (`id`, `email`, `senha`, `tipo`, `nome`, `status`, `data_
 -- --------------------------------------------------------
 
 --
+-- Estrutura para tabela `usuario_avisos_preferencias`
+--
+
+CREATE TABLE `usuario_avisos_preferencias` (
+  `id` int(11) NOT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `aviso_regioes_entrega` tinyint(1) DEFAULT 1 COMMENT '1 = exibir, 0 = não exibir',
+  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
+  `data_atualizacao` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estrutura para tabela `vendedores`
 --
 
@@ -594,20 +696,66 @@ CREATE TABLE `vendedores` (
   `telefone1` varchar(20) DEFAULT NULL,
   `telefone2` varchar(20) DEFAULT NULL,
   `plano` enum('free','basico','premium','empresarial') DEFAULT 'free',
-  `estados_atendidos` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Estados do Brasil atendidos pelo vendedor (lista branca em formato JSON)' CHECK (json_valid(`estados_atendidos`))
+  `estados_atendidos` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Estados do Brasil atendidos pelo vendedor (lista branca em formato JSON)' CHECK (json_valid(`estados_atendidos`)),
+  `plano_id` int(11) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Despejando dados para a tabela `vendedores`
 --
 
-INSERT INTO `vendedores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, `cpf_cnpj`, `razao_social`, `foto_perfil_url`, `cip`, `cep`, `rua`, `numero`, `complemento`, `estado`, `cidade`, `telefone1`, `telefone2`, `plano`, `estados_atendidos`) VALUES
-(1, 4, 'cnpj', 'Vendedor', '11.111.111/1111-11', '', '../uploads/vendedores/vend_1_693811ef0cf33.jpg', NULL, '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'free', '[\"SE\"]'),
-(2, 9, 'cnpj', 'vendedor2', '111111111111', NULL, NULL, NULL, '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11111111111', NULL, 'free', NULL),
-(3, 11, 'cnpj', 'Rondon', '41111584800', NULL, NULL, '1212121', '13211873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'free', NULL),
-(4, 12, 'cnpj', 'teste', '1111111111111111111', NULL, NULL, '11111', '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'free', NULL),
-(5, 14, 'cnpj', 'teste', '111111111111111111', NULL, NULL, '1111', '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11111111111', NULL, 'basico', NULL),
-(6, 19, 'cnpj', 'test', '00.000.000/0001-91', NULL, NULL, '', '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '(11) 99656-3500', '', 'free', NULL);
+INSERT INTO `vendedores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, `cpf_cnpj`, `razao_social`, `foto_perfil_url`, `cip`, `cep`, `rua`, `numero`, `complemento`, `estado`, `cidade`, `telefone1`, `telefone2`, `plano`, `estados_atendidos`, `plano_id`) VALUES
+(1, 4, 'cnpj', 'Vendedor', '11.111.111/1111-11', '', '../uploads/vendedores/vend_1_693811ef0cf33.jpg', NULL, '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'free', '[\"SE\"]', 1),
+(2, 9, 'cnpj', 'vendedor2', '111111111111', NULL, NULL, NULL, '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11111111111', NULL, 'free', NULL, 1),
+(3, 11, 'cnpj', 'Rondon', '41111584800', NULL, NULL, '1212121', '13211873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'free', NULL, 1),
+(4, 12, 'cnpj', 'teste', '1111111111111111111', NULL, NULL, '11111', '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'free', NULL, 1),
+(5, 14, 'cnpj', 'teste', '111111111111111111', NULL, NULL, '1111', '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11111111111', NULL, 'basico', NULL, 1),
+(6, 19, 'cnpj', 'test', '00.000.000/0001-91', NULL, NULL, '', '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '(11) 99656-3500', '', 'free', NULL, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `vendedor_anuncios_controle`
+--
+
+CREATE TABLE `vendedor_anuncios_controle` (
+  `id` int(11) NOT NULL,
+  `vendedor_id` int(11) NOT NULL,
+  `total_anuncios` int(11) DEFAULT 0,
+  `anuncios_gratis_utilizados` int(11) DEFAULT 0,
+  `anuncios_pagos_utilizados` int(11) DEFAULT 0,
+  `anuncios_ativos` int(11) DEFAULT 0,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `vendedor_assinaturas`
+--
+
+CREATE TABLE `vendedor_assinaturas` (
+  `id` int(11) NOT NULL,
+  `vendedor_id` int(11) NOT NULL,
+  `plano_id` int(11) NOT NULL,
+  `status` enum('active','pending','paused','cancelled') DEFAULT 'pending',
+  `preco_aprovado` decimal(10,2) DEFAULT NULL,
+  `data_inicio` date DEFAULT NULL,
+  `data_vencimento` date DEFAULT NULL,
+  `periodo` varchar(20) DEFAULT 'monthly',
+  `referencia_mercadopago` varchar(255) DEFAULT NULL,
+  `preferencia_mercadopago` varchar(255) DEFAULT NULL,
+  `unidades_extras` int(11) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `vendedor_assinaturas`
+--
+
+INSERT INTO `vendedor_assinaturas` (`id`, `vendedor_id`, `plano_id`, `status`, `preco_aprovado`, `data_inicio`, `data_vencimento`, `periodo`, `referencia_mercadopago`, `preferencia_mercadopago`, `unidades_extras`, `created_at`, `updated_at`) VALUES
+(1, 1, 2, 'pending', 19.90, '2025-12-19', NULL, 'monthly', 'vendedor_1_plano_2_1766159934', NULL, 0, '2025-12-19 15:58:54', '2025-12-19 15:58:54');
 
 --
 -- Índices para tabelas despejadas
@@ -691,6 +839,20 @@ ALTER TABLE `notificacoes`
   ADD KEY `usuario_id` (`usuario_id`);
 
 --
+-- Índices de tabela `pagamentos`
+--
+ALTER TABLE `pagamentos`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `vendedor_id` (`vendedor_id`),
+  ADD KEY `assinatura_id` (`assinatura_id`);
+
+--
+-- Índices de tabela `planos`
+--
+ALTER TABLE `planos`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Índices de tabela `produtos`
 --
 ALTER TABLE `produtos`
@@ -759,11 +921,34 @@ ALTER TABLE `usuarios`
   ADD KEY `reset_token` (`reset_token`);
 
 --
+-- Índices de tabela `usuario_avisos_preferencias`
+--
+ALTER TABLE `usuario_avisos_preferencias`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `usuario_id` (`usuario_id`);
+
+--
 -- Índices de tabela `vendedores`
 --
 ALTER TABLE `vendedores`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `usuario_id` (`usuario_id`);
+  ADD KEY `usuario_id` (`usuario_id`),
+  ADD KEY `plano_id` (`plano_id`);
+
+--
+-- Índices de tabela `vendedor_anuncios_controle`
+--
+ALTER TABLE `vendedor_anuncios_controle`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `vendedor_id` (`vendedor_id`);
+
+--
+-- Índices de tabela `vendedor_assinaturas`
+--
+ALTER TABLE `vendedor_assinaturas`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `vendedor_id` (`vendedor_id`),
+  ADD KEY `plano_id` (`plano_id`);
 
 --
 -- AUTO_INCREMENT para tabelas despejadas
@@ -779,19 +964,19 @@ ALTER TABLE `admin_acoes`
 -- AUTO_INCREMENT de tabela `chat_auditoria`
 --
 ALTER TABLE `chat_auditoria`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT de tabela `chat_conversas`
 --
 ALTER TABLE `chat_conversas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de tabela `chat_mensagens`
 --
 ALTER TABLE `chat_mensagens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT de tabela `compradores`
@@ -824,16 +1009,28 @@ ALTER TABLE `notificacoes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
+-- AUTO_INCREMENT de tabela `pagamentos`
+--
+ALTER TABLE `pagamentos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `planos`
+--
+ALTER TABLE `planos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
 -- AUTO_INCREMENT de tabela `produtos`
 --
 ALTER TABLE `produtos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT de tabela `produto_imagens`
 --
 ALTER TABLE `produto_imagens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT de tabela `propostas_comprador`
@@ -878,10 +1075,28 @@ ALTER TABLE `usuarios`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
+-- AUTO_INCREMENT de tabela `usuario_avisos_preferencias`
+--
+ALTER TABLE `usuario_avisos_preferencias`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de tabela `vendedores`
 --
 ALTER TABLE `vendedores`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT de tabela `vendedor_anuncios_controle`
+--
+ALTER TABLE `vendedor_anuncios_controle`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `vendedor_assinaturas`
+--
+ALTER TABLE `vendedor_assinaturas`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Restrições para tabelas despejadas
@@ -943,6 +1158,13 @@ ALTER TABLE `notificacoes`
   ADD CONSTRAINT `notificacoes_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
+-- Restrições para tabelas `pagamentos`
+--
+ALTER TABLE `pagamentos`
+  ADD CONSTRAINT `pagamentos_ibfk_1` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`id`),
+  ADD CONSTRAINT `pagamentos_ibfk_2` FOREIGN KEY (`assinatura_id`) REFERENCES `vendedor_assinaturas` (`id`);
+
+--
 -- Restrições para tabelas `produtos`
 --
 ALTER TABLE `produtos`
@@ -995,10 +1217,30 @@ ALTER TABLE `transportadores`
   ADD CONSTRAINT `transportadores_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
+-- Restrições para tabelas `usuario_avisos_preferencias`
+--
+ALTER TABLE `usuario_avisos_preferencias`
+  ADD CONSTRAINT `usuario_avisos_preferencias_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
+
+--
 -- Restrições para tabelas `vendedores`
 --
 ALTER TABLE `vendedores`
-  ADD CONSTRAINT `vendedores_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `vendedores_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `vendedores_ibfk_2` FOREIGN KEY (`plano_id`) REFERENCES `planos` (`id`);
+
+--
+-- Restrições para tabelas `vendedor_anuncios_controle`
+--
+ALTER TABLE `vendedor_anuncios_controle`
+  ADD CONSTRAINT `vendedor_anuncios_controle_ibfk_1` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`id`);
+
+--
+-- Restrições para tabelas `vendedor_assinaturas`
+--
+ALTER TABLE `vendedor_assinaturas`
+  ADD CONSTRAINT `vendedor_assinaturas_ibfk_1` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`id`),
+  ADD CONSTRAINT `vendedor_assinaturas_ibfk_2` FOREIGN KEY (`plano_id`) REFERENCES `planos` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

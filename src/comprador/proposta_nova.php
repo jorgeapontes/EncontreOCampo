@@ -918,40 +918,50 @@ $imagePath = !empty($imagens_produto[0]['url']) ? htmlspecialchars($imagens_prod
             </div>
 
                     <!-- ALERTA DE LOGÍSTICA - NOVA SEÇÃO -->
-        <?php if (!$entrega_disponivel && !empty($estado_comprador) && !empty($estados_atendidos)): ?>
-        <div class="alerta-logistica alerta-aviso">
-            <div class="alerta-header">
-                <i class="fas fa-exclamation-triangle"></i>
-                <h4>Atenção: Verifique a disponibilidade de entrega</h4>
+        <?php if (!empty($estado_comprador) && !empty($estados_atendidos)): ?>
+            <?php if ($entrega_disponivel): ?>
+            <!-- AVISO POSITIVO: Vendedor entrega no estado -->
+            <div class="alerta-logistica alerta-sucesso">
+                <div class="alerta-header">
+                    <i class="fas fa-check-circle"></i>
+                    <h4>Entrega disponível para sua região</h4>
+                </div>
+                <div class="alerta-body">
+                    <p>
+                        <i class="fas fa-truck"></i>
+                        O vendedor <strong><?php echo htmlspecialchars($anuncio['nome_vendedor']); ?></strong> realiza entregas para o estado de <strong><?php echo $estado_comprador; ?></strong>.
+                    </p>
+                </div>
             </div>
-            <div class="alerta-body">
-                <p>
-                    O vendedor <strong><?php echo htmlspecialchars($anuncio['nome_vendedor']); ?></strong> 
-                    informou que <strong>não se responsabiliza por entregas para o estado de <?php echo $estado_comprador; ?></strong>.
-                </p>
-                <p class="alerta-detalhes">
-                    <i class="fas fa-info-circle"></i>
-                    Estados atendidos: 
-                    <?php echo implode(', ', $estados_atendidos); ?>
-                </p>
-                <p class="alerta-aviso-importante">
-                    ⚠️ Entre em contato com o vendedor por meio do chat 
-                   <strong> ou utilize nossa função de encontrar um transportador.</strong>
-                </p>
+            <?php else: ?>
+            <!-- AVISO DE ATENÇÃO: Vendedor não entrega no estado -->
+            <div class="alerta-logistica alerta-atencao">
+                <div class="alerta-header">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h4>Verifique a disponibilidade de entrega</h4>
+                </div>
+                <div class="alerta-body">
+                    <p>
+                        O vendedor <strong><?php echo htmlspecialchars($anuncio['nome_vendedor']); ?></strong> 
+                        não realiza entregas diretas para <strong><?php echo $estado_comprador; ?></strong>.
+                    </p>
+                    <p class="alerta-detalhes">
+                        <i class="fas fa-map"></i>
+                        <strong>Estados onde este vendedor entrega:</strong> 
+                        <?php echo implode(', ', $estados_atendidos); ?>
+                    </p>
+                    <p class="alerta-recomendacao">
+                        <i class="fas fa-lightbulb"></i>
+                        <strong>Sugestões:</strong>
+                        <ul>
+                            <li>Entre em contato com o vendedor via chat para discutir opções de frete</li>
+                            <li>Verifique a possibilidade de envio via transportadora</li>
+                            <li>Explore outros vendedores que entregam em seu estado</li>
+                        </ul>
+                    </p>
+                </div>
             </div>
-        </div>
-        <?php elseif ($entrega_disponivel && !empty($estado_comprador) && !empty($estados_atendidos)): ?>
-        <div class="alerta-logistica alerta-sucesso">
-            <div class="alerta-header">
-                <i class="fas fa-check-circle"></i>
-                <h4>Entrega disponível para sua região</h4>
-            </div>
-            <div class="alerta-body">
-                <p>
-                    Este vendedor atende ao seu estado (<strong><?php echo $estado_comprador; ?></strong>).
-                </p>
-            </div>
-        </div>
+            <?php endif; ?>
         <?php endif; ?>
 
             <!-- Descrição do Produto -->

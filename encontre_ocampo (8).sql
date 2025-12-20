@@ -1004,3 +1004,27 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- ===========================================================
+-- Adições seguras: garantir colunas adicionais sem remover conteúdo
+-- (adicionado automaticamente para compatibilidade com a UI de logística)
+-- ===========================================================
+/*
+  Comandos a seguir são idempotentes (usam IF NOT EXISTS quando suportado).
+  Importante: execute o dump normalmente; se seu MySQL/MariaDB não suportar
+  "ADD COLUMN IF NOT EXISTS", rode manualmente a instrução ALTER TABLE abaixo
+  ou atualize para MySQL 8+. Esses comandos não removem ou alteram colunas
+  existentes, apenas adicionam quando ausentes.
+*/
+
+-- Adiciona `cidades_atendidas` na tabela `vendedores` (JSON em LONGTEXT)
+ALTER TABLE `vendedores`
+  ADD COLUMN IF NOT EXISTS `cidades_atendidas` LONGTEXT DEFAULT NULL
+  COMMENT 'JSON com cidades atendidas por estado, ex: {"SP":["São Paulo","Campinas"]}' AFTER `estados_atendidos`;
+
+-- Garante que `transportadores.numero_antt` existe e é VARCHAR(50)
+ALTER TABLE `transportadores`
+  MODIFY COLUMN `numero_antt` VARCHAR(50) DEFAULT NULL;
+
+-- Fim das adições seguras
+

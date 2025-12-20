@@ -19,10 +19,12 @@ $conn = $database->getConnection();
 $vendedor_id = null;
 $estados_atendidos_json = '[]';
 $estados_atendidos = [];
+$cidades_atendidos_json = '{}';
+$cidades_atendidos = []; 
 
 try {
     // Buscar vendedor_id
-    $sql_vendedor = "SELECT id, nome_comercial, estados_atendidos FROM vendedores WHERE usuario_id = :usuario_id";
+    $sql_vendedor = "SELECT id, nome_comercial, estados_atendidos, cidades_atendidas FROM vendedores WHERE usuario_id = :usuario_id";
     $stmt_vendedor = $conn->prepare($sql_vendedor);
     $stmt_vendedor->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
     $stmt_vendedor->execute();
@@ -32,9 +34,11 @@ try {
         $vendedor_id = $vendedor['id'];
         $vendedor_nome_comercial = $vendedor['nome_comercial'] ?? $usuario_nome;
         $estados_atendidos_json = $vendedor['estados_atendidos'] ?? '[]';
+        $cidades_atendidos_json = $vendedor['cidades_atendidas'] ?? '{}';
         
         // Decodificar JSON para array PHP
         $estados_atendidos = json_decode($estados_atendidos_json, true) ?: [];
+        $cidades_atendidos = json_decode($cidades_atendidos_json, true) ?: [];
     }
 } catch (PDOException $e) {
     error_log("Erro ao buscar dados do vendedor: " . $e->getMessage());
@@ -61,18 +65,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Converter para JSON
         $estados_json = json_encode(array_values($estados_filtrados));
-        
-        // Atualizar no banco
-        $sql_atualizar = "UPDATE vendedores SET estados_atendidos = :estados_json WHERE id = :vendedor_id";
+
+        // Coletar cidades enviadas (inputs com nome cidades_<SIGLA>[])
+        $cidades_selecionadas = [];
+        foreach ($_POST as $key => $value) {
+            if (strpos($key, 'cidades_') === 0) {
+                $sigla = strtoupper(substr($key, 8));
+                if (in_array($sigla, $estados_validos)) {
+                    $lista = is_array($value) ? $value : [$value];
+                    // limpar e validar
+                    $lista_filtrada = array_values(array_filter(array_map('trim', $lista)));
+                    if (!empty($lista_filtrada)) {
+                        $cidades_selecionadas[$sigla] = $lista_filtrada;
+                    }
+                }
+            }
+        }
+
+        $cidades_json = json_encode($cidades_selecionadas, JSON_UNESCAPED_UNICODE);
+
+        // Atualizar no banco (estados e cidades)
+        $sql_atualizar = "UPDATE vendedores SET estados_atendidos = :estados_json, cidades_atendidas = :cidades_json WHERE id = :vendedor_id";
         $stmt_atualizar = $conn->prepare($sql_atualizar);
         $stmt_atualizar->bindParam(':estados_json', $estados_json);
+        $stmt_atualizar->bindParam(':cidades_json', $cidades_json);
         $stmt_atualizar->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
-        
+
         if ($stmt_atualizar->execute()) {
             $mensagem = "Configuração de regiões de entrega salva com sucesso!";
             $tipo_mensagem = 'sucesso';
             $estados_atendidos = $estados_filtrados;
             $estados_atendidos_json = $estados_json;
+            $cidades_atendidos = $cidades_selecionadas;
+            $cidades_atendidos_json = $cidades_json;
         } else {
             $mensagem = "Erro ao salvar configuração. Tente novamente.";
             $tipo_mensagem = 'erro';
@@ -219,6 +244,25 @@ $estados_brasil = [
             padding: 15px;
             transition: all 0.3s;
             cursor: pointer;
+        }
+
+        .btn-cidades {
+            background: transparent;
+            border: none;
+            color: #0d6efd;
+            cursor: pointer;
+            padding: 6px 8px;
+            margin-top: 8px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s, transform 0.15s;
+        }
+
+        .btn-cidades:hover {
+            background: rgba(13,110,253,0.08);
+            transform: translateY(-2px);
         }
 
         .estado-checkbox:hover {
@@ -412,6 +456,108 @@ $estados_brasil = [
             color: #adb5bd;
         }
 
+        /* ESTILOS PARA SELEÇÃO DE CIDADES */
+        .cidades-section {
+            background: linear-gradient(135deg, #f5f9ff 0%, #e8f4ff 100%);
+            border: 2px solid #b3d9ff;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .cidades-section.ativo {
+            display: block;
+        }
+
+        .cidades-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #b3d9ff;
+        }
+
+        .cidades-header h4 {
+            margin: 0;
+            color: #0066cc;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cidades-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .cidade-checkbox {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            padding: 12px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .cidade-checkbox:hover {
+            border-color: #0066cc;
+            background: #f8faff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.1);
+        }
+
+        .cidade-checkbox input[type="checkbox"] {
+            margin-right: 8px;
+            transform: scale(1.1);
+        }
+
+        .cidade-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .estado-selecionado-info {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 2px solid #64b5f6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .estado-nome-selecionado {
+            font-weight: 600;
+            color: #0d47a1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-fechar-estado {
+            background: none;
+            border: none;
+            color: #0d47a1;
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 0 5px;
+            transition: all 0.3s;
+        }
+
+        .btn-fechar-estado:hover {
+            color: #f44336;
+            transform: scale(1.2);
+        }
+
         /* Ajustes para garantir que o conteúdo não fique atrás da navbar */
         .navbar {
             position: fixed;
@@ -585,10 +731,10 @@ $estados_brasil = [
                 </div>
                 
                 <p class="section-description">
-                    Selecione os estados do Brasil onde você realiza entregas. 
+                    Selecione os estados e cidades do Brasil onde você realiza entregas. 
                     Os compradores serão notificados se estiverem em regiões não atendidas.
                     <br>
-                    <small>Deixe todos desmarcados se atender todo o Brasil.</small>
+                    <small><i class="fas fa-info-circle"></i> Opcionalmente, você pode selecionar cidades específicas dentro de cada estado. Deixe todos desmarcados se atender todo o Brasil.</small>
                 </p>
                 
                 <?php if ($mensagem): ?>
@@ -623,8 +769,27 @@ $estados_brasil = [
                                     <span class="estado-sigla"><?php echo $sigla; ?></span>
                                     <?php echo htmlspecialchars($nome); ?>
                                 </label>
+                                <button type="button" class="btn-cidades" data-sigla="<?php echo $sigla; ?>" title="Selecionar cidades">
+                                    <i class="fas fa-city"></i>
+                                </button>
                             </div>
                         <?php endforeach; ?>
+                    </div>
+
+                    <!-- SEÇÃO DE CIDADES (Opcional) -->
+                    <div class="cidades-section" id="cidades-section">
+                        <div class="estado-selecionado-info" id="estado-info">
+                            <span class="estado-nome-selecionado">
+                                <i class="fas fa-map-pin"></i>
+                                <span id="estado-selecionado-label">Selecione um estado</span>
+                            </span>
+                            <button type="button" class="btn-fechar-estado" id="btn-fechar-cidades" title="Fechar seleção de cidades">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="cidades-grid" id="cidades-container">
+                            <!-- As cidades serão carregadas via JavaScript -->
+                        </div>
                     </div>
                     
                     <?php if (empty($estados_atendidos)): ?>
@@ -789,6 +954,138 @@ $estados_brasil = [
 
             // Scroll para o topo quando carregar
             window.scrollTo(0, 0);
+
+            // ========== FUNCIONALIDADE DE SELEÇÃO DE CIDADES ==========
+            
+            // Carregar dados das cidades por estado (cache local). Se faltar, usaremos a API do IBGE.
+            let cidadesPorEstado = {};
+            // Cidades previamente salvas pelo vendedor (do servidor)
+            const cidadesSelecionadas = <?php echo json_encode($cidades_atendidos ?? [], JSON_UNESCAPED_UNICODE); ?> || {};
+            let cidadesLocalCarregadas = false;
+            
+            fetch('cidades_data.json')
+                .then(response => response.json())
+                .then(data => {
+                    cidadesPorEstado = data || {};
+                    cidadesLocalCarregadas = true;
+                })
+                .catch(error => {
+                    console.warn('Arquivo cidades_data.json não encontrado ou inválido, usaremos API do IBGE:', error);
+                    cidadesLocalCarregadas = false;
+                });
+
+            const estadosBrasil = {
+                'AC': 'Acre', 'AL': 'Alagoas', 'AP': 'Amapá', 'AM': 'Amazonas',
+                'BA': 'Bahia', 'CE': 'Ceará', 'DF': 'Distrito Federal', 'ES': 'Espírito Santo',
+                'GO': 'Goiás', 'MA': 'Maranhão', 'MT': 'Mato Grosso', 'MS': 'Mato Grosso do Sul',
+                'MG': 'Minas Gerais', 'PA': 'Pará', 'PB': 'Paraíba', 'PR': 'Paraná',
+                'PE': 'Pernambuco', 'PI': 'Piauí', 'RJ': 'Rio de Janeiro', 'RN': 'Rio Grande do Norte',
+                'RS': 'Rio Grande do Sul', 'RO': 'Rondônia', 'RR': 'Roraima',
+                'SC': 'Santa Catarina', 'SP': 'São Paulo', 'SE': 'Sergipe', 'TO': 'Tocantins'
+            };
+
+            let estadoSelecionadoAtual = null;
+
+            // Função para mostrar cidades de um estado
+            function mostrarCidades(siglaEstado) {
+                estadoSelecionadoAtual = siglaEstado;
+                const nomeEstado = estadosBrasil[siglaEstado] || siglaEstado;
+                const cidadesContainer = document.getElementById('cidades-container');
+                cidadesContainer.innerHTML = '';
+
+                // Atualizar header da seção de cidades
+                const estadoLabelEl = document.getElementById('estado-selecionado-label');
+                if (estadoLabelEl) {
+                    estadoLabelEl.textContent = `${siglaEstado} - ${nomeEstado}`;
+                }
+
+                // Função auxiliar para renderizar lista de cidades
+                function renderCidades(lista) {
+                    if (!Array.isArray(lista) || lista.length === 0) {
+                        cidadesContainer.innerHTML = '<div class="empty-state"><p>Nenhuma cidade encontrada para este estado.</p></div>';
+                    } else {
+                        // cidades selecionadas previamente pelo vendedor (servidor)
+                        const selecionadas = (typeof cidadesSelecionadas !== 'undefined' && cidadesSelecionadas[siglaEstado]) ? cidadesSelecionadas[siglaEstado].map(c=>c.toLowerCase()) : [];
+
+                        lista.forEach(cidade => {
+                            const cidadeLower = cidade.toLowerCase();
+                            const div = document.createElement('div');
+                            div.className = 'cidade-checkbox';
+                            const checkedAttr = selecionadas.includes(cidadeLower) ? 'checked' : '';
+                            div.innerHTML = `
+                                <label class="cidade-label">
+                                    <input type="checkbox" name="cidades_${siglaEstado}[]" value="${cidade}" ${checkedAttr}>
+                                    ${cidade}
+                                </label>
+                            `;
+                            cidadesContainer.appendChild(div);
+                        });
+                    }
+                    document.getElementById('cidades-section').classList.add('ativo');
+                }
+
+                // Se temos dados locais carregados e o estado existe no JSON, usar local
+                const locais = cidadesPorEstado[siglaEstado];
+                if (locais && locais.length > 0) {
+                    renderCidades(locais);
+                    return;
+                }
+
+                // Senão, buscar via API do IBGE (mais completa)
+                const loading = document.createElement('div');
+                loading.className = 'empty-state';
+                loading.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando cidades...';
+                cidadesContainer.appendChild(loading);
+
+                fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${siglaEstado}/municipios`)
+                    .then(resp => resp.json())
+                    .then(municipios => {
+                        const nomes = municipios.map(m => m.nome).sort((a,b) => a.localeCompare(b, 'pt-BR'));
+                        // cachear localmente para evitar novas requisições
+                        cidadesPorEstado[siglaEstado] = nomes;
+                        cidadesContainer.innerHTML = '';
+                        renderCidades(nomes);
+                    })
+                    .catch(err => {
+                        console.error('Erro ao buscar cidades pelo IBGE:', err);
+                        cidadesContainer.innerHTML = '<div class="empty-state"><p>Erro ao carregar cidades. Tente novamente mais tarde.</p></div>';
+                    });
+            }
+
+            // Evento: abrir cidades ao clicar no botão .btn-cidades
+            document.querySelectorAll('.btn-cidades').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const sigla = this.getAttribute('data-sigla');
+                    if (sigla) {
+                        mostrarCidades(sigla);
+                    }
+                });
+            });
+
+            // Manter dica ao marcar estado
+            document.querySelectorAll('.checkbox-estado').forEach(checkbox => {
+                checkbox.addEventListener('change', function(e) {
+                    if (this.checked) {
+                        // breve dica no console (pode ser melhorada para UI)
+                        console.log('Dica: clique no ícone de cidade ao lado do estado para selecionar municípios.');
+                    }
+                });
+            });
+
+            // Fechar seção de cidades
+            document.getElementById('btn-fechar-cidades').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('cidades-section').classList.remove('ativo');
+                estadoSelecionadoAtual = null;
+            });
+
+            // Adicionar informação de dica aos usuários
+            const infoBox = document.querySelector('.info-box');
+            if (infoBox) {
+                const dicaHtml = document.createElement('li');
+                dicaHtml.innerHTML = '<strong>Dica:</strong> Clique duas vezes em um estado para selecionar cidades específicas dentro dele';
+                infoBox.querySelector('ul').appendChild(dicaHtml);
+            }
         });
     </script>
 </body>

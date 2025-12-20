@@ -1,0 +1,11 @@
+Recebido em: 2025-12-20 15:48:57 - ID: sem id
+Recebido em: 2025-12-20 15:52:11 - ID: sem id
+--- Nova Notificação: 2025-12-20 15:55:11 ---
+Tópico irrelevante: payment
+--- Notificação: 2025-12-20 15:57:27 ---
+ID: 1343296357 | Tópico: payment
+Status: approved | Ref: vendedor_1_plano_3
+ERRO: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'status_assinatura' in 'field list'
+SUCESSO: Vendedor 1 agora é plano 3
+SUCESSO: Vendedor 1 agora é plano 2
+SUCESSO: Vendedor 1 agora é plano 3

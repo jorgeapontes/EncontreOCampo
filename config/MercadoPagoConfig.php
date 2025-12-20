@@ -1,117 +1,72 @@
 <?php
-// src/config/MercadoPagoConfig.php
-require_once __DIR__ . '/../vendor/autoload.php'; // Se usar Composer
+require_once __DIR__ . '/../vendor/autoload.php';
 
+use MercadoPago\MercadoPagoConfig as SDK;
 use Dotenv\Dotenv;
-use MercadoPago\Client\Payment\PaymentClient;
-use MercadoPago\Client\Preference\PreferenceClient;
-use MercadoPago\MercadoPagoConfig;
 
 class MercadoPagoAPI {
-    private static $accessToken;
-    private static $publicKey;
     private static $initialized = false;
 
-    private static function init() {
-        if (!self::$initialized) {
-            // Carrega variáveis do .env
-            $dotenv = Dotenv::createImmutable(__DIR__ . '/../../');
+    public static function init() {
+        if (self::$initialized) return;
+
+        // 1. Carregar o .env
+        // __DIR__ é a pasta config. O .env está um nível acima (na raiz).
+        $dotenvPath = __DIR__ . '/../';
+        
+        if (file_exists($dotenvPath . '.env')) {
+            $dotenv = Dotenv::createImmutable($dotenvPath);
             $dotenv->load();
-            
-            self::$accessToken = $_ENV['MERCADOPAGO_ACCESS_TOKEN'];
-            self::$publicKey = $_ENV['MERCADOPAGO_PUBLIC_KEY'];
-            
-            // Configura o SDK do Mercado Pago
-            MercadoPagoConfig::setAccessToken(self::$accessToken);
-            
-            self::$initialized = true;
         }
-    }
 
-    public static function getAccessToken() {
-        self::init();
-        return self::$accessToken;
-    }
+        // 2. BUSCA ROBUSTA DA CHAVE (AQUI ESTÁ A CORREÇÃO MÁGICA)
+        // Tenta pegar do $_ENV, se não der, tenta do $_SERVER, se não der, tenta getenv()
+        $accessToken = $_ENV['MP_ACCESS_TOKEN'] 
+                    ?? $_SERVER['MP_ACCESS_TOKEN'] 
+                    ?? getenv('MP_ACCESS_TOKEN');
 
-    public static function getPublicKey() {
-        self::init();
-        return self::$publicKey;
-    }
-
-    public static function createPreference($items, $payer, $externalReference, $backUrls) {
-        self::init();
-        
-        $client = new PreferenceClient();
-        
-        $preferenceData = [
-            "items" => $items,
-            "payer" => $payer,
-            "external_reference" => $externalReference,
-            "back_urls" => $backUrls,
-            "auto_return" => "approved",
-            "notification_url" => $_ENV['WEBHOOK_URL'],
-            "statement_descriptor" => "ENCONTREOCAMPO",
-            "binary_mode" => true
-        ];
-
-        try {
-            $preference = $client->create($preferenceData);
-            return $preference;
-        } catch (Exception $e) {
-            error_log("Erro ao criar preferência: " . $e->getMessage());
-            return false;
+        if (!$accessToken) {
+            // Se falhar, vamos imprimir o erro na tela para você ver
+            die("<h1>ERRO CRÍTICO DE CONFIGURAÇÃO</h1>
+                 <p>O PHP não conseguiu ler a variável <strong>MP_ACCESS_TOKEN</strong>.</p>
+                 <p>Verifique:</p>
+                 <ul>
+                    <li>Se o arquivo se chama <strong>.env</strong> e não <strong>.env.txt</strong></li>
+                    <li>Se a linha no arquivo é: <code>MP_ACCESS_TOKEN=TEST-seu-token...</code> (sem espaços antes)</li>
+                 </ul>");
         }
+
+        SDK::setAccessToken($accessToken);
+        self::$initialized = true;
     }
 
-    public static function getPayment($paymentId) {
+    public static function createPreference($item, $payer, $external_reference, $urls) {
         self::init();
         
-        $client = new PaymentClient();
-        
-        try {
-            $payment = $client->get($paymentId);
-            return $payment;
-        } catch (Exception $e) {
-            error_log("Erro ao buscar pagamento: " . $e->getMessage());
-            return false;
-        }
-    }
+        $client = new \MercadoPago\Client\Preference\PreferenceClient();
 
-    public static function createSubscription($planData, $payer, $externalReference) {
-        self::init();
-        
-        // Para assinaturas recorrentes, você precisará criar um plano primeiro
-        // Esta é uma implementação simplificada
-        // Na prática, você criaria o plano via API do Mercado Pago
-        
-        $client = new PreferenceClient();
-        
-        $preferenceData = [
+        $preference = $client->create([
             "items" => [
                 [
-                    "title" => $planData['title'],
-                    "quantity" => 1,
-                    "currency_id" => "BRL",
-                    "unit_price" => (float)$planData['unit_price']
+                    "title" => $item['title'],
+                    "quantity" => (int)$item['quantity'],
+                    "unit_price" => (float)$item['unit_price'],
+                    "currency_id" => "BRL"
                 ]
             ],
-            "payer" => $payer,
-            "external_reference" => $externalReference,
-            "back_urls" => [
-                "success" => $_ENV['SUCCESS_URL'],
-                "failure" => $_ENV['FAILURE_URL'],
-                "pending" => $_ENV['PENDING_URL']
+            "payer" => [
+                "name" => $payer['name'],
+                "email" => $payer['email']
             ],
-            "auto_return" => "approved",
-            "notification_url" => $_ENV['WEBHOOK_URL']
-        ];
+            "external_reference" => $external_reference,
+            "back_urls" => [
+                "success" => $urls['success'],
+                "failure" => $urls['failure'],
+                "pending" => $urls['pending']
+            ],
+            // "auto_return" => "approved"
+        ]);
 
-        try {
-            $preference = $client->create($preferenceData);
-            return $preference;
-        } catch (Exception $e) {
-            error_log("Erro ao criar assinatura: " . $e->getMessage());
-            return false;
-        }
+        return $preference->id;
     }
 }

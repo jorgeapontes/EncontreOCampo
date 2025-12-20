@@ -1,106 +1,75 @@
 <?php
 // src/vendedor/perfil.php
-require_once 'auth.php'; // Inclui a proteção de acesso e carrega $vendedor, $db, $usuario
+require_once 'auth.php'; 
+
+// --- ATUALIZAÇÃO DE LÓGICA: BUSCAR NOME DO PLANO REAL ---
+// Fazemos um JOIN com a tabela planos para garantir que o nome exibido 
+// seja o que corresponde ao plano_id atual no banco.
+$database = new Database();
+$db = $database->getConnection();
+
+$stmt_plano = $db->prepare("
+    SELECT v.*, p.nome as nome_plano_real, p.preco_mensal 
+    FROM vendedores v 
+    LEFT JOIN planos p ON v.plano_id = p.id 
+    WHERE v.id = ?
+");
+$stmt_plano->execute([$vendedor['id']]);
+$dados_completos = $stmt_plano->fetch(PDO::FETCH_ASSOC);
+
+// Sobrescrevemos o nome para garantir a exibição correta
+$nome_exibicao_plano = $dados_completos['nome_plano_real'] ?? 'Sem Plano';
 
 $mensagem_sucesso = '';
 $mensagem_erro = '';
 $vendedor_id_fk = $vendedor['id'];
 
-// Define o caminho onde as fotos de perfil serão salvas
 $upload_dir = '../uploads/vendedores/'; 
-
-// Garante que o diretório de uploads exista
 if (!is_dir($upload_dir)) {
     mkdir($upload_dir, 0777, true);
 }
 
-// ----------------------------------------------------
-// Lógica de Atualização (POST)
-// ----------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nome = sanitizeInput($_POST['nome'] ?? $usuario['nome']);
-    $telefone1 = sanitizeInput($_POST['telefone1'] ?? $vendedor['telefone1']);
-    // Outros dados do vendedor, se você tiver campos de edição para eles
-    $razao_social = sanitizeInput($_POST['razao_social'] ?? $vendedor['razao_social']);
+    $nome = $_POST['nome'] ?? $usuario['nome'];
+    $telefone1 = $_POST['telefone1'] ?? $vendedor['telefone1'];
+    $razao_social = $_POST['razao_social'] ?? $vendedor['razao_social'];
 
     $foto_perfil_antiga = $vendedor['foto_perfil_url'];
-    $foto_perfil_nova = $foto_perfil_antiga; // Mantém a antiga por padrão
+    $foto_perfil_nova = $foto_perfil_antiga;
     
-    // 1. Processamento da Foto de Perfil (Upload)
     if (isset($_FILES['foto_perfil']) && $_FILES['foto_perfil']['error'] === UPLOAD_ERR_OK) {
-        $file_name = $_FILES['foto_perfil']['name'];
-        $file_tmp = $_FILES['foto_perfil']['tmp_name'];
-        $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
-        
-        $allowed_extensions = ['jpg', 'jpeg', 'png'];
-        $max_file_size = 1048576; // 1MB
+        $file_extension = strtolower(pathinfo($_FILES['foto_perfil']['name'], PATHINFO_EXTENSION));
+        $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
 
-        if (!in_array($file_ext, $allowed_extensions)) {
-            $mensagem_erro = "Formato de arquivo inválido. Apenas JPG, JPEG e PNG são permitidos para a foto de perfil.";
-        } elseif ($_FILES['foto_perfil']['size'] > $max_file_size) {
-            $mensagem_erro = "A foto de perfil é muito grande. O tamanho máximo é 1MB.";
-        } else {
-            // Gera um nome de arquivo único (ex: vend_5_hash.jpg)
-            $novo_nome = 'vend_' . $vendedor_id_fk . '_' . uniqid() . '.' . $file_ext;
-            $destino_servidor = $upload_dir . $novo_nome;
+        if (in_array($file_extension, $allowed_extensions)) {
+            $new_file_name = 'perfil_' . $vendedor_id_fk . '_' . time() . '.' . $file_extension;
+            $dest_path = $upload_dir . $new_file_name;
 
-            if (move_uploaded_file($file_tmp, $destino_servidor)) {
-                $foto_perfil_nova = $destino_servidor; 
-
-                // Deleta a foto antiga, se existir e não for a imagem padrão (se houver)
-                if (!empty($foto_perfil_antiga) && file_exists($foto_perfil_antiga)) {
-                    unlink($foto_perfil_antiga);
+            if (move_uploaded_file($_FILES['foto_perfil']['tmp_name'], $dest_path)) {
+                $foto_perfil_nova = 'src/uploads/vendedores/' . $new_file_name;
+                if ($foto_perfil_antiga && file_exists('../../' . $foto_perfil_antiga) && strpos($foto_perfil_antiga, 'default') === false) {
+                    unlink('../../' . $foto_perfil_antiga);
                 }
-            } else {
-                $mensagem_erro = "Erro ao mover o novo arquivo para o destino.";
             }
         }
     }
 
-    // 2. Validação e Atualização no Banco de Dados
-    if (empty($mensagem_erro)) {
-        try {
-            $db->beginTransaction();
+    try {
+        $db->beginTransaction();
+        $stmt_u = $db->prepare("UPDATE usuarios SET nome = ? WHERE id = ?");
+        $stmt_u->execute([$nome, $usuario['id']]);
 
-            // A. Atualiza tabela USUARIOS (Nome)
-            $query_user = "UPDATE usuarios SET nome = :nome WHERE id = :usuario_id";
-            $stmt_user = $db->prepare($query_user);
-            $stmt_user->bindParam(':nome', $nome);
-            $stmt_user->bindParam(':usuario_id', $usuario['id']);
-            $stmt_user->execute();
-            
-            // B. Atualiza tabela VENDEDORES (Foto de Perfil, Telefone, Razão Social, etc.)
-            $query_vend = "UPDATE vendedores SET 
-                                telefone1 = :telefone1,
-                                razao_social = :razao_social,
-                                foto_perfil_url = :foto_perfil_nova
-                            WHERE id = :vendedor_id";
-            $stmt_vend = $db->prepare($query_vend);
-            $stmt_vend->bindParam(':telefone1', $telefone1);
-            $stmt_vend->bindParam(':razao_social', $razao_social);
-            $stmt_vend->bindParam(':foto_perfil_nova', $foto_perfil_nova);
-            $stmt_vend->bindParam(':vendedor_id', $vendedor_id_fk);
-            $stmt_vend->execute();
+        $stmt_v = $db->prepare("UPDATE vendedores SET telefone1 = ?, razao_social = ?, foto_perfil_url = ? WHERE id = ?");
+        $stmt_v->execute([$telefone1, $razao_social, $foto_perfil_nova, $vendedor_id_fk]);
 
-            $db->commit();
-            
-            // Recarrega os dados para exibir na tela
-            $usuario['nome'] = $nome;
-            $vendedor['telefone1'] = $telefone1;
-            $vendedor['razao_social'] = $razao_social;
-            $vendedor['foto_perfil_url'] = $foto_perfil_nova; 
-
-            $mensagem_sucesso = "Seu perfil foi atualizado com sucesso!";
-        } catch (PDOException $e) {
-            $db->rollBack();
-            $mensagem_erro = "Erro de banco de dados ao atualizar: " . $e->getMessage();
-        }
+        $db->commit();
+        $mensagem_sucesso = "Perfil atualizado com sucesso!";
+        header("Refresh: 2");
+    } catch (Exception $e) {
+        $db->rollBack();
+        $mensagem_erro = "Erro ao atualizar: " . $e->getMessage();
     }
 }
-
-// Garante que a URL da foto de perfil seja carregada para exibição
-$foto_perfil_url = $vendedor['foto_perfil_url'] ?? '';
-
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">

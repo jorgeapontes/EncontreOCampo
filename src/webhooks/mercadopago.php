@@ -1,73 +1,66 @@
 <?php
 // src/webhooks/mercadopago.php
+require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/../../config/MercadoPagoConfig.php';
 
-// 1. LOG DE ENTRADA (Para você ver no arquivo webhook_debug.log)
-$input = file_get_contents('php://input');
-$data = json_decode($input, true);
+// Captura os dados enviados pelo Mercado Pago (JSON ou URL)
+$json = file_get_contents('php://input');
+$dados = json_decode($json, true);
 
-file_put_contents('webhook_debug.log', 
-    "[" . date('Y-m-d H:i:s') . "] Webhook chamado. Tipo: " . ($data['type'] ?? 'desconhecido') . "\n" .
-    "Payload: " . $input . "\n\n", 
-    FILE_APPEND);
+// O Mercado Pago envia o tipo de notificação em campos diferentes conforme a versão
+$id = $_GET['id'] ?? $dados['data']['id'] ?? $dados['id'] ?? null;
+$topic = $_GET['type'] ?? $_GET['topic'] ?? $dados['type'] ?? $dados['topic'] ?? null;
 
-// 2. DEPENDÊNCIAS (Ajustadas para o seu projeto)
-require_once __DIR__ . '/../conexao.php'; // Usa o arquivo que você já tem no projeto
-require_once __DIR__ . '/../config/MercadoPagoConfig.php';
+// Log para debug local
+file_put_contents('log_webhook.txt', "--- Notificação Recorrência: " . date('Y-m-d H:i:s') . " ---" . PHP_EOL, FILE_APPEND);
+file_put_contents('log_webhook.txt', "ID: $id | Tópico: $topic" . PHP_EOL, FILE_APPEND);
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !$data) {
-    http_response_code(400);
-    exit;
-}
-
-// 3. LOGICA DE PROCESSAMENTO
-try {
-    // Usamos o $conn que vem do seu arquivo conexao.php
-    $db = $conn; 
-
-    // TIPO: PAGAMENTO (Venda de produto ou cobrança de assinatura aprovada)
-    if (isset($data['type']) && $data['type'] == 'payment') {
-        $payment_id = $data['data']['id'];
+if ($id && ($topic === 'preapproval' || $topic === 'subscription')) {
+    try {
+        MercadoPagoAPI::init();
+        $client = new \MercadoPago\Client\Preapproval\PreapprovalClient();
         
-        // Busca os detalhes no Mercado Pago
-        $payment = MercadoPagoAPI::getPayment($payment_id);
-        
-        if ($payment) {
-            $ref = $payment->external_reference ?? '';
-            $status = $payment->status; // 'approved', 'pending', etc.
+        // Buscamos os detalhes da assinatura no Mercado Pago
+        $subscription = $client->get($id);
+
+        file_put_contents('log_webhook.txt', "Status da Assinatura: " . $subscription->status . PHP_EOL, FILE_APPEND);
+
+        // Se o status for "authorized", o pagamento recorrente foi ativado com sucesso
+        if ($subscription->status === 'authorized') {
+            $database = new Database();
+            $conn = $database->getConnection();
+
+            $ext_ref = $subscription->external_reference; // Ex: vendedor_1_plano_3
+            $parts = explode('_', $ext_ref);
             
-            // Tenta identificar se é uma assinatura pelo external_reference
-            // Formato esperado: vendedor_ID_plano_ID_TIMESTAMP
-            if (preg_match('/vendedor_(\d+)_plano_(\d+)/', $ref, $matches)) {
-                $vendedor_id = $matches[1];
-                $plano_id = $matches[2];
+            if (count($parts) >= 4) {
+                $vendedor_id = (int)$parts[1];
+                $plano_id = (int)$parts[3];
 
-                if ($status == 'approved') {
-                    // Atualiza o vendedor para o novo plano
-                    $stmt = $db->prepare("UPDATE vendedores SET plano_id = ? WHERE id = ?");
-                    $stmt->execute([$plano_id, $vendedor_id]);
-                    
-                    file_put_contents('webhook_debug.log', "Plano atualizado para vendedor $vendedor_id\n", FILE_APPEND);
+                // Atualizamos o vendedor para o novo plano e marcamos como ativo
+                $sql = "UPDATE vendedores SET 
+                            plano_id = ?, 
+                            status_assinatura = 'ativo', 
+                            data_assinatura = NOW() 
+                        WHERE id = ?";
+                
+                $stmt = $conn->prepare($sql);
+                $result = $stmt->execute([$plano_id, $vendedor_id]);
+
+                if ($result) {
+                    file_put_contents('log_webhook.txt', "SUCESSO: Vendedor $vendedor_id ativado no Plano $plano_id" . PHP_EOL, FILE_APPEND);
                 }
             }
         }
-    } 
-    
-    // TIPO: ASSINATURA (O que apareceu no seu log: subscription_preapproval)
-    elseif (isset($data['type']) && ($data['type'] == 'subscription_preapproval' || $data['type'] == 'subscription')) {
-        $sub_id = $data['data']['id'] ?? $data['id'];
         
-        // Aqui você buscaria os detalhes da assinatura
-        // Por enquanto, vamos apenas logar que recebemos
-        file_put_contents('webhook_debug.log', "Notificação de Assinatura recebida: $sub_id\n", FILE_APPEND);
-        
-        // Lógica: Se for 'updated' e status 'authorized', você ativa no banco.
+        // Respondemos 200 sempre para o MP saber que recebemos
+        http_response_code(200);
+
+    } catch (Exception $e) {
+        file_put_contents('log_webhook.txt', "ERRO WEBHOOK: " . $e->getMessage() . PHP_EOL, FILE_APPEND);
+        http_response_code(200); 
     }
-
-    // SEMPRE responda 200 para o Mercado Pago não reenviar a mesma coisa
+} else {
+    // Se for apenas uma notificação de teste ou pagamento pontual, apenas confirmamos o recebimento
     http_response_code(200);
-    echo "OK";
-
-} catch (Exception $e) {
-    file_put_contents('webhook_debug.log', "ERRO: " . $e->getMessage() . "\n", FILE_APPEND);
-    http_response_code(500);
 }

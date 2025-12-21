@@ -476,3 +476,409 @@ body {
         font-size: 16px;
     }
 }
+
+/* Estilos para o modal de negociação */
+.modal-negociacao {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-negociacao.active {
+    display: flex;
+}
+
+.modal-negociacao-content {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e4e6eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #1c1e21;
+}
+
+.btn-fechar-modal {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #65676b;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.btn-fechar-modal:hover {
+    background: #f0f2f5;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+/* Dados do produto no modal */
+.produto-info-modal {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.produto-info-modal img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.produto-info-modal h4 {
+    margin: 0 0 8px 0;
+    color: #1c1e21;
+}
+
+.produto-info-modal .preco {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1877f2;
+}
+
+/* Etapas do formulário */
+.etapas-negociacao {
+    display: flex;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #e4e6eb;
+}
+
+.etapa {
+    flex: 1;
+    text-align: center;
+    padding: 12px 0;
+    font-weight: 500;
+    color: #65676b;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.etapa.active {
+    color: #1877f2;
+    border-bottom-color: #1877f2;
+}
+
+.etapa-conteudo {
+    display: none;
+}
+
+.etapa-conteudo.active {
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #1c1e21;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #dddfe2;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #1877f2;
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid #dddfe2;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.radio-option:hover {
+    border-color: #1877f2;
+    background: #f0f8ff;
+}
+
+.radio-option input {
+    margin-right: 12px;
+}
+
+.radio-option span {
+    font-weight: 500;
+}
+
+/* Avisos e alertas */
+.alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin: 16px 0;
+    font-size: 14px;
+}
+
+.alert-info {
+    background: #e7f3ff;
+    color: #1877f2;
+    border-left: 4px solid #1877f2;
+}
+
+.alert-warning {
+    background: #fff4e5;
+    color: #f90;
+    border-left: 4px solid #f90;
+}
+
+.alert-error {
+    background: #ffe5e5;
+    color: #f00;
+    border-left: 4px solid #f00;
+}
+
+/* Resumo e botões */
+.resumo-negociacao {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.resumo-negociacao h5 {
+    margin: 0 0 12px 0;
+    color: #1c1e21;
+}
+
+.resumo-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    color: #65676b;
+}
+
+.resumo-total {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 2px solid #e4e6eb;
+    font-weight: 600;
+    font-size: 18px;
+    color: #1c1e21;
+}
+
+.modal-footer {
+    padding: 20px 24px;
+    border-top: 1px solid #e4e6eb;
+    display: flex;
+    justify-content: space-between;
+}
+
+.btn-voltar-etapa {
+    background: #f0f2f5;
+    color: #65676b;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-proximo-etapa,
+.btn-finalizar-negociacao {
+    background: #1877f2;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-finalizar-negociacao {
+    background: #42b72a;
+}
+
+.btn-negociar {
+    background: #42b72a;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s;
+}
+
+.btn-negociar:hover {
+    background: #36a420;
+}
+
+/* Botão no chat-input */
+.btn-negociar-chat {
+    background: #42b72a;
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-right: 8px;
+}
+
+.btn-negociar-chat i {
+    font-size: 18px;
+}
+
+/* Grupo de botões no chat */
+.chat-input-buttons {
+    display: flex;
+    align-items: center;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .modal-negociacao-content {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .chat-input-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .btn-negociar-chat {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+/* Adicione ao final do arquivo existente */
+
+/* Estilos para o botão de negociação no chat */
+.btn-negociar-chat {
+    background: linear-gradient(135deg, #42b72a 0%, #36a420 100%);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-right: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(66, 183, 42, 0.3);
+}
+
+.btn-negociar-chat:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(66, 183, 42, 0.4);
+}
+
+.btn-negociar-chat:active {
+    transform: translateY(0);
+}
+
+.btn-negociar-chat i {
+    font-size: 18px;
+}
+
+/* Grupo de botões no chat */
+.chat-input-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Responsividade para os botões */
+@media (max-width: 768px) {
+    .chat-input-buttons {
+        gap: 6px;
+    }
+    
+    .btn-negociar-chat {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .btn-negociar-chat i {
+        font-size: 16px;
+    }
+}
+
+/* Estilos para o botão de anexo quando em loading */
+.btn-attach.loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btn-attach.loading i.fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

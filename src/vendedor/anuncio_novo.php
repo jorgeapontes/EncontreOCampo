@@ -6,6 +6,44 @@ $mensagem_sucesso = '';
 $mensagem_erro = '';
 $vendedor_id_fk = $vendedor['id'];
 
+// --- NOVO: LÓGICA DE VERIFICAÇÃO DE LIMITE ---
+// 1. Buscar limite do plano e nome do plano
+$query_limite = "SELECT p.limite_total_anuncios, p.nome as nome_plano 
+                 FROM vendedores v 
+                 INNER JOIN planos p ON v.plano_id = p.id 
+                 WHERE v.id = :vendedor_id";
+$stmt_limite = $db->prepare($query_limite);
+$stmt_limite->bindParam(':vendedor_id', $vendedor_id_fk);
+$stmt_limite->execute();
+$plano_info = $stmt_limite->fetch(PDO::FETCH_ASSOC);
+
+$limite_permitido = (int)($plano_info['limite_total_anuncios'] ?? 0);
+
+// 2. Contar anúncios ativos (conforme a lógica que você já usa no perfil.php)
+$query_contagem = "SELECT COUNT(*) as total FROM produtos WHERE vendedor_id = :vendedor_id";
+$stmt_contagem = $db->prepare($query_contagem);
+$stmt_contagem->bindParam(':vendedor_id', $vendedor_id_fk);
+$stmt_contagem->execute();
+$total_atual = (int)$stmt_contagem->fetch(PDO::FETCH_ASSOC)['total'];
+
+// 3. Definir se pode anunciar
+$limite_atingido = ($total_atual >= $limite_permitido);
+// --------------------------------------------
+
+// Dados do formulário
+$nome = '';
+$descricao = '';
+// ... (mantenha o restante das definições de variáveis que já estavam no seu arquivo) ...
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // SEGURANÇA: Se o limite foi atingido, bloqueia o processamento aqui
+    if ($limite_atingido) {
+        $mensagem_erro = "Ação bloqueada: Você já atingiu seu limite de " . $limite_permitido . " anúncios ativos.";
+    } else {
+        // ... (Todo o seu código de processamento de POST, upload de imagem e INSERT que já existe) ...
+    }
+}
+
 // Dados do formulário (mantém valores em caso de erro)
 $nome = '';
 $descricao = '';
@@ -351,6 +389,23 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
         </center>
 
         <section class="form-section">
+            <section class="form-section">
+    <?php if ($limite_atingido): ?>
+        <div class="alert error-alert" style="background-color: #fff3cd; color: #856404; border-color: #ffeeba;">
+            <i class="fas fa-exclamation-crown"></i> 
+            <strong>Limite do Plano Atingido:</strong> Você está usando <?php echo $total_atual; ?> de <?php echo $limite_permitido; ?> anúncios permitidos no plano <?php echo $plano_info['nome_plano']; ?>.
+            <br><a href="escolher_plano.php" style="font-weight: bold; color: #009ee3;">Faça upgrade para continuar anunciando.</a>
+        </div>
+    <?php endif; ?>
+
+    <?php if (!empty($mensagem_erro)): ?>
+        <div class="alert error-alert"><i class="fas fa-exclamation-triangle"></i> <?php echo $mensagem_erro; ?></div>
+    <?php endif; ?>
+    
+    <form method="POST" action="anuncio_novo.php" class="anuncio-form <?php echo $limite_atingido ? 'form-disabled' : ''; ?>" enctype="multipart/form-data" id="anuncioForm">
+        <style>
+            .form-disabled { opacity: 0.6; pointer-events: none; user-select: none; }
+        </style>
             <?php if (!empty($mensagem_erro)): ?>
                 <div class="alert error-alert"><i class="fas fa-exclamation-triangle"></i> <?php echo $mensagem_erro; ?></div>
             <?php endif; ?>

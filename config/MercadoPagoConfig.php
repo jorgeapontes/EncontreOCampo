@@ -11,62 +11,58 @@ class MercadoPagoAPI {
         if (self::$initialized) return;
 
         // 1. Carregar o .env
-        // __DIR__ é a pasta config. O .env está um nível acima (na raiz).
         $dotenvPath = __DIR__ . '/../';
-        
         if (file_exists($dotenvPath . '.env')) {
             $dotenv = Dotenv::createImmutable($dotenvPath);
             $dotenv->load();
         }
 
-        // 2. BUSCA ROBUSTA DA CHAVE (AQUI ESTÁ A CORREÇÃO MÁGICA)
-        // Tenta pegar do $_ENV, se não der, tenta do $_SERVER, se não der, tenta getenv()
+        // 2. BUSCA ROBUSTA DA CHAVE
         $accessToken = $_ENV['MP_ACCESS_TOKEN'] 
                     ?? $_SERVER['MP_ACCESS_TOKEN'] 
                     ?? getenv('MP_ACCESS_TOKEN');
 
         if (!$accessToken) {
-            // Se falhar, vamos imprimir o erro na tela para você ver
-            die("<h1>ERRO CRÍTICO DE CONFIGURAÇÃO</h1>
-                 <p>O PHP não conseguiu ler a variável <strong>MP_ACCESS_TOKEN</strong>.</p>
-                 <p>Verifique:</p>
-                 <ul>
-                    <li>Se o arquivo se chama <strong>.env</strong> e não <strong>.env.txt</strong></li>
-                    <li>Se a linha no arquivo é: <code>MP_ACCESS_TOKEN=TEST-seu-token...</code> (sem espaços antes)</li>
-                 </ul>");
+            die("<h1>ERRO CRÍTICO</h1><p>MP_ACCESS_TOKEN não encontrado no .env</p>");
         }
 
         SDK::setAccessToken($accessToken);
         self::$initialized = true;
     }
 
-    public static function createPreference($item, $payer, $external_reference, $urls) {
+    /**
+     * FUNÇÃO PARA ASSINATURA RECORRENTE 
+     */
+    public static function createSubscription($plan_title, $price, $vendedor_id, $plano_id_db, $payer_email) {
         self::init();
         
-        $client = new \MercadoPago\Client\Preference\PreferenceClient();
+        $client = new \MercadoPago\Client\Preapproval\PreapprovalClient();
 
-        $preference = $client->create([
-            "items" => [
-                [
-                    "title" => $item['title'],
-                    "quantity" => (int)$item['quantity'],
-                    "unit_price" => (float)$item['unit_price'],
+        try {
+            // No Mercado Pago, assinaturas são chamadas de 'Preapproval'
+            $subscription = $client->create([
+                "reason" => $plan_title,
+                "external_reference" => "vendedor_" . $vendedor_id . "_plano_" . $plano_id_db,
+                "payer_email" => $payer_email, 
+                "auto_recurring" => [
+                    "frequency" => 1,
+                    "frequency_type" => "months",
+                    "transaction_amount" => round((float)$price, 2),
                     "currency_id" => "BRL"
-                ]
-            ],
-            "payer" => [
-                "name" => $payer['name'],
-                "email" => $payer['email']
-            ],
-            "external_reference" => $external_reference,
-            "back_urls" => [
-                "success" => $urls['success'],
-                "failure" => $urls['failure'],
-                "pending" => $urls['pending']
-            ],
-            // "auto_return" => "approved"
-        ]);
+                ],
+                // URL para onde o usuário volta após assinar
+                "back_url" => "https://umbrageous-noma-autophytically.ngrok-free.dev/src/vendedor/assinatura_confirmada.php",
+                "status" => "pending"
+            ]);
 
-        return $preference->id;
+            return $subscription->init_point; 
+        } catch (\Exception $e) {
+            if (method_exists($e, 'getApiResponse')) {
+                $content = $e->getApiResponse()->getContent();
+                throw new Exception("Erro API Mercado Pago: " . json_encode($content));
+            }
+            throw new Exception("Erro ao criar assinatura: " . $e->getMessage());
+        }
     }
+
 }

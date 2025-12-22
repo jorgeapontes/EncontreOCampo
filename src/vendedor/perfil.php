@@ -258,7 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $limite = $stmt_limite->fetch(PDO::FETCH_ASSOC);
         
         // Contar anúncios ativos do vendedor
-        $query_anuncios = "SELECT COUNT(*) as total FROM anuncios WHERE vendedor_id = :vendedor_id AND status = 'ativo'";
+        $query_anuncios = "SELECT COUNT(*) as total FROM produtos WHERE vendedor_id = :vendedor_id AND status = 'ativo'";
         $stmt_anuncios = $db->prepare($query_anuncios);
         $stmt_anuncios->bindParam(':vendedor_id', $vendedor_id_fk);
         $stmt_anuncios->execute();

@@ -1,68 +1,73 @@
 <?php
-require_once __DIR__ . '/../vendor/autoload.php';
+// EncontreOCampo/config/MercadoPagoConfig.php
+require_once __DIR__ . '/../../vendor/autoload.php';
 
-use MercadoPago\MercadoPagoConfig as SDK;
+use MercadoPago\Client\Preference\PreferenceClient;
+use MercadoPago\Client\Payment\PaymentClient;
+use MercadoPago\Client\Subscription\SubscriptionClient;
 use Dotenv\Dotenv;
 
-class MercadoPagoAPI {
+class MercadoPagoConfig {
+    private static $accessToken;
+    private static $publicKey;
+    private static $webhookSecret;
     private static $initialized = false;
-
+    
     public static function init() {
-        if (self::$initialized) return;
-
-        // 1. Carregar o .env
-        $dotenvPath = __DIR__ . '/../';
-        if (file_exists($dotenvPath . '.env')) {
-            $dotenv = Dotenv::createImmutable($dotenvPath);
+        if (self::$initialized) {
+            return;
+        }
+        
+        // Tentar carregar .env
+        try {
+            $dotenv = Dotenv::createImmutable(__DIR__ . '/../../');
             $dotenv->load();
+        } catch (Exception $e) {
+            // Se não encontrar .env, usar valores padrão
+            error_log("Aviso: Arquivo .env não encontrado. Usando valores padrão.");
         }
-
-        // 2. BUSCA ROBUSTA DA CHAVE
-        $accessToken = $_ENV['MP_ACCESS_TOKEN'] 
-                    ?? $_SERVER['MP_ACCESS_TOKEN'] 
-                    ?? getenv('MP_ACCESS_TOKEN');
-
-        if (!$accessToken) {
-            die("<h1>ERRO CRÍTICO</h1><p>MP_ACCESS_TOKEN não encontrado no .env</p>");
-        }
-
-        SDK::setAccessToken($accessToken);
+        
+        self::$accessToken = $_ENV['MP_ACCESS_TOKEN'] ?? 'TEST-4356310954100720-121910-019bdfbe9df084bce8aa02f87ea2045a-3075113068';
+        self::$publicKey = $_ENV['MP_PUBLIC_KEY'] ?? 'TEST-954e106c-102f-4084-b840-7dac2f053bb9';
+        self::$webhookSecret = $_ENV['MP_WEBHOOK_SECRET'] ?? 'SEU_WEBHOOK_SECRET_AQUI';
+        
+        // Configurar access token global do Mercado Pago
+        \MercadoPago\Config::setAccessToken(self::$accessToken);
+        
         self::$initialized = true;
     }
-
-    /**
-     * FUNÇÃO PARA ASSINATURA RECORRENTE 
-     */
-    public static function createSubscription($plan_title, $price, $vendedor_id, $plano_id_db, $payer_email) {
+    
+    public static function getAccessToken() {
         self::init();
-        
-        $client = new \MercadoPago\Client\Preapproval\PreapprovalClient();
-
-        try {
-            // No Mercado Pago, assinaturas são chamadas de 'Preapproval'
-            $subscription = $client->create([
-                "reason" => $plan_title,
-                "external_reference" => "vendedor_" . $vendedor_id . "_plano_" . $plano_id_db,
-                "payer_email" => $payer_email, 
-                "auto_recurring" => [
-                    "frequency" => 1,
-                    "frequency_type" => "months",
-                    "transaction_amount" => round((float)$price, 2),
-                    "currency_id" => "BRL"
-                ],
-                // URL para onde o usuário volta após assinar
-                "back_url" => "https://umbrageous-noma-autophytically.ngrok-free.dev/src/vendedor/assinatura_confirmada.php",
-                "status" => "pending"
-            ]);
-
-            return $subscription->init_point; 
-        } catch (\Exception $e) {
-            if (method_exists($e, 'getApiResponse')) {
-                $content = $e->getApiResponse()->getContent();
-                throw new Exception("Erro API Mercado Pago: " . json_encode($content));
-            }
-            throw new Exception("Erro ao criar assinatura: " . $e->getMessage());
-        }
+        return self::$accessToken;
     }
-
+    
+    public static function getPublicKey() {
+        self::init();
+        return self::$publicKey;
+    }
+    
+    public static function getWebhookSecret() {
+        self::init();
+        return self::$webhookSecret;
+    }
+    
+    public static function getPreferenceClient() {
+        self::init();
+        return new PreferenceClient();
+    }
+    
+    public static function getPaymentClient() {
+        self::init();
+        return new PaymentClient();
+    }
+    
+    public static function getSubscriptionClient() {
+        self::init();
+        return new SubscriptionClient();
+    }
 }
+
+// Inicializar configuração
+MercadoPagoConfig::init();
+?>

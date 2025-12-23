@@ -21,11 +21,17 @@ body {
 }
 
 .chat-sidebar {
-    width: 360px;
-    background: #ffffff;
-    border-right: 1px solid #e4e6eb;
+    position: relative;
+    height: 100vh;
     display: flex;
     flex-direction: column;
+    background: #f8f9fa;
+}
+
+.sidebar-main-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 60px; /* Espaço para a negociação */
 }
 
 .sidebar-header {
@@ -86,28 +92,6 @@ body {
     color: #2E7D32;
     font-weight: 700;
     font-size: 16px;
-}
-
-.conversas-lista {
-    flex: 1;
-    overflow-y: auto;
-}
-
-.conversas-lista::-webkit-scrollbar {
-    width: 8px;
-}
-
-.conversas-lista::-webkit-scrollbar-track {
-    background: #f0f2f5;
-}
-
-.conversas-lista::-webkit-scrollbar-thumb {
-    background: #c5c7ca;
-    border-radius: 10px;
-}
-
-.conversas-lista::-webkit-scrollbar-thumb:hover {
-    background: #a8abaf;
 }
 
 .conversa-item {
@@ -881,4 +865,502 @@ body {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* Estilos para a negociação na sidebar */
+.negociacao-sidebar {
+    margin-top: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.negociacao-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.negociacao-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.btn-abrir-negociacao {
+    background: #1877f2;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.3s;
+}
+
+.btn-abrir-negociacao:hover {
+    background: #166fe5;
+}
+
+.negociacao-content {
+    display: none;
+    max-height: 450px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.negociacao-content.active {
+    display: block;
+}
+
+.etapas-negociacao-sidebar {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 15px;
+    font-size: 12px;
+}
+
+.etapa-sidebar {
+    flex: 1;
+    text-align: center;
+    padding: 6px 3px;
+    background: #f0f2f5;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.etapa-sidebar.active {
+    background: #1877f2;
+    color: white;
+}
+
+.etapa-conteudo-sidebar {
+    display: none;
+}
+
+.etapa-conteudo-sidebar.active {
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 12px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 4px;
+}
+
+.form-group input[type="number"],
+.form-group input[type="text"] {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.radio-option input[type="radio"] {
+    margin: 0;
+    width: 14px;
+    height: 14px;
+}
+
+.alert {
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    margin: 8px 0;
+}
+
+.alert-info {
+    background: #e7f3ff;
+    color: #1877f2;
+    border: 1px solid #b3d7ff;
+}
+
+.alert-warning {
+    background: #fff8e6;
+    color: #f57c00;
+    border: 1px solid #ffcc80;
+}
+
+.resumo-negociacao-sidebar {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 10px;
+    margin-top: 12px;
+    font-size: 11px;
+}
+
+.resumo-negociacao-sidebar h5 {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    color: #333;
+}
+
+.resumo-item-sidebar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    color: #555;
+}
+
+.resumo-total-sidebar {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #ddd;
+    font-weight: 600;
+    color: #333;
+}
+
+.modal-footer-sidebar {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.modal-footer-sidebar button {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: background-color 0.3s;
+}
+
+.btn-prosseguir-acordo {
+    background: #28a745;
+    color: white;
+}
+
+.btn-prosseguir-acordo:hover {
+    background: #218838;
+}
+
+.btn-voltar-etapa-sidebar {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-voltar-etapa-sidebar:hover {
+    background: #5a6268;
+}
+
+.btn-finalizar-negociacao-sidebar {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-finalizar-negociacao-sidebar:hover {
+    background: #c82333;
+}
+
+.conteudo-frete-sidebar {
+    display: none;
+    margin-top: 8px;
+    background: #f8f9fa;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 11px;
+}
+
+.conteudo-frete-sidebar.active {
+    display: block;
+}
+
+.endereco-vendedor-info {
+    font-size: 11px;
+    color: #555;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+/* Barra de progresso */
+.progress-bar {
+    height: 4px;
+    background: #f0f2f5;
+    border-radius: 2px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: #1877f2;
+    width: 50%;
+    transition: width 0.3s;
+}
+
+.progress-bar-fill.etapa2 {
+    width: 100%;
+}
+
+/* Estilos para melhor responsividade */
+@media (max-height: 700px) {
+    .negociacao-sidebar {
+        max-height: 350px;
+    }
+    
+    .negociacao-content {
+        max-height: 300px;
+    }
+}
+
+/* Estilos para a área de endereço do usuário na sidebar */
+.endereco-usuario-sidebar {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin: 15px;
+    overflow: hidden;
+    border: 1px solid #e4e6eb;
+}
+
+.endereco-usuario-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 15px;
+}
+
+.endereco-usuario-header h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.endereco-usuario-header h4 i {
+    margin-right: 8px;
+    font-size: 12px;
+}
+
+.endereco-usuario-header small {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    opacity: 0.9;
+    display: flex;
+    align-items: center;
+}
+
+.endereco-usuario-header small i {
+    margin-right: 5px;
+    font-size: 10px;
+}
+
+.endereco-usuario-content {
+    padding: 15px;
+}
+
+.endereco-texto {
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.btn-ver-maps {
+    flex: 1;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.btn-ver-maps {
+    background: #f0f2f5;
+    color: #1877f2;
+}
+
+.btn-ver-maps:hover {
+    background: #e4e6eb;
+}
+
+.btn-ver-maps i {
+    margin-right: 5px;
+    font-size: 10px;
+}
+
+.endereco-usuario-footer {
+    background: #f8f9fa;
+    padding: 8px 15px;
+    border-top: 1px solid #e4e6eb;
+}
+
+.endereco-usuario-footer small {
+    font-size: 10px;
+    color: #65676b;
+    display: flex;
+    align-items: center;
+}
+
+.endereco-usuario-footer small i {
+    margin-right: 5px;
+    font-size: 9px;
+}
+
+.endereco-indisponivel .endereco-usuario-header {
+    background: #6c757d;
+}
+
+.alert.alert-info {
+    background: #e7f3ff;
+    border: 1px solid #b3d7ff;
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 12px;
+    color: #004085;
+}
+
+.alert.alert-info i {
+    color: #0066cc;
+    margin-right: 8px;
+    font-size: 11px;
+}
+
+.alert.alert-info p {
+    margin: 0 0 5px 0;
+}
+
+.alert.alert-info small {
+    font-size: 10px;
+    opacity: 0.8;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .endereco-usuario-sidebar {
+        margin: 10px;
+    }
+    
+    .endereco-acoes {
+        flex-direction: column;
+    }
+    
+    .btn-ver-maps, .btn-copiar-endereco {
+        width: 100%;
+    }
+}
+
+/* ÁREA DE NEGOCIAÇÃO NO ABSOLUTE BOTTOM */
+.negociacao-absolute-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: white;
+    border-top: 1px solid #e4e6eb;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    transform: translateY(0);
+    transition: transform 0.3s ease;
+}
+
+/* Quando a negociação está FECHADA (escondida) */
+.negociacao-absolute-bottom.closed {
+    transform: translateY(100%);
+}
+
+.negociacao-wrapper {
+    position: relative;
+}
+
+/* CONTEÚDO DA NEGOCIAÇÃO */
+.negociacao-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: white;
+}
+
+.negociacao-content.active {
+    max-height: 400px; /* Altura máxima quando aberto */
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* BOTÃO TOGGLE */
+.btn-toggle-negociacao {
+    width: 100%;
+    padding: 16px 20px;
+    background: #1877f2;
+    color: white;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background-color 0.2s;
+}
+
+.btn-toggle-negociacao:hover {
+    background: #166fe5;
+}
+
+.btn-toggle-negociacao.open {
+    background: #6c757d;
+}
+
+.btn-toggle-negociacao.open:hover {
+    background: #5a6268;
+}
+
+/* SCROLLBAR */
+.negociacao-content.active::-webkit-scrollbar {
+    width: 6px;
+}
+
+.negociacao-content.active::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
 }

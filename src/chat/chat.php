@@ -348,6 +348,12 @@ $opcoes_pagamento = [
             <div class="negociacao-absolute-bottom" id="negociacao-absolute-bottom">
                 <div class="negociacao-wrapper">
                     <div class="negociacao-content" id="negociacao-content">
+                        <div class="negociacao-content-header">
+                            <center>
+                                <i class="fas fa-handshake"></i>
+                                Acordo de Compra
+                            </center>
+                        </div>
                         <!-- Barra de progresso -->
                         <div class="progress-bar">
                             <div class="progress-bar-fill" id="progress-bar-fill"></div>

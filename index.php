@@ -107,11 +107,11 @@ require_once 'src/conexao.php';
     <div class="container">
         <h2 class="section-title">Anúncios</h2>
         
-        <!-- Carrossel melhorado -->
+        <!-- Carrossel  -->
         <div class="carousel-container">
             <div class="carousel-wrapper">
                 <div class="carousel-track" id="anunciosCarousel">
-                    <!-- Anúncios serão carregados aqui via JavaScript -->
+                    <!-- Anúncios serão carregados aqui -->
                     <div class="loading-state">
                         <p>Carregando anúncios fresquinhos...</p>
                     </div>

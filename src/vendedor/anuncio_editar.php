@@ -1,5 +1,5 @@
 <?php
-// src/vendedor/anuncio_editar.php (VERSÃO CORRIGIDA: Loading e Top Image + Desconto)
+// src/vendedor/anuncio_editar.php (VERSÃO CORRIGIDA: Loading e Top Image + Desconto + Estrela para definir capa)
 require_once 'auth.php'; 
 
 $mensagem_sucesso = '';
@@ -385,6 +385,11 @@ $categorias_disponiveis = [
             position: relative; width: 120px; height: 120px;
             border: 2px solid #ddd; border-radius: 6px; overflow: hidden;
             cursor: move; background: #fff;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        .imagem-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .imagem-item.dragging { opacity: 0.5; border-color: #2196F3; }
         .imagem-item img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
@@ -393,9 +398,14 @@ $categorias_disponiveis = [
             position: absolute; width: 25px; height: 25px; border-radius: 50%;
             border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
             font-size: 10px; color: white;
+            transition: all 0.2s ease;
+        }
+        .btn-acao:hover {
+            transform: scale(1.1);
         }
         .btn-acao.principal { top: 5px; right: 35px; background: rgba(0,0,0,0.6); }
         .btn-acao.principal.active { background: #FFD700; color: #000; }
+        .btn-acao.principal.active i { color: #000 !important; }
         .btn-acao.deleting { top: 5px; right: 5px; background: #f44336; }
         
         /* Estilos para seção de desconto */
@@ -494,6 +504,37 @@ $categorias_disponiveis = [
             border-radius: 4px;
             margin-top: 5px;
             font-weight: bold;
+        }
+        
+        /* Botão flutuante para mobile */
+        .floating-back-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        /* Estilo para feedback visual quando define como capa */
+        @keyframes highlightStar {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        
+        .star-highlight {
+            animation: highlightStar 0.5s ease;
         }
     </style>
 </head>
@@ -777,10 +818,10 @@ $categorias_disponiveis = [
                     
                     div.innerHTML = `
                         <img src="${img.url}">
-                        <button type="button" class="btn-acao principal ${index === 0 ? 'active' : ''}" title="Esta é a foto principal (automático)">
+                        <button type="button" class="btn-acao principal ${index === 0 ? 'active' : ''}" onclick="setAsCover(${index})" title="${index === 0 ? 'Esta é a foto principal' : 'Definir como foto principal'}">
                             <i class="fas fa-star"></i>
                         </button>
-                        <button type="button" class="btn-acao deleting" onclick="removeImg(${index})">
+                        <button type="button" class="btn-acao deleting" onclick="removeImg(${index})" title="Remover imagem">
                             <i class="fas fa-times"></i>
                         </button>
                     `;
@@ -809,6 +850,37 @@ $categorias_disponiveis = [
                 allImages.splice(index, 1);
                 renderGallery();
                 updateFileInput();
+            };
+
+            // Global Set as Cover (NOVA FUNÇÃO)
+            window.setAsCover = (index) => {
+                if (index === 0) return; // Já é a principal
+                
+                // Move a imagem para a primeira posição
+                const img = allImages.splice(index, 1)[0];
+                allImages.unshift(img);
+                
+                // Renderiza novamente
+                renderGallery();
+                updateFileInput();
+                
+                // Feedback visual na estrela
+                const starButtons = document.querySelectorAll('.btn-acao.principal');
+                if (starButtons[0]) {
+                    starButtons[0].classList.add('star-highlight');
+                    setTimeout(() => {
+                        starButtons[0].classList.remove('star-highlight');
+                    }, 500);
+                }
+                
+                // Feedback visual na imagem principal
+                const topImage = topImageContainer.querySelector('img');
+                if (topImage) {
+                    topImage.style.opacity = '0.7';
+                    setTimeout(() => {
+                        topImage.style.opacity = '1';
+                    }, 300);
+                }
             };
 
             // Drag Functions

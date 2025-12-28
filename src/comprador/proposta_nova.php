@@ -954,9 +954,9 @@ $imagePath = !empty($imagens_produto[0]['url']) ? htmlspecialchars($imagens_prod
                         <i class="fas fa-lightbulb"></i>
                         <strong>Sugestões:</strong>
                         <ul>
-                            <li>Entre em contato com o vendedor via chat para discutir opções de frete</li>
-                            <li>Verifique a possibilidade de envio via transportadora</li>
-                            <li>Explore outros vendedores que entregam em seu estado</li>
+                            <li>- Entre em contato com o vendedor via chat para discutir opções de frete;</li>        
+                            <li>- Verifique a possibilidade de envio via transportadora;</li>
+                            <li>- Explore outros vendedores que entregam em seu estado;</li>
                         </ul>
                     </p>
                 </div>

@@ -210,7 +210,7 @@ $opcoes_pagamento = [
 ];
 
 $opcoes_frete = [
-    'vendedor' => 'Frete por Conta do Vendedor',
+    'vendedor' => 'Frete por Conta do Vendedor (Entrega)',
     'comprador' => 'Frete por Conta do Comprador (Retirada)',
     'entregador' => 'A plataforma busca entregador'
 ];

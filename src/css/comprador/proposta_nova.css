@@ -931,10 +931,14 @@ ul {
     text-align: center;
     padding: 25px 0;
     border-top: 1px solid rgba(255,255,255,0.1);
-    color: var(--text-light);
+    color: blue;
     font-size: 0.9rem;
 }
 
+
+.footer-bottom p{
+    color: var(--white);
+}
 /* RESPONSIVIDADE */
 @media (max-width: 992px) {
     .produto-content {

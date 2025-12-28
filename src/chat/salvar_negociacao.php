@@ -26,7 +26,7 @@ if (!$dados) {
 }
 
 // Validar dados obrigatórios
-$camposObrigatorios = ['produto_id', 'conversa_id', 'quantidade', 'valor_unitario', 'forma_pagamento', 'opcao_frete'];
+$camposObrigatorios = ['produto_id', 'conversa_id', 'quantidade', 'preco_proposto', 'forma_pagamento', 'opcao_frete', 'usuario_tipo'];
 foreach ($camposObrigatorios as $campo) {
     if (!isset($dados[$campo]) || empty($dados[$campo])) {
         echo json_encode(['success' => false, 'error' => "Campo obrigatório faltando: {$campo}"]);
@@ -41,8 +41,7 @@ $conn = $database->getConnection();
 try {
     $conn->beginTransaction();
     
-    // Verificar se o usuário tem permissão para negociar neste produto/conversa
-    // E obter o ID correto do comprador na tabela compradores
+    // Verificar permissões e obter informações
     $sql_verificar = "SELECT 
         c.id as conversa_id,
         c.comprador_id,
@@ -75,67 +74,255 @@ try {
         throw new Exception('Quantidade solicitada excede o estoque disponível');
     }
     
-    // Determinar quem é o comprador e quem é o vendedor
-    $comprador_usuario_id = $verificacao['comprador_id'];
-    $vendedor_usuario_id = $verificacao['vendedor_id'];
-    $comprador_tabela_id = $verificacao['comprador_tabela_id'];
-    $vendedor_tabela_id = $verificacao['vendedor_tabela_id'];
-    $vendedor_sistema_id = $verificacao['vendedor_sistema_id'];
+    // Determinar IDs corretos - AGORA USANDO compradores(id) e vendedores(id)
+    $comprador_usuario_id  = $verificacao['comprador_id']; // compradores(id)
+    $vendedor_usuario_id = $verificacao['vendedor_id'];   // vendedores(id)
     
-    if (!$comprador_tabela_id && $usuario_id == $comprador_usuario_id) {
-        throw new Exception('Comprador não encontrado na base de dados');
+    // Verificar se o usuário é comprador ou vendedor
+    $eh_comprador = ($usuario_id == $comprador_usuario_id);
+    $eh_vendedor = ($usuario_id == $vendedor_usuario_id);
+    
+    if (!$eh_comprador && !$eh_vendedor) {
+        throw new Exception('Usuário não é parte desta conversa');
     }
     
-    if (!$vendedor_tabela_id && $usuario_id == $vendedor_usuario_id) {
-        throw new Exception('Vendedor não encontrado na base de dados');
-    }
+    // Preparar valores
+    $valor_frete = isset($dados['valor_frete']) ? floatval($dados['valor_frete']) : 0;
+    $preco_proposto = floatval($dados['preco_proposto']);
+    $quantidade = intval($dados['quantidade']);
+    $total = ($quantidade * $preco_proposto) + $valor_frete;
     
     // Inserir proposta na tabela apropriada
-    if ($usuario_id == $comprador_usuario_id) {
-        // Proposta do comprador
-        $sql_proposta = "INSERT INTO propostas_comprador 
-            (comprador_id, preco_proposto, quantidade_proposta, condicoes_compra, status) 
-            VALUES (:comprador_id, :preco, :quantidade, :condicoes, 'enviada')";
+    if ($eh_comprador) {
+        // ========== PROPOSTA DO COMPRADOR ==========
+        // Verificar se já existe proposta do comprador para este produto
+        $sql_check_existente = "SELECT ID FROM propostas_comprador 
+            WHERE comprador_id = :comprador_id 
+            AND produto_id = :produto_id";
         
-        $stmt_proposta = $conn->prepare($sql_proposta);
-        $condicoes = json_encode([
-            'forma_pagamento' => $dados['forma_pagamento'],
-            'opcao_frete' => $dados['opcao_frete'],
-            'valor_frete' => $dados['valor_frete'] ?? 0,
-            'total' => $dados['total'] ?? 0,
-            'produto_id' => $dados['produto_id'],
-            'conversa_id' => $dados['conversa_id']
-        ]);
+        $stmt_check = $conn->prepare($sql_check_existente);
+        $stmt_check->bindParam(':comprador_id', $comprador_usuario_id, PDO::PARAM_INT);
+        $stmt_check->bindParam(':produto_id', $dados['produto_id'], PDO::PARAM_INT);
+        $stmt_check->execute();
+        $proposta_existente = $stmt_check->fetch(PDO::FETCH_ASSOC);
         
-        $stmt_proposta->bindParam(':comprador_id', $comprador_tabela_id, PDO::PARAM_INT);
-        $stmt_proposta->bindParam(':preco', $dados['valor_unitario']);
-        $stmt_proposta->bindParam(':quantidade', $dados['quantidade'], PDO::PARAM_INT);
-        $stmt_proposta->bindParam(':condicoes', $condicoes);
+        if ($proposta_existente) {
+            // Atualizar proposta existente
+            $sql_proposta = "UPDATE propostas_comprador SET
+                preco_proposto = :preco,
+                quantidade_proposta = :quantidade,
+                data_proposta = NOW(),
+                status = 'enviada',
+                forma_pagamento = :forma_pagamento,
+                opcao_frete = :opcao_frete,
+                valor_frete = :valor_frete
+                WHERE ID = :proposta_id";
+            
+            $stmt_proposta = $conn->prepare($sql_proposta);
+            $stmt_proposta->bindParam(':proposta_id', $proposta_existente['ID'], PDO::PARAM_INT);
+        } else {
+            // Inserir nova proposta
+            $sql_proposta = "INSERT INTO propostas_comprador 
+                (comprador_id, produto_id, preco_proposto, quantidade_proposta, 
+                 data_proposta, status, forma_pagamento, opcao_frete, valor_frete) 
+                VALUES (:comprador_id, :produto_id, :preco, :quantidade, 
+                        NOW(), 'enviada', :forma_pagamento, :opcao_frete, :valor_frete)";
+            
+            $stmt_proposta = $conn->prepare($sql_proposta);
+            $stmt_proposta->bindParam(':comprador_id', $comprador_usuario_id, PDO::PARAM_INT);
+            $stmt_proposta->bindParam(':produto_id', $dados['produto_id'], PDO::PARAM_INT);
+        }
+        
+        $stmt_proposta->bindParam(':preco', $preco_proposto);
+        $stmt_proposta->bindParam(':quantidade', $quantidade, PDO::PARAM_INT);
+        $stmt_proposta->bindParam(':forma_pagamento', $dados['forma_pagamento']);
+        $stmt_proposta->bindParam(':opcao_frete', $dados['opcao_frete']);
+        $stmt_proposta->bindParam(':valor_frete', $valor_frete);
         $stmt_proposta->execute();
         
-        $proposta_id = $conn->lastInsertId();
+        $proposta_id = $proposta_existente ? $proposta_existente['ID'] : $conn->lastInsertId();
         
-        // Criar registro na tabela de negociação
-        $sql_negociacao = "INSERT INTO propostas_negociacao 
-            (produto_id, proposta_comprador_id, status) 
-            VALUES (:produto_id, :proposta_id, 'negociacao')";
+        // Criar ou atualizar registro na tabela de negociação
+        $sql_check_negociacao = "SELECT ID FROM propostas_negociacao 
+            WHERE proposta_comprador_id = :proposta_id 
+            AND produto_id = :produto_id";
         
-        $stmt_negociacao = $conn->prepare($sql_negociacao);
-        $stmt_negociacao->bindParam(':produto_id', $dados['produto_id'], PDO::PARAM_INT);
-        $stmt_negociacao->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
+        $stmt_check_neg = $conn->prepare($sql_check_negociacao);
+        $stmt_check_neg->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
+        $stmt_check_neg->bindParam(':produto_id', $dados['produto_id'], PDO::PARAM_INT);
+        $stmt_check_neg->execute();
+        $negociacao_existente = $stmt_check_neg->fetch(PDO::FETCH_ASSOC);
+        
+        if ($negociacao_existente) {
+            $sql_negociacao = "UPDATE propostas_negociacao SET
+                data_atualizacao = NOW(),
+                valor_total = :valor_total,
+                quantidade_final = :quantidade,
+                status = 'negociacao',
+                forma_pagamento = :forma_pagamento,
+                opcao_frete = :opcao_frete
+                WHERE ID = :negociacao_id";
+            
+            $stmt_negociacao = $conn->prepare($sql_negociacao);
+            $stmt_negociacao->bindParam(':negociacao_id', $negociacao_existente['ID'], PDO::PARAM_INT);
+        } else {
+            $sql_negociacao = "INSERT INTO propostas_negociacao 
+                (proposta_comprador_id, produto_id, data_inicio, data_atualizacao, 
+                 valor_total, quantidade_final, status, forma_pagamento, opcao_frete) 
+                VALUES (:proposta_comprador_id, :produto_id, NOW(), NOW(), 
+                        :valor_total, :quantidade, 'negociacao', :forma_pagamento, :opcao_frete)";
+            
+            $stmt_negociacao = $conn->prepare($sql_negociacao);
+            $stmt_negociacao->bindParam(':proposta_comprador_id', $proposta_id, PDO::PARAM_INT);
+            $stmt_negociacao->bindParam(':produto_id', $dados['produto_id'], PDO::PARAM_INT);
+        }
+        
+        $stmt_negociacao->bindParam(':valor_total', $total);
+        $stmt_negociacao->bindParam(':quantidade', $quantidade, PDO::PARAM_INT);
+        $stmt_negociacao->bindParam(':forma_pagamento', $dados['forma_pagamento']);
+        $stmt_negociacao->bindParam(':opcao_frete', $dados['opcao_frete']);
         $stmt_negociacao->execute();
         
-        $negociacao_id = $conn->lastInsertId();
+        $negociacao_id = $negociacao_existente ? $negociacao_existente['ID'] : $conn->lastInsertId();
         
-    } else {
-        // Contraproposta do vendedor (se implementado no futuro)
-        throw new Exception('Funcionalidade de contraproposta do vendedor ainda não implementada');
+    } elseif ($eh_vendedor) {
+        // ========== PROPOSTA DO VENDEDOR ==========
+        // Verificar se já existe proposta do vendedor para este produto
+        $sql_check_existente = "SELECT ID FROM propostas_vendedor 
+            WHERE vendedor_id = :vendedor_id 
+            AND produto_id = :produto_id";
+        
+        $stmt_check = $conn->prepare($sql_check_existente);
+        $stmt_check->bindParam(':vendedor_id', $vendedor_usuario_id, PDO::PARAM_INT);
+        $stmt_check->bindParam(':produto_id', $dados['produto_id'], PDO::PARAM_INT);
+        $stmt_check->execute();
+        $proposta_existente = $stmt_check->fetch(PDO::FETCH_ASSOC);
+        
+        if ($proposta_existente) {
+            // Atualizar proposta existente
+            $sql_proposta = "UPDATE propostas_vendedor SET
+                preco_proposto = :preco,
+                quantidade_proposta = :quantidade,
+                data_proposta = NOW(),
+                status = 'enviada',
+                forma_pagamento = :forma_pagamento,
+                opcao_frete = :opcao_frete,
+                valor_frete = :valor_frete
+                WHERE ID = :proposta_id";
+            
+            $stmt_proposta = $conn->prepare($sql_proposta);
+            $stmt_proposta->bindParam(':proposta_id', $proposta_existente['ID'], PDO::PARAM_INT);
+        } else {
+            // Inserir nova proposta
+            $sql_proposta = "INSERT INTO propostas_vendedor 
+                (vendedor_id, produto_id, preco_proposto, quantidade_proposta, 
+                 data_proposta, status, forma_pagamento, opcao_frete, valor_frete) 
+                VALUES (:vendedor_id, :produto_id, :preco, :quantidade, 
+                        NOW(), 'enviada', :forma_pagamento, :opcao_frete, :valor_frete)";
+            
+            $stmt_proposta = $conn->prepare($sql_proposta);
+            $stmt_proposta->bindParam(':vendedor_id', $vendedor_usuario_id, PDO::PARAM_INT);
+            $stmt_proposta->bindParam(':produto_id', $dados['produto_id'], PDO::PARAM_INT);
+        }
+        
+        $stmt_proposta->bindParam(':preco', $preco_proposto);
+        $stmt_proposta->bindParam(':quantidade', $quantidade, PDO::PARAM_INT);
+        $stmt_proposta->bindParam(':forma_pagamento', $dados['forma_pagamento']);
+        $stmt_proposta->bindParam(':opcao_frete', $dados['opcao_frete']);
+        $stmt_proposta->bindParam(':valor_frete', $valor_frete);
+        $stmt_proposta->execute();
+        
+        $proposta_id = $proposta_existente ? $proposta_existente['ID'] : $conn->lastInsertId();
+        
+        // Buscar proposta do comprador para vincular
+        $sql_busca_proposta_comprador = "SELECT pc.ID 
+            FROM propostas_comprador pc
+            WHERE pc.comprador_id = :comprador_id
+            AND pc.produto_id = :produto_id
+            ORDER BY pc.data_proposta DESC LIMIT 1";
+        
+        $stmt_busca = $conn->prepare($sql_busca_proposta_comprador);
+        $stmt_busca->bindParam(':comprador_id', $comprador_usuario_id, PDO::PARAM_INT);
+        $stmt_busca->bindParam(':produto_id', $dados['produto_id'], PDO::PARAM_INT);
+        $stmt_busca->execute();
+        $proposta_comprador_existente = $stmt_busca->fetch(PDO::FETCH_ASSOC);
+        
+        // Verificar se já existe negociação
+        $sql_check_negociacao = "SELECT ID FROM propostas_negociacao 
+            WHERE produto_id = :produto_id
+            AND (proposta_comprador_id = :proposta_comprador_id OR proposta_vendedor_id = :proposta_vendedor_id)";
+        
+        $stmt_check_neg = $conn->prepare($sql_check_negociacao);
+        $stmt_check_neg->bindParam(':produto_id', $dados['produto_id'], PDO::PARAM_INT);
+        $stmt_check_neg->bindParam(':proposta_comprador_id', $proposta_comprador_existente ? $proposta_comprador_existente['ID'] : null, PDO::PARAM_INT);
+        $stmt_check_neg->bindParam(':proposta_vendedor_id', $proposta_id, PDO::PARAM_INT);
+        $stmt_check_neg->execute();
+        $negociacao_existente = $stmt_check_neg->fetch(PDO::FETCH_ASSOC);
+        
+        if ($negociacao_existente) {
+            // Atualizar negociação existente
+            $sql_negociacao = "UPDATE propostas_negociacao SET
+                proposta_vendedor_id = :proposta_vendedor_id,
+                data_atualizacao = NOW(),
+                valor_total = :valor_total,
+                quantidade_final = :quantidade,
+                status = 'negociacao',
+                forma_pagamento = :forma_pagamento,
+                opcao_frete = :opcao_frete
+                WHERE ID = :negociacao_id";
+            
+            $stmt_negociacao = $conn->prepare($sql_negociacao);
+            $stmt_negociacao->bindParam(':negociacao_id', $negociacao_existente['ID'], PDO::PARAM_INT);
+        } else {
+            // Criar nova negociação
+            $sql_negociacao = "INSERT INTO propostas_negociacao 
+                (proposta_vendedor_id, produto_id, data_inicio, data_atualizacao, 
+                 valor_total, quantidade_final, status, forma_pagamento, opcao_frete";
+            
+            $sql_valores = " VALUES (:proposta_vendedor_id, :produto_id, NOW(), NOW(), 
+                        :valor_total, :quantidade, 'negociacao', :forma_pagamento, :opcao_frete";
+            
+            $params = [
+                ':proposta_vendedor_id' => $proposta_id,
+                ':produto_id' => $dados['produto_id'],
+                ':valor_total' => $total,
+                ':quantidade' => $quantidade,
+                ':forma_pagamento' => $dados['forma_pagamento'],
+                ':opcao_frete' => $dados['opcao_frete']
+            ];
+            
+            // Se existir proposta do comprador, vincular
+            if ($proposta_comprador_existente) {
+                $sql_negociacao .= ", proposta_comprador_id";
+                $sql_valores .= ", :proposta_comprador_id";
+                $params[':proposta_comprador_id'] = $proposta_comprador_existente['ID'];
+            }
+            
+            $sql_negociacao .= ")" . $sql_valores . ")";
+            
+            $stmt_negociacao = $conn->prepare($sql_negociacao);
+        }
+        
+        if (!isset($negociacao_existente)) {
+            foreach ($params as $key => $value) {
+                $stmt_negociacao->bindValue($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+            }
+        } else {
+            $stmt_negociacao->bindParam(':proposta_vendedor_id', $proposta_id, PDO::PARAM_INT);
+            $stmt_negociacao->bindParam(':valor_total', $total);
+            $stmt_negociacao->bindParam(':quantidade', $quantidade, PDO::PARAM_INT);
+            $stmt_negociacao->bindParam(':forma_pagamento', $dados['forma_pagamento']);
+            $stmt_negociacao->bindParam(':opcao_frete', $dados['opcao_frete']);
+        }
+        
+        $stmt_negociacao->execute();
+        $negociacao_id = $negociacao_existente ? $negociacao_existente['ID'] : $conn->lastInsertId();
     }
     
     // Enviar notificação para o outro usuário
-    $outro_usuario_id = ($usuario_id == $comprador_usuario_id) ? $vendedor_usuario_id : $comprador_usuario_id;
+    $outro_usuario_id = $eh_comprador ? $verificacao['vendedor_id'] : $verificacao['comprador_id'];
     
-    // Buscar nome do produto para a notificação
+    // Buscar nome do produto
     $sql_produto_info = "SELECT nome FROM produtos WHERE id = :produto_id";
     $stmt_prod = $conn->prepare($sql_produto_info);
     $stmt_prod->bindParam(':produto_id', $dados['produto_id'], PDO::PARAM_INT);
@@ -143,17 +330,16 @@ try {
     $produto_info = $stmt_prod->fetch(PDO::FETCH_ASSOC);
     $produto_nome = $produto_info['nome'] ?? 'Produto';
     
+    // Inserir notificação
     $sql_notificacao = "INSERT INTO notificacoes 
         (usuario_id, mensagem, tipo, url) 
         VALUES (:usuario_id, :mensagem, 'info', :url)";
     
     $stmt_not = $conn->prepare($sql_notificacao);
     
-    if ($usuario_id == $comprador_usuario_id) {
-        $mensagem = "💰 Nova proposta para '{$produto_nome}' - Quantidade: {$dados['quantidade']}";
-    } else {
-        $mensagem = "🔄 Contraproposta recebida para '{$produto_nome}'";
-    }
+    $mensagem = $eh_comprador 
+        ? "Nova proposta para '{$produto_nome}' - Quantidade: {$dados['quantidade']}" 
+        : "Contraproposta recebida para '{$produto_nome}'";
     
     $url = "../../src/chat/chat.php?produto_id=" . $dados['produto_id'] . "&conversa_id=" . $dados['conversa_id'];
     
@@ -164,15 +350,22 @@ try {
     
     $conn->commit();
     
+    // Retornar sucesso
     echo json_encode([
         'success' => true,
         'message' => 'Proposta enviada com sucesso',
-        'proposta_id' => $proposta_id ?? null,
-        'negociacao_id' => $negociacao_id ?? null
+        'proposta_id' => $proposta_id,
+        'negociacao_id' => $negociacao_id,
+        'tipo' => $eh_comprador ? 'comprador' : 'vendedor'
     ]);
     
 } catch (Exception $e) {
-    $conn->rollBack();
+    if (isset($conn) && $conn->inTransaction()) {
+        $conn->rollBack();
+    }
+    
+    error_log("Erro ao salvar negociação: " . $e->getMessage());
+    
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage()

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 23/12/2025 às 17:07
+-- Tempo de geração: 28/12/2025 às 05:18
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -62,7 +62,8 @@ INSERT INTO `admin_acoes` (`id`, `admin_id`, `acao`, `tabela_afetada`, `registro
 (19, 1, 'Alterou status do usuário (ID: 14) para inativo', 'usuarios', 14, '2025-12-09 12:24:16'),
 (20, 1, 'Alterou status do usuário (ID: 14) para ativo', 'usuarios', 14, '2025-12-09 12:24:20'),
 (21, 1, 'Alterou status do usuário (ID: 14) para inativo', 'usuarios', 14, '2025-12-09 13:14:03'),
-(22, 1, 'Alterou status do usuário (ID: 14) para ativo', 'usuarios', 14, '2025-12-09 13:14:13');
+(22, 1, 'Alterou status do usuário (ID: 14) para ativo', 'usuarios', 14, '2025-12-09 13:14:13'),
+(23, 1, 'Aprovou cadastro de comprador (ID: 22)', 'usuarios', 22, '2025-12-28 04:13:40');
 
 -- --------------------------------------------------------
 
@@ -115,7 +116,9 @@ INSERT INTO `chat_auditoria` (`id`, `conversa_id`, `usuario_id`, `acao`, `detalh
 (27, 9, 4, 'enviar_mensagem', 'Mensagem ID: 29 - Conteúdo: testando mensagem', NULL, NULL, '2025-12-16 20:39:18'),
 (28, 9, 3, 'enviar_mensagem', 'Mensagem ID: 30 - Conteúdo: ok', NULL, NULL, '2025-12-16 20:39:22'),
 (29, 10, 3, 'enviar_mensagem', 'Mensagem ID: 31 - Conteúdo: ok', NULL, NULL, '2025-12-16 21:08:10'),
-(30, 10, 4, 'enviar_mensagem', 'Mensagem ID: 32 - Conteúdo: teste', NULL, NULL, '2025-12-16 21:08:26');
+(30, 10, 4, 'enviar_mensagem', 'Mensagem ID: 32 - Conteúdo: teste', NULL, NULL, '2025-12-16 21:08:26'),
+(31, 11, 22, 'enviar_mensagem', 'Mensagem ID: 33 - Conteúdo: A', NULL, NULL, '2025-12-28 04:14:07'),
+(32, 11, 22, 'enviar_mensagem', 'Mensagem ID: 34 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\nProduto: teste x\nQuantidade: 1 unidades\nValor unitário: R$ 10,00\nForma de', NULL, NULL, '2025-12-28 04:14:18');
 
 -- --------------------------------------------------------
 
@@ -157,7 +160,8 @@ INSERT INTO `chat_conversas` (`id`, `produto_id`, `comprador_id`, `vendedor_id`,
 (7, 19, 3, 9, '[Imagem]', '2025-12-13 18:39:58', 1, 0, 'ativo', '2025-12-11 19:37:54', 0, NULL, NULL, 1, 0, 1, 0, NULL, NULL, NULL, NULL),
 (8, 25, 3, 4, 'produzindo', '2025-12-16 17:30:27', 1, 0, 'ativo', '2025-12-16 17:30:09', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL),
 (9, 20, 3, 4, 'ok', '2025-12-16 20:39:22', 1, 0, 'ativo', '2025-12-16 20:38:44', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL),
-(10, 24, 3, 4, 'teste', '2025-12-16 21:08:26', 0, 1, 'ativo', '2025-12-16 21:08:06', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
+(10, 24, 3, 4, 'teste', '2025-12-16 21:08:26', 0, 1, 'ativo', '2025-12-16 21:08:06', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL),
+(11, 16, 22, 4, '*NOVA PROPOSTA DE COMPRA*\n\nProduto: teste x\nQuantidade: 1 unidades\nValor unitário: R$ 10,00\nForma de pagamento: Pagamento à Vista\nFrete: Frete por conta do vendedor\nValor do frete: R$ 5,00\nTotal: R$ 15,00\n\nID da proposta: 1', '2025-12-28 04:14:18', 1, 0, 'ativo', '2025-12-28 04:14:02', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -206,7 +210,9 @@ INSERT INTO `chat_mensagens` (`id`, `conversa_id`, `remetente_id`, `mensagem`, `
 (29, 9, 4, 'testando mensagem', 'texto', 1, '2025-12-16 20:39:18', 0, NULL, NULL, 'texto', NULL, NULL),
 (30, 9, 3, 'ok', 'texto', 1, '2025-12-16 20:39:22', 0, NULL, NULL, 'texto', NULL, NULL),
 (31, 10, 3, 'ok', 'texto', 1, '2025-12-16 21:08:10', 0, NULL, NULL, 'texto', NULL, NULL),
-(32, 10, 4, 'teste', 'texto', 1, '2025-12-16 21:08:26', 0, NULL, NULL, 'texto', NULL, NULL);
+(32, 10, 4, 'teste', 'texto', 1, '2025-12-16 21:08:26', 0, NULL, NULL, 'texto', NULL, NULL),
+(33, 11, 22, 'A', 'texto', 1, '2025-12-28 04:14:07', 0, NULL, NULL, 'texto', NULL, NULL),
+(34, 11, 22, '*NOVA PROPOSTA DE COMPRA*\n\nProduto: teste x\nQuantidade: 1 unidades\nValor unitário: R$ 10,00\nForma de pagamento: Pagamento à Vista\nFrete: Frete por conta do vendedor\nValor do frete: R$ 5,00\nTotal: R$ 15,00\n\nID da proposta: 1', 'texto', 1, '2025-12-28 04:14:18', 0, NULL, NULL, 'texto', NULL, NULL);
 
 --
 -- Acionadores `chat_mensagens`
@@ -256,7 +262,8 @@ INSERT INTO `compradores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, 
 (5, 14, 'cpf', 'teste', NULL, '111111111111111111', NULL, '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '11111111111', NULL, 'free'),
 (6, 11, 'cpf', 'Rondon', NULL, '41111584800', NULL, '13211873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '11996563500', NULL, 'free'),
 (9, 17, 'cpf', 'Jorge', NULL, '166.076.628-11', NULL, '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '(11) 99656-3500', '', 'free'),
-(10, 18, 'cpf', 'matue', NULL, '166.076.628-11', NULL, '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '(11) 99656-3500', '', 'free');
+(10, 18, 'cpf', 'matue', NULL, '166.076.628-11', NULL, '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '(11) 99656-3500', '', 'free'),
+(11, 22, 'cpf', 'Comprador2', NULL, '014.647.180-67', NULL, '76907-558', 'Rua Sete de Setembro', '1', '', 'RO', 'Ji-Paraná', '(11) 11111-1111', '', 'free');
 
 -- --------------------------------------------------------
 
@@ -333,7 +340,9 @@ INSERT INTO `notificacoes` (`id`, `usuario_id`, `mensagem`, `tipo`, `lida`, `url
 (5, 1, 'Nova solicitação de cadastro de comprador: Jorge', 'info', 1, 'src/admin/solicitacoes.php', '2025-12-09 12:02:45'),
 (6, 1, 'Nova solicitação de cadastro de comprador: Jorge', 'info', 0, 'src/admin/solicitacoes.php', '2025-12-09 13:10:53'),
 (7, 1, 'Nova solicitação de cadastro de comprador: ok', 'info', 0, 'src/admin/solicitacoes.php', '2025-12-11 00:11:27'),
-(8, 1, 'Nova solicitação de cadastro de vendedor: test', 'info', 0, 'src/admin/solicitacoes.php', '2025-12-11 17:05:40');
+(8, 1, 'Nova solicitação de cadastro de vendedor: test', 'info', 0, 'src/admin/solicitacoes.php', '2025-12-11 17:05:40'),
+(9, 1, 'Nova solicitação de cadastro de comprador: Comprador2', 'info', 0, 'src/admin/solicitacoes.php', '2025-12-28 04:13:25'),
+(10, 4, '???? Nova proposta para \'teste x\' - Quantidade: 1', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2025-12-28 04:14:18');
 
 -- --------------------------------------------------------
 
@@ -473,21 +482,25 @@ INSERT INTO `produto_imagens` (`id`, `produto_id`, `imagem_url`, `ordem`, `data_
 --
 
 CREATE TABLE `propostas_comprador` (
-  `id` int(11) NOT NULL,
-  `comprador_id` int(11) NOT NULL,
-  `preco_proposto` decimal(10,2) NOT NULL,
-  `quantidade_proposta` int(11) NOT NULL,
-  `condicoes_compra` text DEFAULT NULL,
+  `ID` int(11) NOT NULL,
+  `comprador_id` int(11) DEFAULT NULL,
+  `produto_id` int(11) DEFAULT NULL,
+  `preco_proposto` decimal(10,2) DEFAULT NULL,
+  `quantidade_proposta` int(11) DEFAULT NULL,
   `data_proposta` timestamp NOT NULL DEFAULT current_timestamp(),
-  `status` enum('enviada','pendente','aceita','recusada','finalizada') NOT NULL DEFAULT 'enviada'
+  `status` enum('enviada','pendente','aceita','recusada') DEFAULT NULL,
+  `forma_pagamento` enum('à vista','entrega') DEFAULT NULL,
+  `opcao_frete` enum('vendedor','comprador','entregador') DEFAULT NULL,
+  `valor_frete` decimal(10,2) DEFAULT NULL,
+  `finalizada` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Despejando dados para a tabela `propostas_comprador`
 --
 
-INSERT INTO `propostas_comprador` (`id`, `comprador_id`, `preco_proposto`, `quantidade_proposta`, `condicoes_compra`, `data_proposta`, `status`) VALUES
-(59, 1, 18.00, 1, 'teste', '2025-12-09 13:17:17', 'enviada');
+INSERT INTO `propostas_comprador` (`ID`, `comprador_id`, `produto_id`, `preco_proposto`, `quantidade_proposta`, `data_proposta`, `status`, `forma_pagamento`, `opcao_frete`, `valor_frete`, `finalizada`) VALUES
+(1, 22, 16, 10.00, 1, '2025-12-28 04:14:18', 'enviada', 'à vista', 'vendedor', 5.00, 0);
 
 -- --------------------------------------------------------
 
@@ -496,37 +509,25 @@ INSERT INTO `propostas_comprador` (`id`, `comprador_id`, `preco_proposto`, `quan
 --
 
 CREATE TABLE `propostas_negociacao` (
-  `id` int(11) NOT NULL,
-  `produto_id` int(11) NOT NULL,
-  `proposta_comprador_id` int(11) NOT NULL,
+  `ID` int(11) NOT NULL,
+  `proposta_comprador_id` int(11) DEFAULT NULL,
   `proposta_vendedor_id` int(11) DEFAULT NULL,
-  `preco_final` decimal(10,2) DEFAULT NULL,
+  `produto_id` int(11) DEFAULT NULL,
+  `data_inicio` timestamp NOT NULL DEFAULT current_timestamp(),
+  `data_atualizacao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `valor_total` decimal(10,2) DEFAULT NULL,
   `quantidade_final` int(11) DEFAULT NULL,
-  `status` enum('aceita','negociacao','recusada','finalizada') NOT NULL DEFAULT 'negociacao',
-  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
-  `data_atualizacao` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
+  `status` enum('aceita','negociacao','recusada') DEFAULT NULL,
+  `forma_pagamento` enum('à vista','entrega') DEFAULT NULL,
+  `opcao_frete` enum('vendedor','comprador','entregador') DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
-
 --
--- Estrutura para tabela `propostas_negociacao_old`
+-- Despejando dados para a tabela `propostas_negociacao`
 --
 
-CREATE TABLE `propostas_negociacao_old` (
-  `id` int(11) NOT NULL,
-  `produto_id` int(11) NOT NULL COMMENT 'O anúncio ao qual a proposta se refere',
-  `comprador_id` int(11) NOT NULL COMMENT 'O comprador que fez a proposta',
-  `preco_proposto` decimal(10,2) NOT NULL COMMENT 'Preço unitário (por Kg, por exemplo) proposto pelo comprador',
-  `quantidade_proposta` int(11) NOT NULL COMMENT 'Quantidade total em Kg ou unidades proposta',
-  `condicoes_comprador` text DEFAULT NULL,
-  `status` enum('pendente','aceita','recusada','finalizada','cancelada','negociacao') NOT NULL DEFAULT 'pendente',
-  `data_proposta` timestamp NOT NULL DEFAULT current_timestamp(),
-  `data_resposta` datetime DEFAULT NULL,
-  `data_atualizacao` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
-  `observacoes_vendedor` text DEFAULT NULL,
-  `observacoes_vendedor_teste` text DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT INTO `propostas_negociacao` (`ID`, `proposta_comprador_id`, `proposta_vendedor_id`, `produto_id`, `data_inicio`, `data_atualizacao`, `valor_total`, `quantidade_final`, `status`, `forma_pagamento`, `opcao_frete`) VALUES
+(1, 1, NULL, 16, '2025-12-28 04:14:18', '2025-12-28 04:14:18', 15.00, 1, 'negociacao', 'à vista', 'vendedor');
 
 -- --------------------------------------------------------
 
@@ -535,15 +536,17 @@ CREATE TABLE `propostas_negociacao_old` (
 --
 
 CREATE TABLE `propostas_vendedor` (
-  `id` int(11) NOT NULL,
-  `proposta_comprador_id` int(11) NOT NULL,
-  `vendedor_id` int(11) NOT NULL,
-  `preco_proposto` decimal(10,2) NOT NULL,
-  `quantidade_proposta` int(11) NOT NULL,
-  `condicoes_venda` text DEFAULT NULL,
-  `data_contra_proposta` timestamp NOT NULL DEFAULT current_timestamp(),
-  `status` enum('enviada','pendente','aceita','recusada','finalizada') NOT NULL DEFAULT 'enviada',
-  `observacao` text DEFAULT NULL
+  `ID` int(11) NOT NULL,
+  `vendedor_id` int(11) DEFAULT NULL,
+  `produto_id` int(11) DEFAULT NULL,
+  `preco_proposto` decimal(10,2) DEFAULT NULL,
+  `quantidade_proposta` int(11) DEFAULT NULL,
+  `data_proposta` timestamp NOT NULL DEFAULT current_timestamp(),
+  `status` enum('enviada','pendente','aceita','recusada') DEFAULT NULL,
+  `forma_pagamento` enum('à vista','entrega') DEFAULT NULL,
+  `opcao_frete` enum('vendedor','comprador','entregador') DEFAULT NULL,
+  `valor_frete` decimal(10,2) DEFAULT NULL,
+  `finalizada` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -591,7 +594,8 @@ INSERT INTO `solicitacoes_cadastro` (`id`, `usuario_id`, `nome`, `email`, `telef
 (16, NULL, 'Jorge', 'abc@gmail.com', '(11) 99656-3500', 'Rua Seis, 206, Jundiaí, SP', 'comprador', '{\"name\":\"Jorge\",\"email\":\"abc@gmail.com\",\"subject\":\"comprador\",\"tipoPessoaComprador\":\"cpf\",\"cpfCnpjComprador\":\"166.076.628-11\",\"nomeComercialComprador\":\"okok\",\"cepComprador\":\"13211-873\",\"ruaComprador\":\"Rua Seis\",\"numeroComprador\":\"206\",\"complementoComprador\":\"\",\"estadoComprador\":\"SP\",\"cidadeComprador\":\"Jundiaí\",\"telefone1Comprador\":\"(11) 99656-3500\",\"telefone2Comprador\":\"\",\"planoComprador\":\"free\",\"nomeComercialVendedor\":\"\",\"cpfCnpjVendedor\":\"\",\"cipVendedor\":\"\",\"cepVendedor\":\"\",\"ruaVendedor\":\"\",\"numeroVendedor\":\"\",\"complementoVendedor\":\"\",\"estadoVendedor\":\"SP\",\"cidadeVendedor\":\"\",\"telefone1Vendedor\":\"\",\"telefone2Vendedor\":\"\",\"planoVendedor\":\"free\",\"telefoneTransportador\":\"\",\"numeroANTT\":\"\",\"placaVeiculo\":\"\",\"modeloVeiculo\":\"\",\"descricaoVeiculo\":\"\",\"estadoTransportador\":\"\",\"cidadeTransportador\":\"\",\"message\":\"\",\"tipo_pessoa_comprador\":\"cpf\",\"senha_hash\":\"$2y$10$\\/AbCLuI\\/OXcOAK4lkH\\/d7eoGb6LHjWA6LYv1syJz1Wopx7r52LWfe\"}', 'rejeitado', '2025-12-09 12:02:45', '2025-12-09 12:03:04', NULL, NULL),
 (17, 17, 'Jorge', 'ok@gmail.com', '(11) 99656-3500', 'Rua Seis, 206, Jundiaí, SP', 'comprador', '{\"name\":\"Jorge\",\"email\":\"ok@gmail.com\",\"subject\":\"comprador\",\"tipoPessoaComprador\":\"cpf\",\"cpfCnpjComprador\":\"166.076.628-11\",\"nomeComercialComprador\":\"Jorge\",\"cepComprador\":\"13211-873\",\"ruaComprador\":\"Rua Seis\",\"numeroComprador\":\"206\",\"complementoComprador\":\"\",\"estadoComprador\":\"SP\",\"cidadeComprador\":\"Jundiaí\",\"telefone1Comprador\":\"(11) 99656-3500\",\"telefone2Comprador\":\"\",\"planoComprador\":\"free\",\"nomeComercialVendedor\":\"\",\"cpfCnpjVendedor\":\"\",\"cipVendedor\":\"\",\"cepVendedor\":\"\",\"ruaVendedor\":\"\",\"numeroVendedor\":\"\",\"complementoVendedor\":\"\",\"estadoVendedor\":\"\",\"cidadeVendedor\":\"\",\"telefone1Vendedor\":\"\",\"telefone2Vendedor\":\"\",\"planoVendedor\":\"free\",\"telefoneTransportador\":\"\",\"numeroANTT\":\"\",\"placaVeiculo\":\"\",\"modeloVeiculo\":\"\",\"descricaoVeiculo\":\"\",\"estadoTransportador\":\"\",\"cidadeTransportador\":\"\",\"message\":\"\",\"tipo_pessoa_comprador\":\"cpf\",\"senha_hash\":\"$2y$10$Doo5HH4LGV82QBL\\/kFRmu.YyBAm\\/lTgrxGy30amMAqe4WHGiiLwkW\"}', 'pendente', '2025-12-09 13:10:53', NULL, NULL, NULL),
 (18, 18, 'ok', 'matue@gmail.com', '(11) 99656-3500', 'Rua Seis, 206, Jundiaí, SP', 'comprador', '{\"name\":\"ok\",\"email\":\"matue@gmail.com\",\"subject\":\"comprador\",\"tipoPessoaComprador\":\"cpf\",\"cpfCnpjComprador\":\"166.076.628-11\",\"nomeComercialComprador\":\"matue\",\"cepComprador\":\"13211-873\",\"ruaComprador\":\"Rua Seis\",\"numeroComprador\":\"206\",\"complementoComprador\":\"\",\"estadoComprador\":\"SP\",\"cidadeComprador\":\"Jundiaí\",\"telefone1Comprador\":\"(11) 99656-3500\",\"telefone2Comprador\":\"\",\"planoComprador\":\"free\",\"nomeComercialVendedor\":\"\",\"cpfCnpjVendedor\":\"\",\"cipVendedor\":\"\",\"cepVendedor\":\"\",\"ruaVendedor\":\"\",\"numeroVendedor\":\"\",\"complementoVendedor\":\"\",\"estadoVendedor\":\"SP\",\"cidadeVendedor\":\"\",\"telefone1Vendedor\":\"\",\"telefone2Vendedor\":\"\",\"planoVendedor\":\"free\",\"telefoneTransportador\":\"\",\"numeroANTT\":\"\",\"placaVeiculo\":\"\",\"modeloVeiculo\":\"\",\"descricaoVeiculo\":\"\",\"estadoTransportador\":\"\",\"cidadeTransportador\":\"\",\"message\":\"\",\"tipo_pessoa_comprador\":\"cpf\",\"senha_hash\":\"$2y$10$QD2\\/eOhZMRPKstti40Q3v.9n1o3Yi7MCmhcpikrAYpahk7oadL2By\"}', 'pendente', '2025-12-11 00:11:27', NULL, NULL, NULL),
-(19, 19, 'test', 'tvendedor@gmail.com', '(11) 99656-3500', 'Rua Seis, 206, Jundiaí, SP', 'vendedor', '{\"name\":\"test\",\"email\":\"tvendedor@gmail.com\",\"subject\":\"vendedor\",\"tipoPessoaComprador\":\"cpf\",\"cpfCnpjComprador\":\"\",\"nomeComercialComprador\":\"\",\"cepComprador\":\"\",\"ruaComprador\":\"\",\"numeroComprador\":\"\",\"complementoComprador\":\"\",\"estadoComprador\":\"SP\",\"cidadeComprador\":\"\",\"telefone1Comprador\":\"\",\"telefone2Comprador\":\"\",\"planoComprador\":\"free\",\"nomeComercialVendedor\":\"test\",\"cpfCnpjVendedor\":\"00.000.000\\/0001-91\",\"cipVendedor\":\"\",\"cepVendedor\":\"13211-873\",\"ruaVendedor\":\"Rua Seis\",\"numeroVendedor\":\"206\",\"complementoVendedor\":\"\",\"estadoVendedor\":\"SP\",\"cidadeVendedor\":\"Jundiaí\",\"telefone1Vendedor\":\"(11) 99656-3500\",\"telefone2Vendedor\":\"\",\"planoVendedor\":\"free\",\"telefoneTransportador\":\"\",\"numeroANTT\":\"\",\"placaVeiculo\":\"\",\"modeloVeiculo\":\"\",\"descricaoVeiculo\":\"\",\"estadoTransportador\":\"\",\"cidadeTransportador\":\"\",\"message\":\"\",\"senha_hash\":\"$2y$10$u.HaiRipdMCCtHAjeXSEGOaWuxq8OSuty5NtGa3sU\\/p1qrTkFx7Ty\"}', 'pendente', '2025-12-11 17:05:40', NULL, NULL, NULL);
+(19, 19, 'test', 'tvendedor@gmail.com', '(11) 99656-3500', 'Rua Seis, 206, Jundiaí, SP', 'vendedor', '{\"name\":\"test\",\"email\":\"tvendedor@gmail.com\",\"subject\":\"vendedor\",\"tipoPessoaComprador\":\"cpf\",\"cpfCnpjComprador\":\"\",\"nomeComercialComprador\":\"\",\"cepComprador\":\"\",\"ruaComprador\":\"\",\"numeroComprador\":\"\",\"complementoComprador\":\"\",\"estadoComprador\":\"SP\",\"cidadeComprador\":\"\",\"telefone1Comprador\":\"\",\"telefone2Comprador\":\"\",\"planoComprador\":\"free\",\"nomeComercialVendedor\":\"test\",\"cpfCnpjVendedor\":\"00.000.000\\/0001-91\",\"cipVendedor\":\"\",\"cepVendedor\":\"13211-873\",\"ruaVendedor\":\"Rua Seis\",\"numeroVendedor\":\"206\",\"complementoVendedor\":\"\",\"estadoVendedor\":\"SP\",\"cidadeVendedor\":\"Jundiaí\",\"telefone1Vendedor\":\"(11) 99656-3500\",\"telefone2Vendedor\":\"\",\"planoVendedor\":\"free\",\"telefoneTransportador\":\"\",\"numeroANTT\":\"\",\"placaVeiculo\":\"\",\"modeloVeiculo\":\"\",\"descricaoVeiculo\":\"\",\"estadoTransportador\":\"\",\"cidadeTransportador\":\"\",\"message\":\"\",\"senha_hash\":\"$2y$10$u.HaiRipdMCCtHAjeXSEGOaWuxq8OSuty5NtGa3sU\\/p1qrTkFx7Ty\"}', 'pendente', '2025-12-11 17:05:40', NULL, NULL, NULL),
+(20, 22, 'Comprador2', 'comprador2@gmail.com', '(11) 11111-1111', 'Rua Sete de Setembro, 1, Ji-Paraná, RO', 'comprador', '{\"name\":\"Comprador2\",\"email\":\"comprador2@gmail.com\",\"subject\":\"comprador\",\"tipoPessoaComprador\":\"cpf\",\"cpfCnpjComprador\":\"014.647.180-67\",\"nomeComercialComprador\":\"Comprador2\",\"cepComprador\":\"76907-558\",\"ruaComprador\":\"Rua Sete de Setembro\",\"numeroComprador\":\"1\",\"complementoComprador\":\"\",\"estadoComprador\":\"RO\",\"cidadeComprador\":\"Ji-Paraná\",\"telefone1Comprador\":\"(11) 11111-1111\",\"telefone2Comprador\":\"\",\"planoComprador\":\"free\",\"nomeComercialVendedor\":\"\",\"cpfCnpjVendedor\":\"\",\"cipVendedor\":\"\",\"cepVendedor\":\"\",\"ruaVendedor\":\"\",\"numeroVendedor\":\"\",\"complementoVendedor\":\"\",\"estadoVendedor\":\"\",\"cidadeVendedor\":\"\",\"telefone1Vendedor\":\"\",\"telefone2Vendedor\":\"\",\"planoVendedor\":\"free\",\"telefoneTransportador\":\"\",\"numeroANTT\":\"\",\"placaVeiculo\":\"\",\"modeloVeiculo\":\"\",\"descricaoVeiculo\":\"\",\"estadoTransportador\":\"\",\"cidadeTransportador\":\"\",\"message\":\"\",\"tipo_pessoa_comprador\":\"cpf\",\"senha_hash\":\"$2y$10$nn1xwSB4CmMgLOAVH3h9NukwQHeAmhfKwxobgEIknhvBMft67sTe6\"}', 'aprovado', '2025-12-28 04:13:25', '2025-12-28 04:13:40', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -657,7 +661,8 @@ INSERT INTO `usuarios` (`id`, `email`, `senha`, `tipo`, `nome`, `status`, `data_
 (14, 'testando@gmail.com', '$2y$10$NfhFfw0I8bgyOGANrDkG9u/gkWg6EeHAKy/97wU7u7bVhe01M4wCW', 'vendedor', 'testando', 'ativo', '2025-12-04 01:15:01', NULL, NULL, NULL),
 (17, 'ok@gmail.com', '$2y$10$Doo5HH4LGV82QBL/kFRmu.YyBAm/lTgrxGy30amMAqe4WHGiiLwkW', 'comprador', 'Jorge', 'pendente', '2025-12-09 13:10:53', NULL, NULL, NULL),
 (18, 'matue@gmail.com', '$2y$10$QD2/eOhZMRPKstti40Q3v.9n1o3Yi7MCmhcpikrAYpahk7oadL2By', 'comprador', 'ok', 'pendente', '2025-12-11 00:11:27', NULL, NULL, NULL),
-(19, 'tvendedor@gmail.com', '$2y$10$u.HaiRipdMCCtHAjeXSEGOaWuxq8OSuty5NtGa3sU/p1qrTkFx7Ty', 'vendedor', 'test', 'pendente', '2025-12-11 17:05:40', NULL, NULL, NULL);
+(19, 'tvendedor@gmail.com', '$2y$10$u.HaiRipdMCCtHAjeXSEGOaWuxq8OSuty5NtGa3sU/p1qrTkFx7Ty', 'vendedor', 'test', 'pendente', '2025-12-11 17:05:40', NULL, NULL, NULL),
+(22, 'comprador2@gmail.com', '$2y$10$nn1xwSB4CmMgLOAVH3h9NukwQHeAmhfKwxobgEIknhvBMft67sTe6', 'comprador', 'Comprador2', 'ativo', '2025-12-28 04:13:25', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -898,32 +903,22 @@ ALTER TABLE `produto_imagens`
 -- Índices de tabela `propostas_comprador`
 --
 ALTER TABLE `propostas_comprador`
-  ADD PRIMARY KEY (`id`),
+  ADD PRIMARY KEY (`ID`),
   ADD KEY `comprador_id` (`comprador_id`);
 
 --
 -- Índices de tabela `propostas_negociacao`
 --
 ALTER TABLE `propostas_negociacao`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `produto_id` (`produto_id`),
+  ADD PRIMARY KEY (`ID`),
   ADD KEY `proposta_comprador_id` (`proposta_comprador_id`),
   ADD KEY `proposta_vendedor_id` (`proposta_vendedor_id`);
-
---
--- Índices de tabela `propostas_negociacao_old`
---
-ALTER TABLE `propostas_negociacao_old`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `propostas_negociacao_ibfk_1` (`produto_id`),
-  ADD KEY `propostas_negociacao_ibfk_2` (`comprador_id`);
 
 --
 -- Índices de tabela `propostas_vendedor`
 --
 ALTER TABLE `propostas_vendedor`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `proposta_comprador_id` (`proposta_comprador_id`),
+  ADD PRIMARY KEY (`ID`),
   ADD KEY `vendedor_id` (`vendedor_id`);
 
 --
@@ -992,31 +987,31 @@ ALTER TABLE `webhook_logs`
 -- AUTO_INCREMENT de tabela `admin_acoes`
 --
 ALTER TABLE `admin_acoes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT de tabela `chat_auditoria`
 --
 ALTER TABLE `chat_auditoria`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT de tabela `chat_conversas`
 --
 ALTER TABLE `chat_conversas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de tabela `chat_mensagens`
 --
 ALTER TABLE `chat_mensagens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT de tabela `compradores`
 --
 ALTER TABLE `compradores`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de tabela `conversas`
@@ -1040,7 +1035,7 @@ ALTER TABLE `mensagens`
 -- AUTO_INCREMENT de tabela `notificacoes`
 --
 ALTER TABLE `notificacoes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de tabela `pagamentos`
@@ -1070,31 +1065,25 @@ ALTER TABLE `produto_imagens`
 -- AUTO_INCREMENT de tabela `propostas_comprador`
 --
 ALTER TABLE `propostas_comprador`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de tabela `propostas_negociacao`
 --
 ALTER TABLE `propostas_negociacao`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
-
---
--- AUTO_INCREMENT de tabela `propostas_negociacao_old`
---
-ALTER TABLE `propostas_negociacao_old`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de tabela `propostas_vendedor`
 --
 ALTER TABLE `propostas_vendedor`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de tabela `solicitacoes_cadastro`
 --
 ALTER TABLE `solicitacoes_cadastro`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT de tabela `transportadores`
@@ -1106,7 +1095,7 @@ ALTER TABLE `transportadores`
 -- AUTO_INCREMENT de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT de tabela `usuario_avisos_preferencias`
@@ -1220,29 +1209,20 @@ ALTER TABLE `produto_imagens`
 -- Restrições para tabelas `propostas_comprador`
 --
 ALTER TABLE `propostas_comprador`
-  ADD CONSTRAINT `propostas_comprador_ibfk_1` FOREIGN KEY (`comprador_id`) REFERENCES `compradores` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `propostas_comprador_ibfk_1` FOREIGN KEY (`comprador_id`) REFERENCES `compradores` (`usuario_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Restrições para tabelas `propostas_negociacao`
 --
 ALTER TABLE `propostas_negociacao`
-  ADD CONSTRAINT `propostas_negociacao_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `propostas_negociacao_ibfk_2` FOREIGN KEY (`proposta_comprador_id`) REFERENCES `propostas_comprador` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `propostas_negociacao_ibfk_3` FOREIGN KEY (`proposta_vendedor_id`) REFERENCES `propostas_vendedor` (`id`) ON DELETE SET NULL;
-
---
--- Restrições para tabelas `propostas_negociacao_old`
---
-ALTER TABLE `propostas_negociacao_old`
-  ADD CONSTRAINT `propostas_negociacao_old_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `propostas_negociacao_old_ibfk_2` FOREIGN KEY (`comprador_id`) REFERENCES `compradores` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `propostas_negociacao_ibfk_1` FOREIGN KEY (`proposta_comprador_id`) REFERENCES `propostas_comprador` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `propostas_negociacao_ibfk_2` FOREIGN KEY (`proposta_vendedor_id`) REFERENCES `propostas_vendedor` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Restrições para tabelas `propostas_vendedor`
 --
 ALTER TABLE `propostas_vendedor`
-  ADD CONSTRAINT `propostas_vendedor_ibfk_1` FOREIGN KEY (`proposta_comprador_id`) REFERENCES `propostas_comprador` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `propostas_vendedor_ibfk_2` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `propostas_vendedor_ibfk_1` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`usuario_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Restrições para tabelas `solicitacoes_cadastro`

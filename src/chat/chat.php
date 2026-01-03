@@ -357,7 +357,7 @@ $opcoes_frete = [
                     <div class="negociacao-content-header">
                         <center>
                             <i class="fas fa-handshake"></i>
-                            Acordo de Compra
+                            Enviar Acordo de Compra
                         </center>
                     </div>
                     
@@ -549,7 +549,7 @@ $opcoes_frete = [
                 </div>
                 
                 <button type="button" class="btn-toggle-negociacao" id="btn-abrir-negociacao-sidebar">
-                    <i class="fas fa-handshake"></i> Acordo de Compra
+                    <i class="fas fa-handshake"></i> Enviar Acordo de Compra
                 </button>
             </div>
             </div>

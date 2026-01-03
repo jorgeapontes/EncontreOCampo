@@ -189,7 +189,7 @@ try {
         .nav-link { text-decoration: none; color: #333; font-weight: 500; transition: color 0.3s; position: relative; }
         .nav-link:hover { color: #2E7D32; }
         .nav-link.active { color: #2E7D32; font-weight: 700; }
-        .exit-button { background: #dc3545; color: white !important; padding: 8px 20px; border-radius: 5px; }
+        .exit-button { background: #dc3545; color: white !important; padding: 8px 20px; border-radius: 20px; }
         .exit-button:hover { background: #c82333; }
         .notificacao-badge { position: absolute; top: -8px; right: -8px; background: #dc3545; color: white; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; }
         .hamburger { display: none; flex-direction: column; cursor: pointer; }

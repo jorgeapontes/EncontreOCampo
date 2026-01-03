@@ -184,6 +184,9 @@ try {
                         <a href="../../index.php" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
+                        <a href="../anuncios.php" class="nav-link">Anúncios</a>
+                    </li>
+                    <li class="nav-item">
                         <a href="" class="nav-link active">Painel</a>
                     </li>
                     <li class="nav-item">

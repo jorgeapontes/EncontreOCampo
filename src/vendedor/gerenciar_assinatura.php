@@ -31,6 +31,39 @@ $eh_plano_pago = ($dados['plano_id'] > 1 && $dados['status_assinatura'] === 'ati
 $data_exibicao_inicio = $dados['Data_inicio_assinatura'] ?? $dados['Data_assinatura'] ?? null;
 ?>
 
+<?php
+// ... (mantenha o código que já fizemos no topo)
+
+// --- NOVA LÓGICA: BUSCAR RECIBOS DA STRIPE ---
+require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/../../config/StripeConfig.php';
+\Config\StripeConfig::init();
+
+$historico_pagamentos = [];
+
+try {
+    // 1. Pegamos o email do vendedor logado
+    $email_vendedor = $_SESSION['usuario_email'];
+
+    // 2. Localizamos o ID do cliente na Stripe
+    $customers = \Stripe\Customer::all(['email' => $email_vendedor, 'limit' => 1]);
+    
+    if (!empty($customers->data)) {
+        $customer_id = $customers->data[0]->id;
+
+        // 3. Buscamos as últimas faturas pagas
+        $invoices = \Stripe\Invoice::all([
+            'customer' => $customer_id,
+            'limit' => 5, // Mostrar as últimas 5
+            'status' => 'paid'
+        ]);
+        $historico_pagamentos = $invoices->data;
+    }
+} catch (Exception $e) {
+    // Silencioso: se não encontrar faturas, a lista fica vazia
+}
+?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -145,6 +178,46 @@ $data_exibicao_inicio = $dados['Data_inicio_assinatura'] ?? $dados['Data_assinat
 
         .btn-danger-outline { border: 1px solid #ffcdd2; color: #d63031; background: white; }
         .btn-danger-outline:hover { background: #fff5f5; }
+
+
+        .historico-section {
+        margin-top: 40px;
+        background: white;
+        padding: 30px;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+    }
+    .historico-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .tabela-recibos {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .tabela-recibos th {
+        text-align: left;
+        font-size: 12px;
+        color: var(--text-light);
+        text-transform: uppercase;
+        padding: 10px;
+        border-bottom: 2px solid var(--bg);
+    }
+    .tabela-recibos td {
+        padding: 15px 10px;
+        border-bottom: 1px solid var(--bg);
+        font-size: 14px;
+    }
+    .btn-recibo {
+        color: var(--primary-green);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    .btn-recibo:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -220,6 +293,42 @@ $data_exibicao_inicio = $dados['Data_inicio_assinatura'] ?? $dados['Data_assinat
             </div>
         <?php endif; ?>
     </div>
+
+
+    <div class="historico-section">
+    <div class="historico-title">
+        <i class="fa-solid fa-file-invoice-dollar"></i> Histórico de Pagamentos
+    </div>
+
+    <?php if (empty($historico_pagamentos)): ?>
+        <p style="color: var(--text-light); font-size: 14px;">Nenhum pagamento registrado até o momento.</p>
+    <?php else: ?>
+        <table class="tabela-recibos">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Plano</th>
+                    <th>Valor</th>
+                    <th>Recibo</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($historico_pagamentos as $invoice): ?>
+                    <tr>
+                        <td><?php echo date('d/m/Y', $invoice->created); ?></td>
+                        <td><?php echo $invoice->lines->data[0]->description ?? 'Assinatura'; ?></td>
+                        <td>R$ <?php echo number_format($invoice->amount_paid / 100, 2, ',', '.'); ?></td>
+                        <td>
+                            <a href="<?php echo $invoice->hosted_invoice_url; ?>" target="_blank" class="btn-recibo">
+                                <i class="fa-solid fa-download"></i> Ver Recibo
+                            </a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
+</div>
     
     <div style="text-align: center; margin-top: 30px;">
         <a href="perfil.php" style="color: var(--text-light); text-decoration: none; font-size: 14px;">

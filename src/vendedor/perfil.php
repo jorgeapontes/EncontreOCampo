@@ -1,6 +1,8 @@
 <?php
 // src/vendedor/perfil.php
 require_once 'auth.php'; 
+require_once 'verificar_assinaturas.php';
+verificarValidadeAssinaturas($db); // $db é a sua conexão PDO que já existe no auth.php
 
 // --- ATUALIZAÇÃO DE LÓGICA: BUSCAR NOME DO PLANO REAL ---
 // Fazemos um JOIN com a tabela planos para garantir que o nome exibido 
@@ -85,6 +87,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
+    <?php 
+require_once 'verificar_assinaturas.php';
+verificarValidadeAssinaturas($db); // Executa a verificação
+
+if (isset($_SESSION['aviso_expiracao'])): 
+?>
+    <div id="alert-expirado" style="background: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; font-family: 'Inter', sans-serif; box-shadow: 0 4px 10px rgba(0,0,0,0.05); animation: slideIn 0.5s ease;">
+        <div style="display: flex; align-items: center;">
+            <i class="fa-solid fa-circle-exclamation" style="font-size: 20px; margin-right: 12px;"></i>
+            <span><strong>Plano Expirado:</strong> A sua assinatura Profissional terminou e a sua conta foi movida para o <strong>Plano Gratuito</strong>.</span>
+        </div>
+        <button onclick="document.getElementById('alert-expirado').style.display='none'" style="background:none; border:none; color: #856404; cursor:pointer; font-size: 20px;">&times;</button>
+    </div>
+    <?php unset($_SESSION['aviso_expiracao']); // Garante que o aviso aparece apenas uma vez ?>
+    
+    <style>
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+<?php endif; ?>
     <header>
         <nav class="navbar">
             <div class="nav-container">
@@ -137,6 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <span class="bar"></span>
                 </div>
             </div>
+            
         </nav>
     </header>
     <br>

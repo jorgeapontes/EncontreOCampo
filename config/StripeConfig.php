@@ -6,7 +6,7 @@ require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 class StripeConfig {
     // Substitua pela sua chave sk_test...
-    private static $apiKey = 'pk_live_51ShWLz0lZtce65b7V1uIErXQaFKRyYwxaZli3l388yTJbPP2eUZJH3QxuAihWDiDuxMJFxjxqqecWNKRDNEiGz47004zhy0NHv';
+    private static $apiKey = 'sk_test_51ShWLz0lZtce65b7sveBBh6ymEbPNn18PnzdF3xQYJiRuL8XpyGu13TpsG0VL16RCyXU6s2mX43LF70yYLTnHA4D00xeYtVfdF';
 
     public static function init() {
         \Stripe\Stripe::setApiKey(self::$apiKey);

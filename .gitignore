@@ -8,3 +8,4 @@ Thumbs.db
 # ARQUIVOS DE CONFIGURAÇÃO DE SEGURANÇA (CRUCIAL!)
 # Não envie credenciais do banco de dados
 /src/conexao.php
+/config/StripeConfig.php

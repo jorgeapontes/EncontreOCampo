@@ -1,4 +1,5 @@
 <?php
+// src/vendedor/stripe/sucesso.php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -18,11 +19,15 @@ $nome_plano = "Assinado";
 
 if ($session_id) {
     try {
+        // Recupera a sessão do Stripe
         $session = \Stripe\Checkout\Session::retrieve($session_id);
 
         if ($session->payment_status === 'paid') {
             $vendedor_id = $session->metadata->vendedor_id;
             $plano_id = $session->metadata->plano_id;
+            
+            // --- NOVA LÓGICA: Captura o ID do Cliente Stripe ---
+            $stripe_customer_id = $session->customer; 
 
             $database = new Database();
             $conn = $database->getConnection();
@@ -30,182 +35,124 @@ if ($session_id) {
             $agora = date('Y-m-d H:i:s');
             $data_vencimento = date('Y-m-d H:i:s', strtotime('+30 days'));
 
+            // Buscar nome do plano para exibição
             $stmtPlano = $conn->prepare("SELECT nome FROM planos WHERE id = ?");
             $stmtPlano->execute([$plano_id]);
             $plano = $stmtPlano->fetch(PDO::FETCH_ASSOC);
-            if ($plano) { $nome_plano = $plano['nome']; }
+            if ($plano) {
+                $nome_plano = $plano['nome'];
+            }
 
+            // --- ATUALIZAÇÃO DO BANCO: Incluindo o stripe_customer_id ---
             $sql = "UPDATE vendedores SET 
-                    plano_id = :p_id, 
-                    status_assinatura = :status,
-                    data_vencimento_assinatura = :d_venc,
-                    Data_assinatura = :d_assin,
-                    Data_inicio_assinatura = :d_inicio
-                    WHERE id = :v_id";
+                    plano_id = ?, 
+                    status_assinatura = 'ativo', 
+                    Data_inicio_assinatura = ?, 
+                    data_vencimento_assinatura = ?,
+                    stripe_customer_id = ? 
+                    WHERE id = ?";
             
             $stmt = $conn->prepare($sql);
-            $stmt->execute([
-                ':p_id'     => $plano_id,
-                ':status'   => 'ativo',
-                ':d_venc'   => $data_vencimento,
-                ':d_assin'  => $agora,
-                ':d_inicio' => $agora,
-                ':v_id'     => $vendedor_id
-            ]);
+            $stmt->execute([$plano_id, $agora, $data_vencimento, $stripe_customer_id, $vendedor_id]);
 
             $sucesso = true;
+        } else {
+            $mensagem_status = "O pagamento ainda não foi confirmado.";
         }
     } catch (Exception $e) {
-        $mensagem_status = "Erro: " . $e->getMessage();
+        $mensagem_status = "Erro ao processar ativação: " . $e->getMessage();
     }
+} else {
+    $mensagem_status = "Sessão de pagamento inválida.";
 }
 ?>
+
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pagamento Confirmado | Encontre o Campo</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Pagamento Concluído | Encontre o Campo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-green: #28a745; /* Verde Sucesso */
+            --primary-green: #28a745;
             --dark-green: #1e7e34;
-            --soft-green: #eafaf1;
+            --bg-light: #f8faf9;
             --text-main: #2d3436;
-            --text-light: #636e72;
             --white: #ffffff;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
         body {
-            background-color: #f8faf9; /* Fundo quase branco com toque verde */
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            height: 100vh;
+            margin: 0;
         }
-
-        /* Card Principal */
-        .card {
+        .success-card {
             background: var(--white);
-            max-width: 480px;
-            width: 100%;
-            padding: 40px 30px;
+            padding: 40px;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
             text-align: center;
-            border: 1px solid #e2e8f0;
+            max-width: 450px;
+            width: 90%;
         }
-
-        /* Ícone de Sucesso Animado */
         .icon-container {
-            width: 80px;
-            height: 80px;
-            background-color: var(--soft-green);
-            color: var(--primary-green);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 35px;
+            font-size: 60px;
+            margin-bottom: 20px;
         }
+        .icon-success { color: var(--primary-green); }
+        .icon-error { color: #d63031; }
+        
+        h1 { font-size: 24px; color: var(--text-main); margin-bottom: 10px; }
+        p { color: #636e72; line-height: 1.6; margin-bottom: 25px; }
 
-        h1 {
-            color: var(--text-main);
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        p {
-            color: var(--text-light);
-            font-size: 15px;
-            line-height: 1.6;
-        }
-
-        /* Caixa de Informações */
         .info-box {
-            background-color: #fcfdfc;
-            border: 1px dashed #cbd5e0;
-            border-radius: 12px;
+            background: #f1f3f5;
             padding: 20px;
-            margin: 25px 0;
+            border-radius: 12px;
             text-align: left;
+            margin-bottom: 30px;
         }
-
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-
+        .info-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
         .info-item:last-child { margin-bottom: 0; }
+        .label { font-weight: 600; color: #636e72; }
+        .value { color: var(--text-main); font-weight: 700; }
 
-        .label { color: var(--text-light); font-size: 14px; }
-        .value { color: var(--text-main); font-weight: 600; font-size: 14px; }
-
-        /* Botão Verde */
         .btn-green {
             display: block;
-            width: 100%;
-            padding: 15px;
-            background-color: var(--primary-green);
+            background: var(--primary-green);
             color: white;
+            padding: 15px;
+            border-radius: 12px;
             text-decoration: none;
-            border-radius: 10px;
-            font-weight: 600;
-            transition: all 0.2s ease;
+            font-weight: 700;
+            transition: 0.3s;
         }
-
-        .btn-green:hover {
-            background-color: var(--dark-green);
-            transform: translateY(-1px);
-        }
-
-        .btn-text {
-            display: inline-block;
-            margin-top: 15px;
-            color: var(--text-light);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .btn-text:hover { color: var(--text-main); }
-
-        /* Estilo para Erro */
-        .icon-error { color: #d63031; background-color: #fff5f5; }
-        .btn-error { background-color: #636e72; }
+        .btn-green:hover { background: var(--dark-green); transform: translateY(-2px); }
     </style>
 </head>
 <body>
 
-    <div class="card">
+    <div class="success-card">
         <?php if ($sucesso): ?>
-            <div class="icon-container">
+            <div class="icon-container icon-success">
                 <i class="fa-solid fa-circle-check"></i>
             </div>
-            <h1>Pagamento Confirmado</h1>
-            <p>Sua assinatura foi processada com sucesso. Agora seu perfil está com todos os recursos liberados.</p>
-
+            <h1>Assinatura Ativada!</h1>
+            <p>Parabéns! Você já pode desfrutar do seu plano.</p>
+            
             <div class="info-box">
                 <div class="info-item">
                     <span class="label">Plano:</span>
                     <span class="value"><?php echo htmlspecialchars($nome_plano); ?></span>
                 </div>
                 <div class="info-item">
-                    <span class="label">Vencimento:</span>
+                    <span class="label">Próximo Vencimento:</span>
                     <span class="value"><?php echo date('d/m/Y', strtotime('+30 days')); ?></span>
                 </div>
                 <div class="info-item">
@@ -214,22 +161,22 @@ if ($session_id) {
                 </div>
             </div>
 
-            <a href="../perfil.php" class="btn-green">Acessar meu Painel</a>
+            <a href="../perfil.php" class="btn-green">Ir para o meu Painel</a>
 
         <?php else: ?>
             <div class="icon-container icon-error">
                 <i class="fa-solid fa-circle-xmark"></i>
             </div>
-            <h1>Não foi possível ativar</h1>
-            <p>Houve um problema ao processar seu pagamento junto ao banco.</p>
+            <h1>Ops! Algo deu errado</h1>
+            <p>Não conseguimos confirmar a ativação do seu plano automaticamente.</p>
             
-            <div class="info-box" style="border-style: solid; border-color: #fed7d7; background: #fff5f5;">
-                <p style="font-size: 13px; color: #c53030;">
-                    <?php echo $mensagem_status ?: "Ocorreu um erro inesperado. Verifique os dados do cartão."; ?>
+            <div class="info-box" style="background: #fff5f5; border: 1px solid #fed7d7;">
+                <p style="font-size: 13px; color: #c53030; margin: 0;">
+                    <?php echo $mensagem_status ?: "Houve um problema na comunicação com o Stripe. Se o valor foi cobrado, entre em contato com o suporte."; ?>
                 </p>
             </div>
 
-            <a href="../escolher_plano.php" class="btn-green btn-error">Tentar outro cartão</a>
+            <a href="../escolher_plano.php" class="btn-green" style="background: #636e72;">Tentar Novamente</a>
         <?php endif; ?>
     </div>
 

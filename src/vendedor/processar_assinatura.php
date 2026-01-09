@@ -16,24 +16,22 @@ if ($id_plano && $usuario_id) {
     $database = new Database();
     $db = $database->getConnection();
 
-    // 1. Busca os dados do vendedor e o status atual da assinatura
-    $stmtVendedor = $db->prepare("SELECT id, plano_id, status_assinatura, email_contato FROM vendedores WHERE usuario_id = :u_id");
+    // 1. Busca o ID REAL do vendedor vinculado a este usuário
+    $stmtVendedor = $db->prepare("SELECT id FROM vendedores WHERE usuario_id = :u_id");
     $stmtVendedor->execute([':u_id' => $usuario_id]);
     $vendedor = $stmtVendedor->fetch(PDO::FETCH_ASSOC);
 
     if (!$vendedor) {
-        die("Erro: Perfil de vendedor não encontrado.");
+        die("Erro: Perfil de vendedor não encontrado para este usuário.");
     }
 
-    // --- TRAVA DE SEGURANÇA ---
-    // Se ele já for Pro (ID 4) e estiver ativo, impede nova assinatura
-    if ($vendedor['plano_id'] == $id_plano && $vendedor['status_assinatura'] === 'ativo') {
-        header("Location: escolher_plano.php?erro=ja_assinado");
+    if ($vendedor['status_assinatura'] === 'ativo' && $vendedor['plano_id'] > 1) {
+        // Redireciona de volta com um parâmetro de erro para exibir um alerta na página de planos
+        header("Location: escolher_plano.php?erro=assinatura_ativa");
         exit;
     }
 
     $vendedor_id_real = $vendedor['id'];
-    $email_vendedor = $vendedor['email_contato'] ?? $_SESSION['usuario_email'] ?? null;
 
     // 2. Busca o preço da Stripe para o plano
     $stmtPlano = $db->prepare("SELECT nome, stripe_price_id FROM planos WHERE id = :id");
@@ -49,12 +47,11 @@ if ($id_plano && $usuario_id) {
                     'quantity' => 1,
                 ]],
                 'mode' => 'subscription',
-                // DICA: Em produção, estas URLs devem ser https://seusite.com/...
                 'success_url' => 'http://localhost/EncontreOCampo/src/vendedor/redirects/sucesso.php?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => 'http://localhost/EncontreOCampo/src/vendedor/escolher_plano.php?status=cancelado',
-                'customer_email' => $email_vendedor,
+                'cancel_url' => 'http://localhost/EncontreOCampo/src/vendedor/escolher_plano.php',
+                'customer_email' => $_SESSION['usuario_email'] ?? null,
                 'metadata' => [
-                    'vendedor_id' => $vendedor_id_real, 
+                    'vendedor_id' => $vendedor_id_real, // Enviando o ID da tabela vendedores
                     'plano_id' => $id_plano
                 ]
             ]);

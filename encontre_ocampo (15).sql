@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 08/01/2026 às 16:06
+-- Tempo de geração: 09/01/2026 às 14:16
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -717,21 +717,22 @@ CREATE TABLE `vendedores` (
   `data_vencimento_assinatura` datetime DEFAULT NULL,
   `anuncios_ativos` int(11) DEFAULT 0,
   `anuncios_pagos_utilizados` int(11) DEFAULT 0,
-  `anuncios_gratis_utilizados` int(11) DEFAULT 0
+  `anuncios_gratis_utilizados` int(11) DEFAULT 0,
+  `stripe_customer_id` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Despejando dados para a tabela `vendedores`
 --
 
-INSERT INTO `vendedores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, `cpf_cnpj`, `razao_social`, `foto_perfil_url`, `cip`, `cep`, `rua`, `numero`, `complemento`, `estado`, `cidade`, `telefone1`, `telefone2`, `plano`, `estados_atendidos`, `plano_id`, `status_assinatura`, `data_assinatura`, `data_inicio_assinatura`, `data_vencimento_assinatura`, `anuncios_ativos`, `anuncios_pagos_utilizados`, `anuncios_gratis_utilizados`) VALUES
-(1, 4, 'cnpj', 'Vendedor', '11.111.111/1111-11', '', '../uploads/vendedores/vend_1_693811ef0cf33.jpg', NULL, '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'free', '[\"SE\"]', 3, 'ativo', '2025-12-20 12:09:14', NULL, NULL, 0, 0, 0),
-(2, 9, 'cnpj', 'vendedor2', '111111111111', NULL, NULL, NULL, '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11111111111', NULL, 'free', NULL, 1, 'inativo', NULL, NULL, NULL, 0, 0, 0),
-(3, 11, 'cnpj', 'Rondon', '41111584800', NULL, NULL, '1212121', '13211873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'free', NULL, 1, 'inativo', NULL, NULL, NULL, 0, 0, 0),
-(4, 12, 'cnpj', 'teste', '1111111111111111111', NULL, NULL, '11111', '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'free', NULL, 4, 'ativo', NULL, NULL, '2026-02-07 14:42:09', 0, 0, 0),
-(5, 14, 'cnpj', 'teste', '111111111111111111', NULL, NULL, '1111', '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11111111111', NULL, 'basico', NULL, 1, 'inativo', NULL, NULL, NULL, 0, 0, 0),
-(6, 19, 'cnpj', 'test', '00.000.000/0001-91', NULL, NULL, '', '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '(11) 99656-3500', '', 'free', NULL, 1, 'inativo', NULL, NULL, NULL, 0, 0, 0),
-(7, 22, 'cnpj', 'pagamento teste', '87.772.833/0001-59', NULL, NULL, '', '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '(11) 99656-3500', '', 'free', NULL, 1, 'ativo', NULL, NULL, NULL, 0, 0, 0);
+INSERT INTO `vendedores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, `cpf_cnpj`, `razao_social`, `foto_perfil_url`, `cip`, `cep`, `rua`, `numero`, `complemento`, `estado`, `cidade`, `telefone1`, `telefone2`, `plano`, `estados_atendidos`, `plano_id`, `status_assinatura`, `data_assinatura`, `data_inicio_assinatura`, `data_vencimento_assinatura`, `anuncios_ativos`, `anuncios_pagos_utilizados`, `anuncios_gratis_utilizados`, `stripe_customer_id`) VALUES
+(1, 4, 'cnpj', 'Vendedor', '11.111.111/1111-11', '', '../uploads/vendedores/vend_1_693811ef0cf33.jpg', NULL, '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'free', '[\"SE\"]', 3, 'ativo', '2025-12-20 12:09:14', NULL, NULL, 0, 0, 0, NULL),
+(2, 9, 'cnpj', 'vendedor2', '111111111111', NULL, NULL, NULL, '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11111111111', NULL, 'free', NULL, 1, 'inativo', NULL, NULL, NULL, 0, 0, 0, NULL),
+(3, 11, 'cnpj', 'Rondon', '41111584800', NULL, NULL, '1212121', '13211873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'free', NULL, 1, 'inativo', NULL, NULL, NULL, 0, 0, 0, NULL),
+(4, 12, 'cnpj', 'teste', '1111111111111111111', NULL, NULL, '11111', '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11996563500', NULL, 'free', NULL, 4, 'ativo', NULL, NULL, '2026-02-07 14:42:09', 0, 0, 0, NULL),
+(5, 14, 'cnpj', 'teste', '111111111111111111', NULL, NULL, '1111', '13211-873', 'Rua Seis', '206', NULL, 'SP', 'Jundiaí', '11111111111', NULL, 'basico', NULL, 1, 'inativo', NULL, NULL, NULL, 0, 0, 0, NULL),
+(6, 19, 'cnpj', 'test', '00.000.000/0001-91', NULL, NULL, '', '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '(11) 99656-3500', '', 'free', NULL, 1, 'inativo', NULL, NULL, NULL, 0, 0, 0, NULL),
+(7, 22, 'cnpj', 'pagamento teste', '87.772.833/0001-59', NULL, NULL, '', '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '(11) 99656-3500', '', 'free', NULL, 4, 'ativo', '2026-01-09 01:06:35', '2026-01-09 01:06:35', '2026-02-08 01:06:35', 0, 0, 0, NULL);
 
 -- --------------------------------------------------------
 

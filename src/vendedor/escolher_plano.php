@@ -7,7 +7,6 @@ $database = new Database();
 $db = $database->getConnection();
 
 // Agora usamos a variável $vendedor que o seu auth.php já criou!
-// Ela contém todos os dados da tabela 'vendedores'
 $plano_atual_id = (int)($vendedor['plano_id'] ?? 1);
 
 $query = "SELECT id, nome, preco_mensal FROM planos ORDER BY preco_mensal ASC";
@@ -48,6 +47,43 @@ $result = $db->query($query);
         .card-plano.destaque .btn-assinar.plano-atual {
             background-color: #cbd5e0 !important;
         }
+
+        /* --- ESTILOS DO MODAL --- */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0; top: 0; width: 100%; height: 100%; 
+            background-color: rgba(0,0,0,0.5);
+            align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-content h3 { margin-bottom: 15px; color: #333; }
+        .modal-content p { color: #666; margin-bottom: 25px; line-height: 1.5; }
+        .btn-gerenciar {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .btn-fechar {
+            display: block;
+            margin-top: 15px;
+            color: #999;
+            text-decoration: none;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -62,10 +98,6 @@ $result = $db->query($query);
         while($plano = $result->fetch(PDO::FETCH_ASSOC)): 
             $contador++;
             $classe_destaque = ($contador == 2) ? 'destaque' : '';
-            
-            // CONDIÇÃO DE COMPARAÇÃO:
-            // Comparamos o ID do plano vindo do banco (vendedores.plano_id) 
-            // com o ID do plano atual do loop (planos.id)
             $eh_plano_atual = ((int)$plano['id'] === $plano_atual_id);
         ?>
             <div class="card-plano <?php echo $classe_destaque; ?>">
@@ -95,12 +127,27 @@ $result = $db->query($query);
                         Plano Ativado
                     </a>
                 <?php else: ?>
-                    <a href="processar_assinatura.php?id=<?php echo $plano['id']; ?>" class="btn-assinar">
-                        Assinar Agora
-                    </a>
+                    <?php if ($plano_atual_id > 1): ?>
+                        <a href="javascript:void(0);" onclick="abrirModal()" class="btn-assinar">
+                            Mudar de Plano
+                        </a>
+                    <?php else: ?>
+                        <a href="processar_assinatura.php?id=<?php echo $plano['id']; ?>" class="btn-assinar">
+                            Assinar Agora
+                        </a>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
         <?php endwhile; ?>
+    </div>
+
+    <div id="modalMudarPlano" class="modal">
+        <div class="modal-content">
+            <h3>Mudar de Plano?</h3>
+            <p>Você já possui uma assinatura ativa. Para fazer um upgrade, downgrade ou cancelar, utilize nossa central de gestão.</p>
+            <a href="gerenciar_assinatura.php" class="btn-gerenciar">Ir para Gerenciar Assinatura</a>
+            <a href="javascript:void(0);" onclick="fecharModal()" class="btn-fechar">Voltar</a>
+        </div>
     </div>
 
     <div class="voltar">
@@ -118,7 +165,6 @@ $result = $db->query($query);
                         <li><a href="../comprador/favoritos.php">Meus Favoritos</a></li>
                     </ul>
                 </div>
-                
                 <div class="footer-section">
                     <h4>Suporte</h4>
                     <ul>
@@ -127,7 +173,6 @@ $result = $db->query($query);
                         <li><a href="../sobre.php">Sobre Nós</a></li>
                     </ul>
                 </div>
-                
                 <div class="footer-section">
                     <h4>Legal</h4>
                     <ul>
@@ -136,25 +181,36 @@ $result = $db->query($query);
                         <li><a href="../privacidade.php">Política de Privacidade</a></li>
                     </ul>
                 </div>
-                
                 <div class="footer-section">
                     <h4>Contato</h4>
                     <div class="contact-info">
                         <p><i class="fas fa-envelope"></i> contato@encontreocampo.com.br</p>
-                        <div class="social-links">
-                            <!-- <a href="#"><i class="fab fa-facebook"></i></a>
-                            <a href="#"><i class="fab fa-instagram"></i></a>
-                            <a href="#"><i class="fab fa-whatsapp"></i></a> -->
-                        </div>
                     </div>
                 </div>
             </div>
-            
             <div class="footer-bottom">
                 <p>&copy; Encontre o Campo. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>
+
+    <script>
+        function abrirModal() {
+            document.getElementById('modalMudarPlano').style.display = 'flex';
+        }
+
+        function fecharModal() {
+            document.getElementById('modalMudarPlano').style.display = 'none';
+        }
+
+        // Fecha o modal se o usuário clicar fora da caixa branca
+        window.onclick = function(event) {
+            var modal = document.getElementById('modalMudarPlano');
+            if (event.target == modal) {
+                fecharModal();
+            }
+        }
+    </script>
 
 </body>
 </html>

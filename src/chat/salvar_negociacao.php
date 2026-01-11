@@ -254,7 +254,7 @@ try {
         
         $stmt_check_neg = $conn->prepare($sql_check_negociacao);
         $stmt_check_neg->bindParam(':produto_id', $dados['produto_id'], PDO::PARAM_INT);
-        $stmt_check_neg->bindParam(':proposta_comprador_id', $proposta_comprador_existente ? $proposta_comprador_existente['ID'] : null, PDO::PARAM_INT);
+        $stmt_check_neg->bindValue(':proposta_comprador_id', $proposta_comprador_existente ? $proposta_comprador_existente['ID'] : null, PDO::PARAM_INT);
         $stmt_check_neg->bindParam(':proposta_vendedor_id', $proposta_id, PDO::PARAM_INT);
         $stmt_check_neg->execute();
         $negociacao_existente = $stmt_check_neg->fetch(PDO::FETCH_ASSOC);

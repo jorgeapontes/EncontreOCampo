@@ -61,6 +61,81 @@ if (!is_dir($upload_dir)) {
 
 // --- LÓGICA DE SALVAMENTO ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Verificar se é uma busca de CEP via AJAX
+    if (isset($_POST['buscar_cep']) && $_POST['buscar_cep'] == 'true') {
+        // Buscar CEP e retornar dados em JSON
+        $cep = preg_replace('/[^0-9]/', '', $_POST['cep']);
+        
+        if (strlen($cep) == 8) {
+            // Fazer requisição à API ViaCEP
+            $url = "https://viacep.com.br/ws/{$cep}/json/";
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            
+            $dados = json_decode($response, true);
+            
+            if (!isset($dados['erro'])) {
+                // Atualizar endereço no banco de dados
+                try {
+                    $sql = "UPDATE vendedores SET 
+                            cep = :cep,
+                            rua = :rua,
+                            cidade = :cidade,
+                            estado = :estado,
+                            complemento = :complemento
+                            WHERE id = :id";
+                    
+                    $stmt = $db->prepare($sql);
+                    $stmt->execute([
+                        ':cep' => $cep,
+                        ':rua' => $dados['logradouro'] ?? '',
+                        ':cidade' => $dados['localidade'] ?? '',
+                        ':estado' => $dados['uf'] ?? '',
+                        ':complemento' => $dados['complemento'] ?? '',
+                        ':id' => $vendedor_id_fk
+                    ]);
+                    
+                    // Retornar dados em JSON
+                    header('Content-Type: application/json');
+                    echo json_encode([
+                        'success' => true,
+                        'data' => $dados,
+                        'cep_formatado' => substr($cep, 0, 5) . '-' . substr($cep, 5, 3),
+                        'message' => 'CEP encontrado e salvo com sucesso!'
+                    ]);
+                    exit;
+                    
+                } catch (Exception $e) {
+                    header('Content-Type: application/json');
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Erro ao salvar no banco: ' . $e->getMessage()
+                    ]);
+                    exit;
+                }
+            } else {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'CEP não encontrado'
+                ]);
+                exit;
+            }
+        } else {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'message' => 'CEP inválido'
+            ]);
+            exit;
+        }
+    }
+    
+    // Lógica de atualização normal do perfil
     $nome = $_POST['nome'] ?? ($usuario['nome'] ?? '');
     $email = $_POST['email'] ?? ($usuario['email'] ?? '');
     $telefone1 = $_POST['telefone1'] ?? ($vendedor['telefone1'] ?? '');
@@ -193,6 +268,7 @@ function getImagePath($path) {
             display: flex;
             align-items: flex-end;
             gap: 10px;
+            flex-wrap: wrap;
         }
         .btn-buscar-cep {
             background-color: #28a745;
@@ -208,12 +284,42 @@ function getImagePath($path) {
             justify-content: center;
             transition: background 0.3s;
             margin-bottom: 2px;
+            white-space: nowrap;
         }
         .btn-buscar-cep:hover {
             background-color: #218838;
         }
+        .btn-buscar-cep:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
         .form-group-cep {
             flex: 1;
+            min-width: 150px;
+        }
+        .cep-message {
+            margin-top: 5px;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            animation: fadeIn 0.3s;
+            display: none;
+        }
+        .cep-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .cep-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
 </head>
@@ -322,8 +428,9 @@ function getImagePath($path) {
                         <div class="form-group form-group-cep">
                             <label for="cep">CEP</label>
                             <input type="text" id="cep" name="cep" value="<?php echo htmlspecialchars($vendedor['cep'] ?? ''); ?>" maxlength="9" placeholder="00000-000">
+                            <div id="cep-message" class="cep-message"></div>
                         </div>
-                        <button type="button" class="btn-buscar-cep" onclick="buscarCep()">
+                        <button type="button" class="btn-buscar-cep" id="btn-buscar-cep" onclick="buscarCep()">
                             <i class="fas fa-search" style="margin-right: 5px;"></i> Buscar
                         </button>
                         
@@ -451,52 +558,121 @@ function getImagePath($path) {
             });
         }
 
-        // Função Buscar CEP
+        // Formatar CEP enquanto digita
+        document.getElementById('cep').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 5) {
+                value = value.substring(0, 5) + '-' + value.substring(5, 8);
+            }
+            e.target.value = value;
+        });
+
+        // Função Buscar CEP com salvamento automático
         function buscarCep() {
             const cepInput = document.getElementById('cep');
             const ruaInput = document.getElementById('rua');
             const cidadeInput = document.getElementById('cidade');
-            const estadoInput = document.getElementById('estado');
-            const numeroInput = document.getElementById('numero');
-
+            const estadoSelect = document.getElementById('estado');
+            const complementoInput = document.getElementById('complemento');
+            const cepMessage = document.getElementById('cep-message');
+            const btnBuscar = document.getElementById('btn-buscar-cep');
+            
             let cep = cepInput.value.replace(/\D/g, '');
             
-            if (cep.length === 8) {
-                const btn = document.querySelector('.btn-buscar-cep');
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                
-                fetch(`https://viacep.com.br/ws/${cep}/json/`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (!data.erro) {
-                            ruaInput.value = data.logradouro;
-                            cidadeInput.value = data.localidade;
-                            estadoInput.value = data.uf;
-                            numeroInput.focus();
-                        } else {
-                            alert("CEP não encontrado.");
-                        }
-                    })
-                    .catch(error => console.error('Erro:', error))
-                    .finally(() => {
-                        btn.innerHTML = originalText;
-                    });
-            } else {
-                alert("Digite um CEP válido com 8 números.");
+            if (cep.length !== 8) {
+                showMessage('Por favor, digite um CEP válido (8 dígitos).', 'error');
+                cepInput.focus();
+                return;
             }
+            
+            // Mostrar indicador de carregamento
+            const originalHTML = btnBuscar.innerHTML;
+            btnBuscar.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btnBuscar.disabled = true;
+            cepMessage.innerHTML = '';
+            
+            // Enviar requisição AJAX para o servidor
+            const formData = new FormData();
+            formData.append('buscar_cep', 'true');
+            formData.append('cep', cep);
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Preencher os campos com os dados do CEP
+                    ruaInput.value = data.data.logradouro || '';
+                    cidadeInput.value = data.data.localidade || '';
+                    estadoSelect.value = data.data.uf || '';
+                    complementoInput.value = data.data.complemento || '';
+                    
+                    // Atualizar o campo CEP com formatação
+                    if (data.cep_formatado) {
+                        cepInput.value = data.cep_formatado;
+                    }
+                    
+                    // Mostrar mensagem de sucesso
+                    showMessage(data.message, 'success');
+                    
+                    // Focar no campo número após buscar o CEP
+                    setTimeout(() => {
+                        document.getElementById('numero').focus();
+                    }, 300);
+                    
+                    // Recarregar a página após 1.5 segundos para mostrar dados atualizados
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao buscar CEP:', error);
+                showMessage('Erro ao buscar CEP. Por favor, tente novamente.', 'error');
+            })
+            .finally(() => {
+                // Restaurar o botão
+                btnBuscar.innerHTML = originalHTML;
+                btnBuscar.disabled = false;
+            });
         }
 
-        document.getElementById('cep').addEventListener('blur', buscarCep);
+        // Buscar CEP ao pressionar Enter no campo CEP
+        document.getElementById('cep').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                buscarCep();
+            }
+        });
+
+        // Remover o listener antigo de blur que podia conflitar
+        document.getElementById('cep').removeEventListener('blur', buscarCep);
+
+        function showMessage(message, type) {
+            const cepMessage = document.getElementById('cep-message');
+            cepMessage.innerHTML = '<i class="fas ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle') + '"></i> ' + message;
+            cepMessage.className = 'cep-message ' + type;
+        }
 
         // Modal
         const deleteAccountLink = document.getElementById('delete-account-link');
         const deleteAccountModal = document.getElementById('delete-account-modal');
         const cancelDeleteBtn = document.getElementById('cancel-delete');
         if (deleteAccountLink) {
-            deleteAccountLink.addEventListener('click', (e) => { e.preventDefault(); deleteAccountModal.style.display = 'flex'; });
-            cancelDeleteBtn.addEventListener('click', () => { deleteAccountModal.style.display = 'none'; });
-            window.onclick = (e) => { if (e.target == deleteAccountModal) deleteAccountModal.style.display = 'none'; };
+            deleteAccountLink.addEventListener('click', (e) => { 
+                e.preventDefault(); 
+                deleteAccountModal.style.display = 'flex'; 
+            });
+            cancelDeleteBtn.addEventListener('click', () => { 
+                deleteAccountModal.style.display = 'none'; 
+            });
+            window.onclick = (e) => { 
+                if (e.target == deleteAccountModal) deleteAccountModal.style.display = 'none'; 
+            };
         }
     </script>
 </body>

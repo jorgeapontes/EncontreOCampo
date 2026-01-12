@@ -120,7 +120,7 @@ try {
             </div>
         <?php endif; ?>
     </div>
-
+            <a href="perfil.php" style="text-align: center; display: block; margin-top: 20px;">Voltar</a>
     <div class="historico-section">
         <h3><i class="fa-solid fa-file-invoice-dollar"></i> Recibos Anteriores</h3>
         <?php if (empty($historico_pagamentos)): ?>

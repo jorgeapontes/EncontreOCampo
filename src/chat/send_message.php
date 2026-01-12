@@ -1,5 +1,4 @@
 <?php
-// src/chat/send_message.php
 session_start();
 require_once __DIR__ . '/../conexao.php';
 require_once __DIR__ . '/chat_config.php';
@@ -26,7 +25,6 @@ $database = new Database();
 $conn = $database->getConnection();
 
 try {
-    // Verificar se o usuário pertence a esta conversa
     $sql_verifica = "SELECT comprador_id, vendedor_id FROM chat_conversas WHERE id = :conversa_id";
     $stmt_verifica = $conn->prepare($sql_verifica);
     $stmt_verifica->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);

@@ -4,19 +4,18 @@ require_once __DIR__ . '/../conexao.php';
 
 header('Content-Type: application/json');
 
-// Verificar se está logado
 if (!isset($_SESSION['usuario_id'])) {
     echo json_encode(['success' => false, 'error' => 'Não autenticado']);
     exit();
 }
 
-// Verificar se é requisição POST
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'error' => 'Método não permitido']);
     exit();
 }
 
-// Ler dados JSON
+
 $json = file_get_contents('php://input');
 $dados = json_decode($json, true);
 
@@ -25,7 +24,7 @@ if (!$dados) {
     exit();
 }
 
-// Validar dados obrigatórios
+
 $camposObrigatorios = ['produto_id', 'conversa_id', 'quantidade', 'preco_proposto', 'forma_pagamento', 'opcao_frete', 'usuario_tipo'];
 foreach ($camposObrigatorios as $campo) {
     if (!isset($dados[$campo]) || empty($dados[$campo])) {
@@ -41,7 +40,6 @@ $conn = $database->getConnection();
 try {
     $conn->beginTransaction();
     
-    // Verificar permissões e obter informações
     $sql_verificar = "SELECT 
         c.id as conversa_id,
         c.comprador_id,
@@ -69,7 +67,6 @@ try {
         throw new Exception('Você não tem permissão para negociar nesta conversa/produto');
     }
     
-    // Verificar estoque
     if ($dados['quantidade'] > $verificacao['estoque']) {
         throw new Exception('Quantidade solicitada excede o estoque disponível');
     }
@@ -94,7 +91,7 @@ try {
     
     // Inserir proposta na tabela apropriada
     if ($eh_comprador) {
-        // ========== PROPOSTA DO COMPRADOR ==========
+        // PROPOSTA DO COMPRADOR 
         // Verificar se já existe proposta do comprador para este produto
         $sql_check_existente = "SELECT ID FROM propostas_comprador 
             WHERE comprador_id = :comprador_id 

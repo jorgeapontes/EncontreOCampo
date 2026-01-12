@@ -1,5 +1,4 @@
 <?php
-// src/chat/chat.php
 session_start();
 require_once __DIR__ . '/../conexao.php';
 require_once __DIR__ . '/chat_config.php';
@@ -26,7 +25,6 @@ if ($produto_id <= 0) {
 $database = new Database();
 $conn = $database->getConnection();
 
-// Buscar informações do produto
 $sql_produto = "SELECT p.*, v.id AS vendedor_sistema_id, u.id AS vendedor_usuario_id, 
                 v.nome_comercial AS nome_vendedor, u.nome AS vendedor_nome
                 FROM produtos p
@@ -124,7 +122,7 @@ if ($eh_vendedor_produto) {
         $conversas = $stmt_conversas->fetchAll(PDO::FETCH_ASSOC);
     }
 } else {
-    // COMPRADOR (mantém o mesmo)
+    // COMPRADOR 
     $conversa_id = obterOuCriarConversa($conn, $produto_id, $usuario_id, $vendedor_usuario_id);
     $outro_usuario_id = $vendedor_usuario_id;
     $outro_usuario_nome = $produto['nome_vendedor'] ?: $produto['vendedor_nome'];
@@ -188,7 +186,7 @@ if ($endereco_outro) {
         $endereco_formatado .= "\nTelefone: {$telefone_display}";
     }
     
-    // Preparar endereço para Google Maps
+
     $endereco_maps = urlencode("{$endereco_outro['rua']} {$endereco_outro['numero']}, {$endereco_outro['cidade']}, {$endereco_outro['estado']}");
 }
 
@@ -203,7 +201,7 @@ if ($eh_vendedor_produto) {
     }
 }
 
-// array com opções de pagamento após a definição das variáveis
+
 $opcoes_pagamento = [
     'à vista' => 'Pagamento à Vista',
     'entrega' => 'Pagamento na Entrega'
@@ -350,7 +348,6 @@ $opcoes_frete = [
             </div>
             <?php endif; ?>
 
-            <!-- NEGOCIAÇÃO NA SIDEBAR -->
             <div class="negociacao-absolute-bottom" id="negociacao-absolute-bottom">
             <div class="negociacao-wrapper">
                 <div class="negociacao-content" id="negociacao-content">
@@ -361,18 +358,15 @@ $opcoes_frete = [
                         </center>
                     </div>
                     
-                    <!-- Barra de progresso -->
                     <div class="progress-bar">
                         <div class="progress-bar-fill" id="progress-bar-fill"></div>
                     </div>
                     
-                    <!-- Etapas -->
                     <div class="etapas-negociacao-sidebar">
                         <div class="etapa-sidebar active" data-etapa-sidebar="1">1. Dados da Negociação</div>
                         <div class="etapa-sidebar" data-etapa-sidebar="2">2. Logística e Frete</div>
                     </div>
                     
-                    <!-- Conteúdo das Etapas -->
                     <form id="form-negociacao-sidebar">
                         <!-- ETAPA 1: Dados da Negociação -->
                         <div class="etapa-conteudo-sidebar active" id="etapa1-conteudo" data-etapa-sidebar="1">

@@ -2,7 +2,6 @@
 // src/chat/chat_config.php
 require_once __DIR__ . '/../conexao.php';
 
-// Verificar se o usuário está logado
 function verificarLoginChat() {
     if (!isset($_SESSION['usuario_id'])) {
         http_response_code(401);
@@ -11,7 +10,6 @@ function verificarLoginChat() {
     }
 }
 
-// Função para criar ou obter conversa existente
 function obterOuCriarConversa($conn, $produto_id, $comprador_id, $vendedor_id) {
     try {
         // Verificar se já existe uma conversa
@@ -48,7 +46,6 @@ function obterOuCriarConversa($conn, $produto_id, $comprador_id, $vendedor_id) {
     }
 }
 
-// Função para marcar mensagens como lidas
 function marcarMensagensComoLidas($conn, $conversa_id, $usuario_id) {
     try {
         $sql = "UPDATE chat_mensagens 

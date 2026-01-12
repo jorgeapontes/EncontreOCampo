@@ -1,5 +1,4 @@
 <?php
-// src/chat/get_messages.php
 session_start();
 require_once __DIR__ . '/../conexao.php';
 require_once __DIR__ . '/chat_config.php';
@@ -36,7 +35,6 @@ try {
     // Buscar mensagens
     if ($ultimo_id > 0) {
         // Buscar apenas mensagens novas
-        // CORRIGIDO: Adicionado o campo 'tipo' no SELECT
         $sql = "SELECT id, remetente_id, mensagem, tipo,
                 DATE_FORMAT(data_envio, '%d/%m %H:%i') as data_formatada,
                 lida
@@ -46,7 +44,6 @@ try {
                 ORDER BY id ASC";
     } else {
         // Buscar todas as mensagens
-        // CORRIGIDO: Adicionado o campo 'tipo' no SELECT
         $sql = "SELECT id, remetente_id, mensagem, tipo,
                 DATE_FORMAT(data_envio, '%d/%m %H:%i') as data_formatada,
                 lida
@@ -63,7 +60,6 @@ try {
     $stmt->execute();
     $mensagens = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Marcar mensagens como lidas
     if (count($mensagens) > 0) {
         marcarMensagensComoLidas($conn, $conversa_id, $usuario_id);
     }

@@ -18,59 +18,145 @@ $mensagem_sucesso = null;
 $mensagem_erro = null;
 
 // --- INÍCIO DA LÓGICA DE ATUALIZAÇÃO ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['atualizar_perfil'])) {
-    try {
-        $conn->beginTransaction();
-
-        // 1. Atualizar tabela USUARIOS (Nome e Email)
-        $sql_u = "UPDATE usuarios SET nome = :nome, email = :email WHERE id = :id";
-        $stmt_u = $conn->prepare($sql_u);
-        $stmt_u->execute([
-            ':nome'  => $_POST['nome'],
-            ':email' => $_POST['email'],
-            ':id'    => $usuario_id
-        ]);
-
-        // 2. Atualizar tabela COMPRADORES
-        $sql_c = "UPDATE compradores SET 
-                    nome_comercial = :nome_comercial,
-                    tipo_pessoa = :tipo_pessoa,
-                    telefone1 = :tel1,
-                    telefone2 = :tel2,
-                    cip = :cip,
-                    cep = :cep,
-                    estado = :estado,
-                    cidade = :cidade,
-                    rua = :rua,
-                    numero = :numero,
-                    complemento = :complemento
-                  WHERE usuario_id = :id";
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Verificar se é uma busca de CEP via AJAX
+    if (isset($_POST['buscar_cep']) && $_POST['buscar_cep'] == 'true') {
+        // Buscar CEP e retornar dados em JSON
+        $cep = preg_replace('/[^0-9]/', '', $_POST['cep']);
         
-        $stmt_c = $conn->prepare($sql_c);
-        $stmt_c->execute([
-            ':nome_comercial' => $_POST['nome_comercial'],
-            ':tipo_pessoa'    => $_POST['tipo_pessoa'],
-            ':tel1'           => $_POST['telefone1'],
-            ':tel2'           => $_POST['telefone2'],
-            ':cip'            => $_POST['cip'],
-            ':cep'            => $_POST['cep'],
-            ':estado'         => $_POST['estado'],
-            ':cidade'         => $_POST['cidade'],
-            ':rua'            => $_POST['rua'],
-            ':numero'         => $_POST['numero'],
-            ':complemento'    => $_POST['complemento'],
-            ':id'             => $usuario_id
-        ]);
+        if (strlen($cep) == 8) {
+            // Fazer requisição à API ViaCEP
+            $url = "https://viacep.com.br/ws/{$cep}/json/";
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            
+            $dados = json_decode($response, true);
+            
+            if (!isset($dados['erro'])) {
+                // Atualizar endereço no banco de dados
+                try {
+                    $sql = "UPDATE compradores SET 
+                            cep = :cep,
+                            rua = :rua,
+                            cidade = :cidade,
+                            estado = :estado,
+                            complemento = :complemento
+                            WHERE usuario_id = :id";
+                    
+                    $stmt = $conn->prepare($sql);
+                    $stmt->execute([
+                        ':cep' => $cep,
+                        ':rua' => $dados['logradouro'] ?? '',
+                        ':cidade' => $dados['localidade'] ?? '',
+                        ':estado' => $dados['uf'] ?? '',
+                        ':complemento' => $dados['complemento'] ?? '',
+                        ':id' => $usuario_id
+                    ]);
+                    
+                    // Retornar dados em JSON
+                    header('Content-Type: application/json');
+                    echo json_encode([
+                        'success' => true,
+                        'data' => $dados,
+                        'cep_formatado' => substr($cep, 0, 5) . '-' . substr($cep, 5, 3),
+                        'message' => 'CEP encontrado e salvo com sucesso!'
+                    ]);
+                    exit;
+                    
+                } catch (Exception $e) {
+                    header('Content-Type: application/json');
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Erro ao salvar no banco: ' . $e->getMessage()
+                    ]);
+                    exit;
+                }
+            } else {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'CEP não encontrado'
+                ]);
+                exit;
+            }
+        } else {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'message' => 'CEP inválido'
+            ]);
+            exit;
+        }
+    }
+    // Lógica de atualização normal do perfil
+    elseif (isset($_POST['atualizar_perfil'])) {
+        try {
+            $conn->beginTransaction();
 
-        $conn->commit();
-        $_SESSION['usuario_nome'] = $_POST['nome']; // Atualiza nome na sessão
-        $mensagem_sucesso = "Perfil e e-mail atualizados com sucesso!";
-    } catch (Exception $e) {
-        $conn->rollBack();
-        $mensagem_erro = "Erro ao atualizar: " . $e->getMessage();
+            // 1. Atualizar tabela USUARIOS (Nome e Email)
+            $sql_u = "UPDATE usuarios SET nome = :nome, email = :email WHERE id = :id";
+            $stmt_u = $conn->prepare($sql_u);
+            $stmt_u->execute([
+                ':nome'  => $_POST['nome'],
+                ':email' => $_POST['email'],
+                ':id'    => $usuario_id
+            ]);
+
+            // 2. Atualizar tabela COMPRADORES
+            $sql_c = "UPDATE compradores SET 
+                        nome_comercial = :nome_comercial,
+                        tipo_pessoa = :tipo_pessoa,
+                        telefone1 = :tel1,
+                        telefone2 = :tel2,
+                        cip = :cip,
+                        cep = :cep,
+                        estado = :estado,
+                        cidade = :cidade,
+                        rua = :rua,
+                        numero = :numero,
+                        complemento = :complemento
+                      WHERE usuario_id = :id";
+            
+            $stmt_c = $conn->prepare($sql_c);
+            $stmt_c->execute([
+                ':nome_comercial' => $_POST['nome_comercial'],
+                ':tipo_pessoa'    => $_POST['tipo_pessoa'],
+                ':tel1'           => $_POST['telefone1'],
+                ':tel2'           => $_POST['telefone2'],
+                ':cip'            => $_POST['cip'],
+                ':cep'            => $_POST['cep'],
+                ':estado'         => $_POST['estado'],
+                ':cidade'         => $_POST['cidade'],
+                ':rua'            => $_POST['rua'],
+                ':numero'         => $_POST['numero'],
+                ':complemento'    => $_POST['complemento'],
+                ':id'             => $usuario_id
+            ]);
+
+            $conn->commit();
+            $_SESSION['usuario_nome'] = $_POST['nome']; // Atualiza nome na sessão
+            $mensagem_sucesso = "Perfil e e-mail atualizados com sucesso!";
+            
+            // Redirecionar para evitar reenvio do formulário
+            header("Location: perfil.php?success=1");
+            exit();
+            
+        } catch (Exception $e) {
+            $conn->rollBack();
+            $mensagem_erro = "Erro ao atualizar: " . $e->getMessage();
+        }
     }
 }
 // --- FIM DA LÓGICA DE ATUALIZAÇÃO ---
+
+// Verificar se veio redirecionamento com sucesso
+if (isset($_GET['success']) && $_GET['success'] == '1') {
+    $mensagem_sucesso = "Perfil e e-mail atualizados com sucesso!";
+}
 
 // 2. BUSCAR DADOS ATUALIZADOS DO COMPRADOR
 try {
@@ -188,14 +274,23 @@ try {
 
                     <h2>Endereço</h2>
                     <div class="form-group-row">
-                        <div class="form-group"><label class="required">CEP</label><input type="text" id="cep" name="cep" value="<?php echo htmlspecialchars($comprador_data['cep']); ?>" required></div>
-                        <div class="form-group"><label class="required">Estado</label><input type="text" name="estado" value="<?php echo htmlspecialchars($comprador_data['estado']); ?>" required maxlength="2"></div>
-                        <div class="form-group"><label class="required">Cidade</label><input type="text" name="cidade" value="<?php echo htmlspecialchars($comprador_data['cidade']); ?>" required></div>
+                        <div class="form-group cep-group">
+                            <label class="required">CEP</label>
+                            <div class="cep-input-wrapper">
+                                <input type="text" id="cep" name="cep" value="<?php echo htmlspecialchars($comprador_data['cep']); ?>" required>
+                                <button type="button" id="buscar-cep" class="cep-button">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                            </div>
+                            <div id="cep-message" class="cep-message"></div>
+                        </div>
+                        <div class="form-group"><label class="required">Estado</label><input type="text" name="estado" id="estado" value="<?php echo htmlspecialchars($comprador_data['estado']); ?>" required maxlength="2"></div>
+                        <div class="form-group"><label class="required">Cidade</label><input type="text" name="cidade" id="cidade" value="<?php echo htmlspecialchars($comprador_data['cidade']); ?>" required></div>
                     </div>
 
                     <div class="form-group-row">
-                        <div class="form-group"><label class="required">Rua</label><input type="text" name="rua" value="<?php echo htmlspecialchars($comprador_data['rua']); ?>" required></div>
-                        <div class="form-group"><label class="required">Número</label><input type="text" name="numero" value="<?php echo htmlspecialchars($comprador_data['numero']); ?>" required></div>
+                        <div class="form-group"><label class="required">Rua</label><input type="text" name="rua" id="rua" value="<?php echo htmlspecialchars($comprador_data['rua']); ?>" required></div>
+                        <div class="form-group"><label class="required">Número</label><input type="text" name="numero" id="numero" value="<?php echo htmlspecialchars($comprador_data['numero']); ?>" required></div>
                     </div>
                     
                     <div class="form-group">
@@ -205,7 +300,7 @@ try {
 
                     <div class="form-group">
                         <label for="complemento">Complemento</label>
-                        <input type="text" name="complemento" value="<?php echo htmlspecialchars($comprador_data['complemento'] ?? ''); ?>">
+                        <input type="text" name="complemento" id="complemento" value="<?php echo htmlspecialchars($comprador_data['complemento'] ?? ''); ?>">
                     </div>
                     
                     <button type="submit" class="big-button"><i class="fas fa-save"></i> Salvar Alterações</button>
@@ -227,6 +322,105 @@ try {
                 reader.readAsDataURL(file);
             }
         });
+
+        // Busca de CEP com salvamento automático
+        document.getElementById('buscar-cep').addEventListener('click', buscarCEP);
+        document.getElementById('cep').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                buscarCEP();
+            }
+        });
+
+        // Formatar CEP enquanto digita
+        document.getElementById('cep').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 5) {
+                value = value.substring(0, 5) + '-' + value.substring(5, 8);
+            }
+            e.target.value = value;
+        });
+
+        function buscarCEP() {
+            const cepInput = document.getElementById('cep');
+            const cep = cepInput.value.replace(/\D/g, '');
+            const cepMessage = document.getElementById('cep-message');
+            
+            if (!cep || cep.length !== 8) {
+                showMessage('Por favor, digite um CEP válido (8 dígitos).', 'error');
+                return;
+            }
+            
+            // Mostrar indicador de carregamento
+            const buscarBtn = document.getElementById('buscar-cep');
+            const originalHTML = buscarBtn.innerHTML;
+            buscarBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+            buscarBtn.disabled = true;
+            cepMessage.innerHTML = '';
+            
+            // Enviar requisição AJAX para o servidor
+            const formData = new FormData();
+            formData.append('buscar_cep', 'true');
+            formData.append('cep', cep);
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Preencher os campos com os dados do CEP
+                    document.getElementById('rua').value = data.data.logradouro || '';
+                    document.getElementById('cidade').value = data.data.localidade || '';
+                    document.getElementById('estado').value = data.data.uf || '';
+                    document.getElementById('complemento').value = data.data.complemento || '';
+                    
+                    // Atualizar o campo CEP com formatação
+                    if (data.cep_formatado) {
+                        cepInput.value = data.cep_formatado;
+                    } else {
+                        cepInput.value = formatCEP(cep);
+                    }
+                    
+                    // Mostrar mensagem de sucesso
+                    showMessage(data.message, 'success');
+                    
+                    // Forçar um pequeno reload dos dados da página após 1 segundo
+                    setTimeout(() => {
+                        // Recarregar a página para mostrar os dados atualizados
+                        window.location.reload();
+                    }, 1500);
+                    
+                    // Focar no campo número após buscar o CEP
+                    setTimeout(() => {
+                        document.getElementById('numero').focus();
+                    }, 300);
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao buscar CEP:', error);
+                showMessage('Erro ao buscar CEP. Por favor, tente novamente.', 'error');
+            })
+            .finally(() => {
+                // Restaurar o botão
+                buscarBtn.innerHTML = originalHTML;
+                buscarBtn.disabled = false;
+            });
+        }
+
+        function formatCEP(cep) {
+            // Formatar CEP: 00000-000
+            return cep.replace(/(\d{5})(\d{3})/, '$1-$2');
+        }
+
+        function showMessage(message, type) {
+            const cepMessage = document.getElementById('cep-message');
+            cepMessage.innerHTML = '<i class="fas ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle') + '"></i> ' + message;
+            cepMessage.className = 'cep-message ' + type;
+        }
     </script>
 </body>
 </html>

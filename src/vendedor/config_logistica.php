@@ -770,7 +770,7 @@ $estados_brasil = [
                                     <?php echo htmlspecialchars($nome); ?>
                                 </label>
                                 <button type="button" class="btn-cidades" data-sigla="<?php echo $sigla; ?>" title="Selecionar cidades">
-                                    <i class="fas fa-city"></i>
+                                    <i class="fas fa-city"></i><p>Selecionar cidades</p>
                                 </button>
                             </div>
                         <?php endforeach; ?>

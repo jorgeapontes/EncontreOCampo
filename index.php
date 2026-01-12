@@ -429,7 +429,7 @@ require_once 'src/conexao.php';
                                 <div class="form-group">
                                     <label for="nomeComercialVendedor" class="required">Nome Comercial </label>
                                     <input type="text" id="nomeComercialVendedor" name="nomeComercialVendedor" required placeholder="Nome da empresa/fazenda">
-                                    <small class="form-help">Salvo na coluna nome_comercial do banco de dados</small>
+                                    <small class="form-help">Esse será seu nome de exibição</small>
                                 </div>
                                 
                                 <div class="form-group">
@@ -547,10 +547,7 @@ require_once 'src/conexao.php';
                                 <div class="form-group">
                                     <label for="planoVendedor">Plano</label>
                                     <select id="planoVendedor" name="planoVendedor">
-                                        <option value="free" selected>Grátis</option>
-                                        <option value="basico" disabled>Básico (R$ 49,90/mês)</option>
-                                        <option value="premium" disabled>Premium (R$ 99,90/mês)</option>
-                                        <option value="empresarial" disabled>Empresarial (R$ 249,90/mês)</option>
+                                        <option value="free" selected>Plano 1 - Grátis</option>
                                     </select>
                                     <small class="form-help" style="color: #666; font-style: italic; display: block; margin-top: 5px;">
                                         * Todos começam com plano gratuito. Você poderá alterar o plano posteriormente em seu painel.

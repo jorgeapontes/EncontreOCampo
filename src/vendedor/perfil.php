@@ -2,43 +2,80 @@
 // src/vendedor/perfil.php
 require_once 'auth.php'; 
 require_once 'verificar_assinaturas.php';
-verificarValidadeAssinaturas($db); // $db é a sua conexão PDO que já existe no auth.php
 
-// --- ATUALIZAÇÃO DE LÓGICA: BUSCAR NOME DO PLANO REAL ---
-// Fazemos um JOIN com a tabela planos para garantir que o nome exibido 
-// seja o que corresponde ao plano_id atual no banco.
 $database = new Database();
 $db = $database->getConnection();
+verificarValidadeAssinaturas($db); 
 
-$stmt_plano = $db->prepare("
-    SELECT v.*, p.nome as nome_plano_real, p.preco_mensal 
-    FROM vendedores v 
-    LEFT JOIN planos p ON v.plano_id = p.id 
-    WHERE v.id = ?
-");
-$stmt_plano->execute([$vendedor['id']]);
-$dados_completos = $stmt_plano->fetch(PDO::FETCH_ASSOC);
+// Garante que as variáveis existam como arrays vazios caso auth.php não as crie
+if (!isset($usuario)) $usuario = [];
+if (!isset($vendedor)) $vendedor = [];
 
-// Sobrescrevemos o nome para garantir a exibição correta
+// --- 1. BUSCAR DADOS FRESCOS DO USUÁRIO ---
+$stmt_user = $db->prepare("SELECT * FROM usuarios WHERE id = ?");
+if (isset($_SESSION['usuario_id'])) {
+    $stmt_user->execute([$_SESSION['usuario_id']]);
+    $usuario_real = $stmt_user->fetch(PDO::FETCH_ASSOC);
+
+    if ($usuario_real) {
+        $usuario = is_array($usuario) ? array_merge($usuario, $usuario_real) : $usuario_real;
+    }
+}
+
+// --- 2. BUSCAR DADOS COMPLETOS DO VENDEDOR ---
+if (!isset($vendedor['id']) && isset($_SESSION['usuario_id'])) {
+    $stmt_busca_vend = $db->prepare("SELECT id FROM vendedores WHERE usuario_id = ?");
+    $stmt_busca_vend->execute([$_SESSION['usuario_id']]);
+    $res_vend = $stmt_busca_vend->fetch(PDO::FETCH_ASSOC);
+    if ($res_vend) {
+        $vendedor['id'] = $res_vend['id'];
+    }
+}
+
+if (isset($vendedor['id'])) {
+    $stmt_plano = $db->prepare("
+        SELECT v.*, p.nome as nome_plano_real, p.preco_mensal 
+        FROM vendedores v 
+        LEFT JOIN planos p ON v.plano_id = p.id 
+        WHERE v.id = ?
+    ");
+    $stmt_plano->execute([$vendedor['id']]);
+    $dados_completos = $stmt_plano->fetch(PDO::FETCH_ASSOC);
+
+    if ($dados_completos) {
+        $vendedor = is_array($vendedor) ? array_merge($vendedor, $dados_completos) : $dados_completos;
+    }
+}
+
 $nome_exibicao_plano = $dados_completos['nome_plano_real'] ?? 'Sem Plano';
-
 $mensagem_sucesso = '';
 $mensagem_erro = '';
-$vendedor_id_fk = $vendedor['id'];
 
+$vendedor_id_fk = $vendedor['id'] ?? 0;
+
+// Diretório de upload relativo ao arquivo atual
 $upload_dir = '../uploads/vendedores/'; 
 if (!is_dir($upload_dir)) {
     mkdir($upload_dir, 0777, true);
 }
 
+// --- LÓGICA DE SALVAMENTO ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nome = $_POST['nome'] ?? $usuario['nome'];
-    $telefone1 = $_POST['telefone1'] ?? $vendedor['telefone1'];
-    $razao_social = $_POST['razao_social'] ?? $vendedor['razao_social'];
+    $nome = $_POST['nome'] ?? ($usuario['nome'] ?? '');
+    $email = $_POST['email'] ?? ($usuario['email'] ?? '');
+    $telefone1 = $_POST['telefone1'] ?? ($vendedor['telefone1'] ?? '');
+    $razao_social = $_POST['razao_social'] ?? ($vendedor['razao_social'] ?? '');
+    $cep = $_POST['cep'] ?? ($vendedor['cep'] ?? '');
+    $rua = $_POST['rua'] ?? ($vendedor['rua'] ?? '');
+    $numero = $_POST['numero'] ?? ($vendedor['numero'] ?? '');
+    $complemento = $_POST['complemento'] ?? ($vendedor['complemento'] ?? '');
+    $estado = $_POST['estado'] ?? ($vendedor['estado'] ?? '');
+    $cidade = $_POST['cidade'] ?? ($vendedor['cidade'] ?? '');
 
-    $foto_perfil_antiga = $vendedor['foto_perfil_url'];
+    $foto_perfil_antiga = $vendedor['foto_perfil_url'] ?? '';
     $foto_perfil_nova = $foto_perfil_antiga;
     
+    // Upload Imagem
     if (isset($_FILES['foto_perfil']) && $_FILES['foto_perfil']['error'] === UPLOAD_ERR_OK) {
         $file_extension = strtolower(pathinfo($_FILES['foto_perfil']['name'], PATHINFO_EXTENSION));
         $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
@@ -48,9 +85,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $dest_path = $upload_dir . $new_file_name;
 
             if (move_uploaded_file($_FILES['foto_perfil']['tmp_name'], $dest_path)) {
-                $foto_perfil_nova = 'src/uploads/vendedores/' . $new_file_name;
-                if ($foto_perfil_antiga && file_exists('../../' . $foto_perfil_antiga) && strpos($foto_perfil_antiga, 'default') === false) {
-                    unlink('../../' . $foto_perfil_antiga);
+                // CORREÇÃO: Salvar o caminho relativo correto no banco
+                $foto_perfil_nova = '../uploads/vendedores/' . $new_file_name;
+                
+                // Deletar foto antiga se existir e não for a padrão
+                if ($foto_perfil_antiga && file_exists($foto_perfil_antiga) && strpos($foto_perfil_antiga, 'no-user-image') === false) {
+                    @unlink($foto_perfil_antiga);
                 }
             }
         }
@@ -58,19 +98,81 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         $db->beginTransaction();
-        $stmt_u = $db->prepare("UPDATE usuarios SET nome = ? WHERE id = ?");
-        $stmt_u->execute([$nome, $usuario['id']]);
+        
+        // 1. Atualiza USUÁRIO
+        $stmt_u = $db->prepare("UPDATE usuarios SET nome = ?, email = ? WHERE id = ?");
+        $stmt_u->execute([$nome, $email, $_SESSION['usuario_id']]);
 
-        $stmt_v = $db->prepare("UPDATE vendedores SET telefone1 = ?, razao_social = ?, foto_perfil_url = ? WHERE id = ?");
-        $stmt_v->execute([$telefone1, $razao_social, $foto_perfil_nova, $vendedor_id_fk]);
+        // 2. Atualiza VENDEDOR
+        $query_vendedor = "UPDATE vendedores SET 
+            telefone1 = ?, 
+            razao_social = ?, 
+            foto_perfil_url = ?,
+            cep = ?,
+            rua = ?,
+            numero = ?,
+            complemento = ?,
+            estado = ?,
+            cidade = ?
+            WHERE id = ?";
+            
+        $stmt_v = $db->prepare($query_vendedor);
+        $stmt_v->execute([
+            $telefone1, 
+            $razao_social, 
+            $foto_perfil_nova,
+            $cep,
+            $rua,
+            $numero,
+            $complemento,
+            $estado,
+            $cidade,
+            $vendedor_id_fk
+        ]);
 
         $db->commit();
         $mensagem_sucesso = "Perfil atualizado com sucesso!";
+        
+        // Atualiza variáveis visuais
+        $usuario['nome'] = $nome;
+        $usuario['email'] = $email;
+        $vendedor['telefone1'] = $telefone1;
+        $vendedor['razao_social'] = $razao_social;
+        $vendedor['cep'] = $cep;
+        $vendedor['rua'] = $rua;
+        $vendedor['numero'] = $numero;
+        $vendedor['complemento'] = $complemento;
+        $vendedor['estado'] = $estado;
+        $vendedor['cidade'] = $cidade;
+        $vendedor['foto_perfil_url'] = $foto_perfil_nova;
+        
+        // Refresh após 2 segundos
         header("Refresh: 2");
+
     } catch (Exception $e) {
         $db->rollBack();
         $mensagem_erro = "Erro ao atualizar: " . $e->getMessage();
     }
+}
+
+// CORREÇÃO: Função para verificar e retornar o caminho correto da imagem
+function getImagePath($path) {
+    if (empty($path)) {
+        return '../../img/no-user-image.png';
+    }
+    
+    // Se o caminho já começa com ../, usa direto
+    if (strpos($path, '../') === 0) {
+        return file_exists($path) ? $path : '../../img/no-user-image.png';
+    }
+    
+    // Se começa com src/, ajusta
+    if (strpos($path, 'src/') === 0) {
+        $adjusted_path = '../../' . $path;
+        return file_exists($adjusted_path) ? $adjusted_path : '../../img/no-user-image.png';
+    }
+    
+    return file_exists($path) ? $path : '../../img/no-user-image.png';
 }
 ?>
 <!DOCTYPE html>
@@ -85,14 +187,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+    
+    <style>
+        .input-group-cep {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+        }
+        .btn-buscar-cep {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+            margin-bottom: 2px;
+        }
+        .btn-buscar-cep:hover {
+            background-color: #218838;
+        }
+        .form-group-cep {
+            flex: 1;
+        }
+    </style>
 </head>
 <body>
-    <?php 
-require_once 'verificar_assinaturas.php';
-verificarValidadeAssinaturas($db); // Executa a verificação
-
-if (isset($_SESSION['aviso_expiracao'])): 
-?>
+    <?php if (isset($_SESSION['aviso_expiracao'])): ?>
     <div id="alert-expirado" style="background: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; font-family: 'Inter', sans-serif; box-shadow: 0 4px 10px rgba(0,0,0,0.05); animation: slideIn 0.5s ease;">
         <div style="display: flex; align-items: center;">
             <i class="fa-solid fa-circle-exclamation" style="font-size: 20px; margin-right: 12px;"></i>
@@ -100,15 +226,8 @@ if (isset($_SESSION['aviso_expiracao'])):
         </div>
         <button onclick="document.getElementById('alert-expirado').style.display='none'" style="background:none; border:none; color: #856404; cursor:pointer; font-size: 20px;">&times;</button>
     </div>
-    <?php unset($_SESSION['aviso_expiracao']); // Garante que o aviso aparece apenas uma vez ?>
+    <?php unset($_SESSION['aviso_expiracao']); endif; ?>
     
-    <style>
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
-<?php endif; ?>
     <header>
         <nav class="navbar">
             <div class="nav-container">
@@ -120,37 +239,9 @@ if (isset($_SESSION['aviso_expiracao'])):
                     </div>
                 </div>
                 <ul class="nav-menu">
-                    <li class="nav-item">
-                        <a href="../../index.php" class="nav-link">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="dashboard.php" class="nav-link">Painel</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="" class="nav-link active">Meu Perfil</a>
-                    </li>
-                    <?php if (isset($_SESSION['usuario_id'])): ?>
-                    <li class="nav-item">
-                        <a href="../notificacoes.php" class="nav-link no-underline">
-                            <i class="fas fa-bell"></i>
-                            <?php
-                            // Contar notificações não lidas
-                            if (isset($_SESSION['usuario_id'])) {
-                                $database = new Database();
-                                $conn = $database->getConnection();
-                                $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
-                                $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
-                                $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
-                                $stmt_nao_lidas->execute();
-                                $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
-                                if ($total_nao_lidas > 0) {
-                                    echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
-                                }
-                            }
-                            ?>
-                        </a>
-                    </li>
-                    <?php endif; ?>
+                    <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="dashboard.php" class="nav-link">Painel</a></li>
+                    <li class="nav-item"><a href="" class="nav-link active">Meu Perfil</a></li>
                     <li class="nav-item">
                         <a href="../logout.php" class="nav-link exit-button no-underline">Sair</a>
                     </li>
@@ -161,16 +252,13 @@ if (isset($_SESSION['aviso_expiracao'])):
                     <span class="bar"></span>
                 </div>
             </div>
-            
         </nav>
     </header>
     <br>
 
     <div class="main-content">
         <center>
-            <header class="header">
-                <h1>Meu Perfil</h1>
-            </header>
+            <header class="header"><h1>Meu Perfil</h1></header>
         </center>
 
         <section class="section-perfil">
@@ -188,15 +276,9 @@ if (isset($_SESSION['aviso_expiracao'])):
                         <div class="foto-perfil-container">
                             <div class="foto-perfil-display">
                                 <img id="profile-img-preview" 
-                                    src="<?php 
-                                        echo (!empty($foto_perfil_url) && file_exists($foto_perfil_url)) 
-                                            ? htmlspecialchars($foto_perfil_url) 
-                                            : '../../img/no-user-image.png';
-                                    ?>" 
-                                alt="Foto de Perfil">
-                                <div class="foto-overlay">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </div>
+                                    src="<?php echo getImagePath($vendedor['foto_perfil_url'] ?? ''); ?>" 
+                                    alt="Foto de Perfil">
+                                <div class="foto-overlay"><i class="fas fa-pencil-alt"></i></div>
                             </div>
                             <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" style="display: none;">
                         </div>
@@ -212,8 +294,8 @@ if (isset($_SESSION['aviso_expiracao'])):
                     </div>
 
                     <div class="form-group">
-                        <label for="email">Email (Não Editável)</label>
-                        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($usuario['email'] ?? ''); ?>" disabled>
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($usuario['email'] ?? ''); ?>" required>
                     </div>
 
                     <h2>Dados do Vendedor (Empresa)</h2>
@@ -225,8 +307,8 @@ if (isset($_SESSION['aviso_expiracao'])):
 
                     <div class="form-group-row">
                         <div class="form-group">
-                            <label>CPF/CNPJ</label>
-                            <input type="text" value="<?php echo htmlspecialchars($vendedor['cpf_cnpj'] ?? ''); ?>" disabled>
+                            <label>CPF/CNPJ (Não editável)</label>
+                            <input type="text" value="<?php echo htmlspecialchars($vendedor['cpf_cnpj'] ?? ''); ?>" disabled style="background-color: #f8f9fa;">
                         </div>
                         <div class="form-group">
                             <label for="telefone1" class="required">Telefone Principal</label>
@@ -234,89 +316,87 @@ if (isset($_SESSION['aviso_expiracao'])):
                         </div>
                     </div>
 
-                    <div class="form-group">
-    <label for="plano">Plano Atual</label>
-    <div class="plano-info">
-        <?php
-        // Buscar plano atual do vendedor
-        $plano_atual = 'Free';
-        $plano_id_atual = 1;
-        
-        if (isset($vendedor['plano_id'])) {
-            $query_plano = "SELECT * FROM planos WHERE id = :plano_id";
-            $stmt_plano = $db->prepare($query_plano);
-            $stmt_plano->bindParam(':plano_id', $vendedor['plano_id']);
-            $stmt_plano->execute();
-            $plano_dados = $stmt_plano->fetch(PDO::FETCH_ASSOC);
-            
-            if ($plano_dados) {
-                $plano_atual = $plano_dados['nome'];
-                $plano_id_atual = $plano_dados['id'];
-            }
-        }
-        ?>
-        <input type="text" value="<?php echo htmlspecialchars($plano_atual); ?>" disabled>
-        <small>
-            <?php if ($plano_id_atual > 1): ?>
-                <a href="escolher_plano.php" class="change-plan-link">Alterar plano</a> | 
-                <a href="gerenciar_assinatura.php" class="manage-subscription-link">Gerenciar assinatura</a>
-            <?php else: ?>
-                <a href="escolher_plano.php" class="upgrade-plan-link">Fazer upgrade do plano</a>
-            <?php endif; ?>
-        </small>
-    </div>
-</div>
+                    <h3 style="margin-top: 20px; color: #2d3436; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">Endereço</h3>
+                    
+                    <div class="form-group-row input-group-cep">
+                        <div class="form-group form-group-cep">
+                            <label for="cep">CEP</label>
+                            <input type="text" id="cep" name="cep" value="<?php echo htmlspecialchars($vendedor['cep'] ?? ''); ?>" maxlength="9" placeholder="00000-000">
+                        </div>
+                        <button type="button" class="btn-buscar-cep" onclick="buscarCep()">
+                            <i class="fas fa-search" style="margin-right: 5px;"></i> Buscar
+                        </button>
+                        
+                        <div class="form-group">
+                            <label for="estado">Estado</label>
+                            <select id="estado" name="estado">
+                                <option value="">UF</option>
+                                <?php
+                                $estados = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
+                                foreach ($estados as $uf) {
+                                    $selected = (isset($vendedor['estado']) && $vendedor['estado'] == $uf) ? 'selected' : '';
+                                    echo "<option value='$uf' $selected>$uf</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 2;">
+                            <label for="cidade">Cidade</label>
+                            <input type="text" id="cidade" name="cidade" value="<?php echo htmlspecialchars($vendedor['cidade'] ?? ''); ?>">
+                        </div>
+                    </div>
 
-<div class="form-group">
-    <label for="anuncios_disponiveis">Anúncios Disponíveis</label>
-    <?php
-    // Calcular anúncios disponíveis
-    $total_disponivel = 0;
-    $utilizados = 0;
-    
-    if (isset($vendedor['plano_id'])) {
-        // Buscar limite do plano
-        $query_limite = "SELECT limite_total_anuncios FROM planos WHERE id = :plano_id";
-        $stmt_limite = $db->prepare($query_limite);
-        $stmt_limite->bindParam(':plano_id', $vendedor['plano_id']);
-        $stmt_limite->execute();
-        $limite = $stmt_limite->fetch(PDO::FETCH_ASSOC);
-        
-        // Contar anúncios ativos do vendedor
-        $query_anuncios = "SELECT COUNT(*) as total FROM produtos WHERE vendedor_id = :vendedor_id AND status = 'ativo'";
-        $stmt_anuncios = $db->prepare($query_anuncios);
-        $stmt_anuncios->bindParam(':vendedor_id', $vendedor_id_fk);
-        $stmt_anuncios->execute();
-        $anuncios_ativos = $stmt_anuncios->fetch(PDO::FETCH_ASSOC);
-        
-        $total_disponivel = $limite['limite_total_anuncios'] ?? 1;
-        $utilizados = $anuncios_ativos['total'] ?? 0;
-    }
-    ?>
-    <div class="anuncios-progress">
-        <div class="progress-bar">
-            <div class="progress-fill" style="width: <?php echo min(100, ($utilizados / $total_disponivel) * 100); ?>%"></div>
-        </div>
-        <div class="progress-text">
-            <?php echo $utilizados; ?> de <?php echo $total_disponivel; ?> anúncios utilizados
-        </div>
-        <?php if ($utilizados >= $total_disponivel && $plano_id_atual < 5): ?>
-            <small style="color: #e74c3c; display: block; margin-top: 5px;">
-                <i class="fas fa-exclamation-circle"></i> Limite atingido. 
-                <a href="escolher_plano.php">Faça upgrade para mais anúncios</a>
-            </small>
-        <?php elseif ($plano_id_atual == 5 && $utilizados >= 5): ?>
-            <small style="color: #3498db; display: block; margin-top: 5px;">
-                <i class="fas fa-plus-circle"></i> 
-                <a href="comprar_unidades_extras.php">Comprar unidades extras</a>
-            </small>
-        <?php endif; ?>
-    </div>
-</div>
+                    <div class="form-group-row">
+                        <div class="form-group" style="flex: 3;">
+                            <label for="rua">Rua/Logradouro</label>
+                            <input type="text" id="rua" name="rua" value="<?php echo htmlspecialchars($vendedor['rua'] ?? ''); ?>">
+                        </div>
+                        <div class="form-group">
+                            <label for="numero">Número</label>
+                            <input type="text" id="numero" name="numero" value="<?php echo htmlspecialchars($vendedor['numero'] ?? ''); ?>">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="complemento">Complemento</label>
+                        <input type="text" id="complemento" name="complemento" value="<?php echo htmlspecialchars($vendedor['complemento'] ?? ''); ?>">
+                    </div>
+
+                    <br>
+                    <h2>Informações do Plano</h2>
+
+                    <div class="form-group">
+                        <label for="plano">Plano Atual</label>
+                        <div class="plano-info">
+                            <?php
+                            $plano_atual = 'Free';
+                            $plano_id_atual = 1;
+                            if (isset($vendedor['plano_id'])) {
+                                $query_plano = "SELECT * FROM planos WHERE id = :plano_id";
+                                $stmt_plano = $db->prepare($query_plano);
+                                $stmt_plano->bindParam(':plano_id', $vendedor['plano_id']);
+                                $stmt_plano->execute();
+                                $plano_dados = $stmt_plano->fetch(PDO::FETCH_ASSOC);
+                                if ($plano_dados) {
+                                    $plano_atual = $plano_dados['nome'];
+                                    $plano_id_atual = $plano_dados['id'];
+                                }
+                            }
+                            ?>
+                            <input type="text" value="<?php echo htmlspecialchars($plano_atual); ?>" disabled>
+                            <small>
+                                <?php if ($plano_id_atual > 1): ?>
+                                    <a href="escolher_plano.php" class="change-plan-link">Alterar plano</a> | 
+                                    <a href="gerenciar_assinatura.php" class="manage-subscription-link">Gerenciar assinatura</a>
+                                <?php else: ?>
+                                    <a href="escolher_plano.php" class="upgrade-plan-link">Fazer upgrade do plano</a>
+                                <?php endif; ?>
+                            </small>
+                        </div>
+                    </div>
                 
                     <button type="submit" class="big-button"><i class="fas fa-save"></i> Salvar Alterações</button>
                     
-                    <!-- Botão para deletar conta -->
                     <center>
                         <a href="#" id="delete-account-link" style="display: inline-block; margin-top: 20px; color: #666; text-decoration: none; font-size: 0.9rem;">
                             <i class="fas fa-trash-alt"></i> Apagar minha conta
@@ -327,108 +407,96 @@ if (isset($_SESSION['aviso_expiracao'])):
         </section>
     </div>
 
-    <!-- Modal de confirmação para deletar conta -->
     <div id="delete-account-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
         <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%;">
-            <h3 style="color: #c62828; margin-bottom: 15px;">
-                <i class="fas fa-exclamation-triangle"></i> Confirmar exclusão da conta
-            </h3>
-            <p style="margin-bottom: 20px;">Tem certeza que deseja apagar sua conta? Esta ação <strong>não poderá ser desfeita</strong>.</p>
-            <!-- <p style="margin-bottom: 25px; font-size: 0.9rem; color: #666;">
-                <i class="fas fa-info-circle"></i> Observação: Seus anúncios serão removidos, mas os chats e mensagens serão mantidos no sistema.
-            </p> -->
+            <h3 style="color: #c62828; margin-bottom: 15px;"><i class="fas fa-exclamation-triangle"></i> Confirmar exclusão</h3>
+            <p>Tem certeza? Esta ação não pode ser desfeita.</p>
             <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button id="cancel-delete" style="padding: 10px 20px; border: 1px solid #ddd; background: #f5f5f5; border-radius: 4px; cursor: pointer;">
-                    Cancelar
-                </button>
+                <button id="cancel-delete" style="padding: 10px 20px; border: 1px solid #ddd; background: #f5f5f5; border-radius: 4px; cursor: pointer;">Cancelar</button>
                 <form id="delete-account-form" method="POST" action="deletar_conta.php" style="margin: 0;">
                     <input type="hidden" name="usuario_id" value="<?php echo $usuario['id']; ?>">
                     <input type="hidden" name="vendedor_id" value="<?php echo $vendedor['id']; ?>">
-                    <button type="submit" style="padding: 10px 20px; background: #c62828; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        <i class="fas fa-trash-alt"></i> Sim, apagar conta
-                    </button>
+                    <button type="submit" style="padding: 10px 20px; background: #c62828; color: white; border: none; border-radius: 4px; cursor: pointer;">Sim, apagar</button>
                 </form>
             </div>
         </div>
     </div>
 
     <script>
-        // Script para menu hamburger
+        // Menu Mobile
         const hamburger = document.querySelector(".hamburger");
         const navMenu = document.querySelector(".nav-menu");
+        if(hamburger) {
+            hamburger.addEventListener("click", () => {
+                hamburger.classList.toggle("active");
+                navMenu.classList.toggle("active");
+            });
+        }
 
-        hamburger.addEventListener("click", () => {
-            hamburger.classList.toggle("active");
-            navMenu.classList.toggle("active");
-        });
-
-        // Fechar menu mobile ao clicar em um link
-        document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
-            hamburger.classList.remove("active");
-            navMenu.classList.remove("active");
-        }));
-
-        // Script para foto de perfil
+        // Upload Imagem
         const fotoPerfilDisplay = document.querySelector('.foto-perfil-display');
         const fotoPerfilInput = document.getElementById('foto_perfil');
         const profileImgPreview = document.getElementById('profile-img-preview');
-
-        fotoPerfilDisplay.addEventListener('click', () => {
-            fotoPerfilInput.click();
-        });
-
-        fotoPerfilInput.addEventListener('change', function(event) {
-            const [file] = event.target.files;
-            if (file) {
-                // Verificar tamanho (máximo 5MB)
-                if (file.size > 5 * 1024 * 1024) {
-                    alert('A imagem deve ter no máximo 5MB.');
-                    this.value = '';
-                    return;
+        if(fotoPerfilDisplay) {
+            fotoPerfilDisplay.addEventListener('click', () => { fotoPerfilInput.click(); });
+        }
+        if(fotoPerfilInput) {
+            fotoPerfilInput.addEventListener('change', function(event) {
+                const [file] = event.target.files;
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) { profileImgPreview.src = e.target.result; };
+                    reader.readAsDataURL(file);
                 }
+            });
+        }
 
-                // Verificar tipo
-                const tiposPermitidos = ['image/jpeg', 'image/png', 'image/gif'];
-                if (!tiposPermitidos.includes(file.type)) {
-                    alert('Formato inválido. Use JPG, PNG ou GIF.');
-                    this.value = '';
-                    return;
-                }
+        // Função Buscar CEP
+        function buscarCep() {
+            const cepInput = document.getElementById('cep');
+            const ruaInput = document.getElementById('rua');
+            const cidadeInput = document.getElementById('cidade');
+            const estadoInput = document.getElementById('estado');
+            const numeroInput = document.getElementById('numero');
 
-                // Pré-visualização
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    profileImgPreview.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
+            let cep = cepInput.value.replace(/\D/g, '');
+            
+            if (cep.length === 8) {
+                const btn = document.querySelector('.btn-buscar-cep');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                
+                fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.erro) {
+                            ruaInput.value = data.logradouro;
+                            cidadeInput.value = data.localidade;
+                            estadoInput.value = data.uf;
+                            numeroInput.focus();
+                        } else {
+                            alert("CEP não encontrado.");
+                        }
+                    })
+                    .catch(error => console.error('Erro:', error))
+                    .finally(() => {
+                        btn.innerHTML = originalText;
+                    });
+            } else {
+                alert("Digite um CEP válido com 8 números.");
             }
-        });
+        }
 
-        // Modal de deletar conta
+        document.getElementById('cep').addEventListener('blur', buscarCep);
+
+        // Modal
         const deleteAccountLink = document.getElementById('delete-account-link');
         const deleteAccountModal = document.getElementById('delete-account-modal');
         const cancelDeleteBtn = document.getElementById('cancel-delete');
-
         if (deleteAccountLink) {
-            deleteAccountLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                deleteAccountModal.style.display = 'flex';
-            });
-        }
-
-        if (cancelDeleteBtn) {
-            cancelDeleteBtn.addEventListener('click', function() {
-                deleteAccountModal.style.display = 'none';
-            });
-        }
-
-        // Fechar modal ao clicar fora
-        if (deleteAccountModal) {
-            deleteAccountModal.addEventListener('click', function(e) {
-                if (e.target === deleteAccountModal) {
-                    deleteAccountModal.style.display = 'none';
-                }
-            });
+            deleteAccountLink.addEventListener('click', (e) => { e.preventDefault(); deleteAccountModal.style.display = 'flex'; });
+            cancelDeleteBtn.addEventListener('click', () => { deleteAccountModal.style.display = 'none'; });
+            window.onclick = (e) => { if (e.target == deleteAccountModal) deleteAccountModal.style.display = 'none'; };
         }
     </script>
 </body>

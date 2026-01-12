@@ -216,7 +216,7 @@ try {
             // Inserir nova proposta
             $sql_proposta = "INSERT INTO propostas_vendedor 
                 (vendedor_id, produto_id, preco_proposto, quantidade_proposta, 
-                 data_proposta, status, forma_pagamento, opcao_frete, valor_frete) 
+                data_proposta, status, forma_pagamento, opcao_frete, valor_frete) 
                 VALUES (:vendedor_id, :produto_id, :preco, :quantidade, 
                         NOW(), 'enviada', :forma_pagamento, :opcao_frete, :valor_frete)";
             
@@ -234,11 +234,12 @@ try {
         
         $proposta_id = $proposta_existente ? $proposta_existente['ID'] : $conn->lastInsertId();
         
-        // Buscar proposta do comprador para vincular
+        // Buscar proposta do comprador para vincular (se existir)
         $sql_busca_proposta_comprador = "SELECT pc.ID 
             FROM propostas_comprador pc
             WHERE pc.comprador_id = :comprador_id
             AND pc.produto_id = :produto_id
+            AND pc.status = 'enviada'
             ORDER BY pc.data_proposta DESC LIMIT 1";
         
         $stmt_busca = $conn->prepare($sql_busca_proposta_comprador);
@@ -247,15 +248,28 @@ try {
         $stmt_busca->execute();
         $proposta_comprador_existente = $stmt_busca->fetch(PDO::FETCH_ASSOC);
         
-        // Verificar se já existe negociação
+        // Verificar se já existe negociação para este produto entre estes usuários
         $sql_check_negociacao = "SELECT ID FROM propostas_negociacao 
             WHERE produto_id = :produto_id
-            AND (proposta_comprador_id = :proposta_comprador_id OR proposta_vendedor_id = :proposta_vendedor_id)";
+            AND (
+                (proposta_comprador_id IS NOT NULL AND proposta_comprador_id = :proposta_comprador_id)
+                OR 
+                (proposta_vendedor_id IS NOT NULL AND proposta_vendedor_id = :proposta_vendedor_id)
+                OR
+                (
+                    proposta_comprador_id IN (SELECT ID FROM propostas_comprador WHERE comprador_id = :comprador_id AND produto_id = :produto_id2)
+                    AND proposta_vendedor_id IN (SELECT ID FROM propostas_vendedor WHERE vendedor_id = :vendedor_id2 AND produto_id = :produto_id3)
+                )
+            )";
         
         $stmt_check_neg = $conn->prepare($sql_check_negociacao);
         $stmt_check_neg->bindParam(':produto_id', $dados['produto_id'], PDO::PARAM_INT);
         $stmt_check_neg->bindValue(':proposta_comprador_id', $proposta_comprador_existente ? $proposta_comprador_existente['ID'] : null, PDO::PARAM_INT);
         $stmt_check_neg->bindParam(':proposta_vendedor_id', $proposta_id, PDO::PARAM_INT);
+        $stmt_check_neg->bindParam(':comprador_id', $comprador_usuario_id, PDO::PARAM_INT);
+        $stmt_check_neg->bindParam(':vendedor_id2', $vendedor_usuario_id, PDO::PARAM_INT);
+        $stmt_check_neg->bindParam(':produto_id2', $dados['produto_id'], PDO::PARAM_INT);
+        $stmt_check_neg->bindParam(':produto_id3', $dados['produto_id'], PDO::PARAM_INT);
         $stmt_check_neg->execute();
         $negociacao_existente = $stmt_check_neg->fetch(PDO::FETCH_ASSOC);
         
@@ -268,16 +282,32 @@ try {
                 quantidade_final = :quantidade,
                 status = 'negociacao',
                 forma_pagamento = :forma_pagamento,
-                opcao_frete = :opcao_frete
-                WHERE ID = :negociacao_id";
+                opcao_frete = :opcao_frete";
+            
+            // Se existir proposta do comprador, atualizar o campo também
+            if ($proposta_comprador_existente) {
+                $sql_negociacao .= ", proposta_comprador_id = :proposta_comprador_id";
+            }
+            
+            $sql_negociacao .= " WHERE ID = :negociacao_id";
             
             $stmt_negociacao = $conn->prepare($sql_negociacao);
             $stmt_negociacao->bindParam(':negociacao_id', $negociacao_existente['ID'], PDO::PARAM_INT);
+            $stmt_negociacao->bindParam(':proposta_vendedor_id', $proposta_id, PDO::PARAM_INT);
+            $stmt_negociacao->bindParam(':valor_total', $total);
+            $stmt_negociacao->bindParam(':quantidade', $quantidade, PDO::PARAM_INT);
+            $stmt_negociacao->bindParam(':forma_pagamento', $dados['forma_pagamento']);
+            $stmt_negociacao->bindParam(':opcao_frete', $dados['opcao_frete']);
+            
+            if ($proposta_comprador_existente) {
+                $stmt_negociacao->bindParam(':proposta_comprador_id', $proposta_comprador_existente['ID'], PDO::PARAM_INT);
+            }
+            
         } else {
             // Criar nova negociação
             $sql_negociacao = "INSERT INTO propostas_negociacao 
                 (proposta_vendedor_id, produto_id, data_inicio, data_atualizacao, 
-                 valor_total, quantidade_final, status, forma_pagamento, opcao_frete";
+                valor_total, quantidade_final, status, forma_pagamento, opcao_frete";
             
             $sql_valores = " VALUES (:proposta_vendedor_id, :produto_id, NOW(), NOW(), 
                         :valor_total, :quantidade, 'negociacao', :forma_pagamento, :opcao_frete";
@@ -301,18 +331,10 @@ try {
             $sql_negociacao .= ")" . $sql_valores . ")";
             
             $stmt_negociacao = $conn->prepare($sql_negociacao);
-        }
-        
-        if (!isset($negociacao_existente)) {
+            
             foreach ($params as $key => $value) {
                 $stmt_negociacao->bindValue($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
             }
-        } else {
-            $stmt_negociacao->bindParam(':proposta_vendedor_id', $proposta_id, PDO::PARAM_INT);
-            $stmt_negociacao->bindParam(':valor_total', $total);
-            $stmt_negociacao->bindParam(':quantidade', $quantidade, PDO::PARAM_INT);
-            $stmt_negociacao->bindParam(':forma_pagamento', $dados['forma_pagamento']);
-            $stmt_negociacao->bindParam(':opcao_frete', $dados['opcao_frete']);
         }
         
         $stmt_negociacao->execute();
@@ -339,7 +361,7 @@ try {
     
     $mensagem = $eh_comprador 
         ? "Nova proposta para '{$produto_nome}' - Quantidade: {$dados['quantidade']}" 
-        : "Contraproposta recebida para '{$produto_nome}'";
+        : "Proposta recebida para '{$produto_nome}'";
     
     $url = "../../src/chat/chat.php?produto_id=" . $dados['produto_id'] . "&conversa_id=" . $dados['conversa_id'];
     

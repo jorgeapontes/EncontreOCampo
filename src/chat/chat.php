@@ -661,7 +661,7 @@ $opcoes_frete = [
                                         conteudoMensagem = criarCardNegociacao(dadosNegociacao, msg.remetente_id == usuarioId);
                                     } catch (e) {
                                         console.error('Erro ao buscar dados da negociação:', e);
-                                        conteudoMensagem = `<div>📄 Proposta de compra</div>`;
+                                        conteudoMensagem = `<div>Proposta de compra</div>`;
                                     }
                                 } else if (msg.tipo === 'imagem') {
                                     conteudoMensagem = `
@@ -737,58 +737,82 @@ $opcoes_frete = [
         // Função para criar o card de negociação
         function criarCardNegociacao(dados, ehMeu) {
             const status = dados.status || 'pendente';
-            const tipoCard = ehMeu ? 'vendedor' : 'comprador';
-            const podeResponder = !ehMeu && status === 'pendente';
+            
+            // Determinar tipo do card baseado no tipo de proposta
+            let tipoCard = dados.tipo_proposta || 'comprador';
+            
+            // Determinar se esta é a proposta mais recente DO REMETENTE
+            const ehMaisRecente = dados.eh_mais_recente || false;
+            
+            // Determinar se o usuário pode responder
+            // Só pode responder se: 
+            // 1. NÃO for dele (ehMeu = false)
+            // 2. Estiver pendente 
+            // 3. FOR a proposta mais recente DO OUTRO USUÁRIO
+            const podeResponder = !ehMeu && status === 'pendente' && ehMaisRecente;
+            
+            // Se NÃO for a mais recente, mostrar indicador
+            const indicadorAntiga = !ehMaisRecente ? 
+                '<div class="indicador-antiga">Proposta anterior</div>' : 
+                '';
+            
+            // Texto do status
+            let statusText = '';
+            if (status === 'aceita') {
+                statusText = 'Acordo Aceito';
+            } else if (status === 'recusada') {
+                statusText = 'Acordo Recusado';
+            } else if (status === 'pendente' && !ehMaisRecente) {
+                statusText = 'Proposta Antiga';
+            } else if (status === 'pendente') {
+                statusText = 'Aguardando Resposta';
+            }
             
             let acoesHTML = '';
             if (podeResponder) {
                 acoesHTML = `
                     <div class="negociacao-acoes">
-                        <button class="btn-aceitar" data-negociacao-id="${dados.negociacao_id}" data-mensagem-id="${dados.mensagem_id}">
+                        <button class="btn-aceitar" data-proposta-id="${dados.proposta_id}" data-negociacao-id="${dados.negociacao_id || 0}" data-mensagem-id="${dados.mensagem_id}">
                             <i class="fas fa-check"></i> Aceitar Acordo
                         </button>
-                        <button class="btn-recusar" data-negociacao-id="${dados.negociacao_id}" data-mensagem-id="${dados.mensagem_id}">
+                        <button class="btn-recusar" data-proposta-id="${dados.proposta_id}" data-negociacao-id="${dados.negociacao_id || 0}" data-mensagem-id="${dados.mensagem_id}">
                             <i class="fas fa-times"></i> Recusar
                         </button>
                     </div>
                 `;
-            } else {
-                let statusText = '';
-                if (status === 'aceita') statusText = 'Acordo Aceito';
-                else if (status === 'recusada') statusText = 'Acordo Recusado';
-                else if (status === 'pendente') statusText = 'Aguardando Resposta';
-                
-                if (statusText) {
-                    acoesHTML = `
-                        <div class="negociacao-acoes">
-                            <button class="btn-respondido" disabled>
-                                ${statusText}
-                            </button>
-                        </div>
-                    `;
-                }
+            } else if (statusText) {
+                acoesHTML = `
+                    <div class="negociacao-acoes">
+                        <button class="btn-respondido" disabled>
+                            ${statusText}
+                        </button>
+                    </div>
+                `;
             }
             
-            // CORREÇÃO: Usar preco_unitario em vez de preco_proposto
-            const precoUnitario = dados.preco_unitario || dados.preco_proposto || 0;
+            const precoUnitario = dados.preco_unitario || 0;
             
-            // Adicionar indicador de quem enviou propostas
-            let infoPropostas = '';
+            // Adicionar indicador de tipo de proposta
+            let infoTipoProposta = '';
+            
+            // Estilo diferente para propostas antigas
+            const classeAntiga = !ehMaisRecente ? ' antiga' : '';
             
             return `
-                <div class="negociacao-card ${tipoCard}">
+                <div class="negociacao-card ${tipoCard}${classeAntiga}">
                     <div class="negociacao-header">
                         <div class="negociacao-titulo">
                             <i class="fas fa-handshake"></i>
                             Acordo de Compra
+                            ${!ehMaisRecente ? '<span class="badge-antiga">(Anterior)</span>' : ''}
                         </div>
                         <span class="negociacao-status status-${status}">
-                            ${status === 'pendente' ? 'Aguardando Resposta' : 
-                            status === 'aceita' ? 'Aceito' : 'Recusado'}
+                            ${statusText}
                         </span>
                     </div>
                     
-                    ${infoPropostas}
+                    ${infoTipoProposta}
+                    ${indicadorAntiga}
                     
                     <div class="negociacao-detalhes">
                         <div class="detalhe-item">
@@ -801,7 +825,6 @@ $opcoes_frete = [
                         </div>
                         <div class="detalhe-item">
                             <span class="detalhe-label">Valor Unitário:</span>
-                            <!-- CORREÇÃO AQUI: usar precoUnitario -->
                             <span class="detalhe-valor">R$ ${parseFloat(precoUnitario).toFixed(2).replace('.', ',')}</span>
                         </div>
                         <div class="detalhe-item">
@@ -819,7 +842,7 @@ $opcoes_frete = [
                         </div>
                         <div class="detalhe-item">
                             <span class="detalhe-label">Total:</span>
-                            <span class="detalhe-valor" style="color: #2196f3; font-size: 16px;">
+                            <span class="detalhe-valor total-valor">
                                 R$ ${parseFloat(dados.total || 0).toFixed(2).replace('.', ',')}
                             </span>
                         </div>
@@ -828,8 +851,8 @@ $opcoes_frete = [
                     ${acoesHTML}
                     
                     <div class="negociacao-footer">
-                        <span>Enviado por: ${escapeHtml(dados.enviado_por || '')}</span>
-                        <span class="negociacao-id">Negociação ID: ${dados.negociacao_id}</span>
+                        <span class="enviado-por">Enviado por: ${escapeHtml(dados.enviado_por || '')}</span>
+                        <span class="negociacao-id">Proposta ID: ${dados.proposta_id}</span>
                     </div>
                 </div>
             `;
@@ -866,22 +889,26 @@ $opcoes_frete = [
             }
         }
 
-        function responderNegociacao(negociacaoId, mensagemId, acao) {
-            if (!confirm(`Tem certeza que deseja ${acao === 'aceita' ? 'aceitar' : 'recusar'} este acordo?`)) {
+        function responderNegociacao(propostaId, negociacaoId, mensagemId, acao) {
+            // CORREÇÃO: Usar acao correta na mensagem de confirmação
+            const acaoTexto = acao === 'aceita' ? 'aceitar' : 'recusar';
+            
+            if (!confirm(`Tem certeza que deseja ${acaoTexto} este acordo?`)) {
                 return;
             }
             
             const dados = {
+                proposta_id: propostaId,
                 negociacao_id: negociacaoId,
                 mensagem_id: mensagemId,
                 acao: acao
             };
             
             // Desabilitar botões durante o processamento
-            const buttons = document.querySelectorAll(`[data-negociacao-id="${negociacaoId}"]`);
+            const buttons = document.querySelectorAll(`[data-proposta-id="${propostaId}"]`);
             buttons.forEach(btn => {
                 btn.disabled = true;
-                if (btn.classList.contains('btn-aceitar')) {
+                if (acao === 'aceita') {
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Aceitando...';
                 } else {
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recusando...';
@@ -899,12 +926,12 @@ $opcoes_frete = [
             .then(data => {
                 if (data.success) {
                     // Atualizar o card localmente
-                    atualizarCardNegociacao(negociacaoId, acao);
+                    atualizarCardNegociacao(negociacaoId || propostaId, acao);
                     
                     // Recarregar mensagens para mostrar a resposta
                     setTimeout(() => carregarMensagens(), 500);
                     
-                    alert(`Acordo ${acao === 'aceita' ? 'aceito' : 'recusado'} com sucesso!`);
+                    alert(`Acordo ${acaoTexto} com sucesso!`);
                 } else {
                     alert('Erro: ' + (data.error || 'Erro desconhecido'));
                     
@@ -958,6 +985,29 @@ $opcoes_frete = [
                     }
                 }
             });
+        }
+
+        function adicionarListenersNegociacao(elementoDiv, mensagem) {
+            const btnAceitar = elementoDiv.querySelector('.btn-aceitar');
+            const btnRecusar = elementoDiv.querySelector('.btn-recusar');
+            
+            if (btnAceitar) {
+                btnAceitar.addEventListener('click', function() {
+                    const propostaId = this.getAttribute('data-proposta-id');
+                    const negociacaoId = this.getAttribute('data-negociacao-id');
+                    const mensagemId = mensagem.id;
+                    responderNegociacao(propostaId, negociacaoId, mensagemId, 'aceita');
+                });
+            }
+            
+            if (btnRecusar) {
+                btnRecusar.addEventListener('click', function() {
+                    const propostaId = this.getAttribute('data-proposta-id');
+                    const negociacaoId = this.getAttribute('data-negociacao-id');
+                    const mensagemId = mensagem.id;
+                    responderNegociacao(propostaId, negociacaoId, mensagemId, 'recusada');
+                });
+            }
         }
         
         function escapeHtml(text) {

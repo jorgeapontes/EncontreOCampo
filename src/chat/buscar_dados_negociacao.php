@@ -35,122 +35,204 @@ try {
         exit();
     }
     
-    // Buscar TODAS as negociações para este produto, ordenadas pela mais recente
-    $sql_negociacoes = "SELECT 
-        pn.ID as negociacao_id,
-        pn.status,
-        pn.valor_total,
-        pn.quantidade_final,
-        pn.forma_pagamento,
-        pn.opcao_frete,
-        pn.proposta_comprador_id,
-        pn.proposta_vendedor_id,
-        pn.data_inicio,
-        pn.data_atualizacao,
-        p.id as produto_id,
-        p.nome as produto_nome,
-        pc.preco_proposto as preco_comprador,
-        pc.quantidade_proposta as quantidade_comprador,
-        pc.valor_frete as frete_comprador,
-        pc.data_proposta as data_proposta_comprador,
-        pv.preco_proposto as preco_vendedor,
-        pv.quantidade_proposta as quantidade_vendedor,
-        pv.valor_frete as frete_vendedor,
-        pv.data_proposta as data_proposta_vendedor,
-        uc.nome as comprador_nome,
-        uv.nome as vendedor_nome,
-        u.nome as usuario_nome
-        FROM propostas_negociacao pn
-        JOIN produtos p ON pn.produto_id = p.id
-        JOIN chat_conversas cc ON cc.produto_id = p.id AND cc.id = :conversa_id
-        JOIN usuarios uc ON uc.id = cc.comprador_id
-        JOIN usuarios uv ON uv.id = cc.vendedor_id
-        JOIN usuarios u ON u.id = :usuario_id
-        LEFT JOIN propostas_comprador pc ON pn.proposta_comprador_id = pc.ID
-        LEFT JOIN propostas_vendedor pv ON pn.proposta_vendedor_id = pv.ID
-        WHERE pn.produto_id = :produto_id
-        ORDER BY pn.data_atualizacao DESC";
+    // Buscar informações da MENSAGEM específica
+    $sql_mensagem = "SELECT data_envio, remetente_id FROM chat_mensagens WHERE id = :mensagem_id";
+    $stmt_msg = $conn->prepare($sql_mensagem);
+    $stmt_msg->bindParam(':mensagem_id', $mensagem_id, PDO::PARAM_INT);
+    $stmt_msg->execute();
+    $mensagem = $stmt_msg->fetch(PDO::FETCH_ASSOC);
     
-    $stmt = $conn->prepare($sql_negociacoes);
-    $stmt->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);
-    $stmt->bindParam(':produto_id', $conversa['produto_id'], PDO::PARAM_INT);
-    $stmt->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
-    $stmt->execute();
-    $negociacoes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    if (empty($negociacoes)) {
-        echo json_encode(['success' => false, 'error' => 'Negociação não encontrada']);
+    if (!$mensagem) {
+        echo json_encode(['success' => false, 'error' => 'Mensagem não encontrada']);
         exit();
     }
     
-    // Determinar quem é o usuário atual
-    $eh_comprador = ($usuario_id == $conversa['comprador_id']);
-    $eh_vendedor = ($usuario_id == $conversa['vendedor_id']);
+    // Determinar quem enviou esta mensagem
+    $remetente_id = $mensagem['remetente_id'];
+    $remetente_eh_comprador = ($remetente_id == $conversa['comprador_id']);
+    $remetente_eh_vendedor = ($remetente_id == $conversa['vendedor_id']);
     
-    // Determinar qual negociação corresponde a esta mensagem
-    // Vamos pegar a mais recente (primeira do array) para esta mensagem
-    $negociacao = $negociacoes[0];
+    // Buscar nome do remetente
+    $sql_remetente = "SELECT nome FROM usuarios WHERE id = :remetente_id";
+    $stmt_rem = $conn->prepare($sql_remetente);
+$stmt_rem->bindParam(':remetente_id', $remetente_id, PDO::PARAM_INT);
+    $stmt_rem->execute();
+    $remetente_info = $stmt_rem->fetch(PDO::FETCH_ASSOC);
+    $remetente_nome = $remetente_info['nome'] ?? '';
     
-    // Buscar dados específicos da proposta
-    $preco_unitario = 0;
-    $quantidade = 0;
-    $valor_frete = 0;
+    // Buscar nome do produto
+    $sql_produto = "SELECT nome FROM produtos WHERE id = :produto_id";
+    $stmt_prod = $conn->prepare($sql_produto);
+    $stmt_prod->bindParam(':produto_id', $conversa['produto_id'], PDO::PARAM_INT);
+    $stmt_prod->execute();
+    $produto_info = $stmt_prod->fetch(PDO::FETCH_ASSOC);
+    $produto_nome = $produto_info['nome'] ?? '';
     
-    if ($negociacao['proposta_comprador_id']) {
-        $preco_unitario = $negociacao['preco_comprador'] ?: 0;
-        $quantidade = $negociacao['quantidade_comprador'] ?: 0;
-        $valor_frete = $negociacao['frete_comprador'] ?: 0;
-        $enviado_por = $negociacao['comprador_nome'];
-    }
+    // Aqui está a LÓGICA CRÍTICA:
+    // Precisamos encontrar qual proposta está associada a esta mensagem
     
-    if ($negociacao['proposta_vendedor_id']) {
-        $preco_unitario = $negociacao['preco_vendedor'] ?: 0;
-        $quantidade = $negociacao['quantidade_vendedor'] ?: 0;
-        $valor_frete = $negociacao['frete_vendedor'] ?: 0;
-        $enviado_por = $negociacao['vendedor_nome'];
-    }
+    // Opção 1: Procurar pela última proposta do remetente na data aproximada da mensagem
+    $dados_proposta = null;
+    $eh_mais_recente = false;
     
-    // Se ambas existem, usar a mais recente
-    if ($negociacao['proposta_comprador_id'] && $negociacao['proposta_vendedor_id']) {
-        // Comparar datas das propostas
-        $data_comprador = strtotime($negociacao['data_proposta_comprador'] ?: '1970-01-01');
-        $data_vendedor = strtotime($negociacao['data_proposta_vendedor'] ?: '1970-01-01');
+    if ($remetente_eh_comprador) {
+        // BUSCAR DA TABELA PROPOSTAS_COMPRADOR
+        // Primeiro, buscar TODAS as propostas do comprador para este produto
+        $sql_propostas_comprador = "SELECT 
+            pc.ID as proposta_id,
+            pc.preco_proposto,
+            pc.quantidade_proposta,
+            pc.valor_frete,
+            pc.forma_pagamento,
+            pc.opcao_frete,
+            pc.data_proposta,
+            pc.status,
+            'comprador' as tipo_proposta
+            FROM propostas_comprador pc
+            WHERE pc.comprador_id = :comprador_id 
+            AND pc.produto_id = :produto_id
+            ORDER BY pc.data_proposta DESC";
         
-        if ($data_comprador > $data_vendedor) {
-            // Proposta do comprador é mais recente
-            $preco_unitario = $negociacao['preco_comprador'] ?: 0;
-            $quantidade = $negociacao['quantidade_comprador'] ?: 0;
-            $valor_frete = $negociacao['frete_comprador'] ?: 0;
-            $enviado_por = $negociacao['comprador_nome'];
-        } else {
-            // Proposta do vendedor é mais recente
-            $preco_unitario = $negociacao['preco_vendedor'] ?: 0;
-            $quantidade = $negociacao['quantidade_vendedor'] ?: 0;
-            $valor_frete = $negociacao['frete_vendedor'] ?: 0;
-            $enviado_por = $negociacao['vendedor_nome'];
+        $stmt_pc = $conn->prepare($sql_propostas_comprador);
+        $stmt_pc->bindParam(':comprador_id', $conversa['comprador_id'], PDO::PARAM_INT);
+        $stmt_pc->bindParam(':produto_id', $conversa['produto_id'], PDO::PARAM_INT);
+        $stmt_pc->execute();
+        $propostas_comprador = $stmt_pc->fetchAll(PDO::FETCH_ASSOC);
+        
+        if (!empty($propostas_comprador)) {
+            // Tentar associar pela data mais próxima da mensagem
+            $data_mensagem = strtotime($mensagem['data_envio']);
+            $melhor_match = null;
+            $menor_diferenca = PHP_INT_MAX;
+            
+            foreach ($propostas_comprador as $index => $proposta) {
+                $data_proposta = strtotime($proposta['data_proposta']);
+                $diferenca = abs($data_mensagem - $data_proposta);
+                
+                if ($diferenca < $menor_diferenca) {
+                    $menor_diferenca = $diferenca;
+                    $melhor_match = $proposta;
+                    $melhor_match['indice'] = $index;
+                }
+            }
+            
+            if ($melhor_match) {
+                $dados_proposta = $melhor_match;
+                // Verificar se é a mais recente (primeira do array)
+                $eh_mais_recente = ($melhor_match['indice'] === 0);
+            }
+        }
+        
+    } elseif ($remetente_eh_vendedor) {
+        // BUSCAR DA TABELA PROPOSTAS_VENDEDOR
+        $sql_propostas_vendedor = "SELECT 
+            pv.ID as proposta_id,
+            pv.preco_proposto,
+            pv.quantidade_proposta,
+            pv.valor_frete,
+            pv.forma_pagamento,
+            pv.opcao_frete,
+            pv.data_proposta,
+            pv.status,
+            'vendedor' as tipo_proposta
+            FROM propostas_vendedor pv
+            WHERE pv.vendedor_id = :vendedor_id 
+            AND pv.produto_id = :produto_id
+            ORDER BY pv.data_proposta DESC";
+        
+        $stmt_pv = $conn->prepare($sql_propostas_vendedor);
+        $stmt_pv->bindParam(':vendedor_id', $conversa['vendedor_id'], PDO::PARAM_INT);
+        $stmt_pv->bindParam(':produto_id', $conversa['produto_id'], PDO::PARAM_INT);
+        $stmt_pv->execute();
+        $propostas_vendedor = $stmt_pv->fetchAll(PDO::FETCH_ASSOC);
+        
+        if (!empty($propostas_vendedor)) {
+            // Tentar associar pela data mais próxima da mensagem
+            $data_mensagem = strtotime($mensagem['data_envio']);
+            $melhor_match = null;
+            $menor_diferenca = PHP_INT_MAX;
+            
+            foreach ($propostas_vendedor as $index => $proposta) {
+                $data_proposta = strtotime($proposta['data_proposta']);
+                $diferenca = abs($data_mensagem - $data_proposta);
+                
+                if ($diferenca < $menor_diferenca) {
+                    $menor_diferenca = $diferenca;
+                    $melhor_match = $proposta;
+                    $melhor_match['indice'] = $index;
+                }
+            }
+            
+            if ($melhor_match) {
+                $dados_proposta = $melhor_match;
+                // Verificar se é a mais recente (primeira do array)
+                $eh_mais_recente = ($melhor_match['indice'] === 0);
+            }
         }
     }
     
-    // Calcular total correto (sem duplicar frete)
-    $total_calculado = ($quantidade * $preco_unitario) + $valor_frete;
+    if (!$dados_proposta) {
+        // Se não encontrou proposta específica, criar dados básicos
+        echo json_encode([
+            'success' => true,
+            'dados_negociacao' => [
+                'proposta_id' => 0,
+                'produto_nome' => $produto_nome,
+                'quantidade' => 0,
+                'preco_unitario' => 0,
+                'valor_frete' => 0,
+                'total' => 0,
+                'forma_pagamento' => 'à vista',
+                'opcao_frete' => 'vendedor',
+                'enviado_por' => $remetente_nome,
+                'status' => 'pendente',
+                'remetente_eh_comprador' => $remetente_eh_comprador,
+                'remetente_eh_vendedor' => $remetente_eh_vendedor,
+                'eh_mais_recente' => false,
+                'tipo_proposta' => $remetente_eh_comprador ? 'comprador' : 'vendedor'
+            ]
+        ]);
+        exit();
+    }
+    
+    // Calcular total
+    $total = ($dados_proposta['quantidade_proposta'] * $dados_proposta['preco_proposto']) + $dados_proposta['valor_frete'];
     
     // Preparar dados para o card
     $dados_negociacao = [
-        'negociacao_id' => $negociacao['negociacao_id'],
-        'produto_id' => $negociacao['produto_id'],
-        'produto_nome' => $negociacao['produto_nome'],
-        'quantidade' => $quantidade ?: $negociacao['quantidade_final'],
-        'preco_unitario' => $preco_unitario,
-        'valor_frete' => $valor_frete,
-        'total' => $total_calculado,
-        'forma_pagamento' => $negociacao['forma_pagamento'],
-        'opcao_frete' => $negociacao['opcao_frete'],
-        'enviado_por' => $enviado_por,
-        'status' => $negociacao['status'],
-        'tipo_remetente' => $eh_comprador ? 'comprador' : 'vendedor',
-        'tem_proposta_comprador' => !empty($negociacao['proposta_comprador_id']),
-        'tem_proposta_vendedor' => !empty($negociacao['proposta_vendedor_id'])
+        'proposta_id' => $dados_proposta['proposta_id'],
+        'produto_nome' => $produto_nome,
+        'quantidade' => $dados_proposta['quantidade_proposta'],
+        'preco_unitario' => $dados_proposta['preco_proposto'],
+        'valor_frete' => $dados_proposta['valor_frete'],
+        'total' => $total,
+        'forma_pagamento' => $dados_proposta['forma_pagamento'],
+        'opcao_frete' => $dados_proposta['opcao_frete'],
+        'enviado_por' => $remetente_nome,
+        'status' => $dados_proposta['status'],
+        'remetente_eh_comprador' => $remetente_eh_comprador,
+        'remetente_eh_vendedor' => $remetente_eh_vendedor,
+        'eh_mais_recente' => $eh_mais_recente,
+        'tipo_proposta' => $dados_proposta['tipo_proposta']
     ];
+    
+    // Buscar também o ID da negociação se existir
+    if ($remetente_eh_comprador) {
+        $sql_negociacao = "SELECT ID FROM propostas_negociacao WHERE proposta_comprador_id = :proposta_id";
+    } else {
+        $sql_negociacao = "SELECT ID FROM propostas_negociacao WHERE proposta_vendedor_id = :proposta_id";
+    }
+    
+    $stmt_neg = $conn->prepare($sql_negociacao);
+    $stmt_neg->bindParam(':proposta_id', $dados_proposta['proposta_id'], PDO::PARAM_INT);
+    $stmt_neg->execute();
+    $negociacao = $stmt_neg->fetch(PDO::FETCH_ASSOC);
+    
+    if ($negociacao) {
+        $dados_negociacao['negociacao_id'] = $negociacao['ID'];
+    } else {
+        $dados_negociacao['negociacao_id'] = 0;
+    }
     
     echo json_encode([
         'success' => true,

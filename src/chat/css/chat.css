@@ -1538,3 +1538,60 @@ body {
     padding: 2px 6px;
     border-radius: 4px;
 }
+
+/* Estilos para diferentes tipos de proposta */
+.info-tipo {
+    font-size: 12px;
+    margin-bottom: 8px;
+    padding: 4px;
+    border-radius: 4px;
+    border-left: 3px solid;
+}
+
+.proposta-comprador {
+    color: #4CAF50;
+    background: #f1f8e9;
+    border-left-color: #4CAF50;
+}
+
+.proposta-vendedor {
+    color: #2196F3;
+    background: #e3f2fd;
+    border-left-color: #2196F3;
+}
+
+.indicador-antiga {
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 8px;
+    padding: 4px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    border-left: 3px solid #ccc;
+}
+
+.badge-antiga {
+    font-size: 10px;
+    color: #999;
+    margin-left: 8px;
+}
+
+.negociacao-card.antiga {
+    opacity: 0.85;
+    background: #f9f9f9 !important;
+    border-color: #e0e0e0 !important;
+}
+
+.negociacao-card.antiga .negociacao-header {
+    border-bottom-color: #e0e0e0;
+}
+
+.negociacao-card.antiga .negociacao-titulo {
+    color: #666;
+}
+
+.total-valor {
+    color: #2196f3 !important;
+    font-size: 16px !important;
+    font-weight: bold;
+}

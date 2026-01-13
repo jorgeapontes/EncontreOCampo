@@ -416,7 +416,7 @@ try {
     
     $stmt_not = $conn->prepare($sql_notificacao);
     
-    $mensagem = "📄 Nova proposta recebida para '{$verificacao['produto_nome']}'";
+    $mensagem = "Nova proposta recebida para '{$verificacao['produto_nome']}'";
     $url = "../../src/chat/chat.php?produto_id=" . $dados['produto_id'] . "&conversa_id=" . $dados['conversa_id'];
     
     $stmt_not->bindParam(':usuario_id', $outro_usuario_id, PDO::PARAM_INT);

@@ -43,19 +43,36 @@ if (!empty($filtro_tipo) && $filtro_tipo !== "todos") {
 
 // Adiciona busca por nome, email ou CPF/CNPJ se houver pesquisa
 if (!empty(trim($termo_pesquisa))) {
-    // Remove pontos, traços e barras para busca por CPF/CNPJ limpo
-    $termo_limpo = preg_replace('/[^0-9]/', '', trim($termo_pesquisa));
+    // Normaliza o termo de pesquisa para busca flexível
+    $termo_busca = '%' . trim($termo_pesquisa) . '%';
     
-    $sql .= " AND (u.nome LIKE :pesquisa OR u.email LIKE :pesquisa";
+    // Remove caracteres não numéricos para busca por CPF/CNPJ
+    $termo_apenas_numeros = preg_replace('/[^0-9]/', '', trim($termo_pesquisa));
     
-    // Adiciona busca por CPF/CNPJ nas tabelas específicas
-    $sql .= " OR EXISTS (SELECT 1 FROM compradores c WHERE c.usuario_id = u.id AND c.cpf_cnpj LIKE :cpf_cnpj)";
-    $sql .= " OR EXISTS (SELECT 1 FROM vendedores v WHERE v.usuario_id = u.id AND v.cpf_cnpj LIKE :cpf_cnpj)";
-    $sql .= " OR EXISTS (SELECT 1 FROM transportadores t WHERE t.usuario_id = u.id AND t.numero_antt LIKE :cpf_cnpj)";
+    $sql .= " AND (u.nome LIKE :pesquisa 
+                OR u.email LIKE :pesquisa";
+    
+    // Busca por CPF/CNPJ apenas se houver números no termo
+    if (!empty($termo_apenas_numeros)) {
+        $termo_cpf_cnpj = '%' . $termo_apenas_numeros . '%';
+        
+        // Correção: REMOVA qualquer referência a 'wunnies' e use 'usuarios' ou aliases corretos
+        $sql .= " OR EXISTS (SELECT 1 FROM compradores c WHERE c.usuario_id = u.id AND 
+                  (REPLACE(REPLACE(REPLACE(c.cpf_cnpj, '.', ''), '-', ''), '/', '') LIKE :cpf_cnpj_limpo))";
+        
+        $sql .= " OR EXISTS (SELECT 1 FROM vendedores v WHERE v.usuario_id = u.id AND 
+                  (REPLACE(REPLACE(REPLACE(v.cpf_cnpj, '.', ''), '-', ''), '/', '') LIKE :cpf_cnpj_limpo))";
+        
+        $sql .= " OR EXISTS (SELECT 1 FROM transportadores t WHERE t.usuario_id = u.id AND 
+                  (t.numero_antt LIKE :pesquisa
+                   OR REPLACE(REPLACE(t.numero_antt, '-', ''), '.', '') LIKE :cpf_cnpj_limpo))";
+        
+        $params[':cpf_cnpj_limpo'] = $termo_cpf_cnpj;
+    }
+    
     $sql .= ")";
     
-    $params[':pesquisa'] = '%' . trim($termo_pesquisa) . '%';
-    $params[':cpf_cnpj'] = '%' . $termo_limpo . '%';
+    $params[':pesquisa'] = $termo_busca;
 }
 
 $sql .= " ORDER BY $orderBy";

@@ -645,20 +645,32 @@ $opcoes_frete = [
                         const estavaNaBase = messagesDiv.scrollHeight - messagesDiv.scrollTop <= messagesDiv.clientHeight + 150;
                         let novasImagens = [];
 
-                        data.mensagens.forEach(msg => {
+                        // Processar mensagens sequencialmente para buscar dados de negociação
+                        const processarMensagem = async (msg) => {
                             if (msg.id > ultimaMensagemId) {
                                 const div = document.createElement('div');
                                 div.className = 'message ' + (msg.remetente_id == usuarioId ? 'sent' : 'received');
                                 
                                 let conteudoMensagem = '';
-                                if (msg.tipo === 'imagem') {
+                                
+                                // Verificar se é uma mensagem de negociação
+                                if (msg.tipo === 'negociacao') {
+                                    // Buscar dados da negociação
+                                    try {
+                                        const dadosNegociacao = await buscarDadosNegociacao(conversaId, msg.id);
+                                        conteudoMensagem = criarCardNegociacao(dadosNegociacao, msg.remetente_id == usuarioId);
+                                    } catch (e) {
+                                        console.error('Erro ao buscar dados da negociação:', e);
+                                        conteudoMensagem = `<div>📄 Proposta de compra</div>`;
+                                    }
+                                } else if (msg.tipo === 'imagem') {
                                     conteudoMensagem = `
                                         <div class="chat-image-container">
                                             <img src="${placeholderImage}" 
-                                                 data-src="${msg.mensagem}" 
-                                                 class="chat-image lazy-loading" 
-                                                 alt="Imagem enviada"
-                                                 loading="lazy">
+                                                data-src="${msg.mensagem}" 
+                                                class="chat-image lazy-loading" 
+                                                alt="Imagem enviada"
+                                                loading="lazy">
                                         </div>`;
                                 } else {
                                     conteudoMensagem = `<div>${escapeHtml(msg.mensagem)}</div>`;
@@ -674,23 +686,278 @@ $opcoes_frete = [
                                 if (msg.tipo === 'imagem') {
                                     novasImagens.push(div.querySelector('.chat-image'));
                                 }
+                                
+                                // Adicionar listeners para botões de negociação
+                                if (msg.tipo === 'negociacao') {
+                                    adicionarListenersNegociacao(div, msg);
+                                }
                             }
-                        });
-                        
-                        novasImagens.forEach(img => imageObserver.observe(img));
+                        };
 
-                        if (estavaNaBase) {
-                             setTimeout(() => {
-                                messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                             }, 50);
-                        }
+                        // Processar todas as mensagens
+                        const processarTodasMensagens = async () => {
+                            for (const msg of data.mensagens) {
+                                await processarMensagem(msg);
+                            }
+                            
+                            novasImagens.forEach(img => imageObserver.observe(img));
+
+                            if (estavaNaBase) {
+                                setTimeout(() => {
+                                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                                }, 50);
+                            }
+                        };
+
+                        processarTodasMensagens().finally(() => {
+                            carregandoMensagens = false;
+                        });
+                    } else {
+                        carregandoMensagens = false;
                     }
-                    carregandoMensagens = false;
                 })
                 .catch(err => {
                     console.error('Erro ao carregar mensagens:', err);
                     carregandoMensagens = false;
                 });
+        }
+
+        // Nova função para buscar dados da negociação
+        async function buscarDadosNegociacao(conversaId, mensagemId) {
+            const response = await fetch(`buscar_dados_negociacao.php?conversa_id=${conversaId}&mensagem_id=${mensagemId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                return data.dados_negociacao;
+            } else {
+                throw new Error(data.error || 'Erro ao buscar dados da negociação');
+            }
+        }
+
+        // Função para criar o card de negociação
+        function criarCardNegociacao(dados, ehMeu) {
+            const status = dados.status || 'pendente';
+            const tipoCard = ehMeu ? 'vendedor' : 'comprador';
+            const podeResponder = !ehMeu && status === 'pendente';
+            
+            let acoesHTML = '';
+            if (podeResponder) {
+                acoesHTML = `
+                    <div class="negociacao-acoes">
+                        <button class="btn-aceitar" data-negociacao-id="${dados.negociacao_id}" data-mensagem-id="${dados.mensagem_id}">
+                            <i class="fas fa-check"></i> Aceitar Acordo
+                        </button>
+                        <button class="btn-recusar" data-negociacao-id="${dados.negociacao_id}" data-mensagem-id="${dados.mensagem_id}">
+                            <i class="fas fa-times"></i> Recusar
+                        </button>
+                    </div>
+                `;
+            } else {
+                let statusText = '';
+                if (status === 'aceita') statusText = 'Acordo Aceito';
+                else if (status === 'recusada') statusText = 'Acordo Recusado';
+                else if (status === 'pendente') statusText = 'Aguardando Resposta';
+                
+                if (statusText) {
+                    acoesHTML = `
+                        <div class="negociacao-acoes">
+                            <button class="btn-respondido" disabled>
+                                ${statusText}
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+            
+            // CORREÇÃO: Usar preco_unitario em vez de preco_proposto
+            const precoUnitario = dados.preco_unitario || dados.preco_proposto || 0;
+            
+            // Adicionar indicador de quem enviou propostas
+            let infoPropostas = '';
+            
+            return `
+                <div class="negociacao-card ${tipoCard}">
+                    <div class="negociacao-header">
+                        <div class="negociacao-titulo">
+                            <i class="fas fa-handshake"></i>
+                            Acordo de Compra
+                        </div>
+                        <span class="negociacao-status status-${status}">
+                            ${status === 'pendente' ? 'Aguardando Resposta' : 
+                            status === 'aceita' ? 'Aceito' : 'Recusado'}
+                        </span>
+                    </div>
+                    
+                    ${infoPropostas}
+                    
+                    <div class="negociacao-detalhes">
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Produto:</span>
+                            <span class="detalhe-valor">${escapeHtml(dados.produto_nome || '')}</span>
+                        </div>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Quantidade:</span>
+                            <span class="detalhe-valor">${dados.quantidade} unidades</span>
+                        </div>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Valor Unitário:</span>
+                            <!-- CORREÇÃO AQUI: usar precoUnitario -->
+                            <span class="detalhe-valor">R$ ${parseFloat(precoUnitario).toFixed(2).replace('.', ',')}</span>
+                        </div>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Frete:</span>
+                            <span class="detalhe-valor">${obterDescricaoFrete(dados.opcao_frete)}</span>
+                        </div>
+                        ${dados.valor_frete > 0 ? `
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Valor do Frete:</span>
+                            <span class="detalhe-valor">R$ ${parseFloat(dados.valor_frete || 0).toFixed(2).replace('.', ',')}</span>
+                        </div>` : ''}
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Pagamento:</span>
+                            <span class="detalhe-valor">${dados.forma_pagamento === 'à vista' ? 'À Vista' : 'Na Entrega'}</span>
+                        </div>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Total:</span>
+                            <span class="detalhe-valor" style="color: #2196f3; font-size: 16px;">
+                                R$ ${parseFloat(dados.total || 0).toFixed(2).replace('.', ',')}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    ${acoesHTML}
+                    
+                    <div class="negociacao-footer">
+                        <span>Enviado por: ${escapeHtml(dados.enviado_por || '')}</span>
+                        <span class="negociacao-id">Negociação ID: ${dados.negociacao_id}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function obterDescricaoFrete(opcao) {
+            switch(opcao) {
+                case 'vendedor': return 'Por conta do vendedor';
+                case 'comprador': return 'Retirada pelo comprador';
+                case 'entregador': return 'Buscar transportador';
+                default: return opcao || '';
+            }
+        }
+
+        // Adicionar listeners para os botões de aceitar/recusar
+        function adicionarListenersNegociacao(elementoDiv, mensagem) {
+            const btnAceitar = elementoDiv.querySelector('.btn-aceitar');
+            const btnRecusar = elementoDiv.querySelector('.btn-recusar');
+            
+            if (btnAceitar) {
+                btnAceitar.addEventListener('click', function() {
+                    const negociacaoId = this.getAttribute('data-negociacao-id');
+                    const mensagemId = mensagem.id;
+                    responderNegociacao(negociacaoId, mensagemId, 'aceita');
+                });
+            }
+            
+            if (btnRecusar) {
+                btnRecusar.addEventListener('click', function() {
+                    const negociacaoId = this.getAttribute('data-negociacao-id');
+                    const mensagemId = mensagem.id;
+                    responderNegociacao(negociacaoId, mensagemId, 'recusada');
+                });
+            }
+        }
+
+        function responderNegociacao(negociacaoId, mensagemId, acao) {
+            if (!confirm(`Tem certeza que deseja ${acao === 'aceita' ? 'aceitar' : 'recusar'} este acordo?`)) {
+                return;
+            }
+            
+            const dados = {
+                negociacao_id: negociacaoId,
+                mensagem_id: mensagemId,
+                acao: acao
+            };
+            
+            // Desabilitar botões durante o processamento
+            const buttons = document.querySelectorAll(`[data-negociacao-id="${negociacaoId}"]`);
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                if (btn.classList.contains('btn-aceitar')) {
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Aceitando...';
+                } else {
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recusando...';
+                }
+            });
+            
+            fetch('responder_negociacao.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(dados)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Atualizar o card localmente
+                    atualizarCardNegociacao(negociacaoId, acao);
+                    
+                    // Recarregar mensagens para mostrar a resposta
+                    setTimeout(() => carregarMensagens(), 500);
+                    
+                    alert(`Acordo ${acao === 'aceita' ? 'aceito' : 'recusado'} com sucesso!`);
+                } else {
+                    alert('Erro: ' + (data.error || 'Erro desconhecido'));
+                    
+                    // Reabilitar botões
+                    buttons.forEach(btn => {
+                        btn.disabled = false;
+                        if (btn.classList.contains('btn-aceitar')) {
+                            btn.innerHTML = '<i class="fas fa-check"></i> Aceitar Acordo';
+                        } else {
+                            btn.innerHTML = '<i class="fas fa-times"></i> Recusar';
+                        }
+                    });
+                }
+            })
+            .catch(err => {
+                console.error('Erro:', err);
+                alert('Erro de conexão. Tente novamente.');
+                
+                // Reabilitar botões
+                buttons.forEach(btn => {
+                    btn.disabled = false;
+                    if (btn.classList.contains('btn-aceitar')) {
+                        btn.innerHTML = '<i class="fas fa-check"></i> Aceitar Acordo';
+                    } else {
+                        btn.innerHTML = '<i class="fas fa-times"></i> Recusar';
+                    }
+                });
+            });
+        }
+
+        function atualizarCardNegociacao(negociacaoId, status) {
+            const cards = document.querySelectorAll('.negociacao-card');
+            cards.forEach(card => {
+                const cardId = card.querySelector('.negociacao-id');
+                if (cardId && cardId.textContent.includes(negociacaoId)) {
+                    // Atualizar status
+                    const statusElement = card.querySelector('.negociacao-status');
+                    if (statusElement) {
+                        statusElement.className = `negociacao-status status-${status}`;
+                        statusElement.textContent = status === 'aceita' ? 'Aceito' : 'Recusado';
+                    }
+                    
+                    // Remover botões de ação
+                    const acoesElement = card.querySelector('.negociacao-acoes');
+                    if (acoesElement) {
+                        acoesElement.innerHTML = `
+                            <button class="btn-respondido" disabled>
+                                ${status === 'aceita' ? 'Acordo Aceito' : 'Acordo Recusado'}
+                            </button>
+                        `;
+                    }
+                }
+            });
         }
         
         function escapeHtml(text) {
@@ -1183,84 +1450,33 @@ $opcoes_frete = [
                 },
                 body: JSON.stringify(dados)
             })
-            .then(res => {
-                // Verificar se a resposta é JSON válido
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
-                return res.json();
-            })
+            .then(res => res.json())
             .then(data => {
-                console.log("Resposta do servidor:", data);
-                
                 if (data.success) {
-                    // Construir mensagem da negociação
-                    let mensagemNegociacao = `*NOVA PROPOSTA DE COMPRA*\n\n` +
-                        `Produto: <?php echo htmlspecialchars($produto['nome']); ?>\n` +
-                        `Quantidade: ${dados.quantidade} unidades\n` +
-                        `Valor unitário: R$ ${parseFloat(dados.preco_proposto).toFixed(2).replace('.', ',')}\n` +
-                        `Forma de pagamento: ${dados.forma_pagamento === 'à vista' ? 'Pagamento à Vista' : 'Pagamento na Entrega'}\n` +
-                        `Frete: ${obterDescricaoFreteSidebar(dados.opcao_frete)}\n`;
+                    alert('✅ Negociação enviada com sucesso!');
                     
-                    // Adicionar valor do frete se aplicável
-                    if (dados.opcao_frete === 'vendedor' && parseFloat(dados.valor_frete) > 0) {
-                        mensagemNegociacao += `Valor do frete: R$ ${parseFloat(dados.valor_frete).toFixed(2).replace('.', ',')}\n`;
-                    }
+                    // Fechar a negociação
+                    negociacaoContent.classList.remove('active');
+                    negociacaoWrapper.classList.remove('open');
                     
-                    mensagemNegociacao += `Total: R$ ${parseFloat(dados.total).toFixed(2).replace('.', ',')}\n\n` +
-                        `ID da proposta: ${data.proposta_id}`;
+                    setTimeout(() => {
+                        negociacaoContent.style.display = 'none';
+                    }, 300);
                     
-                    console.log("Mensagem a ser enviada:", mensagemNegociacao);
+                    btnAbrirNegociacaoSidebar.innerHTML = '<i class="fas fa-handshake"></i> Acordo de Compra';
+                    btnAbrirNegociacaoSidebar.classList.remove('active');
+                    negociacaoAberta = false;
+                    resetarFormularioSidebar();
                     
-                    // Enviar como mensagem no chat
-                    return fetch('send_message.php', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                        body: `conversa_id=${conversaId}&mensagem=${encodeURIComponent(mensagemNegociacao)}`
-                    }).then(resMsg => {
-                        if (!resMsg.ok) {
-                            throw new Error(`Erro ao enviar mensagem: ${resMsg.status}`);
-                        }
-                        return resMsg.json();
-                    }).then(msgData => {
-                        if (msgData.success) {
-                            alert('✅ Negociação enviada com sucesso!');
-                            
-                            // Fechar a negociação
-                            negociacaoContent.classList.remove('active');
-                            negociacaoWrapper.classList.remove('open');
-                            
-                            setTimeout(() => {
-                                negociacaoContent.style.display = 'none';
-                            }, 300);
-                            
-                            btnAbrirNegociacaoSidebar.innerHTML = '<i class="fas fa-handshake"></i> Acordo de Compra';
-                            btnAbrirNegociacaoSidebar.classList.remove('active');
-                            negociacaoAberta = false;
-                            resetarFormularioSidebar();
-                            
-                            // Recarregar mensagens para mostrar a nova proposta
-                            setTimeout(() => carregarMensagens(), 1000);
-                        } else {
-                            alert('⚠️ Negociação salva, mas houve erro ao enviar mensagem no chat.');
-                        }
-                    });
-                    
+                    // Recarregar mensagens para mostrar o novo card
+                    setTimeout(() => carregarMensagens(), 500);
                 } else {
-                    throw new Error(data.error || 'Erro desconhecido ao salvar negociação');
+                    alert('❌ Erro: ' + (data.error || 'Erro ao enviar negociação'));
                 }
             })
             .catch(err => {
                 console.error('Erro:', err);
-                
-                // Verificar se é erro de sintaxe no JSON
-                if (err instanceof SyntaxError) {
-                    alert('❌ Erro no formato da resposta do servidor. Verifique o console.');
-                } else if (err.message && err.message.includes('Failed to fetch')) {
-                    alert('❌ Erro de conexão. Verifique sua internet ou tente novamente.');
-                } else {
-                    alert('❌ Erro ao salvar negociação: ' + err.message);
-                }
+                alert('❌ Erro de conexão. Tente novamente.');
             })
             .finally(() => {
                 btnFinalizarNegociacaoSidebar.innerHTML = '<i class="fas fa-check"></i> Finalizar Acordo';

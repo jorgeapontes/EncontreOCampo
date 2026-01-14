@@ -37,3 +37,60 @@ Sucesso! Plano atualizado para 2 (Sub: sub_1SpVJs0lZtce65b72mcaDb9f) | Linhas af
 --- NOVO EVENTO: customer.subscription.updated --- 15:46:01
 Evento UPDATED: Procurando plano para o Price ID: price_1SnJ2U0lZtce65b7d6bTS00U
 Sucesso! Plano atualizado para 3 (Sub: sub_1SpVJs0lZtce65b72mcaDb9f) | Linhas afetadas: 1
+
+--- NOVO EVENTO: invoice.payment_failed --- 20:17:38
+PAGAMENTO FALHOU: Cliente cus_Tn9tAohUSWTn99 | Sub: 
+
+--- NOVO EVENTO: customer.created --- 20:23:58
+
+--- NOVO EVENTO: payment_method.attached --- 20:23:59
+
+--- NOVO EVENTO: customer.updated --- 20:24:00
+
+--- NOVO EVENTO: invoiceitem.created --- 20:24:00
+
+--- NOVO EVENTO: invoice.created --- 20:24:01
+
+--- NOVO EVENTO: customer.updated --- 20:24:03
+
+--- NOVO EVENTO: charge.failed --- 20:24:03
+
+--- NOVO EVENTO: payment_intent.created --- 20:24:03
+
+--- NOVO EVENTO: payment_intent.payment_failed --- 20:24:03
+
+--- NOVO EVENTO: invoice.updated --- 20:24:03
+
+--- NOVO EVENTO: invoice.finalized --- 20:24:03
+
+--- NOVO EVENTO: invoice.payment_failed --- 20:24:04
+PAGAMENTO FALHOU: Cliente cus_Tn9z6QUnW2mbjM | Sub: 
+
+--- NOVO EVENTO: invoice.payment_failed --- 20:24:04
+PAGAMENTO FALHOU: Cliente cus_Tn9z6QUnW2mbjM | Sub: 
+Evento recebido: customer.created
+Evento recebido: payment_method.attached
+Evento recebido: customer.updated
+Evento recebido: invoiceitem.created
+Evento recebido: invoice.created
+Evento recebido: customer.updated
+Evento recebido: charge.failed
+Evento recebido: payment_intent.created
+Evento recebido: payment_intent.payment_failed
+Evento recebido: invoice.updated
+Evento recebido: invoice.finalized
+Evento recebido: invoice.payment_failed
+STATUS ATUALIZADO: Atrasado para cliente cus_TnA1NkQb3UfShl
+Evento recebido: customer.created
+Evento recebido: payment_method.attached
+Evento recebido: customer.updated
+Evento recebido: invoiceitem.created
+Evento recebido: invoice.created
+Evento recebido: customer.updated
+Evento recebido: charge.failed
+Evento recebido: payment_intent.created
+Evento recebido: payment_intent.payment_failed
+Evento recebido: invoice.updated
+Evento recebido: invoice.finalized
+Evento recebido: invoice.payment_failed
+STATUS ATUALIZADO: Atrasado para cliente cus_TnA4770youO5J1

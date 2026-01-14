@@ -53,6 +53,14 @@ $mensagem_erro = '';
 
 $vendedor_id_fk = $vendedor['id'] ?? 0;
 
+// Exemplo de alerta no topo do painel do vendedor
+if (isset($_SESSION['status_assinatura']) && $_SESSION['status_assinatura'] === 'atrasado') {
+    echo '<div style="background: #fff3cd; color: #856404; padding: 15px; text-align: center; border-bottom: 2px solid #ffeeba;">
+            <strong>Atenção:</strong> Identificamos um problema no pagamento da sua mensalidade. 
+            Para evitar o bloqueio dos seus anúncios, <a href="escolher_plano.php">clique aqui e atualize seu pagamento</a>.
+          </div>';
+}
+
 // Diretório de upload relativo ao arquivo atual
 $upload_dir = '../uploads/vendedores/'; 
 if (!is_dir($upload_dir)) {

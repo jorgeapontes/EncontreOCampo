@@ -501,7 +501,7 @@ function getImagePath($path) {
                             <input type="text" value="<?php echo htmlspecialchars($plano_atual); ?>" disabled>
                             <small>
                                 <?php if ($plano_id_atual > 1): ?>
-                                    <a href="escolher_plano.php" class="change-plan-link">Alterar plano</a> | 
+                                    <a href="escolher_plano.php" class="change-plan-link">Ver Planos</a> | 
                                     <a href="gerenciar_assinatura.php" class="manage-subscription-link">Gerenciar assinatura</a>
                                 <?php else: ?>
                                     <a href="escolher_plano.php" class="upgrade-plan-link">Fazer upgrade do plano</a>

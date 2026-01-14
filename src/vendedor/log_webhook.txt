@@ -95,3 +95,7 @@ Evento recebido: invoice.finalized
 Evento recebido: invoice.payment_failed
 STATUS ATUALIZADO: Atrasado para cliente cus_TnA4770youO5J1
 [2026-01-14 20:54:56] ERRO NO WEBHOOK: No signatures found matching the expected signature for payload em C:\xampp\htdocs\EncontreOCampo\vendor\stripe\stripe-php\lib\Exception\SignatureVerificationException.php na linha 28
+[2026-01-14 21:22:06] ERRO NO WEBHOOK: No signatures found matching the expected signature for payload em C:\xampp\htdocs\EncontreOCampo\vendor\stripe\stripe-php\lib\Exception\SignatureVerificationException.php na linha 28
+[2026-01-14 21:25:41] ERRO NO WEBHOOK: No signatures found matching the expected signature for payload em C:\xampp\htdocs\EncontreOCampo\vendor\stripe\stripe-php\lib\Exception\SignatureVerificationException.php na linha 28
+[2026-01-14 21:28:46] ERRO NO WEBHOOK: No signatures found matching the expected signature for payload em C:\xampp\htdocs\EncontreOCampo\vendor\stripe\stripe-php\lib\Exception\SignatureVerificationException.php na linha 28
+[2026-01-14 21:53:54] ERRO NO WEBHOOK: No signatures found matching the expected signature for payload em C:\xampp\htdocs\EncontreOCampo\vendor\stripe\stripe-php\lib\Exception\SignatureVerificationException.php na linha 28

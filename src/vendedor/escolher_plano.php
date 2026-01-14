@@ -9,7 +9,8 @@ $db = $database->getConnection();
 // Agora usamos a variável $vendedor que o seu auth.php já criou!
 $plano_atual_id = (int)($vendedor['plano_id'] ?? 1);
 
-$query = "SELECT id, nome, preco_mensal FROM planos ORDER BY preco_mensal ASC";
+// Adicionamos 'descricao_recursos' na busca
+$query = "SELECT id, nome, preco_mensal, descricao_recursos FROM planos ORDER BY preco_mensal ASC";
 $result = $db->query($query); 
 ?>
 
@@ -116,11 +117,16 @@ $result = $db->query($query);
                 </div>
                 
                 <ul class="recursos">
-                    <li>Acesso completo à plataforma</li>
-                    <li>Reservas ilimitadas</li>
-                    <li>Suporte prioritário</li>
-                    <li>Cancelamento a qualquer momento</li>
-                </ul>
+    <?php 
+    // Se a coluna estiver vazia, mostramos um padrão, caso contrário, explodimos a string por vírgula
+    $recursos_texto = $plano['descricao_recursos'] ?? 'Acesso completo, Suporte padrão';
+    $lista_recursos = explode(',', $recursos_texto);
+    
+    foreach ($lista_recursos as $item): 
+    ?>
+        <li> <?php echo htmlspecialchars(trim($item)); ?></li>
+    <?php endforeach; ?>
+</ul>
                 
                 <?php if ($eh_plano_atual): ?>
                     <a href="javascript:void(0);" class="btn-assinar plano-atual">

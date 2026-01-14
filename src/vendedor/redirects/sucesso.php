@@ -26,8 +26,9 @@ if ($session_id) {
             $vendedor_id = $session->metadata->vendedor_id;
             $plano_id = $session->metadata->plano_id;
             
-            // --- NOVA LÓGICA: Captura o ID do Cliente Stripe ---
+            // --- CORREÇÃO AQUI: Captura os dois IDs necessários ---
             $stripe_customer_id = $session->customer; 
+            $stripe_subscription_id = $session->subscription; // <-- Faltava isso!
 
             $database = new Database();
             $conn = $database->getConnection();
@@ -43,17 +44,25 @@ if ($session_id) {
                 $nome_plano = $plano['nome'];
             }
 
-            // --- ATUALIZAÇÃO DO BANCO: Incluindo o stripe_customer_id ---
+            // --- ATUALIZAÇÃO DO BANCO: Agora salvando a Assinatura também ---
             $sql = "UPDATE vendedores SET 
                     plano_id = ?, 
                     status_assinatura = 'ativo', 
                     Data_inicio_assinatura = ?, 
                     data_vencimento_assinatura = ?,
-                    stripe_customer_id = ? 
+                    stripe_customer_id = ?,
+                    stripe_subscription_id = ? 
                     WHERE id = ?";
             
             $stmt = $conn->prepare($sql);
-            $stmt->execute([$plano_id, $agora, $data_vencimento, $stripe_customer_id, $vendedor_id]);
+            $stmt->execute([
+                $plano_id, 
+                $agora, 
+                $data_vencimento, 
+                $stripe_customer_id, 
+                $stripe_subscription_id, // Gravando no banco
+                $vendedor_id
+            ]);
 
             $sucesso = true;
         } else {

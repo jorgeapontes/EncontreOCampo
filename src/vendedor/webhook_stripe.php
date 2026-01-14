@@ -4,48 +4,52 @@ require_once __DIR__ . '/../../config/StripeConfig.php';
 require_once __DIR__ . '/../conexao.php';
 
 \Config\StripeConfig::init();
-$endpoint_secret = 'seu_webhook_secret_aqui'; // Você pega isso no Dashboard do Stripe
+$endpoint_secret = 'whsec_Ek5V2MZ2KZpWOd6018hGhheA07RnnM8H'; 
 
 $payload = @file_get_contents('php://input');
-$sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
+$sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? '';
 $event = null;
 
 try {
     $event = \Stripe\Webhook::constructEvent($payload, $sig_header, $endpoint_secret);
-} catch(\UnexpectedValueException $e) {
-    http_response_code(400); exit();
-} catch(\Stripe\Exception\SignatureVerificationException $e) {
+} catch(Exception $e) {
     http_response_code(400); exit();
 }
 
-// Quando o checkout é concluído com sucesso
-if ($event->type === 'checkout.session.completed') {
-    $session = $event->data->object;
+$db = (new Database())->getConnection();
 
-    $database = new Database();
-    $db = $database->getConnection();
+switch ($event->type) {
+    case 'customer.subscription.deleted':
+        $subscription = $event->data->object;
+        $sub_id = $subscription->id;
+        $cus_id = $subscription->customer;
+        
+        // Tentamos pelo ID da assinatura OU pelo ID do cliente para não ter erro
+        $stmt = $db->prepare("UPDATE vendedores SET 
+                                plano_id = 1, 
+                                status_assinatura = 'expirado', 
+                                stripe_subscription_id = NULL 
+                              WHERE stripe_subscription_id = ? OR stripe_customer_id = ?");
+        $stmt->execute([$sub_id, $cus_id]);
+        
+        file_put_contents('log_webhook.txt', "Cancelamento: Sub $sub_id | Cus $cus_id | Linhas: " . $stmt->rowCount() . "\n", FILE_APPEND);
+        break;
 
-    // Pegamos os dados que enviamos no Metadata anteriormente
-    $vendedor_id = $session->metadata->vendedor_id;
-    $plano_id = $session->metadata->plano_id;
-    $customer_id = $session->customer; // cus_...
-    $subscription_id = $session->subscription; // sub_...
+    case 'checkout.session.completed':
+        $session = $event->data->object;
+        $v_id = $session->metadata->vendedor_id;
+        $p_id = $session->metadata->plano_id;
+        $sub_id = $session->subscription;
+        $cus_id = $session->customer;
 
-    // Atualizamos o vendedor com os IDs do Stripe e o novo plano
-    $query = "UPDATE vendedores SET 
-                plano_id = :plano_id, 
-                stripe_customer_id = :cus_id, 
-                stripe_subscription_id = :sub_id,
-                status_assinatura = 'ativo' 
-              WHERE id = :id";
-    
-    $stmt = $db->prepare($query);
-    $stmt->execute([
-        ':plano_id' => $plano_id,
-        ':cus_id' => $customer_id,
-        ':sub_id' => $subscription_id,
-        ':id' => $vendedor_id
-    ]);
+        $stmt = $db->prepare("UPDATE vendedores SET 
+                                plano_id = ?, 
+                                stripe_customer_id = ?, 
+                                stripe_subscription_id = ?, 
+                                status_assinatura = 'ativo' 
+                              WHERE id = ?");
+        $stmt->execute([$p_id, $cus_id, $sub_id, $v_id]);
+        break;
 }
 
 http_response_code(200);

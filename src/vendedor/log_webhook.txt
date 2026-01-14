@@ -1,0 +1,17 @@
+Recebi o evento: customer.subscription.deleted
+Tentando cancelar a assinatura: sub_1SpUJ30lZtce65b7gWdlLhGB
+Recebi o evento: customer.subscription.deleted
+Tentando cancelar a assinatura: sub_1SpUn80lZtce65b76RqwzM5F
+Linhas atualizadas no banco: 0
+Recebi o evento: customer.subscription.deleted
+Tentando cancelar a assinatura: sub_1Soq3y0lZtce65b7sI4RtxHT
+Linhas atualizadas no banco: 0
+Recebi o evento: customer.subscription.deleted
+Tentando cancelar a assinatura: sub_1SpUn80lZtce65b76RqwzM5F
+Linhas atualizadas no banco: 0s
+Recebi o evento: customer.subscription.deleted
+Tentando cancelar a assinatura: sub_1SpUn80lZtce65b76RqwzM5F
+Linhas atualizadas no banco: 0
+Cancelamento: Sub sub_1SpUwn0lZtce65b7mjeJw7ey | Cus cus_Tn56c2rZ5dL3cc | Linhas: 1
+Cancelamento: Sub sub_1SpU1B0lZtce65b74abTMKtP | Cus cus_Tn49JByncWtEiH | Linhas: 0
+Cancelamento: Sub sub_1SpUxp0lZtce65b7yCws7eSr | Cus cus_Tn58bwaeXnBuKL | Linhas: 1

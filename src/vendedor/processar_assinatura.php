@@ -16,8 +16,9 @@ if ($id_plano && $usuario_id) {
     $database = new Database();
     $db = $database->getConnection();
 
-    // 1. Busca o ID REAL do vendedor vinculado a este usuário
-    $stmtVendedor = $db->prepare("SELECT id FROM vendedores WHERE usuario_id = :u_id");
+    // 1. Busca o ID REAL e o STATUS do vendedor vinculado a este usuário
+    // CORREÇÃO: Adicionado 'status_assinatura' e 'plano_id' na busca para evitar o erro de Undefined Index
+    $stmtVendedor = $db->prepare("SELECT id, status_assinatura, plano_id FROM vendedores WHERE usuario_id = :u_id");
     $stmtVendedor->execute([':u_id' => $usuario_id]);
     $vendedor = $stmtVendedor->fetch(PDO::FETCH_ASSOC);
 
@@ -25,8 +26,8 @@ if ($id_plano && $usuario_id) {
         die("Erro: Perfil de vendedor não encontrado para este usuário.");
     }
 
-    if ($vendedor['status_assinatura'] === 'ativo' && $vendedor['plano_id'] > 1) {
-        // Redireciona de volta com um parâmetro de erro para exibir um alerta na página de planos
+    // Verifica se já possui assinatura ativa antes de processar nova compra
+    if (isset($vendedor['status_assinatura']) && $vendedor['status_assinatura'] === 'ativo' && $vendedor['plano_id'] > 1) {
         header("Location: escolher_plano.php?erro=assinatura_ativa");
         exit;
     }
@@ -40,6 +41,7 @@ if ($id_plano && $usuario_id) {
 
     if ($plano && !empty($plano['stripe_price_id'])) {
         try {
+            // DICA: Em produção, substitua 'localhost' pela sua URL do ngrok para o sucesso_url funcionar corretamente
             $session = \Stripe\Checkout\Session::create([
                 'payment_method_types' => ['card'], 
                 'line_items' => [[
@@ -51,7 +53,7 @@ if ($id_plano && $usuario_id) {
                 'cancel_url' => 'http://localhost/EncontreOCampo/src/vendedor/escolher_plano.php',
                 'customer_email' => $_SESSION['usuario_email'] ?? null,
                 'metadata' => [
-                    'vendedor_id' => $vendedor_id_real, // Enviando o ID da tabela vendedores
+                    'vendedor_id' => $vendedor_id_real, 
                     'plano_id' => $id_plano
                 ]
             ]);
@@ -59,11 +61,12 @@ if ($id_plano && $usuario_id) {
             header("Location: " . $session->url);
             exit;
         } catch (Exception $e) {
-            die("Erro Stripe: " . $e->getMessage());
+            die("Erro ao criar sessão de pagamento: " . $e->getMessage());
         }
     } else {
-        die("Erro: ID da Stripe não configurado para este plano.");
+        die("Erro: Plano inválido ou sem configuração de preço no Stripe.");
     }
 } else {
-    die("Erro: Sessão inválida. Por favor, faça login novamente.");
+    header("Location: escolher_plano.php");
+    exit;
 }

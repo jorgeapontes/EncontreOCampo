@@ -16,3 +16,24 @@ Cancelamento: Sub sub_1SpUwn0lZtce65b7mjeJw7ey | Cus cus_Tn56c2rZ5dL3cc | Linhas
 Cancelamento: Sub sub_1SpU1B0lZtce65b74abTMKtP | Cus cus_Tn49JByncWtEiH | Linhas: 0
 Cancelamento: Sub sub_1SpUxp0lZtce65b7yCws7eSr | Cus cus_Tn58bwaeXnBuKL | Linhas: 1
 Cancelamento: Sub sub_1SpV3C0lZtce65b7HdLfcZF3 | Cus cus_Tn5DyqRgkQ6SBw | Linhas: 1
+Cancelamento: Sub sub_1SpV4P0lZtce65b7AIvlv07M | Cus cus_Tn5EOKw0ql4T06 | Linhas: 1
+Cancelamento: Sub sub_1SpV5Y0lZtce65b7cYj5KOsp | Linhas: 1
+Cancelamento: Sub sub_1SpV8y0lZtce65b7Izqpkw9J | Linhas: 1
+
+--- NOVO EVENTO: customer.subscription.deleted --- 15:42:42
+Cancelamento OK. Sub: sub_1SpVEV0lZtce65b7kGyk6RS3 | Linhas: 1
+
+--- NOVO EVENTO: customer.subscription.updated --- 15:43:22
+Evento UPDATED: Procurando plano para o Price ID: price_1SnkZj0lZtce65b7rK4KR76e
+ERRO: Nenhum plano encontrado no banco com o stripe_price_id: price_1SnkZj0lZtce65b7rK4KR76e
+
+--- NOVO EVENTO: customer.subscription.deleted --- 15:44:49
+Cancelamento OK. Sub: sub_1SpVHo0lZtce65b7DuEt36O4 | Linhas: 1
+
+--- NOVO EVENTO: customer.subscription.updated --- 15:45:28
+Evento UPDATED: Procurando plano para o Price ID: price_1SnkZj0lZtce65b7rK4KR76e
+Sucesso! Plano atualizado para 2 (Sub: sub_1SpVJs0lZtce65b72mcaDb9f) | Linhas afetadas: 1
+
+--- NOVO EVENTO: customer.subscription.updated --- 15:46:01
+Evento UPDATED: Procurando plano para o Price ID: price_1SnJ2U0lZtce65b7d6bTS00U
+Sucesso! Plano atualizado para 3 (Sub: sub_1SpVJs0lZtce65b72mcaDb9f) | Linhas afetadas: 1

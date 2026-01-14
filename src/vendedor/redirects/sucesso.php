@@ -22,50 +22,43 @@ if ($session_id) {
         // Recupera a sessão do Stripe
         $session = \Stripe\Checkout\Session::retrieve($session_id);
 
-        if ($session->payment_status === 'paid') {
-            $vendedor_id = $session->metadata->vendedor_id;
-            $plano_id = $session->metadata->plano_id;
-            
-            // --- CORREÇÃO AQUI: Captura os dois IDs necessários ---
-            $stripe_customer_id = $session->customer; 
-            $stripe_subscription_id = $session->subscription; // <-- Faltava isso!
+        // Dentro do sucesso.php, onde ocorre o pagamento confirmado
+if ($session->payment_status === 'paid') {
+    $vendedor_id = $session->metadata->vendedor_id;
+    $plano_id = $session->metadata->plano_id;
+    
+    // CAPTURANDO OS DOIS IDS DO STRIPE
+    $stripe_customer_id = $session->customer; 
+    $stripe_subscription_id = $session->subscription; // <-- ESTA LINHA É ESSENCIAL
 
-            $database = new Database();
-            $conn = $database->getConnection();
+    $database = new Database();
+    $conn = $database->getConnection();
 
-            $agora = date('Y-m-d H:i:s');
-            $data_vencimento = date('Y-m-d H:i:s', strtotime('+30 days'));
+    $agora = date('Y-m-d H:i:s');
+    $data_vencimento = date('Y-m-d H:i:s', strtotime('+30 days'));
 
-            // Buscar nome do plano para exibição
-            $stmtPlano = $conn->prepare("SELECT nome FROM planos WHERE id = ?");
-            $stmtPlano->execute([$plano_id]);
-            $plano = $stmtPlano->fetch(PDO::FETCH_ASSOC);
-            if ($plano) {
-                $nome_plano = $plano['nome'];
-            }
+    // ATUALIZAÇÃO COMPLETA DO BANCO
+    $sql = "UPDATE vendedores SET 
+            plano_id = ?, 
+            status_assinatura = 'ativo', 
+            Data_inicio_assinatura = ?, 
+            data_vencimento_assinatura = ?,
+            stripe_customer_id = ?,
+            stripe_subscription_id = ? 
+            WHERE id = ?";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([
+        $plano_id, 
+        $agora, 
+        $data_vencimento, 
+        $stripe_customer_id, 
+        $stripe_subscription_id, // Gravando o ID da assinatura aqui
+        $vendedor_id
+    ]);
 
-            // --- ATUALIZAÇÃO DO BANCO: Agora salvando a Assinatura também ---
-            $sql = "UPDATE vendedores SET 
-                    plano_id = ?, 
-                    status_assinatura = 'ativo', 
-                    Data_inicio_assinatura = ?, 
-                    data_vencimento_assinatura = ?,
-                    stripe_customer_id = ?,
-                    stripe_subscription_id = ? 
-                    WHERE id = ?";
-            
-            $stmt = $conn->prepare($sql);
-            $stmt->execute([
-                $plano_id, 
-                $agora, 
-                $data_vencimento, 
-                $stripe_customer_id, 
-                $stripe_subscription_id, // Gravando no banco
-                $vendedor_id
-            ]);
-
-            $sucesso = true;
-        } else {
+    $sucesso = true;
+} else {
             $mensagem_status = "O pagamento ainda não foi confirmado.";
         }
     } catch (Exception $e) {

@@ -15,3 +15,4 @@ Linhas atualizadas no banco: 0
 Cancelamento: Sub sub_1SpUwn0lZtce65b7mjeJw7ey | Cus cus_Tn56c2rZ5dL3cc | Linhas: 1
 Cancelamento: Sub sub_1SpU1B0lZtce65b74abTMKtP | Cus cus_Tn49JByncWtEiH | Linhas: 0
 Cancelamento: Sub sub_1SpUxp0lZtce65b7yCws7eSr | Cus cus_Tn58bwaeXnBuKL | Linhas: 1
+Cancelamento: Sub sub_1SpV3C0lZtce65b7HdLfcZF3 | Cus cus_Tn5DyqRgkQ6SBw | Linhas: 1

@@ -161,13 +161,8 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                     <li class="nav-item">
                         <a href="anuncios.php" class="nav-link">Anúncios</a>
                     </li>
-                    <li class="nav-item">
-                        <a href="<?php echo htmlspecialchars($button_action); ?>" 
-                           class="nav-link <?php echo $is_logged_in ? 'user-profile' : 'open-login-modal'; ?>"
-                           <?php if (!$is_logged_in) echo 'data-target="#loginModal"'; ?>>
-                            <?php echo htmlspecialchars($button_text); ?>
-                        </a>
-                    </li>
+                    <li class="nav-item"><a href="vendedor/dashboard.php" class="nav-link">Painel</a></li>
+                    <li class="nav-item"><a href="vendedor/perfil.php" class="nav-link">Meu Perfil</a></li>
                     <?php if ($is_logged_in): ?>
                         <li class="nav-item">
                             <a href="logout.php" class="nav-link exit-button no-underline">Sair</a>

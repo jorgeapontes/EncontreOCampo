@@ -678,6 +678,8 @@ $estados_brasil = [
                         <a href="../../index.php" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
+                        <a href="../anuncios.php" class="nav-link">Anúncios</a>
+                    <li class="nav-item">
                         <a href="dashboard.php" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">

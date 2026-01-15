@@ -865,6 +865,7 @@ CREATE TABLE `vendedores` (
   `telefone2` varchar(20) DEFAULT NULL,
   `plano` enum('free','basico','premium','empresarial') DEFAULT 'free',
   `estados_atendidos` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Estados do Brasil atendidos pelo vendedor (lista branca em formato JSON)' CHECK (json_valid(`estados_atendidos`)),
+  `cidades_atendidas` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'JSON com cidades atendidas por estado, ex: {"SP":["São Paulo","Campinas"]}' CHECK (json_valid(`cidades_atendidas`)),
   `plano_id` int(11) DEFAULT 1,
   `status_assinatura` varchar(20) DEFAULT 'inativo',
   `data_assinatura` datetime DEFAULT NULL,

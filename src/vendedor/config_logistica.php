@@ -380,6 +380,7 @@ $estados_brasil = [
             border-radius: 10px;
             padding: 25px;
             margin-top: 35px;
+            margin-bottom: 35px;
         }
 
         .info-box h4 {
@@ -738,6 +739,17 @@ $estados_brasil = [
                     <br>
                     <small><i class="fas fa-info-circle"></i> Opcionalmente, você pode selecionar cidades específicas dentro de cada estado. Deixe todos desmarcados se atender todo o Brasil.</small>
                 </p>
+
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Como funciona?</h4>
+                    <ul>
+                        <li>Marque o estado desejado, e depois as cidades;</li>
+                        <li>Selecione apenas os estados onde você tem condições de entregar seus produtos;</li>
+                        <li>Os compradores verão um alerta se estiverem em estados não selecionados;</li>
+                        <li>Deixe todos desmarcados para atender todo o território nacional;</li>
+                        <li>Você pode alterar essa configuração a qualquer momento.</li>
+                    </ul>
+                </div>
                 
                 <?php if ($mensagem): ?>
                     <div class="alert-message <?php echo $tipo_mensagem; ?>">
@@ -822,15 +834,6 @@ $estados_brasil = [
                     </div>
                 </form>
                 
-                <div class="info-box">
-                    <h4><i class="fas fa-info-circle"></i> Como funciona?</h4>
-                    <ul>
-                        <li>Selecione apenas os estados onde você tem condições de entregar seus produtos</li>
-                        <li>Os compradores verão um alerta se estiverem em estados não selecionados</li>
-                        <li>Deixe todos desmarcados para atender todo o território nacional</li>
-                        <li>Você pode alterar essa configuração a qualquer momento</li>
-                    </ul>
-                </div>
             </div>
         </div>
     </div>
@@ -1081,13 +1084,7 @@ $estados_brasil = [
                 estadoSelecionadoAtual = null;
             });
 
-            // Adicionar informação de dica aos usuários
-            const infoBox = document.querySelector('.info-box');
-            if (infoBox) {
-                const dicaHtml = document.createElement('li');
-                dicaHtml.innerHTML = '<strong>Dica:</strong> Clique duas vezes em um estado para selecionar cidades específicas dentro dele';
-                infoBox.querySelector('ul').appendChild(dicaHtml);
-            }
+            
         });
     </script>
 </body>

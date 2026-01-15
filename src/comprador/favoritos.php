@@ -89,7 +89,7 @@ try {
                         <a href="../../index.php" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="../anuncios.php" class="nav-link">Comprar</a>
+                        <a href="../anuncios.php" class="nav-link">Anúncios</a>
                     </li>
                     <li class="nav-item">
                         <a href="favoritos.php" class="nav-link active">Favoritos</a>
@@ -250,7 +250,7 @@ try {
                             
                             <div class="card-actions">
                                 <div style="display: flex; gap: 10px; width: 100%;">
-                                    <a href="proposta_nova.php?anuncio_id=<?php echo $produto['id']; ?>" class="btn btn-primary" style="flex: 2;">
+                                    <a href="view_ad.php?anuncio_id=<?php echo $produto['id']; ?>" class="btn btn-primary" style="flex: 2;">
                                         <i class="fas fa-eye"></i> Ver Detalhes
                                     </a>
                                     <a href="remover_favorito.php?favorito_id=<?php echo $produto['favorito_id']; ?>" 

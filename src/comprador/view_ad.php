@@ -1,5 +1,4 @@
 <?php
-// src/comprador/proposta_nova.php (Versão Corrigida - Carrossel Funcional)
 
 session_start();
 require_once __DIR__ . '/../conexao.php';
@@ -371,7 +370,7 @@ $imagePath = !empty($imagens_produto[0]['url']) ? htmlspecialchars($imagens_prod
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($anuncio['produto']); ?> - Encontre o Campo</title>
-    <link rel="stylesheet" href="../css/comprador/proposta_nova.css?v=1.5">
+    <link rel="stylesheet" href="../css/comprador/view_ad.css?v=1.5">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -805,13 +804,13 @@ $imagePath = !empty($imagens_produto[0]['url']) ? htmlspecialchars($imagens_prod
                     
                     <div class="produto-actions">
                         <?php if ($is_favorito && $favorito_id): ?>
-                            <a href="remover_favorito.php?favorito_id=<?php echo $favorito_id; ?>&redirect=proposta_nova.php?anuncio_id=<?php echo $anuncio_id; ?>" 
+                            <a href="remover_favorito.php?favorito_id=<?php echo $favorito_id; ?>&redirect=view_ad.php?anuncio_id=<?php echo $anuncio_id; ?>" 
                                class="btn-action favoritado">
                                 <i class="fas fa-heart"></i>
                                 <span>Remover dos Favoritos</span>
                             </a>
                         <?php else: ?>
-                            <a href="adicionar_favorito.php?produto_id=<?php echo $anuncio_id; ?>&redirect=proposta_nova.php?anuncio_id=<?php echo $anuncio_id; ?>" 
+                            <a href="adicionar_favorito.php?produto_id=<?php echo $anuncio_id; ?>&redirect=view_ad.php?anuncio_id=<?php echo $anuncio_id; ?>" 
                                class="btn-action">
                                 <i class="far fa-heart"></i>
                                 <span>Adicionar aos Favoritos</span>
@@ -1052,7 +1051,7 @@ $imagePath = !empty($imagens_produto[0]['url']) ? htmlspecialchars($imagens_prod
                         $imagem_produto = $produto['imagem_url'] ? htmlspecialchars($produto['imagem_url']) : '../../img/placeholder.png';
                     ?>
                         <div class="anuncio-card <?php echo $desc_rel['ativo'] ? 'card-desconto' : ''; ?>">
-                            <a href="proposta_nova.php?anuncio_id=<?php echo $produto['id']; ?>" class="produto-link">
+                            <a href="view_ad.php?anuncio_id=<?php echo $produto['id']; ?>" class="produto-link">
                                 <div class="card-image">
                                     <?php if ($desc_rel['ativo']): ?>
                                         <div class="badge-desconto">-<?php echo $desc_rel['porcentagem']; ?>%</div>

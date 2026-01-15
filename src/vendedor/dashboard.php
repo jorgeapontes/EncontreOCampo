@@ -307,10 +307,10 @@ try {
         
         <section class="info-cards">
             <?php if (!$is_pendente): ?>
-                <a href="anuncios.php">
+                <a href="../comprador/favoritos.php">
                     <div class="card">
-                        <i class="fas fa-bullhorn"></i>
-                        <h3>Anúncios</h3>
+                        <i class="fas fa-heart"></i>
+                        <h3>Favoritos</h3>
                         <p><?php echo $total_anuncios; ?></p>
                     </div>
                 </a>

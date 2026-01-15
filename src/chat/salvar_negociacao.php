@@ -367,7 +367,44 @@ try {
     ];
     
     // Mensagem que aparecerá no chat
-    $mensagem_chat = "Nova proposta de compra";
+    // Gerar mensagem descritiva para o chat
+    $preco_formatado = number_format($preco_final, 2, ',', '.');
+    $total_formatado = number_format($total_final, 2, ',', '.');
+    $valor_frete_formatado = number_format($valor_frete_final, 2, ',', '.');
+
+    // Formatar forma de pagamento
+    $forma_pagamento_texto = $forma_pagamento_final === 'à vista' ? 'À Vista' : 'Na Entrega';
+
+    // Formatar opção de frete
+    $opcao_frete_texto = 'Frete por conta do ';
+    switch ($opcao_frete_final) {
+        case 'vendedor':
+            $opcao_frete_texto .= 'vendedor';
+            if ($valor_frete_final > 0) {
+                $opcao_frete_texto .= " (R$ {$valor_frete_formatado})";
+            } else {
+                $opcao_frete_texto .= " (gratuito)";
+            }
+            break;
+        case 'comprador':
+            $opcao_frete_texto = 'Retirada pelo comprador';
+            break;
+        case 'entregador':
+            $opcao_frete_texto = 'Buscar transportador pela plataforma';
+            break;
+        default:
+            $opcao_frete_texto .= 'vendedor';
+    }
+
+    $mensagem_chat = "** Acordo de Compra Enviado **\n\n";
+    $mensagem_chat .= "Produto: {$verificacao['produto_nome']}\n";
+    $mensagem_chat .= "Quantidade: {$quantidade_final} unidades\n";
+    $mensagem_chat .= "Valor Unitário: R$ {$preco_formatado}\n";
+    $mensagem_chat .= "Forma de Pagamento: {$forma_pagamento_texto}\n";
+    $mensagem_chat .= "Frete/Entrega: {$opcao_frete_texto}\n";
+    $mensagem_chat .= "Valor Total: R$ {$total_formatado}\n";
+    $mensagem_chat .= "Status: Pendente de resposta\n";
+
     $dados_json = null;
     
     // Inserir mensagem no chat

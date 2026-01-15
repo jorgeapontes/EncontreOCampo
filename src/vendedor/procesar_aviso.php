@@ -5,25 +5,21 @@ require_once __DIR__ . '/../conexao.php';
 
 header('Content-Type: application/json');
 
-// Verificar se o usuário está logado
-if (!isset($_SESSION['usuario_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Usuário não autenticado']);
+if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'vendedor') {
+    echo json_encode(['success' => false, 'message' => 'Não autorizado']);
+    exit();
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo json_encode(['success' => false, 'message' => 'Método não permitido']);
     exit();
 }
 
 $usuario_id = $_SESSION['usuario_id'];
-
-// Verificar se é uma requisição POST
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Método inválido']);
-    exit();
-}
-
-// Obter o tipo de aviso
 $tipo_aviso = $_POST['tipo_aviso'] ?? '';
 
-if (empty($tipo_aviso)) {
-    echo json_encode(['success' => false, 'message' => 'Tipo de aviso não especificado']);
+if ($tipo_aviso !== 'regioes_entrega') {
+    echo json_encode(['success' => false, 'message' => 'Tipo de aviso inválido']);
     exit();
 }
 
@@ -31,7 +27,7 @@ try {
     $database = new Database();
     $db = $database->getConnection();
     
-    // Verificar se já existe um registro de preferências para este usuário
+    // Verificar se já existe registro
     $sql_check = "SELECT id FROM usuario_avisos_preferencias WHERE usuario_id = :usuario_id";
     $stmt_check = $db->prepare($sql_check);
     $stmt_check->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
@@ -40,24 +36,18 @@ try {
     
     if ($existe) {
         // Atualizar registro existente
-        $campo = '';
-        switch ($tipo_aviso) {
-            case 'regioes_entrega':
-                $campo = 'aviso_regioes_entrega';
-                break;
-            // Adicione outros tipos de avisos aqui no futuro
-            default:
-                echo json_encode(['success' => false, 'message' => 'Tipo de aviso inválido']);
-                exit();
-        }
-        
-        $sql_update = "UPDATE usuario_avisos_preferencias SET $campo = 0 WHERE usuario_id = :usuario_id";
+        $sql_update = "UPDATE usuario_avisos_preferencias 
+                       SET aviso_regioes_entrega = 0, 
+                           data_atualizacao = NOW() 
+                       WHERE usuario_id = :usuario_id";
         $stmt_update = $db->prepare($sql_update);
         $stmt_update->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
         $stmt_update->execute();
     } else {
-        // Criar novo registro
-        $sql_insert = "INSERT INTO usuario_avisos_preferencias (usuario_id, aviso_regioes_entrega) VALUES (:usuario_id, 0)";
+        // Inserir novo registro
+        $sql_insert = "INSERT INTO usuario_avisos_preferencias 
+                       (usuario_id, aviso_regioes_entrega, data_criacao) 
+                       VALUES (:usuario_id, 0, NOW())";
         $stmt_insert = $db->prepare($sql_insert);
         $stmt_insert->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
         $stmt_insert->execute();
@@ -69,3 +59,4 @@ try {
     error_log("Erro ao salvar preferência de aviso: " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Erro ao salvar preferência']);
 }
+?>

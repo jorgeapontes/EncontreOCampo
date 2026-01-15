@@ -449,7 +449,7 @@ foreach ($anuncios as &$a) {
                         <div class="card-actions">
                             <?php if ($is_logged_in): ?>
                                 <?php if ($usuario_tipo === 'comprador' || $usuario_tipo === 'vendedor'): ?>
-                                    <a href="comprador/proposta_nova.php?anuncio_id=<?= $anuncio['id'] ?>" class="btn btn-primary">
+                                    <a href="comprador/view_ad.php?anuncio_id=<?= $anuncio['id'] ?>" class="btn btn-primary">
                                         <i class="fas fa-handshake"></i> Comprar
                                     </a>
                                 <?php else: ?>

@@ -695,6 +695,7 @@ $imagePath = !empty($imagens_produto[0]['url']) ? htmlspecialchars($imagens_prod
                     <li class="nav-item">
                         <a href="../../index.php" class="nav-link">Home</a>
                     </li>
+                    <li class="nav-item"><a href="../anuncios.php" class="nav-link">Anúncios</a></li>
                     <li class="nav-item">
                         <a href="dashboard.php" class="nav-link">Painel</a>
                     </li>

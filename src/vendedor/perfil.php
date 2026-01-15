@@ -354,6 +354,7 @@ function getImagePath($path) {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="../anuncios.php" class="nav-link">Anúncios</a></li>
                     <li class="nav-item"><a href="dashboard.php" class="nav-link">Painel</a></li>
                     <li class="nav-item"><a href="" class="nav-link active">Meu Perfil</a></li>
                     <li class="nav-item">

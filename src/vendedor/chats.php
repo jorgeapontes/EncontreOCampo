@@ -185,11 +185,54 @@ usort($conversas, function($a, $b) {
 });
 
 // Contar total de mensagens não lidas
-$total_nao_lidas = 0;
-if (!$mostrar_arquivados) {
-    foreach ($conversas as $conversa) {
-        $total_nao_lidas += $conversa['mensagens_nao_lidas'];
+try {
+    // Contar como vendedor
+    $sql_vendedor_nao_lidas = "SELECT COUNT(DISTINCT cm.conversa_id) as total
+                               FROM chat_mensagens cm
+                               INNER JOIN chat_conversas cc ON cm.conversa_id = cc.id
+                               INNER JOIN produtos p ON cc.produto_id = p.id
+                               WHERE p.vendedor_id = :vendedor_id 
+                               AND cm.remetente_id != :usuario_id
+                               AND cm.lida = 0
+                               AND cc.vendedor_excluiu = 0";
+    
+    if ($mostrar_arquivados) {
+        $sql_vendedor_nao_lidas .= " AND cc.favorito_vendedor = 1";
+    } else {
+        $sql_vendedor_nao_lidas .= " AND cc.favorito_vendedor = 0";
     }
+    
+    $stmt_v = $conn->prepare($sql_vendedor_nao_lidas);
+    $stmt_v->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
+    $stmt_v->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt_v->execute();
+    $total_vendedor_nao_lidas = $stmt_v->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
+    
+    // Contar como comprador
+    $sql_comprador_nao_lidas = "SELECT COUNT(DISTINCT cm.conversa_id) as total
+                                FROM chat_mensagens cm
+                                INNER JOIN chat_conversas cc ON cm.conversa_id = cc.id
+                                WHERE cc.comprador_id = :usuario_id
+                                AND cm.remetente_id != :usuario_id
+                                AND cm.lida = 0
+                                AND cc.comprador_excluiu = 0";
+    
+    if ($mostrar_arquivados) {
+        $sql_comprador_nao_lidas .= " AND cc.favorito_comprador = 1";
+    } else {
+        $sql_comprador_nao_lidas .= " AND cc.favorito_comprador = 0";
+    }
+    
+    $stmt_c = $conn->prepare($sql_comprador_nao_lidas);
+    $stmt_c->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt_c->execute();
+    $total_comprador_nao_lidas = $stmt_c->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
+    
+    $total_mensagens_nao_lidas = $total_vendedor_nao_lidas + $total_comprador_nao_lidas;
+    
+} catch (PDOException $e) {
+    error_log("Erro ao contar mensagens não lidas (dashboard style): " . $e->getMessage());
+    $total_mensagens_nao_lidas = 0;
 }
 
 // Contar conversas arquivadas para mostrar no badge
@@ -383,7 +426,7 @@ try {
                 </div>
                 <div class="stat-item">
                     <i class="fas fa-envelope"></i>
-                    <div><div class="label">Não Lidas</div><div class="value"><?php echo $total_nao_lidas; ?></div></div>
+                    <div><div class="label">Não Lidas</div><div class="value"><?php echo $total_mensagens_nao_lidas; ?></div></div>
                 </div>
                 <div class="stat-item">
                     <i class="fas fa-archive"></i>

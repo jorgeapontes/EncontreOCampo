@@ -197,7 +197,7 @@ if ($eh_vendedor_produto) {
     if ($referrer === 'meus_chats') {
         $url_voltar = "../comprador/meus_chats.php";
     } else {
-        $url_voltar = "../comprador/proposta_nova.php?anuncio_id=" . $produto_id;
+        $url_voltar = "../comprador/view_ad.php?anuncio_id=" . $produto_id;
     }
 }
 

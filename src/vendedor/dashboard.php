@@ -307,13 +307,6 @@ try {
         
         <section class="info-cards">
             <?php if (!$is_pendente): ?>
-                <a href="../comprador/favoritos.php">
-                    <div class="card">
-                        <i class="fas fa-heart"></i>
-                        <h3>Favoritos</h3>
-                        <p><?php echo $total_anuncios; ?></p>
-                    </div>
-                </a>
                 <a href="chats.php">
                     <div class="card">
                         <i class="fas fa-comments"></i>
@@ -324,16 +317,9 @@ try {
                 <a href="vendas.php">
                     <div class="card">
                         <i class="fas fa-dollar-sign"></i>
-                        <h3>Minhas vendas</h3>
+                        <h3>Negociações finalizadas</h3>
                         <p>Ver</p>
                     </div>
-                </a>
-                <a href="#"> 
-                    <div class="card"> 
-                        <i class="fa-solid fa-bag-shopping"></i> 
-                        <h3>Minhas Compras</h3> 
-                        <p>Ver</p> 
-                    </div> 
                 </a>
                 <a href="config_logistica.php"> 
                     <div class="card"> 
@@ -341,6 +327,13 @@ try {
                         <h3>Regiões de entrega</h3> 
                         <p>Ver</p> 
                     </div> 
+                </a>
+                <a href="../comprador/favoritos.php">
+                    <div class="card">
+                        <i class="fas fa-heart"></i>
+                        <h3>Favoritos</h3>
+                        <p><?php echo $total_anuncios; ?></p>
+                    </div>
                 </a>
             <?php endif; ?>
         </section>

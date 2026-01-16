@@ -196,6 +196,123 @@ foreach ($anuncios as &$a) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Popup para Vendedores */
+        .vendedor-popup {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 2000;
+            animation: slideIn 0.3s ease-out;
+            width: auto;
+            max-width: 350px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .vendedor-popup.hide {
+            animation: slideOut 0.3s ease-out forwards;
+        }
+
+        .popup-content {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            position: relative;
+            border-left: 4px solid #6167ea;
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #757575;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+
+        .popup-close:hover {
+            color: #212121;
+        }
+
+        .popup-content p {
+            margin: 8px 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .popup-content p:first-child {
+            font-weight: 600;
+            color: #6167ea;
+            margin-bottom: 12px;
+            margin-right: 25px;
+        }
+
+        .popup-progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: #e0e0e0;
+            border-radius: 2px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6167ea, #4CAF50);
+            border-radius: 2px;
+            animation: progressBar 7.5s linear forwards;
+        }
+
+        @keyframes progressBar {
+            from {
+                width: 100%;
+            }
+            to {
+                width: 0%;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .vendedor-popup {
+                top: 70px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -212,6 +329,9 @@ foreach ($anuncios as &$a) {
                     <li class="nav-item">
                         <a href="../index.php" class="nav-link">Home</a>
                     </li>
+                    <?php if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'comprador'): ?>
+                    <li class="nav-item"><a href="comprador/meus_chats.php" class="nav-link"><i class="fas fa-comments"></i>Chats</a></li>
+                    <?php endif; ?>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                         <li class="nav-item">
                             <a href="<?= $_SESSION['usuario_tipo'] ?>/dashboard.php" class="nav-link">Painel</a>
@@ -269,7 +389,7 @@ foreach ($anuncios as &$a) {
                     <?php if (!empty($termo_pesquisa)): ?>
                         <?php echo count($anuncios); ?> anúncio(s) encontrado(s)
                     <?php else: ?>
-                        Explore as ofertas de frutas e legumes dos nossos vendedores
+                        Explore as ofertas dos nossos vendedores
                     <?php endif; ?>
                 </p>
             </center>
@@ -494,6 +614,20 @@ foreach ($anuncios as &$a) {
         <?php endif; ?>
     </main>
 
+    <!-- Popup para Vendedores -->
+    <?php if ($is_logged_in && $usuario_tipo === 'vendedor'): ?>
+    <div id="vendedor-popup" class="vendedor-popup">
+        <div class="popup-content">
+            <button class="popup-close">&times;</button>
+            <p><strong>Atenção, Vendedor!</strong></p>
+            <p>Para acessar seus chats, acesse seu painel de controle.</p>
+            <div class="popup-progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <div id="loginModal" class="modal">
         <div class="modal-content">
             <span class="modal-close">&times;</span>
@@ -581,6 +715,26 @@ foreach ($anuncios as &$a) {
         const hamburger = document.querySelector(".hamburger");
         const navMenu = document.querySelector(".nav-menu");
         hamburger.addEventListener("click", () => { hamburger.classList.toggle("active"); navMenu.classList.toggle("active"); });
+        
+        // Popup para Vendedores
+        const vendedorPopup = document.getElementById('vendedor-popup');
+        if (vendedorPopup) {
+            const popupClose = vendedorPopup.querySelector('.popup-close');
+            
+            // Fecha o popup ao clicar no X
+            popupClose.addEventListener('click', function() {
+                vendedorPopup.classList.add('hide');
+                setTimeout(() => vendedorPopup.remove(), 300);
+            });
+            
+            // Remove o popup automaticamente após 7.5 segundos
+            setTimeout(() => {
+                if (vendedorPopup.parentNode) {
+                    vendedorPopup.classList.add('hide');
+                    setTimeout(() => vendedorPopup.remove(), 250);
+                }
+            }, 7500);
+        }
     });
     </script>
 </body>

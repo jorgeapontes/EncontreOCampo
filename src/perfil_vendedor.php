@@ -1,39 +1,22 @@
 <?php
-// perfil_vendedor.php (Atualizado com Lógica de Descontos)
+// perfil_vendedor.php
 session_start();
 require_once 'conexao.php';
 
-// Verificar se o vendedor_id foi passado
+// Verificar se o vendedor_id (que na verdade é o usuario_id do vendedor) foi passado
 if (!isset($_GET['vendedor_id'])) {
     header('Location: anuncios.php');
     exit();
 }
 
-$vendedor_id = $_GET['vendedor_id'];
+$vendedor_usuario_id = $_GET['vendedor_id']; // Renomeei para ficar claro que é o ID de usuário
 
 // Variáveis de sessão
 $is_logged_in = isset($_SESSION['usuario_id']);
 $usuario_tipo = $_SESSION['usuario_tipo'] ?? null;
 $is_comprador = $usuario_tipo === 'comprador';
 
-// Lógica para o botão de acesso/perfil na navbar
-if ($is_logged_in) {
-    $button_text = 'Olá, ' . htmlspecialchars($_SESSION['usuario_nome'] ?? 'Usuário');
-    if ($usuario_tipo == 'admin') {
-        $button_action = 'admin/dashboard.php';
-    } elseif ($usuario_tipo == 'comprador') {
-        $button_action = 'comprador/dashboard.php';
-    } elseif ($usuario_tipo == 'vendedor') {
-        $button_action = 'vendedor/dashboard.php';
-    } else {
-        $button_action = '#'; 
-    }
-} else {
-    $button_text = 'Login';
-    $button_action = '#'; 
-}
-
-// Conexão e busca dos dados
+// Conexão
 $database = new Database();
 $conn = $database->getConnection();
 
@@ -68,37 +51,50 @@ function getPrecoEfetivo($anuncio) {
 }
 
 try {
-    // Buscar informações do vendedor
-    $sql_vendedor = "SELECT u.nome AS nome_vendedor, v.cidade, v.estado, v.nome_comercial, v.foto_perfil_url 
+    // 1. BUSCAR INFORMAÇÕES DO VENDEDOR E O LIMITE DO PLANO
+    // Adicionamos o JOIN com 'planos' para pegar o 'limite_total_anuncios'
+    $sql_vendedor = "SELECT u.nome AS nome_vendedor, v.cidade, v.estado, v.nome_comercial, v.foto_perfil_url, 
+                     pl.limite_total_anuncios
                      FROM usuarios u 
                      JOIN vendedores v ON u.id = v.usuario_id 
+                     JOIN planos pl ON v.plano_id = pl.id
                      WHERE u.id = ? AND u.status = 'ativo'";
     
     $stmt_vendedor = $conn->prepare($sql_vendedor);
-    $stmt_vendedor->execute([$vendedor_id]);
+    $stmt_vendedor->execute([$vendedor_usuario_id]);
     $vendedor_info = $stmt_vendedor->fetch(PDO::FETCH_ASSOC);
 
     if (!$vendedor_info) {
         die("Vendedor não encontrado ou inativo.");
     }
 
-    // Buscar anúncios do vendedor (Incluindo colunas de desconto)
-        $sql_anuncios = "SELECT p.id, p.nome AS produto, 
-                    p.preco, 
-                    p.preco_desconto,             -- NOVO
-                    p.desconto_data_fim,    -- NOVO
-                    p.estoque AS estoque_kg,
-                    p.estoque_unidades,
-                    p.modo_precificacao,
-                    p.embalagem_peso_kg,
-                    p.embalagem_unidades,
-                    p.unidade_medida, p.descricao, p.imagem_url 
-                FROM produtos p 
-                WHERE p.vendedor_id IN (SELECT id FROM vendedores WHERE usuario_id = ?) 
-                AND p.status = 'ativo'";
+    $limite_plano = $vendedor_info['limite_total_anuncios'] ?? 1;
+
+    // 2. BUSCAR ANÚNCIOS DO VENDEDOR COM FILTRO DE LIMITE
+    // Usamos ROW_NUMBER() para ordenar os anúncios por antiguidade (ID ASC) e filtrar pelo limite
+    $sql_anuncios = "SELECT * FROM (
+                        SELECT 
+                            p.id, p.nome AS produto, 
+                            p.preco, 
+                            p.preco_desconto,             
+                            p.desconto_data_fim,    
+                            p.estoque AS estoque_kg,
+                            p.estoque_unidades,
+                            p.modo_precificacao,
+                            p.embalagem_peso_kg,
+                            p.embalagem_unidades,
+                            p.unidade_medida, 
+                            p.descricao, 
+                            p.imagem_url,
+                            ROW_NUMBER() OVER (ORDER BY p.id ASC) as ranking
+                        FROM produtos p 
+                        WHERE p.vendedor_id IN (SELECT id FROM vendedores WHERE usuario_id = ?) 
+                        AND p.status = 'ativo'
+                    ) sub
+                    WHERE ranking <= ?"; // Aqui aplicamos o limite do plano
     
     $stmt_anuncios = $conn->prepare($sql_anuncios);
-    $stmt_anuncios->execute([$vendedor_id]);
+    $stmt_anuncios->execute([$vendedor_usuario_id, $limite_plano]);
     $anuncios_vendedor = $stmt_anuncios->fetchAll(PDO::FETCH_ASSOC);
     
     $total_anuncios = count($anuncios_vendedor);
@@ -119,6 +115,7 @@ try {
             case 'caixa_quilos': $av['unidade_medida'] = 'caixa' . (!empty($av['embalagem_peso_kg']) ? " ({$av['embalagem_peso_kg']} kg)" : ''); break;
             case 'saco_unidades': $av['unidade_medida'] = 'saco' . (!empty($av['embalagem_unidades']) ? " ({$av['embalagem_unidades']} unid)" : ''); break;
             case 'saco_quilos': $av['unidade_medida'] = 'saco' . (!empty($av['embalagem_peso_kg']) ? " ({$av['embalagem_peso_kg']} kg)" : ''); break;
+            default: $av['unidade_medida'] = 'kg';
         }
     }
 
@@ -136,7 +133,6 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil do Vendedor - Encontre Ocampo</title>
     <link rel="stylesheet" href="../index.css">
-    <!-- Reutiliza o CSS de anúncios para os cards com desconto -->
     <link rel="stylesheet" href="css/anuncios.css?v=1.1"> 
     <link rel="stylesheet" href="css/vendedor/perfil.css">
     <link rel="shortcut icon" href="../img/logo-nova.png" type="image/x-icon">
@@ -161,11 +157,15 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                     <li class="nav-item">
                         <a href="anuncios.php" class="nav-link">Anúncios</a>
                     </li>
-                    <li class="nav-item"><a href="vendedor/dashboard.php" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="vendedor/perfil.php" class="nav-link">Meu Perfil</a></li>
                     <?php if ($is_logged_in): ?>
+                        <li class="nav-item"><a href="<?= $usuario_tipo ?>/dashboard.php" class="nav-link">Painel</a></li>
+                        <li class="nav-item"><a href="<?= $usuario_tipo ?>/perfil.php" class="nav-link">Meu Perfil</a></li>
                         <li class="nav-item">
                             <a href="logout.php" class="nav-link exit-button no-underline">Sair</a>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item">
+                            <a href="login.php" class="nav-link login-button no-underline">Login</a>
                         </li>
                     <?php endif; ?>
                 </ul>
@@ -180,7 +180,6 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
 
         <div class="section-perfil">
             <div class="forms-area">
-                <!-- Informações do Vendedor -->
                 <center>
                 <div class="foto-perfil-display">                  
                         <?php if (!empty($foto_perfil_url)): 
@@ -216,7 +215,6 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                     </div>
                 </div><br>
 
-                <!-- Anúncios do Vendedor -->
                 <div class="forms-area">
                     <center><h2>Anúncios Publicados</h2></center>
                     
@@ -234,7 +232,6 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                                 <div class="anuncio-card <?php echo $has_discount ? 'discount-active-card' : ''; ?>">
                                     
                                     <?php if ($has_discount): ?>
-                                        <!-- SELO DE DESCONTO -->
                                         <div class="discount-badge">
                                             -<?php echo $info_preco['percentual']; ?>%
                                         </div>
@@ -256,7 +253,6 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                                             <h3><?php echo htmlspecialchars($anuncio['produto']); ?></h3>
                                         </div>
                                         <div class="card-body">
-                                            <!-- Exibição de Preço com Lógica de Desconto -->
                                             <div class="card-price-container">
                                                 <?php if ($has_discount): ?>
                                                     <span class="preco-original">R$ <?php echo number_format($info_preco['original'], 2, ',', '.');?></span>
@@ -275,7 +271,6 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                                                 <i class="fas fa-box"></i>
                                                 <?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?> disponíveis
                                             </p>
-                                            
                                             
                                         </div>
                                         <div class="card-actions">
@@ -299,7 +294,6 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
         </div>
     </main>
 
-    <!-- Modal de Login (reutilizado) -->
     <div id="loginModal" class="modal">
         <div class="modal-content">
             <span class="modal-close">&times;</span>

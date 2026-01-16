@@ -559,7 +559,15 @@ foreach ($anuncios as &$a) {
                         }
                     }
                 ?>
-                <div class="anuncio-card <?= $tem_desconto ? 'card-desconto' : '' ?>">
+                <div class="anuncio-card <?= $tem_desconto ? 'card-desconto' : '' ?>" data-url="<?php 
+                    if ($is_logged_in) {
+                        if ($usuario_tipo === 'comprador' || $usuario_tipo === 'vendedor') {
+                            echo 'comprador/view_ad.php?anuncio_id=' . $anuncio['id'];
+                        }
+                    } else {
+                        echo 'visualizar_anuncio.php?anuncio_id=' . $anuncio['id'];
+                    }
+                ?>" style="cursor: pointer;">
                     <div class="card-image">
                         <span class="categoria-badge"><?= htmlspecialchars($anuncio['categoria']) ?></span>
                         <?php if ($tem_desconto): ?><div class="badge-desconto">-<?= $percentual_off ?>%</div><?php endif; ?>
@@ -716,24 +724,50 @@ foreach ($anuncios as &$a) {
         const navMenu = document.querySelector(".nav-menu");
         hamburger.addEventListener("click", () => { hamburger.classList.toggle("active"); navMenu.classList.toggle("active"); });
         
+        // Cards clicáveis
+        document.querySelectorAll('.anuncio-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Se clicou no botão, deixa o navegador tratar normalmente
+                if (e.target.closest('.btn') || e.target.closest('button')) {
+                    return;
+                }
+                const url = this.getAttribute('data-url');
+                if (url) {
+                    window.location.href = url;
+                }
+            });
+        });
+        
         // Popup para Vendedores
         const vendedorPopup = document.getElementById('vendedor-popup');
         if (vendedorPopup) {
-            const popupClose = vendedorPopup.querySelector('.popup-close');
+            // Verifica se o popup já foi mostrado
+            const popupKey = 'vendedor_popup_shown';
+            const popupShown = localStorage.getItem(popupKey);
             
-            // Fecha o popup ao clicar no X
-            popupClose.addEventListener('click', function() {
-                vendedorPopup.classList.add('hide');
-                setTimeout(() => vendedorPopup.remove(), 300);
-            });
-            
-            // Remove o popup automaticamente após 7.5 segundos
-            setTimeout(() => {
-                if (vendedorPopup.parentNode) {
+            if (popupShown) {
+                // Se já foi mostrado, remove o elemento
+                vendedorPopup.remove();
+            } else {
+                // Marca como mostrado no localStorage
+                localStorage.setItem(popupKey, 'true');
+                
+                const popupClose = vendedorPopup.querySelector('.popup-close');
+                
+                // Fecha o popup ao clicar no X
+                popupClose.addEventListener('click', function() {
                     vendedorPopup.classList.add('hide');
-                    setTimeout(() => vendedorPopup.remove(), 250);
-                }
-            }, 7500);
+                    setTimeout(() => vendedorPopup.remove(), 300);
+                });
+                
+                // Remove o popup automaticamente após 7.5 segundos
+                setTimeout(() => {
+                    if (vendedorPopup.parentNode) {
+                        vendedorPopup.classList.add('hide');
+                        setTimeout(() => vendedorPopup.remove(), 250);
+                    }
+                }, 7500);
+            }
         }
     });
     </script>

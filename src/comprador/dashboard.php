@@ -294,10 +294,6 @@ try {
             
             <?php if (!$is_pendente): ?>
                 <!-- Apenas para usuários ativos -->
-                 <a href="#">
-                    <i class="fas fa-truck"></i>
-                    <span>Solicitar Transporte</span>
-                </a>
                 <a href="meus_chats.php">
                     <i class="fas fa-comments"></i>
                     <span>Meus chats</span>

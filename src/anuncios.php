@@ -19,12 +19,15 @@ $filtro_categoria = $_GET['categoria'] ?? '';
 $filtro_estado = $_GET['estado'] ?? '';
 $ordenacao = $_GET['ordenacao'] ?? 'recentes';
 
-$where_conditions = ["p.status = 'ativo'"];
+// Inicializamos o array de condições
+// O status='ativo' será tratado dentro da subquery para gerar o ranking correto
+$where_conditions = [];
 $params = [];
 
 // Filtro por pesquisa
 if (!empty(trim($termo_pesquisa))) {
     $termo_pesquisa = trim($termo_pesquisa);
+    // Nota: p.nome refere-se à tabela derivada 'p' definida no SQL abaixo
     $where_conditions[] = "(p.nome LIKE :pesquisa OR p.descricao LIKE :pesquisa OR u.nome LIKE :pesquisa)";
     $params[':pesquisa'] = '%' . $termo_pesquisa . '%';
 }
@@ -63,11 +66,11 @@ switch ($ordenacao) {
         $order_by = 'p.estoque DESC';
         break;
     default:
-        $order_by = 'p.data_criacao DESC';
+        $order_by = 'p.data_criacao DESC'; // Mostra os mais recentes primeiro na listagem geral
         break;
 }
 
-// Categorias e Estados
+// Categorias e Estados disponíveis para filtros
 $categorias_disponiveis = [
     'Frutas Cítricas', 'Frutas Tropicais', 'Frutas de Caroço',
     'Frutas Vermelhas', 'Frutas Secas', 'Frutas Exóticas',
@@ -80,6 +83,14 @@ $estados_disponiveis = [
 ];
 
 try {
+    /* LÓGICA PRINCIPAL DE FILTRO POR PLANO:
+       1. Criamos uma tabela derivada (p) que seleciona todos os produtos ativos.
+       2. Usamos ROW_NUMBER() para numerar os anúncios de cada vendedor (rn), 
+          ordenando por ID ASC (os mais antigos recebem números menores: 1, 2, 3...).
+       3. Fazemos JOIN com a tabela 'planos' (pl).
+       4. No WHERE final, filtramos: p.rn <= pl.limite_total_anuncios.
+       Isso oculta automaticamente os anúncios mais novos que excedem o limite do plano atual.
+    */
     $sql = "SELECT 
                 p.id, 
                 p.nome AS produto, 
@@ -99,14 +110,29 @@ try {
                 p.descricao, 
                 p.imagem_url, 
                 p.categoria,
+                p.data_criacao,
                 v.nome_comercial AS nome_vendedor, 
                 v.estado AS estado_vendedor,
-                u.id AS vendedor_usuario_id 
-            FROM produtos p
+                u.id AS vendedor_usuario_id,
+                pl.limite_total_anuncios
+            FROM (
+                SELECT 
+                    produtos.*,
+                    ROW_NUMBER() OVER (PARTITION BY vendedor_id ORDER BY id ASC) as rn
+                FROM produtos 
+                WHERE status = 'ativo'
+            ) p
             JOIN vendedores v ON p.vendedor_id = v.id 
+            JOIN planos pl ON v.plano_id = pl.id
             JOIN usuarios u ON v.usuario_id = u.id 
-            WHERE " . implode(' AND ', $where_conditions) . "
-            ORDER BY " . $order_by;
+            WHERE p.rn <= pl.limite_total_anuncios";
+
+    // Adiciona as condições extras (pesquisa, categoria, estado) se houverem
+    if (!empty($where_conditions)) {
+        $sql .= " AND " . implode(' AND ', $where_conditions);
+    }
+
+    $sql .= " ORDER BY " . $order_by;
             
     $stmt = $conn->prepare($sql);
     foreach ($params as $key => $value) $stmt->bindValue($key, $value);
@@ -116,17 +142,18 @@ try {
     die("Erro ao carregar anúncios: " . $e->getMessage()); 
 }
 
-// Ajusta campos de exibição para compatibilidade com o novo modo de precificação
+// Ajusta campos de exibição para compatibilidade com o template
 foreach ($anuncios as &$a) {
     $modo = $a['modo_precificacao'] ?? 'por_quilo';
-    // quantidade disponível: se for por unidade/embalagem, usa estoque_unidades, senão usa estoque_kg
+    
+    // Define a quantidade disponível visual
     if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
         $a['quantidade_disponivel'] = $a['estoque_unidades'] ?? 0;
     } else {
         $a['quantidade_disponivel'] = $a['estoque_kg'] ?? 0;
     }
 
-    // unidade de medida para exibição
+    // Define unidade de medida para exibição
     switch ($modo) {
         case 'por_unidade':
             $a['unidade_medida_exib'] = 'unidade';
@@ -153,7 +180,6 @@ foreach ($anuncios as &$a) {
         default:
             $a['unidade_medida_exib'] = $a['unidade_medida'] ?? 'kg';
     }
-    // para compatibilidade com o restante do template, defina 'unidade_medida' e 'quantidade_disponivel'
     $a['unidade_medida'] = $a['unidade_medida_exib'];
 }
 ?>
@@ -456,7 +482,6 @@ foreach ($anuncios as &$a) {
                                     <button class="btn btn-primary" disabled>Apenas Compradores</button>
                                 <?php endif; ?>
                             <?php else: ?>
-                                <!-- Link público para visualização do anúncio -->
                                 <a href="visualizar_anuncio.php?anuncio_id=<?= $anuncio['id'] ?>" class="btn btn-primary">
                                     <i class="fas fa-eye"></i> Ver Detalhes
                                 </a>
@@ -482,7 +507,6 @@ foreach ($anuncios as &$a) {
         </div>
     </div>
 
-    
     <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-content">
@@ -532,7 +556,6 @@ foreach ($anuncios as &$a) {
             </div>
         </div>
     </footer>
-
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {

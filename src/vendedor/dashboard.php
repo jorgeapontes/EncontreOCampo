@@ -511,28 +511,54 @@ try {
         function salvarPreferencia() {
             const naoExibir = document.getElementById('naoExibirNovamente').checked;
             
+            console.log("Checkbox marcado:", naoExibir);
+            
+            // Se o checkbox estiver marcado, enviamos a requisição
             if (naoExibir) {
-                fetch('processar_aviso.php', { 
+                console.log("Enviando requisição para processar_aviso.php...");
+                
+                // DEBUG: Mostrar o caminho atual
+                console.log("Caminho atual:", window.location.pathname);
+                console.log("Diretório atual:", window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')));
+                
+                // Usar caminho relativo baseado na localização atual
+                const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+                const url = basePath + '/processar_aviso.php';
+                console.log("URL completa da requisição:", url);
+                
+                fetch('/EncontreOCampo/src/vendedor/processar_aviso.php', { 
                     method: 'POST', 
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     }, 
-                    body: 'tipo_aviso=regioes_entrega' 
+                    body: 'tipo_aviso=regioes_entrega&nao_exibir=1'
                 })
-                .then(response => response.json())
+                .then(response => {
+                    console.log("Resposta recebida. Status:", response.status);
+                    console.log("URL da resposta:", response.url);
+                    if (!response.ok) {
+                        throw new Error('Erro HTTP: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => { 
+                    console.log("Dados retornados:", data);
                     if(data.success) {
                         console.log('Preferência salva com sucesso');
                     } else {
                         console.error('Erro ao salvar preferência:', data.message);
+                        alert('Erro ao salvar preferência: ' + data.message);
                     }
                     fecharPopup(); 
                 })
                 .catch(error => {
-                    console.error('Erro na requisição:', error);
+                    console.error('Erro completo:', error);
+                    console.error('Stack trace:', error.stack);
+                    alert('Erro ao conectar com o servidor. Verifique o console (F12) para detalhes.');
                     fecharPopup();
                 });
             } else { 
+                console.log("Checkbox não marcado, apenas fechando popup");
                 fecharPopup(); 
             }
         }

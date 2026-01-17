@@ -4,7 +4,7 @@ session_start();
 require_once __DIR__ . '/../conexao.php';
 
 // Verificar se está logado como comprador ou vendedor
-if (!isset($_SESSION['usuario_tipo']) || ($_SESSION['usuario_tipo'] !== 'comprador' && $_SESSION['usuario_tipo'] !== 'vendedor')) {
+if (!isset($_SESSION['usuario_tipo']) || ($_SESSION['usuario_tipo'] !== 'comprador' && $_SESSION['usuario_tipo'] !== 'vendedor' && $_SESSION['usuario_tipo'] !== 'transportador')) {
     header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador ou Vendedor."));
     exit();
 }

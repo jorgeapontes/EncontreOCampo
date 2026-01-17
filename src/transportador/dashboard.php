@@ -241,7 +241,7 @@ if (!$is_pendente && $transportador_id) {
                         <p>Ver</p>
                     </div>
                 </a>
-                <a href="chats.php">
+                <a href="../comprador/meus_chats.php">
                     <div class="card">
                         <i class="fas fa-comments"></i>
                         <h3>Chats</h3>

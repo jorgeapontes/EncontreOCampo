@@ -220,25 +220,18 @@ if (!$is_pendente && $transportador_id) {
         
         <section class="info-cards">
             <?php if (!$is_pendente): ?>
-                <a href="entregas.php?status=pendente">
-                    <div class="card">
-                        <i class="fas fa-clock"></i>
-                        <h3>Entregas Pendentes</h3>
-                        <p><?php echo $total_entregas_pendentes; ?></p>
-                    </div>
-                </a>
-                <a href="entregas.php?status=em_transporte">
+                <a href="disponiveis.php">
                     <div class="card">
                         <i class="fas fa-truck-moving"></i>
-                        <h3>Em Transporte</h3>
+                        <h3>Entregas disponíveis</h3>
                         <p><?php echo $total_entregas_em_transporte; ?></p>
                     </div>
                 </a>
-                <a href="chats.php">
+                <a href="entregas.php">
                     <div class="card">
-                        <i class="fas fa-comments"></i>
-                        <h3>Chats</h3>
-                        <p><?php echo $total_mensagens_nao_lidas; ?> não lidas</p>
+                        <i class="fas fa-clock"></i>
+                        <h3>Minhas entregas</h3>
+                        <p><?php echo $total_entregas_pendentes; ?></p>
                     </div>
                 </a>
                 <a href="historico.php">
@@ -246,6 +239,13 @@ if (!$is_pendente && $transportador_id) {
                         <i class="fas fa-book"></i>
                         <h3>Histórico</h3>
                         <p>Ver</p>
+                    </div>
+                </a>
+                <a href="chats.php">
+                    <div class="card">
+                        <i class="fas fa-comments"></i>
+                        <h3>Chats</h3>
+                        <p><?php echo $total_mensagens_nao_lidas; ?> não lidas</p>
                     </div>
                 </a>
             <?php endif; ?>

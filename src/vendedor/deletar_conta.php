@@ -1,6 +1,7 @@
 <?php
 // src/vendedor/deletar_conta.php
 require_once 'auth.php'; // Inclui a proteção de acesso e carrega $vendedor, $db, $usuario
+require_once '../../config/StripeConfig.php'; // Inclui a configuração do Stripe
 
 // Verificar se é vendedor
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor') {
@@ -24,6 +25,29 @@ if (!$vendedor_id) {
 try {
     // Iniciar transação
     $db->beginTransaction();
+    
+    // 0. Cancelar assinatura no Stripe (antes de deletar)
+    // Buscar dados da assinatura do Stripe
+    $sqlGetStripeData = "SELECT stripe_subscription_id, stripe_customer_id FROM vendedores WHERE id = :vendedor_id";
+    $stmtGetStripeData = $db->prepare($sqlGetStripeData);
+    $stmtGetStripeData->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
+    $stmtGetStripeData->execute();
+    $stripeData = $stmtGetStripeData->fetch(PDO::FETCH_ASSOC);
+    
+    // Cancelar a assinatura no Stripe se existir
+    if ($stripeData && !empty($stripeData['stripe_subscription_id'])) {
+        try {
+            \Config\StripeConfig::init();
+            \Stripe\Subscription::retrieve($stripeData['stripe_subscription_id'])->cancel();
+            error_log("Assinatura Stripe {$stripeData['stripe_subscription_id']} cancelada com sucesso para vendedor {$vendedor_id}");
+        } catch (\Stripe\Exception\InvalidRequestException $e) {
+            // A assinatura já pode estar cancelada
+            error_log("Aviso ao cancelar assinatura Stripe: " . $e->getMessage());
+        } catch (Exception $e) {
+            error_log("Erro ao cancelar assinatura Stripe: " . $e->getMessage());
+            // Continua mesmo se houver erro no Stripe
+        }
+    }
     
     // 1. Desativar usuário
     $sqlUpdateUser = "UPDATE usuarios SET status = 'inativo' WHERE id = :usuario_id";

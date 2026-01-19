@@ -374,6 +374,8 @@ function buscarCEP(cepInput, tipo) {
         buscarCEPComprador(cepInput);
     } else if (tipo === 'vendedor') {
         buscarCEPVendedor(cepInput);
+    } else if (tipo === 'transportador') {
+        buscarCEPTransportador(cepInput);
     }
 }
 
@@ -519,103 +521,75 @@ function buscarCEPVendedor(cepInput = null) {
         });
 }
 
-// Função para buscar informações da placa do veículo
-async function buscarPlacaVeiculo() {
-    const placaInput = document.getElementById('placaVeiculo');
-    const modeloInput = document.getElementById('modeloVeiculo');
-    
-    if (!placaInput || !modeloInput) {
-        alert('Campos não encontrados!');
+// Função para buscar CEP - Transportador (atualizada para receber parâmetro)
+function buscarCEPTransportador(cepInput = null) {
+    const inputElement = cepInput || document.getElementById('cepTransportador');
+    if (!inputElement) {
+        console.error('❌ cepTransportador não encontrado');
+        alert('Erro: campo CEP não encontrado');
         return;
     }
     
-    const placa = placaInput.value.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+    const cep = inputElement.value.replace(/\D/g, '');
     
-    console.log('Placa formatada para consulta:', placa);
-    
-    if (placa.length !== 7) {
-        alert('Placa inválida! Digite 7 caracteres.');
+    if (cep.length !== 8) {
+        alert('❌ CEP inválido! Digite 8 números.');
         return;
     }
     
-    const buscarBtn = document.querySelector('.placa-btn');
-    const originalText = buscarBtn.textContent;
-    buscarBtn.textContent = 'Buscando...';
-    buscarBtn.disabled = true;
-    buscarBtn.style.backgroundColor = '#ff9800';
-    
-    try {
-        console.log('Consultando placa:', placa);
-        
-        const response = await fetch(`https://brasilapi.com.br/api/veiculo/v1/placas/${placa}`);
-        
-        console.log('Status da resposta:', response.status);
-        
-        if (!response.ok) {
-            if (response.status === 404) {
-                throw new Error('Placa não encontrada na base de dados.');
-            }
-            throw new Error(`Erro na consulta: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Dados retornados:', data);
-        
-        let modeloCompleto = '';
-        
-        if (data.marca && data.modelo) {
-            modeloCompleto = `${data.marca} ${data.modelo}`;
-            
-            if (data.ano) {
-                modeloCompleto += ` (${data.ano})`;
-            }
-            
-            modeloInput.value = modeloCompleto;
-            
-            buscarBtn.textContent = '✓ Encontrado';
-            buscarBtn.style.backgroundColor = '#4CAF50';
-            
-            setTimeout(() => {
-                buscarBtn.textContent = originalText;
-                buscarBtn.disabled = false;
-                buscarBtn.style.backgroundColor = '';
-            }, 2000);
-            
-        } else {
-            if (data.tipo) {
-                modeloInput.value = data.tipo;
-            } else if (data.especie) {
-                modeloInput.value = data.especie;
-            } else {
-                modeloInput.value = 'Veículo identificado';
-            }
-            
-            buscarBtn.textContent = '⚠️ Info limitada';
-            buscarBtn.style.backgroundColor = '#ff9800';
-            
-            setTimeout(() => {
-                buscarBtn.textContent = originalText;
-                buscarBtn.disabled = false;
-                buscarBtn.style.backgroundColor = '';
-            }, 2000);
-            
-            alert('Placa encontrada, mas informações detalhadas não estão disponíveis.');
-        }
-        
-    } catch (error) {
-        console.error('Erro na consulta da placa:', error);
-        
-        buscarBtn.textContent = '✗ Erro';
-        buscarBtn.style.backgroundColor = '#f44336';
-        
-        setTimeout(() => {
-            buscarBtn.textContent = originalText;
-            buscarBtn.disabled = false;
-            buscarBtn.style.backgroundColor = '';
-        }, 2000);
-        
-        alert(`Erro ao consultar a placa: ${error.message}\nPreencha o modelo manualmente.`);
+    const btnBuscar = inputElement.closest('.cep-container').querySelector('button');
+    let originalText = 'Buscar CEP';
+    if (btnBuscar) {
+        originalText = btnBuscar.textContent;
+        btnBuscar.textContent = 'Buscando...';
+        btnBuscar.disabled = true;
+        btnBuscar.classList.add('loading');
     }
+        
+    fetch(`https://viacep.com.br/ws/${cep}/json/`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Resposta da API:', data);
+            
+            if (data.erro) {
+                alert('CEP não encontrado na base de dados!');
+                if (btnBuscar) {
+                    btnBuscar.textContent = originalText;
+                    btnBuscar.disabled = false;
+                    btnBuscar.classList.remove('loading');
+                    btnBuscar.classList.add('error');
+                    setTimeout(() => btnBuscar.classList.remove('error'), 2000);
+                }
+                return;
+            }
+            
+            document.getElementById('ruaTransportador').value = data.logradouro || '';
+            document.getElementById('cidadeTransportador').value = data.localidade || '';
+            document.getElementById('estadoTransportador').value = data.uf || '';
+            
+            if (btnBuscar) {
+                btnBuscar.textContent = '✓ Encontrado';
+                btnBuscar.classList.remove('loading');
+                btnBuscar.classList.add('success');
+                btnBuscar.disabled = false;
+                
+                setTimeout(() => {
+                    btnBuscar.textContent = originalText;
+                    btnBuscar.classList.remove('success');
+                }, 2000);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro na busca. Verifique sua conexão.');
+            if (btnBuscar) {
+                btnBuscar.textContent = originalText;
+                btnBuscar.disabled = false;
+                btnBuscar.classList.remove('loading');
+                btnBuscar.classList.add('error');
+                setTimeout(() => btnBuscar.classList.remove('error'), 2000);
+            }
+        });
 }
 
 // Funções para carregar estados e cidades

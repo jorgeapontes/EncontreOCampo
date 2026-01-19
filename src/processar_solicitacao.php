@@ -352,8 +352,8 @@ try {
         
     } elseif ($tipoUsuario === 'transportador') {
         // Inserir na tabela transportadores
-        $sqlTransportador = "INSERT INTO transportadores (usuario_id, nome_comercial, telefone, numero_antt, placa_veiculo, modelo_veiculo, descricao_veiculo, estado, cidade, plano) 
-                             VALUES (:usuario_id, :nome_comercial, :telefone, :numero_antt, :placa_veiculo, :modelo_veiculo, :descricao_veiculo, :estado, :cidade, :plano)";
+        $sqlTransportador = "INSERT INTO transportadores (usuario_id, nome_comercial, telefone, numero_antt, placa_veiculo, modelo_veiculo, descricao_veiculo, cep, rua, numero, complemento, estado, cidade, plano) 
+                             VALUES (:usuario_id, :nome_comercial, :telefone, :numero_antt, :placa_veiculo, :modelo_veiculo, :descricao_veiculo, :cep, :rua, :numero, :complemento, :estado, :cidade, :plano)";
         $stmtTransportador = $conn->prepare($sqlTransportador);
         
         $plano = 'free';
@@ -366,6 +366,10 @@ try {
             ':placa_veiculo' => $dados['placaVeiculo'] ?? null,
             ':modelo_veiculo' => $dados['modeloVeiculo'] ?? null,
             ':descricao_veiculo' => $dados['descricaoVeiculo'] ?? null,
+            ':cep' => $dados['cepTransportador'] ?? null,
+            ':rua' => $dados['ruaTransportador'] ?? null,
+            ':numero' => $dados['numeroTransportador'] ?? null,
+            ':complemento' => $dados['complementoTransportador'] ?? null,
             ':estado' => $dados['estadoTransportador'] ?? null,
             ':cidade' => $dados['cidadeTransportador'] ?? null,
             ':plano' => $plano
@@ -395,7 +399,9 @@ try {
                    ($dados['estadoVendedor'] ?? '');
     } elseif ($tipoUsuario === 'transportador') {
         $telefone = $dados['telefoneTransportador'] ?? '';
-        $endereco = ($dados['cidadeTransportador'] ?? '') . ', ' . 
+        $endereco = ($dados['ruaTransportador'] ?? '') . ', ' . 
+                   ($dados['numeroTransportador'] ?? '') . ', ' . 
+                   ($dados['cidadeTransportador'] ?? '') . ', ' . 
                    ($dados['estadoTransportador'] ?? '');
     }
     

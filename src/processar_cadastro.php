@@ -88,6 +88,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'placa_veiculo' => sanitizeInput($_POST['placaVeiculo'] ?? ''),
                 'modelo_veiculo' => sanitizeInput($_POST['modeloVeiculo'] ?? ''),
                 'descricao_veiculo' => sanitizeInput($_POST['descricaoVeiculo'] ?? ''),
+                'cep' => sanitizeInput($_POST['cepTransportador'] ?? ''),
+                'rua' => sanitizeInput($_POST['ruaTransportador'] ?? ''),
+                'numero' => sanitizeInput($_POST['numeroTransportador'] ?? ''),
+                'complemento' => sanitizeInput($_POST['complementoTransportador'] ?? ''),
                 'estado' => sanitizeInput($_POST['estadoTransportador'] ?? ''),
                 'cidade' => sanitizeInput($_POST['cidadeTransportador'] ?? '')
             ];

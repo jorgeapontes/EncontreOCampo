@@ -175,6 +175,142 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
             background-color: #5a6268;
             transform: translateY(-2px);
         }
+
+        /* NOVOS ESTILOS PARA OS CONTAINERS */
+        .modal-container-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            padding: 0;
+        }
+
+        .data-container {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .data-container.pessoal {
+            border-left-color: #667eea;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e8eaf6 100%);
+        }
+
+        .data-container.especifico {
+            border-left-color: #764ba2;
+            background: linear-gradient(135deg, #f8f9fa 0%, #f3e5f5 100%);
+        }
+
+        .data-container.endereco {
+            border-left-color: #28a745;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e8f5e9 100%);
+        }
+
+        .container-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+        }
+
+        .container-header h4 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .container-header-icon {
+            font-size: 1.3rem;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 18px;
+        }
+
+        .data-field {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .field-label {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .field-value {
+            font-size: 1rem;
+            color: #333;
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        .field-value.empty {
+            color: #999;
+            font-style: italic;
+        }
+
+        .message-box {
+            background: white;
+            padding: 18px;
+            border-radius: 6px;
+            border-left: 4px solid #ffc107;
+            margin-top: 20px;
+        }
+
+        .message-box-label {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .message-box-content {
+            background: #fffbf0;
+            padding: 12px;
+            border-radius: 4px;
+            color: #333;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 30px !important;
+        }
+
+        .modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .modal-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
     </style>
 </head>
 <body>
@@ -414,168 +550,218 @@ document.addEventListener("DOMContentLoaded", function () {
                 const dados = JSON.parse(jsonData);
                 let html = '';
                 
-                // Cabeçalho com informações principais
+                // ============ CONTAINER 1: DADOS PESSOAIS ============
                 html += `
-                    <div class="info-header">
-                        <div class="user-summary">
-                            <h3>${nome}</h3>
-                            <div class="user-type-tag user-type-${tipo.toLowerCase()}">
-                                ${tipo}
+                    <div class="data-container pessoal">
+                        <div class="container-header">
+                            <span class="container-header-icon">👤</span>
+                            <h4>Dados Pessoais da Conta</h4>
+                        </div>
+                        <div class="data-grid">
+                            <div class="data-field">
+                                <div class="field-label">Nome</div>
+                                <div class="field-value">${nome || 'Não informado'}</div>
                             </div>
-                            <div class="user-status-badge status-pendente">
-                                <span>●</span> Pendente
+                            <div class="data-field">
+                                <div class="field-label">Email</div>
+                                <div class="field-value">${dados.email || 'Não informado'}</div>
+                            </div>
+                            <div class="data-field">
+                                <div class="field-label">Tipo de Usuário</div>
+                                <div class="field-value">
+                                    <span style="background: #667eea; color: white; padding: 4px 12px; border-radius: 20px; display: inline-block; font-size: 0.9rem;">
+                                        ${tipo}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                        <p class="user-email">${dados.email || 'Email não informado'}</p>
                     </div>
-                    <hr>
-                    <div class="info-details">
-                        <h4>Informações ${tipo === 'Transportador' ? 'do Transportador' : tipo === 'Vendedor' ? 'do Vendedor' : 'do Comprador'}</h4>
                 `;
                 
-                // Mapeamento de campos por tipo
-                const camposPorTipo = {
-                    'Comprador': ['tipoPessoaComprador', 'cpfCnpjComprador', 'nomeComercialComprador', 
-                                  'cipComprador', 'telefone1Comprador', 'telefone2Comprador',
-                                  'cepComprador', 'ruaComprador', 'numeroComprador', 'complementoComprador',
-                                  'estadoComprador', 'cidadeComprador', 'planoComprador'],
-                    'Vendedor': ['nomeComercialVendedor', 'cpfCnpjVendedor', 'cipVendedor',
-                                 'telefone1Vendedor', 'telefone2Vendedor', 'cepVendedor',
-                                 'ruaVendedor', 'numeroVendedor', 'complementoVendedor',
-                                 'estadoVendedor', 'cidadeVendedor', 'planoVendedor'],
-                    'Transportador': ['telefoneTransportador', 'numeroANTT', 'placaVeiculo',
-                                      'modeloVeiculo', 'descricaoVeiculo', 'estadoTransportador',
-                                      'cidadeTransportador']
-                };
+                // ============ CONTAINER 2: DADOS ESPECÍFICOS POR TIPO ============
+                let dadosEspecificos = '';
                 
-                // Nomes amigáveis
-                const nomesCampos = {
-                    'tipoPessoaComprador': 'Tipo de Pessoa',
-                    'cpfCnpjComprador': 'CPF/CNPJ',
-                    'nomeComercialComprador': 'Nome Comercial',
-                    'cipComprador': 'CIP',
-                    'telefone1Comprador': 'Telefone Principal',
-                    'telefone2Comprador': 'Telefone Secundário',
-                    'cepComprador': 'CEP',
-                    'ruaComprador': 'Rua',
-                    'numeroComprador': 'Número',
-                    'complementoComprador': 'Complemento',
-                    'estadoComprador': 'Estado',
-                    'cidadeComprador': 'Cidade',
-                    'planoComprador': 'Plano',
-                    
-                    'nomeComercialVendedor': 'Nome Comercial',
-                    'cpfCnpjVendedor': 'CNPJ',
-                    'cipVendedor': 'CIP',
-                    'telefone1Vendedor': 'Telefone Principal',
-                    'telefone2Vendedor': 'Telefone Secundário',
-                    'cepVendedor': 'CEP',
-                    'ruaVendedor': 'Rua',
-                    'numeroVendedor': 'Número',
-                    'complementoVendedor': 'Complemento',
-                    'estadoVendedor': 'Estado',
-                    'cidadeVendedor': 'Cidade',
-                    'planoVendedor': 'Plano',
-                    
-                    'telefoneTransportador': 'Telefone',
-                    'numeroANTT': 'Número ANTT',
-                    'placaVeiculo': 'Placa do Veículo',
-                    'modeloVeiculo': 'Modelo do Veículo',
-                    'descricaoVeiculo': 'Descrição do Veículo',
-                    'estadoTransportador': 'Estado',
-                    'cidadeTransportador': 'Cidade'
-                };
-                
-                // Função para formatar
-                function formatarValor(campo, valor) {
-                    if (!valor || valor.toString().trim() === '') {
-                        return '<span class="detail-value empty">Não informado</span>';
-                    }
-                    
-                    // CPF/CNPJ
-                    if ((campo.includes('cpf') || campo.includes('cnpj')) && valor.replace(/\D/g, '').length === 11) {
-                        valor = valor.replace(/\D/g, '');
-                        return valor.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-                    }
-                    if ((campo.includes('cpf') || campo.includes('cnpj')) && valor.replace(/\D/g, '').length === 14) {
-                        valor = valor.replace(/\D/g, '');
-                        return valor.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-                    }
-                    
-                    // CEP
-                    if (campo.includes('cep') && valor.replace(/\D/g, '').length === 8) {
-                        valor = valor.replace(/\D/g, '');
-                        return valor.replace(/(\d{5})(\d{3})/, '$1-$2');
-                    }
-                    
-                    // Telefone
-                    if (campo.includes('telefone') && valor.replace(/\D/g, '').length >= 10) {
-                        valor = valor.replace(/\D/g, '');
-                        if (valor.length === 11) {
-                            return valor.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-                        } else if (valor.length === 10) {
-                            return valor.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-                        }
-                    }
-                    
-                    return valor.toString().trim();
-                }
-                
-                // Mostra campos específicos do tipo
-                const camposExibir = camposPorTipo[tipo] || [];
-                let camposMostrados = 0;
-                
-                for (const campo of camposExibir) {
-                    if (dados[campo]) {
-                        const valor = dados[campo];
-                        const valorFormatado = formatarValor(campo, valor);
-                        const nomeCampo = nomesCampos[campo] || campo;
-                        
-                        html += `
-                            <div class="detail-row">
-                                <span class="detail-label">${nomeCampo}:</span>
-                                <span class="detail-value">${valorFormatado}</span>
+                if (tipo === 'Comprador') {
+                    dadosEspecificos = `
+                        <div class="data-container especifico">
+                            <div class="container-header">
+                                <span class="container-header-icon">🛒</span>
+                                <h4>Dados do Comprador</h4>
                             </div>
-                        `;
-                        camposMostrados++;
-                    }
-                }
-                
-                // Se não encontrou campos específicos, mostra todos
-                if (camposMostrados === 0) {
-                    for (const [chave, valor] of Object.entries(dados)) {
-                        if (chave !== 'nome' && chave !== 'email' && valor) {
-                            const valorFormatado = formatarValor(chave, valor);
-                            const nomeCampo = chave.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                            
-                            html += `
-                                <div class="detail-row">
-                                    <span class="detail-label">${nomeCampo}:</span>
-                                    <span class="detail-value">${valorFormatado}</span>
+                            <div class="data-grid">
+                                <div class="data-field">
+                                    <div class="field-label">Tipo de Pessoa</div>
+                                    <div class="field-value">${dados.tipoPessoaComprador ? (dados.tipoPessoaComprador.toUpperCase()) : 'Não informado'}</div>
                                 </div>
-                            `;
-                        }
-                    }
-                }
-                
-                // Mensagem adicional se houver
-                if (dados.message && dados.message.trim() !== '') {
-                    html += `
-                        <div class="detail-row-full" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
-                            <span class="detail-label">Mensagem:</span>
-                            <div class="detail-value" style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 5px;">
-                                ${dados.message}
+                                <div class="data-field">
+                                    <div class="field-label">CPF/CNPJ</div>
+                                    <div class="field-value">${dados.cpfCnpjComprador || 'Não informado'}</div>
+                                </div>
+                                <div class="data-field">
+                                    <div class="field-label">Nome Comercial</div>
+                                    <div class="field-value">${dados.nomeComercialComprador || 'Não informado'}</div>
+                                </div>
+                                <div class="data-field">
+                                    <div class="field-label">Telefone Principal</div>
+                                    <div class="field-value">${dados.telefone1Comprador || 'Não informado'}</div>
+                                </div>
+                                <div class="data-field">
+                                    <div class="field-label">Telefone Secundário</div>
+                                    <div class="field-value ${!dados.telefone2Comprador ? 'empty' : ''}">${dados.telefone2Comprador || 'Não informado'}</div>
+                                </div>
+                                <div class="data-field">
+                                    <div class="field-label">Plano</div>
+                                    <div class="field-value">${dados.planoComprador || 'Não informado'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else if (tipo === 'Vendedor') {
+                    dadosEspecificos = `
+                        <div class="data-container especifico">
+                            <div class="container-header">
+                                <span class="container-header-icon">🏪</span>
+                                <h4>Dados do Vendedor</h4>
+                            </div>
+                            <div class="data-grid">
+                                <div class="data-field">
+                                    <div class="field-label">Nome Comercial</div>
+                                    <div class="field-value">${dados.nomeComercialVendedor || 'Não informado'}</div>
+                                </div>
+                                <div class="data-field">
+                                    <div class="field-label">CNPJ</div>
+                                    <div class="field-value">${dados.cpfCnpjVendedor || 'Não informado'}</div>
+                                </div>
+                                <div class="data-field">
+                                    <div class="field-label">Razão Social</div>
+                                    <div class="field-value ${!dados.cipVendedor ? 'empty' : ''}">${dados.cipVendedor || 'Não informado'}</div>
+                                </div>
+                                <div class="data-field">
+                                    <div class="field-label">Telefone Principal</div>
+                                    <div class="field-value">${dados.telefone1Vendedor || 'Não informado'}</div>
+                                </div>
+                                <div class="data-field">
+                                    <div class="field-label">Telefone Secundário</div>
+                                    <div class="field-value ${!dados.telefone2Vendedor ? 'empty' : ''}">${dados.telefone2Vendedor || 'Não informado'}</div>
+                                </div>
+                                <div class="data-field">
+                                    <div class="field-label">Plano</div>
+                                    <div class="field-value">${dados.planoVendedor || 'Não informado'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else if (tipo === 'Transportador') {
+                    dadosEspecificos = `
+                        <div class="data-container especifico">
+                            <div class="container-header">
+                                <span class="container-header-icon">🚚</span>
+                                <h4>Dados do Transportador</h4>
+                            </div>
+                            <div class="data-grid">
+                                <div class="data-field">
+                                    <div class="field-label">Telefone</div>
+                                    <div class="field-value">${dados.telefoneTransportador || 'Não informado'}</div>
+                                </div>
+                                <div class="data-field">
+                                    <div class="field-label">Número ANTT</div>
+                                    <div class="field-value">${dados.numeroANTT || 'Não informado'}</div>
+                                </div>
+                                <div class="data-field">
+                                    <div class="field-label">Placa do Veículo</div>
+                                    <div class="field-value">${dados.placaVeiculo || 'Não informado'}</div>
+                                </div>
+                                <div class="data-field">
+                                    <div class="field-label">Modelo do Veículo</div>
+                                    <div class="field-value">${dados.modeloVeiculo || 'Não informado'}</div>
+                                </div>
+                                <div class="data-field">
+                                    <div class="field-label">Descrição do Veículo</div>
+                                    <div class="field-value">${dados.descricaoVeiculo || 'Não informado'}</div>
+                                </div>
                             </div>
                         </div>
                     `;
                 }
                 
+                html += dadosEspecificos;
+                
+                // ============ CONTAINER 3: DADOS DE ENDEREÇO ============
+                let enderecoCampos = [];
+                
+                if (tipo === 'Comprador') {
+                    enderecoCampos = {
+                        cep: dados.cepComprador,
+                        rua: dados.ruaComprador,
+                        numero: dados.numeroComprador,
+                        complemento: dados.complementoComprador,
+                        estado: dados.estadoComprador,
+                        cidade: dados.cidadeComprador
+                    };
+                } else if (tipo === 'Vendedor') {
+                    enderecoCampos = {
+                        cep: dados.cepVendedor,
+                        rua: dados.ruaVendedor,
+                        numero: dados.numeroVendedor,
+                        complemento: dados.complementoVendedor,
+                        estado: dados.estadoVendedor,
+                        cidade: dados.cidadeVendedor
+                    };
+                } else if (tipo === 'Transportador') {
+                    enderecoCampos = {
+                        cep: dados.cepTransportador,
+                        rua: dados.ruaTransportador,
+                        numero: dados.numeroTransportador,
+                        complemento: dados.complementoTransportador,
+                        estado: dados.estadoTransportador,
+                        cidade: dados.cidadeTransportador
+                    };
+                }
+                
                 html += `
-                    </div>
-                    <div class="modal-footer">
-                        <p><em>Clique fora do modal ou no X para fechar</em></p>
+                    <div class="data-container endereco">
+                        <div class="container-header">
+                            <span class="container-header-icon">📍</span>
+                            <h4>Endereço</h4>
+                        </div>
+                        <div class="data-grid">
+                            <div class="data-field">
+                                <div class="field-label">CEP</div>
+                                <div class="field-value ${!enderecoCampos.cep ? 'empty' : ''}">${enderecoCampos.cep || 'Não informado'}</div>
+                            </div>
+                            <div class="data-field">
+                                <div class="field-label">Rua</div>
+                                <div class="field-value ${!enderecoCampos.rua ? 'empty' : ''}">${enderecoCampos.rua || 'Não informado'}</div>
+                            </div>
+                            <div class="data-field">
+                                <div class="field-label">Número</div>
+                                <div class="field-value ${!enderecoCampos.numero ? 'empty' : ''}">${enderecoCampos.numero || 'Não informado'}</div>
+                            </div>
+                            <div class="data-field">
+                                <div class="field-label">Complemento</div>
+                                <div class="field-value ${!enderecoCampos.complemento ? 'empty' : ''}">${enderecoCampos.complemento || 'Não informado'}</div>
+                            </div>
+                            <div class="data-field">
+                                <div class="field-label">Estado</div>
+                                <div class="field-value ${!enderecoCampos.estado ? 'empty' : ''}">${enderecoCampos.estado || 'Não informado'}</div>
+                            </div>
+                            <div class="data-field">
+                                <div class="field-label">Cidade</div>
+                                <div class="field-value ${!enderecoCampos.cidade ? 'empty' : ''}">${enderecoCampos.cidade || 'Não informado'}</div>
+                            </div>
+                        </div>
                     </div>
                 `;
+                
+                // ============ MENSAGEM ADICIONAL ============
+                if (dados.message && dados.message.trim() !== '') {
+                    html += `
+                        <div class="message-box">
+                            <div class="message-box-label">💬 Mensagem Adicional</div>
+                            <div class="message-box-content">${dados.message}</div>
+                        </div>
+                    `;
+                }
                 
                 modalCorpo.innerHTML = html;
             } catch (e) {

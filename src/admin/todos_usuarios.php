@@ -123,6 +123,172 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
             font-style: italic;
             padding: 5px;
         }
+
+        /* NOVOS ESTILOS PARA OS CONTAINERS */
+        .modal-container-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            padding: 0;
+        }
+
+        .data-container {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .data-container.pessoal {
+            border-left-color: #667eea;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e8eaf6 100%);
+        }
+
+        .data-container.especifico {
+            border-left-color: #764ba2;
+            background: linear-gradient(135deg, #f8f9fa 0%, #f3e5f5 100%);
+        }
+
+        .data-container.endereco {
+            border-left-color: #28a745;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e8f5e9 100%);
+        }
+
+        .container-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+        }
+
+        .container-header h4 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .container-header-icon {
+            font-size: 1.3rem;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 18px;
+        }
+
+        .data-field {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .field-label {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .field-value {
+            font-size: 1rem;
+            color: #333;
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        .field-value.empty {
+            color: #999;
+            font-style: italic;
+        }
+
+        .message-box {
+            background: white;
+            padding: 18px;
+            border-radius: 6px;
+            border-left: 4px solid #ffc107;
+            margin-top: 20px;
+        }
+
+        .message-box-label {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .message-box-content {
+            background: #fffbf0;
+            padding: 12px;
+            border-radius: 4px;
+            color: #333;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 30px !important;
+        }
+
+        .modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .modal-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 25px 30px !important;
+        }
+
+        .modal-header h3 {
+            color: white !important;
+            font-size: 1.5rem;
+            margin: 0;
+            flex: 1;
+        }
+
+        .modal-header .user-type-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            white-space: nowrap;
+        }
+
+        .close-button {
+            position: static !important;
+            margin-left: auto;
+        }
     </style>
 </head>
 
@@ -382,10 +548,10 @@ document.addEventListener("DOMContentLoaded", function () {
         btn.addEventListener("click", function () {
             const userId = this.getAttribute("data-user-id");
             const nome = this.getAttribute("data-user-nome");
-            const tipo = this.getAttribute("data-user-tipo");
+            const tipo = this.getAttribute("data-user-tipo").toLowerCase();
             const email = this.getAttribute("data-user-email");
             
-            modalTitulo.innerText = `Carregando...`;
+            modalTitulo.innerText = `Detalhes do Usuário`;
             modalTipoBadge.innerText = tipo.charAt(0).toUpperCase() + tipo.slice(1);
             modalCorpo.innerHTML = `<div style="text-align: center; padding: 40px;"><div style="font-size: 3rem; color: #4CAF50; margin-bottom: 20px;">⏳</div><p>Carregando detalhes do usuário...</p></div>`;
             modal.style.display = "block";
@@ -397,43 +563,205 @@ document.addEventListener("DOMContentLoaded", function () {
                         modalCorpo.innerHTML = `<div class="error-message"><h4>Erro ao carregar dados</h4><p>${data.error}</p></div>`;
                         return;
                     }
-                    modalTitulo.innerText = `Detalhes do Usuário`;
+                    
                     const usuario = data.usuario;
                     const detalhes = data.detalhes || {};
                     const todosDados = { ...usuario, ...detalhes };
-                    let html = `
-                        <div class="info-header">
-                            <div class="user-summary">
-                                <h3>${usuario.nome}</h3>
-                                <div class="user-type-tag user-type-${usuario.tipo}">${usuario.tipo.charAt(0).toUpperCase() + usuario.tipo.slice(1)}</div>
-                                <div class="user-status-badge status-${usuario.status}"><span>●</span> ${usuario.status.charAt(0).toUpperCase() + usuario.status.slice(1)}</div>
-                            </div>
-                            <p class="user-email">${usuario.email}</p>
-                            <p class="user-id">ID: ${usuario.id}</p>
-                        </div>
-                        <hr>
-                        <div class="info-details">
-                            <h4>Informações ${usuario.tipo === 'transportador' ? 'do Transportador' : usuario.tipo === 'vendedor' ? 'do Vendedor' : 'do Comprador'}</h4>
-                    `;
-                    const camposExibir = camposPorTipo[usuario.tipo] || ['nome', 'email', 'status', 'data_criacao'];
-                    let camposEncontrados = 0;
-                    for (const campo of camposExibir) {
-                        if (todosDados.hasOwnProperty(campo) && todosDados[campo] !== null) {
-                            if (campo !== 'nome' && campo !== 'email' && campo !== 'tipo' && campo !== 'status' && campo !== 'id') {
-                                html += `<div class="detail-row"><span class="detail-label">${nomesCampos[campo] || campo}:</span><span class="detail-value">${formatarValor(campo, todosDados[campo])}</span></div>`;
-                                camposEncontrados++;
-                            }
-                        }
-                    }
-                    if (camposEncontrados === 0) html += `<div class="empty-state" style="padding: 20px; text-align: center;"><p style="color: #7f8c8d;">Nenhum detalhe adicional encontrado para este usuário.</p></div>`;
+                    let html = '';
+                    
+                    // ============ CONTAINER 1: DADOS PESSOAIS ============
                     html += `
-                        <div class="details-section" style="margin-top: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                            <h4 style="color: #2c3e50; margin-bottom: 10px;">Informações da Conta</h4>
-                            <div class="detail-row"><span class="detail-label">ID do Usuário:</span><span class="detail-value">${usuario.id}</span></div>
-                            <div class="detail-row"><span class="detail-label">Status da Conta:</span><span class="detail-value status-${usuario.status}">${usuario.status.charAt(0).toUpperCase() + usuario.status.slice(1)}</span></div>
-                            <div class="detail-row"><span class="detail-label">Data de Cadastro:</span><span class="detail-value">${formatarValor('data_criacao', usuario.data_criacao)}</span></div>
-                        </div></div><div class="modal-footer"><p><em>Clique fora do modal ou no X para fechar</em></p></div>
+                        <div class="data-container pessoal">
+                            <div class="container-header">
+                                <span class="container-header-icon">👤</span>
+                                <h4>Dados Pessoais da Conta</h4>
+                            </div>
+                            <div class="data-grid">
+                                <div class="data-field">
+                                    <div class="field-label">Nome</div>
+                                    <div class="field-value">${usuario.nome || 'Não informado'}</div>
+                                </div>
+                                <div class="data-field">
+                                    <div class="field-label">Email</div>
+                                    <div class="field-value">${usuario.email || 'Não informado'}</div>
+                                </div>
+                                <div class="data-field">
+                                    <div class="field-label">Status</div>
+                                    <div class="field-value">
+                                        <span style="background: ${usuario.status === 'ativo' ? '#28a745' : '#dc3545'}; color: white; padding: 4px 12px; border-radius: 20px; display: inline-block; font-size: 0.9rem;">
+                                            ${usuario.status.charAt(0).toUpperCase() + usuario.status.slice(1)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="data-field">
+                                    <div class="field-label">Data de Cadastro</div>
+                                    <div class="field-value">${formatarValor('data_criacao', usuario.data_criacao)}</div>
+                                </div>
+                            </div>
+                        </div>
                     `;
+                    
+                    // ============ CONTAINER 2: DADOS ESPECÍFICOS POR TIPO ============
+                    let dadosEspecificos = '';
+                    
+                    if (tipo === 'comprador') {
+                        dadosEspecificos = `
+                            <div class="data-container especifico">
+                                <div class="container-header">
+                                    <span class="container-header-icon">🛒</span>
+                                    <h4>Dados do Comprador</h4>
+                                </div>
+                                <div class="data-grid">
+                                    <div class="data-field">
+                                        <div class="field-label">Tipo de Pessoa</div>
+                                        <div class="field-value">${(detalhes.tipo_pessoa || detalhes.tipoPessoaComprador || 'Não informado').toUpperCase()}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">CPF/CNPJ</div>
+                                        <div class="field-value">${detalhes.cpf_cnpj || detalhes.cpfCnpjComprador || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">Nome Comercial</div>
+                                        <div class="field-value">${detalhes.nome_comercial || detalhes.nomeComercialComprador || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">Telefone Principal</div>
+                                        <div class="field-value">${detalhes.telefone1 || detalhes.telefone1Comprador || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">Telefone Secundário</div>
+                                        <div class="field-value ${!detalhes.telefone2 && !detalhes.telefone2Comprador ? 'empty' : ''}">${detalhes.telefone2 || detalhes.telefone2Comprador || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">Plano</div>
+                                        <div class="field-value">${detalhes.plano || detalhes.planoComprador || 'Não informado'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else if (tipo === 'vendedor') {
+                        dadosEspecificos = `
+                            <div class="data-container especifico">
+                                <div class="container-header">
+                                    <span class="container-header-icon">🏪</span>
+                                    <h4>Dados do Vendedor</h4>
+                                </div>
+                                <div class="data-grid">
+                                    <div class="data-field">
+                                        <div class="field-label">Nome Comercial</div>
+                                        <div class="field-value">${detalhes.nome_comercial || detalhes.nomeComercialVendedor || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">CNPJ</div>
+                                        <div class="field-value">${detalhes.cpf_cnpj || detalhes.cpfCnpjVendedor || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">Razão Social</div>
+                                        <div class="field-value ${!detalhes.razao_social && !detalhes.cipVendedor ? 'empty' : ''}">${detalhes.razao_social || detalhes.cipVendedor || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">Telefone Principal</div>
+                                        <div class="field-value">${detalhes.telefone1 || detalhes.telefone1Vendedor || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">Telefone Secundário</div>
+                                        <div class="field-value ${!detalhes.telefone2 && !detalhes.telefone2Vendedor ? 'empty' : ''}">${detalhes.telefone2 || detalhes.telefone2Vendedor || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">Plano</div>
+                                        <div class="field-value">${detalhes.plano || detalhes.planoVendedor || 'Não informado'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else if (tipo === 'transportador') {
+                        dadosEspecificos = `
+                            <div class="data-container especifico">
+                                <div class="container-header">
+                                    <span class="container-header-icon">🚚</span>
+                                    <h4>Dados do Transportador</h4>
+                                </div>
+                                <div class="data-grid">
+                                    <div class="data-field">
+                                        <div class="field-label">Telefone</div>
+                                        <div class="field-value">${detalhes.telefone || detalhes.telefoneTransportador || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">Número ANTT</div>
+                                        <div class="field-value">${detalhes.numero_antt || detalhes.numeroANTT || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">Placa do Veículo</div>
+                                        <div class="field-value">${detalhes.placa_veiculo || detalhes.placaVeiculo || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">Modelo do Veículo</div>
+                                        <div class="field-value">${detalhes.modelo_veiculo || detalhes.modeloVeiculo || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">Descrição do Veículo</div>
+                                        <div class="field-value">${detalhes.descricao_veiculo || detalhes.descricaoVeiculo || 'Não informado'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    html += dadosEspecificos;
+                    
+                    // ============ CONTAINER 3: DADOS DE ENDEREÇO ============
+                    let temEndereco = false;
+                    let enderecoCampos = {};
+                    
+                    if (tipo === 'comprador' || tipo === 'vendedor' || tipo === 'transportador') {
+                        enderecoCampos = {
+                            cep: detalhes.cep || detalhes[tipo === 'comprador' ? 'cepComprador' : tipo === 'vendedor' ? 'cepVendedor' : 'cepTransportador'],
+                            rua: detalhes.rua || detalhes[tipo === 'comprador' ? 'ruaComprador' : tipo === 'vendedor' ? 'ruaVendedor' : 'ruaTransportador'],
+                            numero: detalhes.numero || detalhes[tipo === 'comprador' ? 'numeroComprador' : tipo === 'vendedor' ? 'numeroVendedor' : 'numeroTransportador'],
+                            complemento: detalhes.complemento || detalhes[tipo === 'comprador' ? 'complementoComprador' : tipo === 'vendedor' ? 'complementoVendedor' : 'complementoTransportador'],
+                            estado: detalhes.estado || detalhes[tipo === 'comprador' ? 'estadoComprador' : tipo === 'vendedor' ? 'estadoVendedor' : 'estadoTransportador'],
+                            cidade: detalhes.cidade || detalhes[tipo === 'comprador' ? 'cidadeComprador' : tipo === 'vendedor' ? 'cidadeVendedor' : 'cidadeTransportador']
+                        };
+                        temEndereco = Object.values(enderecoCampos).some(v => v);
+                    }
+                    
+                    if (temEndereco) {
+                        html += `
+                            <div class="data-container endereco">
+                                <div class="container-header">
+                                    <span class="container-header-icon">📍</span>
+                                    <h4>Endereço</h4>
+                                </div>
+                                <div class="data-grid">
+                                    <div class="data-field">
+                                        <div class="field-label">CEP</div>
+                                        <div class="field-value ${!enderecoCampos.cep ? 'empty' : ''}">${enderecoCampos.cep || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">Rua</div>
+                                        <div class="field-value ${!enderecoCampos.rua ? 'empty' : ''}">${enderecoCampos.rua || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">Número</div>
+                                        <div class="field-value ${!enderecoCampos.numero ? 'empty' : ''}">${enderecoCampos.numero || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">Complemento</div>
+                                        <div class="field-value ${!enderecoCampos.complemento ? 'empty' : ''}">${enderecoCampos.complemento || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">Estado</div>
+                                        <div class="field-value ${!enderecoCampos.estado ? 'empty' : ''}">${enderecoCampos.estado || 'Não informado'}</div>
+                                    </div>
+                                    <div class="data-field">
+                                        <div class="field-label">Cidade</div>
+                                        <div class="field-value ${!enderecoCampos.cidade ? 'empty' : ''}">${enderecoCampos.cidade || 'Não informado'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
                     modalCorpo.innerHTML = html;
                 })
                 .catch(error => { modalCorpo.innerHTML = `<div class="error-message"><h4>Erro ao carregar dados</h4><p>${error.message}</p></div>`; });

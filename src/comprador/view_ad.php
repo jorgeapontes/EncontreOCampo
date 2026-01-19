@@ -501,9 +501,11 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                         <div class="botoes-compra">
                             <?php if (!empty($anuncio['paletizado']) && $anuncio['paletizado'] == 1): ?><div><i class="fas fa-cube"></i> Paletizado</div><?php endif; ?>
                             <?php if (isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo'): ?>
-                                <button type="button" class="btn-comprar" id="btn-comprar"><i class="fas fa-shopping-cart"></i> Comprar Agora</button>
+                                <!-- BOTÃO DE COMPRA COMENTADO PARA USO FUTURO -->
+                                <!-- <button type="button" class="btn-comprar" id="btn-comprar"><i class="fas fa-shopping-cart"></i> Comprar Agora</button> -->
                             <?php else: ?>
-                                <button type="button" class="btn-comprar btn-disabled" disabled><i class="fas fa-shopping-cart"></i> Comprar Agora</button>
+                                <!-- BOTÃO DE COMPRA COMENTADO PARA USO FUTURO -->
+                                <!-- <button type="button" class="btn-comprar btn-disabled" disabled><i class="fas fa-shopping-cart"></i> Comprar Agora</button> -->
                             <?php endif; ?>
                             
                             <div class="proposta-option">
@@ -715,8 +717,9 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
             btnCancelarProposta.addEventListener('click', () => { propostaSection.classList.remove('show'); setTimeout(() => { propostaSection.style.display = 'none'; }, 300); });
             if (btnCompartilhar) { btnCompartilhar.addEventListener('click', function() { navigator.clipboard.writeText(window.location.href).then(() => { alert('Link copiado!'); }); }); }
             
-            const btnComprar = document.getElementById('btn-comprar');
-            if (btnComprar) { btnComprar.addEventListener('click', function() { alert('Funcionalidade de compra direta em desenvolvimento. Para comprar, use a opção "Fazer Proposta".'); }); }
+            // EVENTO DO BOTÃO DE COMPRA COMENTADO PARA USO FUTURO
+            // const btnComprar = document.getElementById('btn-comprar');
+            // if (btnComprar) { btnComprar.addEventListener('click', function() { alert('Funcionalidade de compra direta em desenvolvimento. Para comprar, use a opção "Fazer Proposta".'); }); }
             
             // Carrossel
             const carrosselSlides = document.getElementById('carrossel-slides');

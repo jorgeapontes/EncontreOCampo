@@ -41,7 +41,15 @@ if ($id_plano && $usuario_id) {
 
     if ($plano && !empty($plano['stripe_price_id'])) {
         try {
-            // DICA: Em produção, substitua 'localhost' pela sua URL do ngrok para o sucesso_url funcionar corretamente
+            // Detectar a URL base dinamicamente baseado no servidor
+            $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'];
+            $base_url = $protocol . '://' . $host;
+            
+            // URLs de redirecionamento dinâmicas
+            $success_url = $base_url . '/src/vendedor/redirects/sucesso.php?session_id={CHECKOUT_SESSION_ID}';
+            $cancel_url = $base_url . '/src/vendedor/escolher_plano.php';
+            
             $session = \Stripe\Checkout\Session::create([
                 'payment_method_types' => ['card'], 
                 'line_items' => [[
@@ -49,8 +57,8 @@ if ($id_plano && $usuario_id) {
                     'quantity' => 1,
                 ]],
                 'mode' => 'subscription',
-                'success_url' => 'http://localhost/EncontreOCampo/src/vendedor/redirects/sucesso.php?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => 'http://localhost/EncontreOCampo/src/vendedor/escolher_plano.php',
+                'success_url' => $success_url,
+                'cancel_url' => $cancel_url,
                 'customer_email' => $_SESSION['usuario_email'] ?? null,
                 'metadata' => [
                     'vendedor_id' => $vendedor_id_real, 

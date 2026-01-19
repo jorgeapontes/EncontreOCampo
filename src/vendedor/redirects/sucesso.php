@@ -23,42 +23,53 @@ if ($session_id) {
         $session = \Stripe\Checkout\Session::retrieve($session_id);
 
         // Dentro do sucesso.php, onde ocorre o pagamento confirmado
-if ($session->payment_status === 'paid') {
-    $vendedor_id = $session->metadata->vendedor_id;
-    $plano_id = $session->metadata->plano_id;
-    
-    // CAPTURANDO OS DOIS IDS DO STRIPE
-    $stripe_customer_id = $session->customer; 
-    $stripe_subscription_id = $session->subscription; // <-- ESTA LINHA É ESSENCIAL
+        // Verifica se o pagamento foi bem-sucedido (pode ser 'paid' ou 'unpaid' dependendo do tipo de pagamento)
+        if ($session->payment_status === 'paid' || $session->status === 'complete') {
+            $vendedor_id = $session->metadata->vendedor_id;
+            $plano_id = $session->metadata->plano_id;
+            
+            // CAPTURANDO OS DOIS IDS DO STRIPE
+            $stripe_customer_id = $session->customer; 
+            $stripe_subscription_id = $session->subscription; // <-- ESTA LINHA É ESSENCIAL
 
-    $database = new Database();
-    $conn = $database->getConnection();
+            $database = new Database();
+            $conn = $database->getConnection();
 
-    $agora = date('Y-m-d H:i:s');
-    $data_vencimento = date('Y-m-d H:i:s', strtotime('+30 days'));
+            $agora = date('Y-m-d H:i:s');
+            $data_vencimento = date('Y-m-d H:i:s', strtotime('+30 days'));
 
-    // ATUALIZAÇÃO COMPLETA DO BANCO
-    $sql = "UPDATE vendedores SET 
-            plano_id = ?, 
-            status_assinatura = 'ativo', 
-            Data_inicio_assinatura = ?, 
-            data_vencimento_assinatura = ?,
-            stripe_customer_id = ?,
-            stripe_subscription_id = ? 
-            WHERE id = ?";
-    
-    $stmt = $conn->prepare($sql);
-    $stmt->execute([
-        $plano_id, 
-        $agora, 
-        $data_vencimento, 
-        $stripe_customer_id, 
-        $stripe_subscription_id, // Gravando o ID da assinatura aqui
-        $vendedor_id
-    ]);
+            // ATUALIZAÇÃO COMPLETA DO BANCO
+            // Se o webhook já processou, isso vai atualizar com os mesmos dados (safe)
+            // Se o webhook ainda não processou, isso garante que os dados são salvos
+            $sql = "UPDATE vendedores SET 
+                    plano_id = ?, 
+                    status_assinatura = 'ativo', 
+                    Data_inicio_assinatura = ?, 
+                    data_vencimento_assinatura = ?,
+                    stripe_customer_id = ?,
+                    stripe_subscription_id = ? 
+                    WHERE id = ?";
+            
+            $stmt = $conn->prepare($sql);
+            $resultado = $stmt->execute([
+                $plano_id, 
+                $agora, 
+                $data_vencimento, 
+                $stripe_customer_id, 
+                $stripe_subscription_id, // Gravando o ID da assinatura aqui
+                $vendedor_id
+            ]);
 
-    $sucesso = true;
-} else {
+            // Verificar se a atualização foi bem-sucedida
+            if ($resultado && $stmt->rowCount() > 0) {
+                $sucesso = true;
+            } else {
+                $mensagem_status = "Pagamento confirmado, mas houve um erro ao ativar o plano. Por favor, contate o suporte.";
+            }
+        } else if ($session->status === 'complete' && $session->payment_status === 'unpaid') {
+            // Pagamento pode estar pendente (débito em conta, etc)
+            $mensagem_status = "Pagamento em processamento. Você será notificado em breve.";
+        } else {
             $mensagem_status = "O pagamento ainda não foi confirmado.";
         }
     } catch (Exception $e) {

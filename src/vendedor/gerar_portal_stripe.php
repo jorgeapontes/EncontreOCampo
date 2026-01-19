@@ -15,10 +15,18 @@ if (!$customer_id) {
 }
 
 try {
+    // Detectar a URL base dinamicamente baseado no servidor
+    $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'];
+    $base_url = $protocol . '://' . $host;
+    
+    // URL de retorno dinâmica
+    $return_url = $base_url . '/src/vendedor/gerenciar_assinatura.php';
+    
     // Cria o link seguro para o Portal do Cliente do Stripe
     $session = \Stripe\BillingPortal\Session::create([
       'customer' => $customer_id,
-      'return_url' => 'http://localhost/EncontreOCampo/src/vendedor/gerenciar_assinatura.php',
+      'return_url' => $return_url,
     ]);
 
     // Redireciona o usuário para o Stripe

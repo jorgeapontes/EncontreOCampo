@@ -340,6 +340,30 @@ body {
     color: var(--text-light);
 }
 
+.btn-buscar-cep {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+            margin-top: 33px;
+            white-space: nowrap;
+        }
+        .btn-buscar-cep:hover {
+            background-color: #218838;
+        }
+        .btn-buscar-cep:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
 /* Botão de salvar */
 .big-button {
     font-size: 1.1rem;

@@ -62,6 +62,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $placa_veiculo = $_POST['placa_veiculo'] ?? ($transportador['placa_veiculo'] ?? '');
     $modelo_veiculo = $_POST['modelo_veiculo'] ?? ($transportador['modelo_veiculo'] ?? '');
     $descricao_veiculo = $_POST['descricao_veiculo'] ?? ($transportador['descricao_veiculo'] ?? '');
+    $cep = $_POST['cep'] ?? ($vendedor['cep'] ?? '');
+    $rua = $_POST['rua'] ?? ($vendedor['rua'] ?? '');
+    $numero = $_POST['numero'] ?? ($vendedor['numero'] ?? '');
+    $complemento = $_POST['complemento'] ?? ($vendedor['complemento'] ?? '');
     $estado = $_POST['estado'] ?? ($transportador['estado'] ?? '');
     $cidade = $_POST['cidade'] ?? ($transportador['cidade'] ?? '');
     $foto_perfil_antiga = $transportador['foto_perfil_url'] ?? '';
@@ -103,6 +107,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             placa_veiculo = ?,
             modelo_veiculo = ?,
             descricao_veiculo = ?,
+            cep = ?,
+            rua = ?,
+            numero = ?,
+            complemento = ?,
             estado = ?,
             cidade = ?,
             foto_perfil_url = ?
@@ -116,6 +124,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $placa_veiculo,
             $modelo_veiculo,
             $descricao_veiculo,
+            $cep,
+            $rua,
+            $numero,
+            $complemento,
             $estado,
             $cidade,
             $foto_perfil_nova,  // NOVO CAMPO
@@ -134,6 +146,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $transportador['placa_veiculo'] = $placa_veiculo;
         $transportador['modelo_veiculo'] = $modelo_veiculo;
         $transportador['descricao_veiculo'] = $descricao_veiculo;
+        $transportador['cep'] = $cep;
+        $transportador['rua'] = $rua;
+        $transportador['numero'] = $numero;
+        $transportador['complemento'] = $complemento;
         $transportador['estado'] = $estado;
         $transportador['cidade'] = $cidade;
         $transportador['foto_perfil_url'] = $foto_perfil_nova;  // NOVO CAMPO
@@ -287,9 +303,18 @@ function getImagePath($path) {
                         <textarea id="descricao_veiculo" name="descricao_veiculo" rows="4"><?php echo htmlspecialchars($transportador['descricao_veiculo'] ?? ''); ?></textarea>
                     </div>
 
-                    <h3>Endereço onde está instalado</h3>
+                    <h3 style="margin-top: 20px; color: #2d3436; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">Endereço</h3>
                     
-                    <div class="form-group-row">
+                    <div class="form-group-row input-group-cep">
+                        <div class="form-group form-group-cep">
+                            <label for="cep">CEP</label>
+                            <input type="text" id="cep" name="cep" value="<?php echo htmlspecialchars($transportador['cep'] ?? ''); ?>" maxlength="9" placeholder="00000-000">
+                            <div id="cep-message" class="cep-message"></div>
+                        </div>
+                        <button type="button" class="btn-buscar-cep" id="btn-buscar-cep" onclick="buscarCep()">
+                            <i class="fas fa-search" style="margin-right: 5px;"></i> Buscar
+                        </button>
+                        
                         <div class="form-group">
                             <label for="estado">Estado</label>
                             <select id="estado" name="estado">
@@ -308,7 +333,23 @@ function getImagePath($path) {
                             <input type="text" id="cidade" name="cidade" value="<?php echo htmlspecialchars($transportador['cidade'] ?? ''); ?>">
                         </div>
                     </div>
-                
+
+                    <div class="form-group-row">
+                        <div class="form-group" style="flex: 3;">
+                            <label for="rua">Rua/Logradouro</label>
+                            <input type="text" id="rua" name="rua" value="<?php echo htmlspecialchars($transportador['rua'] ?? ''); ?>">
+                        </div>
+                        <div class="form-group">
+                            <label for="numero">Número</label>
+                            <input type="text" id="numero" name="numero" value="<?php echo htmlspecialchars($transportador['numero'] ?? ''); ?>">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="complemento">Complemento</label>
+                        <input type="text" id="complemento" name="complemento" value="<?php echo htmlspecialchars($transportador['complemento'] ?? ''); ?>">
+                    </div>
+                    
                     <button type="submit" class="big-button"><i class="fas fa-save"></i> Salvar Alterações</button>
                     
                     <center>
@@ -354,6 +395,98 @@ function getImagePath($path) {
                 }
             });
         }
+        
+        // Função Buscar CEP com salvamento automático
+        function buscarCep() {
+            const cepInput = document.getElementById('cep');
+            const ruaInput = document.getElementById('rua');
+            const cidadeInput = document.getElementById('cidade');
+            const estadoSelect = document.getElementById('estado');
+            const complementoInput = document.getElementById('complemento');
+            const cepMessage = document.getElementById('cep-message');
+            const btnBuscar = document.getElementById('btn-buscar-cep');
+            
+            let cep = cepInput.value.replace(/\D/g, '');
+            
+            if (cep.length !== 8) {
+                showMessage('Por favor, digite um CEP válido (8 dígitos).', 'error');
+                cepInput.focus();
+                return;
+            }
+            
+            // Mostrar indicador de carregamento
+            const originalHTML = btnBuscar.innerHTML;
+            btnBuscar.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btnBuscar.disabled = true;
+            cepMessage.innerHTML = '';
+            
+            // Enviar requisição AJAX para o servidor
+            const formData = new FormData();
+            formData.append('buscar_cep', 'true');
+            formData.append('cep', cep);
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Preencher os campos com os dados do CEP
+                    ruaInput.value = data.data.logradouro || '';
+                    cidadeInput.value = data.data.localidade || '';
+                    estadoSelect.value = data.data.uf || '';
+                    complementoInput.value = data.data.complemento || '';
+                    
+                    // Atualizar o campo CEP com formatação
+                    if (data.cep_formatado) {
+                        cepInput.value = data.cep_formatado;
+                    }
+                    
+                    // Mostrar mensagem de sucesso
+                    showMessage(data.message, 'success');
+                    
+                    // Focar no campo número após buscar o CEP
+                    setTimeout(() => {
+                        document.getElementById('numero').focus();
+                    }, 300);
+                    
+                    // Recarregar a página após 1.5 segundos para mostrar dados atualizados
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao buscar CEP:', error);
+                showMessage('Erro ao buscar CEP. Por favor, tente novamente.', 'error');
+            })
+            .finally(() => {
+                // Restaurar o botão
+                btnBuscar.innerHTML = originalHTML;
+                btnBuscar.disabled = false;
+            });
+        }
+
+        // Buscar CEP ao pressionar Enter no campo CEP
+        document.getElementById('cep').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                buscarCep();
+            }
+        });
+
+        // Remover o listener antigo de blur que podia conflitar
+        document.getElementById('cep').removeEventListener('blur', buscarCep);
+
+        function showMessage(message, type) {
+            const cepMessage = document.getElementById('cep-message');
+            cepMessage.innerHTML = '<i class="fas ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle') + '"></i> ' + message;
+            cepMessage.className = 'cep-message ' + type;
+        }
+
         // Menu Mobile
         const hamburger = document.querySelector(".hamburger");
         const navMenu = document.querySelector(".nav-menu");

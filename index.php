@@ -607,7 +607,6 @@ require_once 'src/conexao.php';
                                     <div class="placa-container">
                                         <input type="text" id="placaVeiculo" name="placaVeiculo" required 
                                                placeholder="AAA-1234 ou AAA1B23" maxlength="8">
-                                        <button type="button" class="placa-btn" onclick="buscarPlacaVeiculo()">Buscar Info</button>
                                     </div>
                                     <small class="form-help">Formato aceito: AAA-1234 (antigo) ou AAA1B23 (Mercosul)</small>
                                 </div>
@@ -636,13 +635,32 @@ require_once 'src/conexao.php';
                             </div>
 
                             <!-- PASSO 3: Localização -->
-                            <div id="transportadorStep3" class="step-content" style="display: none;">
-                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Localização</h4>
+                             <div id="transportadorStep3" class="step-content" style="display: none;">
+                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
                                 
                                 <div class="form-group">
-                                    <label class="required">Selecione a cidade onde está instalado:</label>
+                                    <label for="cepTransportador">CEP (opcional)</label>
+                                    <div class="cep-container">
+                                        <input type="text" id="cepTransportador" name="cepTransportador" maxlength="9" placeholder="00000-000">
+                                        <button type="button" class="cep-btn" onclick="buscarCEPTransportador()">Buscar CEP</button>
+                                    </div>
                                 </div>
                                 
+                                <div class="form-group">
+                                    <label for="ruaTransportador" class="required">Rua </label>
+                                    <input type="text" id="ruaTransportador" name="ruaTransportador" required placeholder="Nome da rua">
+                                </div>
+                                
+                                <div class="form-group-row">
+                                    <div class="form-group">
+                                        <label for="numeroTransportador" class="required">Número </label>
+                                        <input type="text" id="numeroTransportador" name="numeroTransportador" required placeholder="Número">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="complementoTransportador">Complemento (opcional)</label>
+                                        <input type="text" id="complementoTransportador" name="complementoTransportador" placeholder="Apto, Sala, etc.">
+                                    </div>
+                                </div>
                                 <div class="form-group-row">
                                     <div class="form-group">
                                         <label for="estadoTransportador" class="required">Estado </label>
@@ -652,9 +670,7 @@ require_once 'src/conexao.php';
                                     </div>
                                     <div class="form-group">
                                         <label for="cidadeTransportador" class="required">Cidade </label>
-                                        <select id="cidadeTransportador" name="cidadeTransportador" required>
-                                            <option value="">Selecione a cidade...</option>
-                                        </select>
+                                        <input type="text" id="cidadeTransportador" name="cidadeTransportador" required placeholder="Nome da cidade">
                                     </div>
                                 </div>
                                 

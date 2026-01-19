@@ -10,6 +10,67 @@ $db = $database->getConnection();
 if (!isset($usuario)) $usuario = [];
 if (!isset($transportador)) $transportador = [];
 
+// --- LÓGICA DE BUSCA DE CEP (DEVE VIR ANTES DE QUALQUER SAÍDA HTML) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buscar_cep'])) {
+    $cep = $_POST['cep'] ?? '';
+    $cep = preg_replace('/[^0-9]/', '', $cep);
+    
+    if (strlen($cep) === 8) {
+        // Formatar CEP para exibição
+        $cep_formatado = substr($cep, 0, 5) . '-' . substr($cep, 5, 3);
+        
+        // Fazer a requisição para a API ViaCEP
+        $url = "https://viacep.com.br/ws/{$cep}/json/";
+        
+        // Usar cURL ou file_get_contents
+        if (function_exists('curl_init')) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            $response = curl_exec($ch);
+            curl_close($ch);
+        } else {
+            $response = @file_get_contents($url);
+        }
+        
+        if ($response) {
+            $dados = json_decode($response, true);
+            
+            if (isset($dados['erro']) && $dados['erro']) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'CEP não encontrado.'
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'CEP encontrado com sucesso!',
+                    'cep_formatado' => $cep_formatado,
+                    'data' => [
+                        'logradouro' => $dados['logradouro'] ?? '',
+                        'complemento' => $dados['complemento'] ?? '',
+                        'bairro' => $dados['bairro'] ?? '',
+                        'localidade' => $dados['localidade'] ?? '',
+                        'uf' => $dados['uf'] ?? ''
+                    ]
+                ]);
+            }
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Erro ao conectar com o serviço de CEP.'
+            ]);
+        }
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'CEP inválido. Deve conter 8 dígitos.'
+        ]);
+    }
+    exit; // Termina a execução para não renderizar o HTML
+}
+
 // --- 1. BUSCAR DADOS FRESCOS DO USUÁRIO ---
 $stmt_user = $db->prepare("SELECT * FROM usuarios WHERE id = ?");
 if (isset($_SESSION['usuario_id'])) {
@@ -396,7 +457,7 @@ function getImagePath($path) {
             });
         }
         
-        // Função Buscar CEP com salvamento automático
+        // Função Buscar CEP
         function buscarCep() {
             const cepInput = document.getElementById('cep');
             const ruaInput = document.getElementById('rua');
@@ -425,11 +486,16 @@ function getImagePath($path) {
             formData.append('buscar_cep', 'true');
             formData.append('cep', cep);
             
-            fetch(window.location.href, {
+            fetch('perfil.php', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro na rede');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     // Preencher os campos com os dados do CEP
@@ -450,11 +516,6 @@ function getImagePath($path) {
                     setTimeout(() => {
                         document.getElementById('numero').focus();
                     }, 300);
-                    
-                    // Recarregar a página após 1.5 segundos para mostrar dados atualizados
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1500);
                 } else {
                     showMessage(data.message, 'error');
                 }
@@ -468,23 +529,6 @@ function getImagePath($path) {
                 btnBuscar.innerHTML = originalHTML;
                 btnBuscar.disabled = false;
             });
-        }
-
-        // Buscar CEP ao pressionar Enter no campo CEP
-        document.getElementById('cep').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                buscarCep();
-            }
-        });
-
-        // Remover o listener antigo de blur que podia conflitar
-        document.getElementById('cep').removeEventListener('blur', buscarCep);
-
-        function showMessage(message, type) {
-            const cepMessage = document.getElementById('cep-message');
-            cepMessage.innerHTML = '<i class="fas ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle') + '"></i> ' + message;
-            cepMessage.className = 'cep-message ' + type;
         }
 
         // Menu Mobile

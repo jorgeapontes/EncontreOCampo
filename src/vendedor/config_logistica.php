@@ -13,7 +13,7 @@ if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor
 $usuario_id = $_SESSION['usuario_id'];
 $usuario_nome = htmlspecialchars($_SESSION['vendedor_nome'] ?? 'Vendedor');
 $database = new Database();
-$conn = $database->getConnection();
+$db = $database->getConnection();
 
 // Buscar dados do vendedor
 $vendedor_id = null;
@@ -25,7 +25,7 @@ $cidades_atendidos = [];
 try {
     // Buscar vendedor_id
     $sql_vendedor = "SELECT id, nome_comercial, estados_atendidos, cidades_atendidas FROM vendedores WHERE usuario_id = :usuario_id";
-    $stmt_vendedor = $conn->prepare($sql_vendedor);
+    $stmt_vendedor = $db->prepare($sql_vendedor);
     $stmt_vendedor->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
     $stmt_vendedor->execute();
     $vendedor = $stmt_vendedor->fetch(PDO::FETCH_ASSOC);
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Atualizar no banco (estados e cidades)
         $sql_atualizar = "UPDATE vendedores SET estados_atendidos = :estados_json, cidades_atendidas = :cidades_json WHERE id = :vendedor_id";
-        $stmt_atualizar = $conn->prepare($sql_atualizar);
+        $stmt_atualizar = $db->prepare($sql_atualizar);
         $stmt_atualizar->bindParam(':estados_json', $estados_json);
         $stmt_atualizar->bindParam(':cidades_json', $cidades_json);
         $stmt_atualizar->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
@@ -147,523 +147,14 @@ $estados_brasil = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuração de Regiões de Entrega - Encontre o Campo</title>
-    <link rel="stylesheet" href="../css/vendedor/dashboard.css">
+    <link rel="stylesheet" href="../css/vendedor/config_logistica.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-    <style>
-        /* Reset de margens para garantir que o conteúdo comece após a navbar */
-        body {
-            padding-top: 80px; /* Altura da navbar + espaço extra */
-            margin: 0;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
-        }
-
-        .logistica-container {
-            max-width: 1100px;
-            margin: 0 auto 40px;
-            padding: 0 20px;
-        }
-
-        .config-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            padding: 30px;
-            margin-top: 20px;
-            position: relative;
-            border: 1px solid #e0e0e0;
-        }
-
-        .header-with-close {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .page-title {
-            color: #2E7D32;
-            margin: 0;
-            font-size: 1.8rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 600;
-        }
-
-        .btn-fechar {
-            background: #f8f9fa;
-            border: 2px solid #dee2e6;
-            color: #495057;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 1.3rem;
-            transition: all 0.3s;
-            text-decoration: none;
-        }
-
-        .btn-fechar:hover {
-            background: #e9ecef;
-            border-color: #adb5bd;
-            color: #212529;
-            transform: scale(1.1);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        .section-description {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            line-height: 1.6;
-            font-size: 1.1rem;
-            padding: 0 10px;
-        }
-
-        .estados-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .estado-checkbox {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 15px;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .btn-cidades {
-            background: transparent;
-            border: none;
-            color: #0d6efd;
-            cursor: pointer;
-            padding: 6px 8px;
-            margin-top: 8px;
-            border-radius: 6px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.2s, transform 0.15s;
-        }
-
-        .btn-cidades:hover {
-            background: rgba(13,110,253,0.08);
-            transform: translateY(-2px);
-        }
-
-        .estado-checkbox:hover {
-            border-color: #4CAF50;
-            background: #f0f9f0;
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(76, 175, 80, 0.15);
-        }
-
-        .estado-checkbox input[type="checkbox"] {
-            margin-right: 10px;
-            transform: scale(1.2);
-        }
-
-        .estado-label {
-            font-weight: 600;
-            color: #333;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-        }
-
-        .estado-sigla {
-            display: inline-block;
-            background: #4CAF50;
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 32px;
-            font-weight: bold;
-            margin-right: 12px;
-            font-size: 0.9rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .controles-superiores {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding: 18px;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 10px;
-            border-left: 5px solid #4CAF50;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
-        }
-
-        .contador-estados {
-            font-size: 1.1rem;
-            color: #495057;
-            font-weight: 600;
-        }
-
-        .contador-estados .numero {
-            background: #4CAF50;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            margin-left: 8px;
-            font-size: 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .botao-acao {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            font-size: 1rem;
-        }
-
-        .botao-acao:hover {
-            background: #5a6268;
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-        }
-
-        .botao-acao.primary {
-            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
-            border: none;
-        }
-
-        .botao-acao.primary:hover {
-            background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(46, 125, 50, 0.3);
-        }
-
-        .acoes-inferiores {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 2px solid #f0f0f0;
-        }
-
-        .grupo-esquerda, .grupo-direita {
-            display: flex;
-            gap: 15px;
-        }
-
-        .info-box {
-            background: linear-gradient(135deg, #e7f3ff 0%, #d4e7ff 100%);
-            border: 2px solid #b3d7ff;
-            border-radius: 10px;
-            padding: 25px;
-            margin-top: 35px;
-            margin-bottom: 35px;
-        }
-
-        .info-box h4 {
-            color: #0066cc;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.3rem;
-        }
-
-        .info-box ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        .info-box li {
-            margin-bottom: 12px;
-            padding-left: 30px;
-            position: relative;
-            line-height: 1.5;
-        }
-
-        .info-box li:before {
-            content: '✓';
-            color: #0066cc;
-            font-size: 1.2rem;
-            position: absolute;
-            left: 0;
-            top: -2px;
-            font-weight: bold;
-        }
-
-        .alert-message {
-            padding: 18px 24px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-
-        .alert-message.sucesso {
-            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-            border: 2px solid #a3d9b1;
-            color: #155724;
-        }
-
-        .alert-message.erro {
-            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-            border: 2px solid #f1b0b7;
-            color: #721c24;
-        }
-
-        .alert-message i {
-            font-size: 1.8rem;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 50px 30px;
-            color: #6c757d;
-            font-style: italic;
-            border: 3px dashed #dee2e6;
-            border-radius: 12px;
-            margin: 30px 0;
-            background: #fafafa;
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            color: #adb5bd;
-        }
-
-        /* ESTILOS PARA SELEÇÃO DE CIDADES */
-        .cidades-section {
-            background: linear-gradient(135deg, #f5f9ff 0%, #e8f4ff 100%);
-            border: 2px solid #b3d9ff;
-            border-radius: 10px;
-            padding: 25px;
-            margin-top: 30px;
-            display: none;
-        }
-
-        .cidades-section.ativo {
-            display: block;
-        }
-
-        .cidades-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #b3d9ff;
-        }
-
-        .cidades-header h4 {
-            margin: 0;
-            color: #0066cc;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .cidades-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 12px;
-            margin-top: 15px;
-        }
-
-        .cidade-checkbox {
-            background: white;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            padding: 12px;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .cidade-checkbox:hover {
-            border-color: #0066cc;
-            background: #f8faff;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.1);
-        }
-
-        .cidade-checkbox input[type="checkbox"] {
-            margin-right: 8px;
-            transform: scale(1.1);
-        }
-
-        .cidade-label {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .estado-selecionado-info {
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-            border: 2px solid #64b5f6;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .estado-nome-selecionado {
-            font-weight: 600;
-            color: #0d47a1;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-fechar-estado {
-            background: none;
-            border: none;
-            color: #0d47a1;
-            font-size: 1.3rem;
-            cursor: pointer;
-            padding: 0 5px;
-            transition: all 0.3s;
-        }
-
-        .btn-fechar-estado:hover {
-            color: #f44336;
-            transform: scale(1.2);
-        }
-
-        /* Ajustes para garantir que o conteúdo não fique atrás da navbar */
-        .navbar {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .main-content-wrapper {
-            margin-top: 15px;
-            padding: 20px 0;
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding-top: 70px;
-            }
-            
-            .estados-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 12px;
-            }
-            
-            .controles-superiores {
-                flex-direction: column;
-                gap: 15px;
-                align-items: stretch;
-            }
-            
-            .acoes-inferiores {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .grupo-esquerda, .grupo-direita {
-                flex-direction: column;
-                width: 100%;
-            }
-            
-            .botao-acao {
-                width: 100%;
-                justify-content: center;
-                padding: 14px;
-            }
-            
-            .config-card {
-                padding: 20px;
-                margin: 15px 10px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding-top: 60px;
-            }
-            
-            .estados-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .config-card {
-                padding: 15px;
-            }
-            
-            .header-with-close {
-                flex-direction: column;
-                gap: 15px;
-                align-items: flex-start;
-            }
-            
-            .btn-fechar {
-                align-self: flex-end;
-                position: absolute;
-                top: 15px;
-                right: 15px;
-            }
-            
-            .page-title {
-                font-size: 1.5rem;
-            }
-        }
-
-        /* Ajustes para telas muito pequenas */
-        @media (max-height: 600px) {
-            body {
-                padding-top: 60px;
-            }
-            
-            .config-card {
-                padding: 15px;
-                margin-top: 10px;
-            }
-            
-            .estados-grid {
-                max-height: 300px;
-                overflow-y: auto;
-                padding-right: 5px;
-            }
-        }
-    </style>
 </head>
 <body>
-    <!-- Navbar similar ao dashboard do vendedor -->
     <header>
         <nav class="navbar">
             <div class="nav-container">
@@ -675,40 +166,28 @@ $estados_brasil = [
                     </div>
                 </div>
                 <ul class="nav-menu">
-                    <li class="nav-item">
-                        <a href="../../index.php" class="nav-link">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="../anuncios.php" class="nav-link">Anúncios</a>
-                    <li class="nav-item">
-                        <a href="dashboard.php" class="nav-link">Painel</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
-                    </li>
+                    <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="../anuncios.php" class="nav-link">Anúncios</a></li>
+                    <li class="nav-item"><a href="dashboard.php" class="nav-link">Painel</a></li>
+                    <li class="nav-item"><a href="perfil.php" class="nav-link">Meu Perfil</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
                         <a href="../notificacoes.php" class="nav-link no-underline">
                             <i class="fas fa-bell"></i>
                             <?php
-                            // Contar notificações não lidas
                             if (isset($_SESSION['usuario_id'])) {
                                 $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
-                                $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
+                                $stmt_nao_lidas = $db->prepare($sql_nao_lidas);
                                 $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
                                 $stmt_nao_lidas->execute();
                                 $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
-                                if ($total_nao_lidas > 0) {
-                                    echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
-                                }
+                                if ($total_nao_lidas > 0) echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
                             }
                             ?>
                         </a>
                     </li>
                     <?php endif; ?>
-                    <li class="nav-item">
-                        <a href="../logout.php" class="nav-link exit-button no-underline">Sair</a>
-                    </li>
+                    <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
                 </ul>
                 <div class="hamburger">
                     <span class="bar"></span>
@@ -718,123 +197,90 @@ $estados_brasil = [
             </div>
         </nav>
     </header>
+    <br>
 
     <!-- Conteúdo principal -->
-    <div class="main-content-wrapper">
-        <div class="logistica-container">
-            <div class="config-card">
-                <div class="header-with-close">
-                    <h1 class="page-title">
-                        <i class="fas fa-truck"></i>
-                        Configuração de Regiões de Entrega
-                    </h1>
-                    <a href="dashboard.php" class="btn-fechar" title="Fechar e voltar ao painel">
-                        <i class="fas fa-times"></i>
-                    </a>
+    <div class="main-content">
+        <section class="header">
+            <center>
+                <h1>Configuração de Regiões de Entrega</h1>
+                <p>Selecione os estados e cidades do Brasil onde você realiza entregas.</p>
+            </center>
+        </section>
+        <div class="config-card">
+            <div class="info-box">
+                <h4><i class="fas fa-info-circle"></i> Como funciona?</h4>
+                <ul>
+                    <li>Marque o estado desejado, e depois as cidades (todas vêm selecionadas por padrão);</li>
+                    <li>Selecione apenas os estados onde você tem condições de entregar seus produtos;</li>
+                    <li>Os compradores verão um alerta se estiverem em estados não selecionados;</li>
+                    <li>Deixe todos desmarcados para atender todo o território nacional;</li>
+                    <li>Você pode alterar essa configuração a qualquer momento.</li>
+                </ul>
+            </div>
+            
+            <?php if ($mensagem): ?>
+                <div class="alert-message <?php echo $tipo_mensagem; ?>">
+                    <i class="fas <?php echo $tipo_mensagem === 'sucesso' ? 'fa-check-circle' : 'fa-exclamation-triangle'; ?>"></i>
+                    <span><?php echo htmlspecialchars($mensagem); ?></span>
+                </div>
+            <?php endif; ?>
+            
+            <form method="POST" action="" id="form-logistica">
+                <div class="controles-superiores">
+                    <div id="header">
+                        <h2>Estados selecionados: <span class="numero" id="contador-selecionados"><?php echo count($estados_atendidos); ?></span>
+                        / 27</h2>
+                        <button type="button" class="cta-button" id="btn-marcar-todos"><i class="fas fa-list"></i></button>
+                    </div>
                 </div>
                 
-                <p class="section-description">
-                    Selecione os estados e cidades do Brasil onde você realiza entregas. 
-                    Os compradores serão notificados se estiverem em regiões não atendidas.
-                    <br>
-                    <small><i class="fas fa-info-circle"></i> Opcionalmente, você pode selecionar cidades específicas dentro de cada estado. Deixe todos desmarcados se atender todo o Brasil.</small>
-                </p>
-
-                <div class="info-box">
-                    <h4><i class="fas fa-info-circle"></i> Como funciona?</h4>
-                    <ul>
-                        <li>Marque o estado desejado, e depois as cidades;</li>
-                        <li>Selecione apenas os estados onde você tem condições de entregar seus produtos;</li>
-                        <li>Os compradores verão um alerta se estiverem em estados não selecionados;</li>
-                        <li>Deixe todos desmarcados para atender todo o território nacional;</li>
-                        <li>Você pode alterar essa configuração a qualquer momento.</li>
-                    </ul>
+                <div class="estados-grid" id="estados-container">
+                    <?php foreach ($estados_brasil as $sigla => $nome): ?>
+                        <div class="estado-checkbox">
+                            <label class="estado-label">
+                                <input type="checkbox" 
+                                        name="estados[]" 
+                                        value="<?php echo $sigla; ?>"
+                                        <?php echo in_array($sigla, $estados_atendidos) ? 'checked' : ''; ?>
+                                        class="checkbox-estado">
+                                <span class="estado-sigla"><?php echo $sigla; ?></span>
+                                <?php echo htmlspecialchars($nome); ?>
+                            </label>
+                            <button href="cidades-section" type="button" class="btn-cidades" data-sigla="<?php echo $sigla; ?>" title="Selecionar cidades">
+                                <i class="fas fa-city"></i><p>Selecionar cidades</p>
+                            </button>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
                 
-                <?php if ($mensagem): ?>
-                    <div class="alert-message <?php echo $tipo_mensagem; ?>">
-                        <i class="fas <?php echo $tipo_mensagem === 'sucesso' ? 'fa-check-circle' : 'fa-exclamation-triangle'; ?>"></i>
-                        <span><?php echo htmlspecialchars($mensagem); ?></span>
+                <?php if (empty($estados_atendidos)): ?>
+                    <div class="empty-state">
+                        <i class="fas fa-globe-americas"></i>
+                        <p><strong>Nenhum estado selecionado</strong></p>
+                        <p>Você atenderá compradores de todo o Brasil.</p>
                     </div>
                 <?php endif; ?>
                 
-                <form method="POST" action="" id="form-logistica">
-                    <div class="controles-superiores">
-                        <div class="contador-estados">
-                            Estados selecionados: 
-                            <span class="numero" id="contador-selecionados"><?php echo count($estados_atendidos); ?></span>
-                            / 27
-                        </div>
-                        <button type="button" class="botao-acao" id="btn-marcar-todos">
-                            <i class="fas fa-check-square"></i>
-                            Marcar Todos
+                <div class="acoes-inferiores">
+                    <div class="grupo-esquerda">
+                        <a href="dashboard.php" class="botao-acao">
+                            <i class="fas fa-arrow-left"></i>
+                            Voltar ao Painel
+                        </a>
+                        <button type="button" class="botao-acao" id="btn-limpar">
+                            <i class="fas fa-trash-alt"></i>
+                            Limpar Seleção
                         </button>
                     </div>
-                    
-                    <div class="estados-grid" id="estados-container">
-                        <?php foreach ($estados_brasil as $sigla => $nome): ?>
-                            <div class="estado-checkbox">
-                                <label class="estado-label">
-                                    <input type="checkbox" 
-                                           name="estados[]" 
-                                           value="<?php echo $sigla; ?>"
-                                           <?php echo in_array($sigla, $estados_atendidos) ? 'checked' : ''; ?>
-                                           class="checkbox-estado">
-                                    <span class="estado-sigla"><?php echo $sigla; ?></span>
-                                    <?php echo htmlspecialchars($nome); ?>
-                                </label>
-                                <button type="button" class="btn-cidades" data-sigla="<?php echo $sigla; ?>" title="Selecionar cidades">
-                                    <i class="fas fa-city"></i><p>Selecionar cidades</p>
-                                </button>
-                            </div>
-                        <?php endforeach; ?>
+                    <div class="grupo-direita">
+                        <button type="submit" class="botao-acao primary">
+                            <i class="fas fa-save"></i>
+                            Salvar Configuração
+                        </button>
                     </div>
-
-                    <!-- SEÇÃO DE CIDADES (Opcional) -->
-                    <div class="cidades-section" id="cidades-section">
-                        <div class="estado-selecionado-info" id="estado-info">
-                            <span class="estado-nome-selecionado">
-                                <i class="fas fa-map-pin"></i>
-                                <span id="estado-selecionado-label">Selecione um estado</span>
-                            </span>
-                            <button type="button" class="btn-fechar-estado" id="btn-fechar-cidades" title="Fechar seleção de cidades">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="cidades-grid" id="cidades-container">
-                            <!-- As cidades serão carregadas via JavaScript -->
-                        </div>
-                    </div>
-                    
-                    <?php if (empty($estados_atendidos)): ?>
-                        <div class="empty-state">
-                            <i class="fas fa-globe-americas"></i>
-                            <p><strong>Nenhum estado selecionado</strong></p>
-                            <p>Você atenderá compradores de todo o Brasil.</p>
-                        </div>
-                    <?php endif; ?>
-                    
-                    <div class="acoes-inferiores">
-                        <div class="grupo-esquerda">
-                            <a href="dashboard.php" class="botao-acao">
-                                <i class="fas fa-arrow-left"></i>
-                                Voltar ao Painel
-                            </a>
-                            <button type="button" class="botao-acao" id="btn-limpar">
-                                <i class="fas fa-trash-alt"></i>
-                                Limpar Seleção
-                            </button>
-                        </div>
-                        <div class="grupo-direita">
-                            <button type="submit" class="botao-acao primary">
-                                <i class="fas fa-save"></i>
-                                Salvar Configuração
-                            </button>
-                        </div>
-                    </div>
-                </form>
-                
-            </div>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -885,6 +331,8 @@ $estados_brasil = [
                 });
                 
                 atualizarContador();
+                // Disparar change para atualizar botões de cidades
+                checkboxes.forEach(cb => cb.dispatchEvent(new Event('change')));
             });
             
             // Limpar seleção
@@ -896,6 +344,8 @@ $estados_brasil = [
                         cb.checked = false;
                     });
                     atualizarContador();
+                    // Disparar change para atualizar botões de cidades
+                    checkboxes.forEach(cb => cb.dispatchEvent(new Event('change')));
                 }
             });
             
@@ -947,7 +397,8 @@ $estados_brasil = [
             const estadoCheckboxes = document.querySelectorAll('.estado-checkbox');
             estadoCheckboxes.forEach(box => {
                 box.addEventListener('click', function(e) {
-                    if (e.target.type !== 'checkbox') {
+                    // Não toggle se clicar no botão de cidades ou em seus filhos
+                    if (e.target.type !== 'checkbox' && !e.target.closest('.btn-cidades')) {
                         const checkbox = this.querySelector('input[type="checkbox"]');
                         if (checkbox) {
                             checkbox.checked = !checkbox.checked;
@@ -992,22 +443,64 @@ $estados_brasil = [
             let estadoSelecionadoAtual = null;
 
             // Função para mostrar cidades de um estado
-            function mostrarCidades(siglaEstado) {
-                estadoSelecionadoAtual = siglaEstado;
+            function mostrarCidades(siglaEstado, estadosGrid) {
                 const nomeEstado = estadosBrasil[siglaEstado] || siglaEstado;
-                const cidadesContainer = document.getElementById('cidades-container');
-                cidadesContainer.innerHTML = '';
-
-                // Atualizar header da seção de cidades
-                const estadoLabelEl = document.getElementById('estado-selecionado-label');
-                if (estadoLabelEl) {
-                    estadoLabelEl.textContent = `${siglaEstado} - ${nomeEstado}`;
-                }
-
+                
+                // Remover qualquer container de cidades aberto anteriormente
+                document.querySelectorAll('.cidades-container').forEach(container => container.remove());
+                
+                // Criar container de cidades
+                const cidadesContainer = document.createElement('div');
+                cidadesContainer.className = 'cidades-container';
+                cidadesContainer.setAttribute('data-sigla', siglaEstado);
+                
+                // Header com nome do estado e botão fechar
+                const header = document.createElement('div');
+                header.className = 'estado-selecionado-info';
+                
+                const estadoNome = document.createElement('span');
+                estadoNome.className = 'estado-nome-selecionado';
+                estadoNome.innerHTML = `<i class="fas fa-map-pin"></i> ${siglaEstado} - ${nomeEstado}`;
+                header.appendChild(estadoNome);
+                
+                const btnFechar = document.createElement('button');
+                btnFechar.type = 'button';
+                btnFechar.className = 'btn-fechar-estado';
+                btnFechar.title = 'Fechar seleção de cidades';
+                btnFechar.innerHTML = '<i class="fas fa-times"></i>';
+                header.appendChild(btnFechar);
+                
+                cidadesContainer.appendChild(header);
+                
+                // Evento para fechar
+                btnFechar.addEventListener('click', function() {
+                    cidadesContainer.remove();
+                });
+                
+                // Barra de pesquisa
+                const searchContainer = document.createElement('div');
+                searchContainer.className = 'search-container';
+                searchContainer.innerHTML = `
+                    <input type="text" class="search-input" placeholder="Pesquisar cidades..." />
+                    <button type="button" class="btn-marcar-todas-cidades" title="Marcar/Desmarcar todas as cidades">
+                        <i class="fas fa-list"></i>
+                    </button>
+                `;
+                cidadesContainer.appendChild(searchContainer);
+                
+                // Grid de cidades
+                const cidadesGrid = document.createElement('div');
+                cidadesGrid.className = 'cidades-grid';
+                cidadesContainer.appendChild(cidadesGrid);
+                
+                // Inserir após o estados-grid
+                estadosGrid.insertAdjacentElement('afterend', cidadesContainer);
+                
                 // Função auxiliar para renderizar lista de cidades
                 function renderCidades(lista) {
+                    cidadesGrid.innerHTML = '';
                     if (!Array.isArray(lista) || lista.length === 0) {
-                        cidadesContainer.innerHTML = '<div class="empty-state"><p>Nenhuma cidade encontrada para este estado.</p></div>';
+                        cidadesGrid.innerHTML = '<div class="empty-state"><p>Nenhuma cidade encontrada para este estado.</p></div>';
                     } else {
                         // cidades selecionadas previamente pelo vendedor (servidor)
                         const selecionadas = (typeof cidadesSelecionadas !== 'undefined' && cidadesSelecionadas[siglaEstado]) ? cidadesSelecionadas[siglaEstado].map(c=>c.toLowerCase()) : [];
@@ -1023,10 +516,52 @@ $estados_brasil = [
                                     ${cidade}
                                 </label>
                             `;
-                            cidadesContainer.appendChild(div);
+                            cidadesGrid.appendChild(div);
                         });
+                        
+                        // Adicionar funcionalidade de filtro
+                        const searchInput = searchContainer.querySelector('.search-input');
+                        searchInput.addEventListener('input', function() {
+                            const query = this.value.toLowerCase();
+                            const cidadeDivs = cidadesGrid.querySelectorAll('.cidade-checkbox');
+                            cidadeDivs.forEach(div => {
+                                const label = div.querySelector('.cidade-label');
+                                const text = label.textContent.toLowerCase();
+                                div.style.display = text.includes(query) ? '' : 'none';
+                            });
+                        });
+
+                        // Botão marcar/desmarcar todas as cidades
+                        const btnMarcarTodasCidades = searchContainer.querySelector('.btn-marcar-todas-cidades');
+                        btnMarcarTodasCidades.addEventListener('click', function() {
+                            const cidadeCheckboxes = cidadesGrid.querySelectorAll('input[type="checkbox"]:not([style*="display: none"])');
+                            const todasSelecionadas = Array.from(cidadeCheckboxes).every(cb => cb.checked);
+                            
+                            cidadeCheckboxes.forEach(cb => {
+                                cb.checked = !todasSelecionadas;
+                            });
+                            
+                            // Atualizar ícone do botão
+                            atualizarIconeBotaoCidades(this, !todasSelecionadas);
+                        });
+
+                        // Função para atualizar ícone do botão
+                        function atualizarIconeBotaoCidades(btn, todasSelecionadas) {
+                            const icon = btn.querySelector('i');
+                            if (todasSelecionadas) {
+                                icon.className = 'fa-regular fa-square-minus';
+                                btn.title = 'Desmarcar todas as cidades';
+                            } else {
+                                icon.className = 'fa-regular fa-check-square';
+                                btn.title = 'Marcar todas as cidades';
+                            }
+                        }
+
+                        // Inicializar ícone do botão
+                        const cidadeCheckboxes = cidadesGrid.querySelectorAll('input[type="checkbox"]');
+                        const todasSelecionadasInicial = Array.from(cidadeCheckboxes).every(cb => cb.checked);
+                        atualizarIconeBotaoCidades(btnMarcarTodasCidades, todasSelecionadasInicial);
                     }
-                    document.getElementById('cidades-section').classList.add('ativo');
                 }
 
                 // Se temos dados locais carregados e o estado existe no JSON, usar local
@@ -1040,7 +575,7 @@ $estados_brasil = [
                 const loading = document.createElement('div');
                 loading.className = 'empty-state';
                 loading.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando cidades...';
-                cidadesContainer.appendChild(loading);
+                cidadesGrid.appendChild(loading);
 
                 fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${siglaEstado}/municipios`)
                     .then(resp => resp.json())
@@ -1048,12 +583,12 @@ $estados_brasil = [
                         const nomes = municipios.map(m => m.nome).sort((a,b) => a.localeCompare(b, 'pt-BR'));
                         // cachear localmente para evitar novas requisições
                         cidadesPorEstado[siglaEstado] = nomes;
-                        cidadesContainer.innerHTML = '';
+                        cidadesGrid.innerHTML = '';
                         renderCidades(nomes);
                     })
                     .catch(err => {
                         console.error('Erro ao buscar cidades pelo IBGE:', err);
-                        cidadesContainer.innerHTML = '<div class="empty-state"><p>Erro ao carregar cidades. Tente novamente mais tarde.</p></div>';
+                        cidadesGrid.innerHTML = '<div class="empty-state"><p>Erro ao carregar cidades. Tente novamente mais tarde.</p></div>';
                     });
             }
 
@@ -1061,8 +596,18 @@ $estados_brasil = [
             document.querySelectorAll('.btn-cidades').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     const sigla = this.getAttribute('data-sigla');
-                    if (sigla) {
-                        mostrarCidades(sigla);
+                    const estadoElement = this.closest('.estado-checkbox');
+                    const estadosGrid = document.querySelector('.estados-grid');
+                    if (sigla && estadoElement && estadosGrid) {
+                        // Verificar se já está aberto
+                        const existing = estadosGrid.nextElementSibling;
+                        if (existing && existing.classList.contains('cidades-container') && existing.getAttribute('data-sigla') === sigla) {
+                            existing.remove();
+                        } else {
+                            // Fechar qualquer outro container aberto
+                            document.querySelectorAll('.cidades-container').forEach(container => container.remove());
+                            mostrarCidades(sigla, estadosGrid);
+                        }
                     }
                 });
             });
@@ -1077,13 +622,50 @@ $estados_brasil = [
                 });
             });
 
-            // Fechar seção de cidades
-            document.getElementById('btn-fechar-cidades').addEventListener('click', function(e) {
-                e.preventDefault();
-                document.getElementById('cidades-section').classList.remove('ativo');
-                estadoSelecionadoAtual = null;
+            // Novo: ao marcar estado, abrir seleção de cidades e marcar todas por padrão
+            document.querySelectorAll('.checkbox-estado').forEach(cb => {
+                cb.addEventListener('change', function() {
+                    const sigla = this.value;
+                    const estadosGrid = document.querySelector('.estados-grid');
+                    if (this.checked) {
+                        // Abrir container de cidades
+                        mostrarCidades(sigla, estadosGrid);
+                        // Aguardar carregamento e marcar todas as cidades
+                        setTimeout(() => {
+                            const cidadesGrid = document.querySelector('.cidades-grid');
+                            if (cidadesGrid) {
+                                const checkboxes = cidadesGrid.querySelectorAll('input[type="checkbox"]');
+                                checkboxes.forEach(chk => chk.checked = true);
+                            }
+                        }, 500); // delay maior para garantir carregamento via API
+                    } else {
+                        // Fechar container se desmarcado
+                        const container = document.querySelector(`.cidades-container[data-sigla="${sigla}"]`);
+                        if (container) container.remove();
+                    }
+                });
             });
 
+            // Novo: desabilitar botão de cidades se estado não estiver selecionado
+            function atualizarBotoesCidades() {
+                document.querySelectorAll('.checkbox-estado').forEach(cb => {
+                    const sigla = cb.value;
+                    const btn = document.querySelector(`.btn-cidades[data-sigla="${sigla}"]`);
+                    if (btn) {
+                        btn.disabled = !cb.checked;
+                        btn.style.opacity = cb.checked ? '1' : '0.5';
+                        btn.style.cursor = cb.checked ? 'pointer' : 'not-allowed';
+                    }
+                });
+            }
+
+            // Inicializar estado dos botões
+            atualizarBotoesCidades();
+
+            // Atualizar botões quando estado mudar
+            document.querySelectorAll('.checkbox-estado').forEach(cb => {
+                cb.addEventListener('change', atualizarBotoesCidades);
+            });
             
         });
     </script>

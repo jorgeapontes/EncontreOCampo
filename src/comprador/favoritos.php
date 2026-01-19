@@ -3,10 +3,18 @@
 session_start();
 require_once __DIR__ . '/../conexao.php';
 
-if (!isset($_SESSION['usuario_tipo']) ) {
+// Verificação mais robusta de sessão
+if (!isset($_SESSION['usuario_id']) || !isset($_SESSION['usuario_tipo'])) {
     header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador."));
     exit();
 }
+
+// Verificação adicional se o tipo de usuário é válido
+if (!in_array($_SESSION['usuario_tipo'], ['comprador', 'vendedor'])) {
+    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador."));
+    exit();
+}
+
 
 $usuario_id = $_SESSION['usuario_id'];
 $database = new Database();
@@ -92,13 +100,13 @@ try {
                         <a href="../anuncios.php" class="nav-link">Anúncios</a>
                     </li>
                     <li class="nav-item">
-                        <a href="dashboard.php" class="nav-link">Painel</a>
+                        <a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/dashboard.php' : 'dashboard.php'; ?>" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">
                         <a href="favoritos.php" class="nav-link active">Favoritos</a>
                     </li>
                     <li class="nav-item">
-                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
+                        <a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/perfil.php' : 'perfil.php'; ?>" class="nav-link">Meu Perfil</a>
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
@@ -206,7 +214,7 @@ try {
                             <div class="card-header">
                                 <h3><?php echo htmlspecialchars($produto['nome']); ?></h3>
                                 <span class="vendedor">
-                                    por <a href="perfil_vendedor.php?vendedor_id=<?php echo $produto['vendedor_id']; ?>">
+                                    por <a href="../perfil_vendedor.php?vendedor_id=<?php echo $produto['vendedor_id']; ?>">
                                         <?php echo htmlspecialchars($produto['nome_vendedor']); ?>
                                     </a>
                                 </span>

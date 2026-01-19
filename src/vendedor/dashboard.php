@@ -332,7 +332,7 @@ try {
                     <div class="card">
                         <i class="fas fa-heart"></i>
                         <h3>Favoritos</h3>
-                        <p><?php echo $total_anuncios; ?></p>
+                        <p><?php echo $total_favoritos; ?></p>
                     </div>
                 </a>
             <?php endif; ?>

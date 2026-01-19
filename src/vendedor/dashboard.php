@@ -517,16 +517,11 @@ try {
             if (naoExibir) {
                 console.log("Enviando requisição para processar_aviso.php...");
                 
-                // DEBUG: Mostrar o caminho atual
-                console.log("Caminho atual:", window.location.pathname);
-                console.log("Diretório atual:", window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')));
-                
                 // Usar caminho relativo baseado na localização atual
-                const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
-                const url = basePath + '/processar_aviso.php';
-                console.log("URL completa da requisição:", url);
+                const url = 'processar_aviso.php';
+                console.log("URL da requisição:", url);
                 
-                fetch('/EncontreOCampo/src/vendedor/processar_aviso.php', { 
+                fetch(url, { 
                     method: 'POST', 
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
@@ -535,20 +530,13 @@ try {
                 })
                 .then(response => {
                     console.log("Resposta recebida. Status:", response.status);
-                    console.log("URL da resposta:", response.url);
                     if (!response.ok) {
                         throw new Error('Erro HTTP: ' + response.status);
                     }
                     return response.json();
                 })
                 .then(data => { 
-                    console.log("Dados retornados:", data);
-                    if(data.success) {
-                        console.log('Preferência salva com sucesso');
-                    } else {
-                        console.error('Erro ao salvar preferência:', data.message);
-                        alert('Erro ao salvar preferência: ' + data.message);
-                    }
+                    console.log("Preferência salva com sucesso");
                     fecharPopup(); 
                 })
                 .catch(error => {

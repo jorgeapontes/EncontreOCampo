@@ -8,12 +8,7 @@ $usuario_tipo = $_SESSION['usuario_tipo'] ?? null;
 $usuario_id = $_SESSION['usuario_id'] ?? null;
 $is_comprador = $usuario_tipo === 'comprador' || $usuario_tipo === 'vendedor';
 
-// Verificar se é um login recente (apenas para vendedores)
-$mostrar_aviso_vendedor = false;
-if ($is_logged_in && $usuario_tipo === 'vendedor' && isset($_SESSION['login_recente_vendedor'])) {
-    $mostrar_aviso_vendedor = true;
-    unset($_SESSION['login_recente_vendedor']); // Remove o sinalizador após mostrar uma vez
-}
+
 
 // Conexão e busca dos anúncios
 $database = new Database();
@@ -451,24 +446,7 @@ foreach ($anuncios as &$a) {
         }
     </style>
 </head>
-<body>
-    <?php if ($mostrar_aviso_vendedor): ?>
-    <!-- Toast de Aviso para Vendedores -->
-    <div id="toast-aviso-vendedor" class="toast-notification toast-vendedor" style="display: flex;">
-        <div class="toast-content">
-            <i class="fas fa-info-circle"></i>
-            <div class="toast-text">
-                <strong>Lembrete!</strong>
-                <p>Para acessar seus chats, vá até painel > chats.</p>
-            </div>
-        </div>
-        <div class="toast-progress">
-            <div class="toast-progress-bar"></div>
-        </div>
-        <button class="toast-close" onclick="fecharToastVendedor()"><i class="fas fa-times"></i></button>
-    </div>
-    <?php endif; ?>
-    
+<body> 
     <header>
         <nav class="navbar">
             <div class="nav-container">

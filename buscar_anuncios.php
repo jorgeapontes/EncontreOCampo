@@ -2,28 +2,32 @@
 // buscar_anuncios.php
 
 // Ativar display de erros para debug
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 
 session_start();
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
-// Configurações do banco
-$config = [
-    'host' => '127.0.0.1',
-    'dbname' => 'encontre_ocampo', 
-    'username' => 'root',
-    'password' => ''
-];
+// Caminho absoluto para o arquivo de conexão
+$conexao_path = __DIR__ . '/src/conexao.php';
+if (!file_exists($conexao_path)) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Arquivo de conexão não encontrado: ' . $conexao_path,
+        'produtos' => []
+    ]);
+    exit;
+}
+require_once $conexao_path;
 
 try {
-    $pdo = new PDO(
-        "mysql:host={$config['host']};dbname={$config['dbname']};charset=utf8", 
-        $config['username'], 
-        $config['password']
-    );
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $database = new Database();
+    $pdo = $database->getConnection();
+    
+    if (!$pdo) {
+        throw new Exception('Falha ao conectar ao banco de dados');
+    }
 
     // Consulta para buscar produtos
     $sql = "

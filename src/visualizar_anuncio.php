@@ -187,7 +187,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($anuncio['produto']); ?> - Encontre o Campo</title>
-    <link rel="stylesheet" href="css/comprador/proposta_nova.css">
+    <link rel="stylesheet" href="css/comprador/view_ad.css">
     <link rel="shortcut icon" href="../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -725,22 +725,22 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                         <!-- Seção de Botões (Desativada para não-logados) -->
                         <div class="botoes-compra <?php echo !$is_logged_in ? 'botoes-compra-desativados' : ''; ?>">
                             <?php if ($is_logged_in && $usuario_status === 'ativo'): ?>
-                                <!-- Se logado e ativo, redireciona para a página completa -->
-                                <a href="comprador/proposta_nova.php?anuncio_id=<?php echo $anuncio_id; ?>" class="btn-comprar">
+                                <!-- BOTÃO DE COMPRA COMENTADO PARA USO FUTURO -->
+                                <!-- <a href="comprador/proposta_nova.php?anuncio_id=<?php echo $anuncio_id; ?>" class="btn-comprar">
                                     <i class="fas fa-shopping-cart"></i>
                                     Comprar Agora
-                                </a>
+                                </a> -->
                                 
                                 <a href="chat/chat.php?produto_id=<?php echo $anuncio_id; ?>" class="btn-chat">
                                     <i class="fas fa-comments"></i>
                                     Conversar com o Vendedor
                                 </a>
                             <?php else: ?>
-                                <!-- Para não-logados ou pendentes, mostra botões desativados -->
-                                <button class="btn-comprar tooltip-desativado" disabled>
+                                <!-- BOTÃO DE COMPRA COMENTADO PARA USO FUTURO -->
+                                <!-- <button class="btn-comprar tooltip-desativado" disabled>
                                     <i class="fas fa-shopping-cart"></i>
                                     Comprar Agora
-                                </button>
+                                </button> -->
                                 
                                 <button class="btn-chat tooltip-desativado" disabled>
                                     <i class="fas fa-comments"></i>

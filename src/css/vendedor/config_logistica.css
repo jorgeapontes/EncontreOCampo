@@ -1,40 +1,723 @@
-/* src/css/vendedor/config_logistica.css */
 :root {
-    --primary-color: #4CAF50;
-    --primary-dark: #2E7D32;
+    --primary-color: #4CAF50; /* Verde Principal */
+    --primary-dark: #388E3C;
     --primary-light: #C8E6C9;
-    --secondary-color: #607D8B;
-    --accent-color: #FF9800;
-    --danger-color: #F44336;
-    --warning-color: #FFC107;
-    --success-color: #4CAF50;
-    --info-color: #2196F3;
-    --gray-light: #F5F5F5;
-    --gray: #9E9E9E;
-    --gray-dark: #616161;
+    --secondary-color: #6167ea;
+    --dark-color: #2E7D32; /* Verde Escuro */
+    --light-color: #F1F8E9;
+    --text-color: #212121;
     --white: #FFFFFF;
-    --black: #212121;
-    --radius: 8px;
-    --shadow: 0 4px 12px rgba(0,0,0,0.1);
-    --transition: all 0.3s ease;
+    --gray: #F5F5F5;
 }
 
-/* Link para incluir no navbar do vendedor */
-.nav-link.config-logistica {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-    color: white !important;
-    border-radius: var(--radius);
-    padding: 8px 16px !important;
-    margin: 0 5px;
-    transition: var(--transition);
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.nav-link.config-logistica:hover {
+body {
+    font-family: "Montserrat", sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--gray);
+    min-height: 100vh;
+}
+
+.navbar {
+    background-color: var(--white);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.logo {
+    display: flex;
+}
+
+.logo h1 {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    font-weight: 700;
+    letter-spacing: 0px;
+    line-height: 1.6;
+    margin-top: 4px;
+}
+
+.logo h2 {
+    font-size: 1.1rem;
+    color: var(--dark-color);
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-top: -10px;
+    line-height: 1.3;
+}
+
+.logo img {
+    height: 60px;
+    padding-right: 5px;
+}
+
+.nav-menu {
+    display: flex;
+    list-style: none;
+    align-items: center;
+}
+
+.nav-item {
+    margin-left: 30px;
+}
+
+.nav-link {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 10px 0;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+.nav-link.active {
+    color: var(--primary-color);
+}
+
+.nav-link.active::after {
+    width: 100%;
+}
+
+.nav-link:hover {
+    color: var(--primary-color);
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+.nav-link.exit-button {
+    background-color: rgb(230, 30, 30);
+    color: var(--white);
+    padding: 8px 20px;
+    border-radius: 20px;
+    transition: background-color 0.3s ease;
+    margin-left: 15px;
+}
+
+.nav-link.exit-button:hover {
+    background-color: rgb(200, 30, 30);
+    color: var(--white);
+}
+
+.nav-link.no-underline::after {
+    display: none;
+}
+
+.hamburger {
+    display: none;
+    cursor: pointer;
+}
+
+.bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 5px auto;
+    background-color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.main-content {
+    margin-top: 60px;
+    padding: 20px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.header {
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    color: var(--dark-color);
+    font-family: "Zalando Sans SemiExpanded", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto 40px;
+    padding: 0 20px;
+}
+
+.controles-superiores {
+    padding: 25px 0;
+}
+
+.controles-superiores h2 {
+    color: var(--dark-color);
+    display: inline-block;
+    font-weight: 400;
+}
+
+.controles-superiores.header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.cta-button {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+    margin-bottom: 20px;
+    float: right;
+    margin-left: 10px;
+    border: none;
+    font-family: "Montserrat", sans-serif;
+    font-size: 1rem;
+}
+
+.cta-button .fas {
+    font-size: 1rem;
+}
+
+.cta-button:hover {
+    background-color: var(--primary-dark);
+    cursor: pointer;
+}
+
+.cta-button i {
+    margin-right: 8px;
+}
+
+.config-card {
+    background-color: var(--white);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.estados-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(200px, 1fr));
+    gap: 8px;
+    margin-bottom: 30px;
+}
+
+.estado-checkbox {
+    background: var(--gray);
+    border: 2px solid #e6e6e6;
+    border-radius: 8px;
+    padding: 15px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.btn-cidades {
+    background: transparent;
+    border: none;
+    color: #0d6efd;
+    cursor: pointer;
+    padding: 6px 8px;
+    margin-top: 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s, transform 0.15s;
+}
+
+.btn-cidades:hover {
+    background: rgba(13,110,253,0.08);
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(76, 175, 80, 0.3);
 }
 
-.nav-link.config-logistica.active {
-    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+.estado-checkbox:hover {
+    background: #f0f9f0;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(76, 175, 80, 0.15);
+}
+
+.estado-checkbox input[type="checkbox"] {
+    margin-right: 10px;
+    transform: scale(1.2);
+}
+
+.estado-label {
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.estado-sigla {
+    display: inline-block;
+    background: #4CAF50;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 32px;
+    font-weight: bold;
+    margin-right: 12px;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.contador-estados {
+    font-size: 1.1rem;
+    color: #495057;
+    font-weight: 600;
+}
+
+.contador-estados .numero {
+    background: #4CAF50;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-left: 8px;
+    font-size: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.botao-acao {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    font-size: 1rem;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 400;
+}
+
+.botao-acao:hover {
+    background: #5a6268;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.botao-acao.primary {
+    background: var(--primary-color);
+    border: none;
+}
+
+.botao-acao.primary:hover {
+    background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(46, 125, 50, 0.3);
+}
+
+.acoes-inferiores {
+    display: flex;
+    justify-content: space-between;
+}
+
+.grupo-esquerda, .grupo-direita {
+    display: flex;
+    gap: 10px;
+}
+
+.info-box {
+    background: linear-gradient(135deg, #e7f3ff 0%, #d4e7ff 100%);
+    border: 2px solid #b3d7ff;
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 35px;
+}
+
+.info-box h4 {
+    color: #0066cc;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.3rem;
+}
+
+.info-box ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.info-box li {
+    margin-bottom: 12px;
+    padding-left: 30px;
+    position: relative;
+    line-height: 1.5;
+}
+
+.info-box li:before {
+    content: '✓';
+    color: #0066cc;
+    font-size: 1.2rem;
+    position: absolute;
+    left: 0;
+    top: -2px;
+    font-weight: bold;
+}
+
+.alert-message {
+    padding: 18px 24px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.alert-message.sucesso {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border: 2px solid #a3d9b1;
+    color: #155724;
+}
+
+.alert-message.erro {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    border: 2px solid #f1b0b7;
+    color: #721c24;
+}
+
+.alert-message i {
+    font-size: 1.8rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 50px 30px;
+    color: #6c757d;
+    font-style: italic;
+    border: 3px dashed #dee2e6;
+    border-radius: 12px;
+    margin: 30px 0;
+    background: #fafafa;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: #adb5bd;
+}
+
+/* ESTILOS PARA SELEÇÃO DE CIDADES */
+
+.cidade-checkbox {
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    padding: 12px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.cidade-checkbox:hover {
+    border-color: #0066cc;
+    background: #f8faff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.1);
+}
+
+.cidade-checkbox input[type="checkbox"] {
+    margin-right: 8px;
+    transform: scale(1.1);
+}
+
+.cidade-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 500;
+    color: #333;
+}
+
+.estado-selecionado-info {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border: 2px solid #64b5f6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.estado-nome-selecionado {
+    font-weight: 600;
+    color: #0d47a1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-fechar-estado {
+    background: none;
+    border: none;
+    color: #0d47a1;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 0 5px;
+    transition: all 0.3s;
+}
+
+.btn-fechar-estado:hover {
+    color: #f44336;
+    transform: scale(1.2);
+}
+
+@media (max-width: 768px) {
+    body {
+        padding-top: 70px;
+    }
+    
+    .estados-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+    }
+    
+    .controles-superiores {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .acoes-inferiores {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .grupo-esquerda, .grupo-direita {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .botao-acao {
+        width: 100%;
+        justify-content: center;
+        padding: 14px;
+    }
+    
+    .config-card {
+        padding: 20px;
+        margin: 15px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding-top: 60px;
+    }
+    
+    .estados-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .config-card {
+        padding: 15px;
+    }
+    
+    .header-with-close {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    .btn-fechar {
+        align-self: flex-end;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+    }
+}
+
+/* Ajustes para telas muito pequenas */
+@media (max-height: 600px) {
+    body {
+        padding-top: 60px;
+    }
+    
+    .config-card {
+        padding: 15px;
+        margin-top: 10px;
+    }
+    
+    .estados-grid {
+        max-height: 300px;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+}
+
+/* ESTILOS PARA SELEÇÃO DE CIDADES */
+.cidades-container {
+    background: linear-gradient(135deg, #f5f9ff 0%, #e8f4ff 100%);
+    border: 2px solid #b3d9ff;
+    border-radius: 10px;
+    padding: 25px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.search-container {
+    margin-bottom: 0px;
+    display: flex;
+}
+
+.search-input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s;
+    box-sizing: border-box;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.btn-marcar-todas-cidades {
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: #fff;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-sizing: border-box;
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+
+.btn-marcar-todas-cidades:hover {
+    border-color: #0066cc;
+    background-color: #f8f9fa;
+}
+
+.btn-marcar-todas-cidades:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.cidades-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(150px, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.cidade-checkbox {
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    padding: 12px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.cidade-checkbox:hover {
+    border-color: #0066cc;
+    background: #f8faff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.1);
+}
+
+.cidade-checkbox input[type="checkbox"] {
+    margin-right: 8px;
+    transform: scale(1.1);
+}
+
+.cidade-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 500;
+    color: #333;
+}
+
+.estado-selecionado-info {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border: 2px solid #64b5f6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.estado-nome-selecionado {
+    font-weight: 600;
+    color: #0d47a1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-fechar-estado {
+    background: none;
+    border: none;
+    color: #0d47a1;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 0 5px;
+    transition: all 0.3s;
+}
+
+.btn-fechar-estado:hover {
+    color: #f44336;
+    transform: scale(1.2);
 }

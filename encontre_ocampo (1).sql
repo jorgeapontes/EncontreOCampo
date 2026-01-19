@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 16-Jan-2026 às 21:11
+-- Tempo de geração: 19-Jan-2026 às 20:39
 -- Versão do servidor: 10.4.32-MariaDB
 -- versão do PHP: 8.2.12
 
@@ -499,7 +499,8 @@ INSERT INTO `notificacoes` (`id`, `usuario_id`, `mensagem`, `tipo`, `lida`, `url
 (53, 23, '???? Nova proposta recebida para \'caixa unidades\'', 'info', 0, '../../src/chat/chat.php?produto_id=22&conversa_id=13', '2026-01-13 04:32:50'),
 (54, 1, 'Nova solicitação de cadastro de vendedor: a', 'info', 0, 'src/admin/solicitacoes.php', '2026-01-14 14:09:43'),
 (55, 1, 'Nova solicitação de cadastro de vendedor: a', 'info', 0, 'src/admin/solicitacoes.php', '2026-01-14 14:20:42'),
-(56, 1, 'Nova solicitação de cadastro de vendedor: a', 'info', 0, 'src/admin/solicitacoes.php', '2026-01-14 19:38:18');
+(56, 1, 'Nova solicitação de cadastro de vendedor: a', 'info', 0, 'src/admin/solicitacoes.php', '2026-01-14 19:38:18'),
+(57, 1, 'Nova solicitação de cadastro de transportador: assa', 'info', 0, 'src/admin/solicitacoes.php', '2026-01-19 18:47:54');
 
 -- --------------------------------------------------------
 
@@ -778,7 +779,8 @@ INSERT INTO `solicitacoes_cadastro` (`id`, `usuario_id`, `nome`, `email`, `telef
 (21, 23, 'Comprador2', 'comprador2@gmail.com', '(11) 11111-1111', 'Rua Vereador Saturnino M. Oliveira, 1, Várzea Grande, MT', 'comprador', '{\"name\":\"Comprador2\",\"email\":\"comprador2@gmail.com\",\"subject\":\"comprador\",\"tipoPessoaComprador\":\"cpf\",\"cpfCnpjComprador\":\"239.186.590-20\",\"nomeComercialComprador\":\"Comprador2\",\"cepComprador\":\"78132-752\",\"ruaComprador\":\"Rua Vereador Saturnino M. Oliveira\",\"numeroComprador\":\"1\",\"complementoComprador\":\"\",\"estadoComprador\":\"MT\",\"cidadeComprador\":\"Várzea Grande\",\"telefone1Comprador\":\"(11) 11111-1111\",\"telefone2Comprador\":\"\",\"planoComprador\":\"free\",\"nomeComercialVendedor\":\"\",\"cpfCnpjVendedor\":\"\",\"cipVendedor\":\"\",\"cepVendedor\":\"\",\"ruaVendedor\":\"\",\"numeroVendedor\":\"\",\"complementoVendedor\":\"\",\"estadoVendedor\":\"\",\"cidadeVendedor\":\"\",\"telefone1Vendedor\":\"\",\"telefone2Vendedor\":\"\",\"planoVendedor\":\"free\",\"telefoneTransportador\":\"\",\"numeroANTT\":\"\",\"placaVeiculo\":\"\",\"modeloVeiculo\":\"\",\"descricaoVeiculo\":\"\",\"estadoTransportador\":\"\",\"cidadeTransportador\":\"\",\"message\":\"\",\"tipo_pessoa_comprador\":\"cpf\",\"senha_hash\":\"$2y$10$OkzXwNwpYhrH.Ubm3v5zMeA0gJofcKDkpidji7fBmeQIvtjVcmBua\"}', 'aprovado', '2026-01-10 15:12:02', '2026-01-10 15:12:27', NULL, NULL),
 (22, NULL, 'a', 'a@gmail.com', '(11) 99656-3500', 'Rua Seis, 206, Jundiaí, SP', 'vendedor', '{\"name\":\"a\",\"email\":\"a@gmail.com\",\"subject\":\"vendedor\",\"tipoPessoaComprador\":\"cpf\",\"cpfCnpjComprador\":\"\",\"nomeComercialComprador\":\"\",\"cepComprador\":\"\",\"ruaComprador\":\"\",\"numeroComprador\":\"\",\"complementoComprador\":\"\",\"estadoComprador\":\"SP\",\"cidadeComprador\":\"\",\"telefone1Comprador\":\"\",\"telefone2Comprador\":\"\",\"planoComprador\":\"free\",\"nomeComercialVendedor\":\"a\",\"cpfCnpjVendedor\":\"07.263.688\\/0001-41\",\"cipVendedor\":\"\",\"cepVendedor\":\"13211-873\",\"ruaVendedor\":\"Rua Seis\",\"numeroVendedor\":\"206\",\"complementoVendedor\":\"\",\"estadoVendedor\":\"SP\",\"cidadeVendedor\":\"Jundiaí\",\"telefone1Vendedor\":\"(11) 99656-3500\",\"telefone2Vendedor\":\"\",\"planoVendedor\":\"free\",\"telefoneTransportador\":\"\",\"numeroANTT\":\"\",\"placaVeiculo\":\"\",\"modeloVeiculo\":\"\",\"descricaoVeiculo\":\"\",\"estadoTransportador\":\"\",\"cidadeTransportador\":\"\",\"message\":\"\",\"senha_hash\":\"$2y$10$yB5WAR7hJyj3H4c2iI.zcu.1huDieaq9BVZCRGyB8PN\\/NF.XuoLky\"}', 'aprovado', '2026-01-14 14:09:43', '2026-01-14 14:09:52', NULL, NULL),
 (23, NULL, 'a', 'a@gmail.com', '(11) 99656-3500', 'Rua Seis, 206, Jundiaí, SP', 'vendedor', '{\"name\":\"a\",\"email\":\"a@gmail.com\",\"subject\":\"vendedor\",\"tipoPessoaComprador\":\"cpf\",\"cpfCnpjComprador\":\"\",\"nomeComercialComprador\":\"\",\"cepComprador\":\"\",\"ruaComprador\":\"\",\"numeroComprador\":\"\",\"complementoComprador\":\"\",\"estadoComprador\":\"SP\",\"cidadeComprador\":\"\",\"telefone1Comprador\":\"\",\"telefone2Comprador\":\"\",\"planoComprador\":\"free\",\"nomeComercialVendedor\":\"a\",\"cpfCnpjVendedor\":\"28.692.428\\/0001-61\",\"cipVendedor\":\"\",\"cepVendedor\":\"13211-873\",\"ruaVendedor\":\"Rua Seis\",\"numeroVendedor\":\"206\",\"complementoVendedor\":\"\",\"estadoVendedor\":\"SP\",\"cidadeVendedor\":\"Jundiaí\",\"telefone1Vendedor\":\"(11) 99656-3500\",\"telefone2Vendedor\":\"\",\"planoVendedor\":\"free\",\"telefoneTransportador\":\"\",\"numeroANTT\":\"\",\"placaVeiculo\":\"\",\"modeloVeiculo\":\"\",\"descricaoVeiculo\":\"\",\"estadoTransportador\":\"\",\"cidadeTransportador\":\"\",\"message\":\"\",\"senha_hash\":\"$2y$10$L0MtHpIMj7VFqp4QjuOwaOXX8igRy243Fa2k2fDZi.s0s2Lz6idmy\"}', 'aprovado', '2026-01-14 14:20:42', '2026-01-14 14:20:52', NULL, NULL),
-(24, 26, 'a', 'a@gmail.com', '(11) 99656-3500', 'Rua Seis, 206, Jundiaí, SP', 'vendedor', '{\"name\":\"a\",\"email\":\"a@gmail.com\",\"subject\":\"vendedor\",\"tipoPessoaComprador\":\"cpf\",\"cpfCnpjComprador\":\"\",\"nomeComercialComprador\":\"\",\"cepComprador\":\"\",\"ruaComprador\":\"\",\"numeroComprador\":\"\",\"complementoComprador\":\"\",\"estadoComprador\":\"SP\",\"cidadeComprador\":\"\",\"telefone1Comprador\":\"\",\"telefone2Comprador\":\"\",\"planoComprador\":\"free\",\"nomeComercialVendedor\":\"a\",\"cpfCnpjVendedor\":\"05.474.594\\/0001-96\",\"cipVendedor\":\"\",\"cepVendedor\":\"13211-873\",\"ruaVendedor\":\"Rua Seis\",\"numeroVendedor\":\"206\",\"complementoVendedor\":\"\",\"estadoVendedor\":\"SP\",\"cidadeVendedor\":\"Jundiaí\",\"telefone1Vendedor\":\"(11) 99656-3500\",\"telefone2Vendedor\":\"\",\"planoVendedor\":\"free\",\"telefoneTransportador\":\"\",\"numeroANTT\":\"\",\"placaVeiculo\":\"\",\"modeloVeiculo\":\"\",\"descricaoVeiculo\":\"\",\"estadoTransportador\":\"\",\"cidadeTransportador\":\"\",\"message\":\"\",\"senha_hash\":\"$2y$10$ur4VUeX9VISRYl1dELNSfeL0BhNRhy906zCmb7XGLGhn7nT3CdUyu\"}', 'aprovado', '2026-01-14 19:38:18', '2026-01-14 19:38:29', NULL, NULL);
+(24, 26, 'a', 'a@gmail.com', '(11) 99656-3500', 'Rua Seis, 206, Jundiaí, SP', 'vendedor', '{\"name\":\"a\",\"email\":\"a@gmail.com\",\"subject\":\"vendedor\",\"tipoPessoaComprador\":\"cpf\",\"cpfCnpjComprador\":\"\",\"nomeComercialComprador\":\"\",\"cepComprador\":\"\",\"ruaComprador\":\"\",\"numeroComprador\":\"\",\"complementoComprador\":\"\",\"estadoComprador\":\"SP\",\"cidadeComprador\":\"\",\"telefone1Comprador\":\"\",\"telefone2Comprador\":\"\",\"planoComprador\":\"free\",\"nomeComercialVendedor\":\"a\",\"cpfCnpjVendedor\":\"05.474.594\\/0001-96\",\"cipVendedor\":\"\",\"cepVendedor\":\"13211-873\",\"ruaVendedor\":\"Rua Seis\",\"numeroVendedor\":\"206\",\"complementoVendedor\":\"\",\"estadoVendedor\":\"SP\",\"cidadeVendedor\":\"Jundiaí\",\"telefone1Vendedor\":\"(11) 99656-3500\",\"telefone2Vendedor\":\"\",\"planoVendedor\":\"free\",\"telefoneTransportador\":\"\",\"numeroANTT\":\"\",\"placaVeiculo\":\"\",\"modeloVeiculo\":\"\",\"descricaoVeiculo\":\"\",\"estadoTransportador\":\"\",\"cidadeTransportador\":\"\",\"message\":\"\",\"senha_hash\":\"$2y$10$ur4VUeX9VISRYl1dELNSfeL0BhNRhy906zCmb7XGLGhn7nT3CdUyu\"}', 'aprovado', '2026-01-14 19:38:18', '2026-01-14 19:38:29', NULL, NULL),
+(25, 27, 'assa', 'as@gmail.com', '(11) 11111-1111', 'Jundiaí, SP', 'transportador', '{\"name\":\"assa\",\"email\":\"as@gmail.com\",\"subject\":\"transportador\",\"tipoPessoaComprador\":\"cpf\",\"cpfCnpjComprador\":\"\",\"nomeComercialComprador\":\"\",\"cepComprador\":\"\",\"ruaComprador\":\"\",\"numeroComprador\":\"\",\"complementoComprador\":\"\",\"estadoComprador\":\"\",\"cidadeComprador\":\"\",\"telefone1Comprador\":\"\",\"telefone2Comprador\":\"\",\"planoComprador\":\"free\",\"nomeComercialVendedor\":\"\",\"cpfCnpjVendedor\":\"\",\"cipVendedor\":\"\",\"cepVendedor\":\"\",\"ruaVendedor\":\"\",\"numeroVendedor\":\"\",\"complementoVendedor\":\"\",\"estadoVendedor\":\"\",\"cidadeVendedor\":\"\",\"telefone1Vendedor\":\"\",\"telefone2Vendedor\":\"\",\"planoVendedor\":\"free\",\"telefoneTransportador\":\"(11) 11111-1111\",\"numeroANTT\":\"11111111111111111111\",\"placaVeiculo\":\"111-1111\",\"modeloVeiculo\":\"11111111111\",\"descricaoVeiculo\":\"1111111\",\"cepTransportador\":\"13211693\",\"ruaTransportador\":\"Avenida César Puglia\",\"numeroTransportador\":\"111111\",\"complementoTransportador\":\"\",\"estadoTransportador\":\"SP\",\"cidadeTransportador\":\"Jundiaí\",\"message\":\"\",\"senha_hash\":\"$2y$10$B6XGRf1Bv.5SSKyU4.jafOppc37TBnAPkMTQxXGf00GJCkJw767wG\"}', 'pendente', '2026-01-19 18:47:54', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -796,6 +798,10 @@ CREATE TABLE `transportadores` (
   `placa_veiculo` varchar(8) DEFAULT NULL,
   `modelo_veiculo` varchar(100) DEFAULT NULL,
   `descricao_veiculo` text DEFAULT NULL,
+  `cep` varchar(10) DEFAULT NULL,
+  `rua` varchar(255) DEFAULT NULL,
+  `numero` varchar(10) DEFAULT NULL,
+  `complemento` varchar(255) DEFAULT NULL,
   `estado` varchar(2) DEFAULT NULL,
   `cidade` varchar(100) DEFAULT NULL,
   `plano` enum('free','basico','premium','empresarial') DEFAULT 'free',
@@ -806,8 +812,9 @@ CREATE TABLE `transportadores` (
 -- Extraindo dados da tabela `transportadores`
 --
 
-INSERT INTO `transportadores` (`id`, `usuario_id`, `nome_comercial`, `telefone`, `antt`, `numero_antt`, `placa_veiculo`, `modelo_veiculo`, `descricao_veiculo`, `estado`, `cidade`, `plano`, `foto_perfil_url`) VALUES
-(1, 7, NULL, '11996563500', NULL, '13231231434142243', '111-1111', 'teste', 'carreta', 'SP', 'Campinas', 'free', NULL);
+INSERT INTO `transportadores` (`id`, `usuario_id`, `nome_comercial`, `telefone`, `antt`, `numero_antt`, `placa_veiculo`, `modelo_veiculo`, `descricao_veiculo`, `cep`, `rua`, `numero`, `complemento`, `estado`, `cidade`, `plano`, `foto_perfil_url`) VALUES
+(1, 7, '', '11996563500', NULL, '13231231434142243', '111-1111', 'teste', 'carreta', '13211693', '', '', '', 'SP', 'Campinas', 'free', ''),
+(2, 27, 'assa', '(11) 11111-1111', NULL, '11111111111111111111', '111-1111', '11111111111', '1111111', NULL, NULL, NULL, NULL, 'SP', 'Jundiaí', 'free', NULL);
 
 -- --------------------------------------------------------
 
@@ -848,7 +855,8 @@ INSERT INTO `usuarios` (`id`, `email`, `senha`, `tipo`, `nome`, `status`, `data_
 (19, 'tvendedor@gmail.com', '$2y$10$u.HaiRipdMCCtHAjeXSEGOaWuxq8OSuty5NtGa3sU/p1qrTkFx7Ty', 'vendedor', 'test', 'pendente', '2025-12-11 17:05:40', NULL, NULL, NULL),
 (22, 'pagamentoteste@gmail.com', '$2y$10$6y69RuRenxE5j77aGmRjHO2U9IIgw806Y68f/S/IibtqiK0o3COV.', 'vendedor', 'pagamentoteste', 'ativo', '2026-01-08 13:48:24', NULL, NULL, NULL),
 (23, 'comprador2@gmail.com', '$2y$10$OkzXwNwpYhrH.Ubm3v5zMeA0gJofcKDkpidji7fBmeQIvtjVcmBua', 'comprador', 'Comprador2', 'ativo', '2026-01-10 15:12:02', NULL, NULL, NULL),
-(26, 'a@gmail.com', '$2y$10$ur4VUeX9VISRYl1dELNSfeL0BhNRhy906zCmb7XGLGhn7nT3CdUyu', 'vendedor', 'a', 'ativo', '2026-01-14 19:38:18', NULL, NULL, NULL);
+(26, 'a@gmail.com', '$2y$10$ur4VUeX9VISRYl1dELNSfeL0BhNRhy906zCmb7XGLGhn7nT3CdUyu', 'vendedor', 'a', 'ativo', '2026-01-14 19:38:18', NULL, NULL, NULL),
+(27, 'as@gmail.com', '$2y$10$B6XGRf1Bv.5SSKyU4.jafOppc37TBnAPkMTQxXGf00GJCkJw767wG', 'transportador', 'assa', 'pendente', '2026-01-19 18:47:54', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1250,7 +1258,7 @@ ALTER TABLE `mensagens`
 -- AUTO_INCREMENT de tabela `notificacoes`
 --
 ALTER TABLE `notificacoes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT de tabela `pagamentos`
@@ -1298,19 +1306,19 @@ ALTER TABLE `propostas_vendedor`
 -- AUTO_INCREMENT de tabela `solicitacoes_cadastro`
 --
 ALTER TABLE `solicitacoes_cadastro`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT de tabela `transportadores`
 --
 ALTER TABLE `transportadores`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT de tabela `usuario_avisos_preferencias`

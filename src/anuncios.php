@@ -8,6 +8,13 @@ $usuario_tipo = $_SESSION['usuario_tipo'] ?? null;
 $usuario_id = $_SESSION['usuario_id'] ?? null;
 $is_comprador = $usuario_tipo === 'comprador' || $usuario_tipo === 'vendedor';
 
+// Verificar se é um login recente (apenas para vendedores)
+$mostrar_aviso_vendedor = false;
+if ($is_logged_in && $usuario_tipo === 'vendedor' && isset($_SESSION['login_recente_vendedor'])) {
+    $mostrar_aviso_vendedor = true;
+    unset($_SESSION['login_recente_vendedor']); // Remove o sinalizador após mostrar uma vez
+}
+
 // Conexão e busca dos anúncios
 $database = new Database();
 $conn = $database->getConnection();
@@ -312,9 +319,156 @@ foreach ($anuncios as &$a) {
                 max-width: none;
             }
         }
+
+        /* Toast Notification para Aviso de Vendedores */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 9999;
+            max-width: 400px;
+            border-left: 4px solid #2196F3;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .toast-notification.hide {
+            animation: slideOutRight 0.3s ease-out forwards;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(450px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(450px);
+                opacity: 0;
+            }
+        }
+
+        .toast-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .toast-content i {
+            color: #2196F3;
+            font-size: 20px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .toast-text {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .toast-text strong {
+            color: #212121;
+            font-size: 14px;
+        }
+
+        .toast-text p {
+            color: #666;
+            font-size: 13px;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .toast-close:hover {
+            color: #212121;
+        }
+
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+        }
+
+        .toast-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #2196F3, #1976D2);
+            animation: progressToast 7s linear forwards;
+        }
+
+        @keyframes progressToast {
+            from {
+                width: 100%;
+            }
+            to {
+                width: 0%;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .toast-notification {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+        }
     </style>
 </head>
 <body>
+    <?php if ($mostrar_aviso_vendedor): ?>
+    <!-- Toast de Aviso para Vendedores -->
+    <div id="toast-aviso-vendedor" class="toast-notification toast-vendedor" style="display: flex;">
+        <div class="toast-content">
+            <i class="fas fa-info-circle"></i>
+            <div class="toast-text">
+                <strong>Lembrete!</strong>
+                <p>Para acessar seus chats, vá até painel > chats.</p>
+            </div>
+        </div>
+        <div class="toast-progress">
+            <div class="toast-progress-bar"></div>
+        </div>
+        <button class="toast-close" onclick="fecharToastVendedor()"><i class="fas fa-times"></i></button>
+    </div>
+    <?php endif; ?>
+    
     <header>
         <nav class="navbar">
             <div class="nav-container">
@@ -769,7 +923,27 @@ foreach ($anuncios as &$a) {
                 }, 7500);
             }
         }
+
+        // Toast de aviso para vendedores (após login)
+        const toastVendedor = document.getElementById('toast-aviso-vendedor');
+        if (toastVendedor) {
+            // Fechar automaticamente após 7 segundos
+            setTimeout(() => {
+                fecharToastVendedor();
+            }, 7000);
+        }
     });
+
+    // Função para fechar o toast de vendedor
+    function fecharToastVendedor() {
+        const toastVendedor = document.getElementById('toast-aviso-vendedor');
+        if (toastVendedor) {
+            toastVendedor.classList.add('hide');
+            setTimeout(() => {
+                toastVendedor.style.display = 'none';
+            }, 300);
+        }
+    }
     </script>
 </body>
 </html>

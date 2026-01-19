@@ -29,6 +29,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['usuario_nome'] = $usuario['nome'];
                     $_SESSION['usuario_status'] = $usuario['status']; // Adicione o status na sessão
                     
+                    // Sinalizar login recente para vendedores (para mostrar aviso nas páginas)
+                    if ($usuario['tipo'] === 'vendedor') {
+                        $_SESSION['login_recente_vendedor'] = true;
+                    }
+                    
                     // Redirecionar baseado no tipo de usuário
                     switch ($usuario['tipo']) {
                         case 'admin':

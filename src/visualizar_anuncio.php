@@ -187,7 +187,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($anuncio['produto']); ?> - Encontre o Campo</title>
-    <link rel="stylesheet" href="css/comprador/proposta_nova.css">
+    <link rel="stylesheet" href="css/comprador/view_ad.css">
     <link rel="shortcut icon" href="../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">

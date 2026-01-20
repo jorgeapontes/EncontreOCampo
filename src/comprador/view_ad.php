@@ -362,8 +362,10 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <img src="../../img/logo-nova.png" alt="Logo">
-                    <div><h1>ENCONTRE</h1><h2>O CAMPO</h2></div>
+                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                        <img src="../../img/logo-nova.png" alt="Logo">
+                        <div><h1>ENCONTRE</h1><h2>O CAMPO</h2></div>
+                    </a>
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
@@ -647,11 +649,8 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                     <h4>Contato</h4>
                     <div class="contact-info">
                         <p><i class="fas fa-envelope"></i> contato@encontreocampo.com.br</p>
-                        <p><i class="fas fa-phone"></i> (11) 99999-9999</p>
                         <div class="social-links">
-                            <a href="#"><i class="fab fa-facebook"></i></a>
-                            <a href="#"><i class="fab fa-instagram"></i></a>
-                            <a href="#"><i class="fab fa-whatsapp"></i></a>
+                            <a href="#">Instagram</a>
                         </div>
                     </div>
                 </div>

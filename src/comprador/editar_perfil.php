@@ -45,17 +45,17 @@ try {
 // 3. PROCESSAR ATUALIZAÇÃO SE FOR POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Coletar e validar dados do formulário
-    $nome_comercial = filter_input(INPUT_POST, 'nome_comercial', FILTER_SANITIZE_STRING);
-    $cep = filter_input(INPUT_POST, 'cep', FILTER_SANITIZE_STRING);
-    $rua = filter_input(INPUT_POST, 'rua', FILTER_SANITIZE_STRING);
-    $numero = filter_input(INPUT_POST, 'numero', FILTER_SANITIZE_STRING);
-    $complemento = filter_input(INPUT_POST, 'complemento', FILTER_SANITIZE_STRING);
-    $estado = filter_input(INPUT_POST, 'estado', FILTER_SANITIZE_STRING);
-    $cidade = filter_input(INPUT_POST, 'cidade', FILTER_SANITIZE_STRING);
-    $telefone1 = filter_input(INPUT_POST, 'telefone1', FILTER_SANITIZE_STRING);
-    $telefone2 = filter_input(INPUT_POST, 'telefone2', FILTER_SANITIZE_STRING);
-    $plano = filter_input(INPUT_POST, 'plano', FILTER_SANITIZE_STRING);
-    $nome_usuario = filter_input(INPUT_POST, 'nome_usuario', FILTER_SANITIZE_STRING);
+    $nome_comercial = trim(strip_tags(filter_input(INPUT_POST, 'nome_comercial', FILTER_DEFAULT)));
+    $cep = trim(strip_tags(filter_input(INPUT_POST, 'cep', FILTER_DEFAULT)));
+    $rua = trim(strip_tags(filter_input(INPUT_POST, 'rua', FILTER_DEFAULT)));
+    $numero = trim(strip_tags(filter_input(INPUT_POST, 'numero', FILTER_DEFAULT)));
+    $complemento = trim(strip_tags(filter_input(INPUT_POST, 'complemento', FILTER_DEFAULT)));
+    $estado = trim(strip_tags(filter_input(INPUT_POST, 'estado', FILTER_DEFAULT)));
+    $cidade = trim(strip_tags(filter_input(INPUT_POST, 'cidade', FILTER_DEFAULT)));
+    $telefone1 = trim(strip_tags(filter_input(INPUT_POST, 'telefone1', FILTER_DEFAULT)));
+    $telefone2 = trim(strip_tags(filter_input(INPUT_POST, 'telefone2', FILTER_DEFAULT)));
+    $plano = trim(strip_tags(filter_input(INPUT_POST, 'plano', FILTER_DEFAULT)));
+    $nome_usuario = trim(strip_tags(filter_input(INPUT_POST, 'nome_usuario', FILTER_DEFAULT)));
     $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
 
     // Validações básicas
@@ -139,8 +139,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <h1>ENCONTRE</h1>
-                <h2>OCAMPO</h2>
+                <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <div>
+                        <h1>ENCONTRE</h1>
+                        <h2>OCAMPO</h2>
+                    </div>
+                </a>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>

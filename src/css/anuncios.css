@@ -748,15 +748,12 @@ body {
     justify-content: center;
     width: 40px;
     height: 40px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 50%;
     color: var(--white);
     text-decoration: none;
     transition: all 0.3s ease;
 }
 
 .social-links a:hover {
-    background: var(--primary-color);
     transform: translateY(-2px);
 }
 

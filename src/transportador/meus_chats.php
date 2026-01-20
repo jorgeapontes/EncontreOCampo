@@ -314,11 +314,13 @@ try {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <img src="../../img/logo-nova.png" alt="Logo">
-                    <div>
-                        <h1>ENCONTRE</h1>
-                        <h2>O CAMPO</h2>
-                    </div>
+                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                        <img src="../../img/logo-nova.png" alt="Logo">
+                        <div>
+                            <h1>ENCONTRE</h1>
+                            <h2>O CAMPO</h2>
+                        </div>
+                    </a>
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
@@ -508,7 +510,7 @@ try {
                             <?php endif; ?>
                         </p>
                         <?php if (!$mostrar_arquivados && $filtro === 'todas'): ?>
-                            <a href="disponiveis.php" class="btn-anuncios"><i class="fa-solid fa-truck"></i> Ver Anúncios</a>
+                            <a href="disponiveis.php" class="btn-anuncios"><i class="fa-solid fa-truck"></i> Ver Entregas</a>
                         <?php elseif (!$mostrar_arquivados && $filtro === 'nao-lidos'): ?>
                             <a href="meus_chats.php?aba=ativos" class="btn-anuncios">Ver Todas as Conversas</a>
                         <?php endif; ?>

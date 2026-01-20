@@ -508,7 +508,7 @@ try {
                             <?php endif; ?>
                         </p>
                         <?php if (!$mostrar_arquivados && $filtro === 'todas'): ?>
-                            <a href="disponiveis.php" class="btn-anuncios"><i class="fa-solid fa-truck"></i> Ver Anúncios</a>
+                            <a href="disponiveis.php" class="btn-anuncios"><i class="fa-solid fa-truck"></i> Ver Entregas</a>
                         <?php elseif (!$mostrar_arquivados && $filtro === 'nao-lidos'): ?>
                             <a href="meus_chats.php?aba=ativos" class="btn-anuncios">Ver Todas as Conversas</a>
                         <?php endif; ?>

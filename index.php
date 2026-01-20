@@ -739,9 +739,8 @@ require_once 'src/conexao.php';
                     <div class="footer-column">
                         <h4>Redes Sociais</h4>
                         <ul>
-                            <li><a href="#">Facebook</a></li>
+                            <p><i class="fas fa-envelope"></i> contato@encontreocampo.com.br</p>
                             <li><a href="#">Instagram</a></li>
-                            <li><a href="#">LinkedIn</a></li>
                         </ul>
                     </div>
                 </div>

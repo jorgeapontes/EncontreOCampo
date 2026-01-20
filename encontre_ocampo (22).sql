@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 19-Jan-2026 às 20:39
+-- Tempo de geração: 20/01/2026 às 19:42
 -- Versão do servidor: 10.4.32-MariaDB
--- versão do PHP: 8.2.12
+-- Versão do PHP: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,7 +24,7 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `admin_acoes`
+-- Estrutura para tabela `admin_acoes`
 --
 
 CREATE TABLE `admin_acoes` (
@@ -37,7 +37,7 @@ CREATE TABLE `admin_acoes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `admin_acoes`
+-- Despejando dados para a tabela `admin_acoes`
 --
 
 INSERT INTO `admin_acoes` (`id`, `admin_id`, `acao`, `tabela_afetada`, `registro_id`, `data_acao`) VALUES
@@ -72,7 +72,7 @@ INSERT INTO `admin_acoes` (`id`, `admin_id`, `acao`, `tabela_afetada`, `registro
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `chat_auditoria`
+-- Estrutura para tabela `chat_auditoria`
 --
 
 CREATE TABLE `chat_auditoria` (
@@ -87,7 +87,7 @@ CREATE TABLE `chat_auditoria` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `chat_auditoria`
+-- Despejando dados para a tabela `chat_auditoria`
 --
 
 INSERT INTO `chat_auditoria` (`id`, `conversa_id`, `usuario_id`, `acao`, `detalhes`, `ip_address`, `user_agent`, `data_acao`) VALUES
@@ -177,12 +177,36 @@ INSERT INTO `chat_auditoria` (`id`, `conversa_id`, `usuario_id`, `acao`, `detalh
 (85, 13, 23, 'enviar_mensagem', 'Mensagem ID: 87 - Conteúdo: Nova proposta de compra', NULL, NULL, '2026-01-13 04:28:52'),
 (86, 13, 4, 'enviar_mensagem', 'Mensagem ID: 88 - Conteúdo: Nova proposta de compra', NULL, NULL, '2026-01-13 04:29:21'),
 (87, 13, 23, 'enviar_mensagem', 'Mensagem ID: 89 - Conteúdo: Nova proposta de compra', NULL, NULL, '2026-01-13 04:32:04'),
-(88, 13, 4, 'enviar_mensagem', 'Mensagem ID: 90 - Conteúdo: Nova proposta de compra', NULL, NULL, '2026-01-13 04:32:50');
+(88, 13, 4, 'enviar_mensagem', 'Mensagem ID: 90 - Conteúdo: Nova proposta de compra', NULL, NULL, '2026-01-13 04:32:50'),
+(89, 14, 23, 'enviar_mensagem', 'Mensagem ID: 91 - Conteúdo: oi', NULL, NULL, '2026-01-20 15:53:32'),
+(90, 14, 4, 'enviar_mensagem', 'Mensagem ID: 92 - Conteúdo: olá', NULL, NULL, '2026-01-20 15:53:39'),
+(91, 14, 4, 'enviar_mensagem', 'Mensagem ID: 93 - Conteúdo: vamos testar propostas BD', NULL, NULL, '2026-01-20 16:08:22'),
+(92, 14, 23, 'enviar_mensagem', 'Mensagem ID: 94 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10', NULL, NULL, '2026-01-20 16:08:37'),
+(93, 14, 4, 'enviar_mensagem', 'Mensagem ID: 95 - Conteúdo: insert no BD funcionando', NULL, NULL, '2026-01-20 16:11:37'),
+(94, 14, 4, 'enviar_mensagem', 'Mensagem ID: 96 - Conteúdo: a', NULL, NULL, '2026-01-20 17:33:53'),
+(95, 14, 23, 'enviar_mensagem', 'Mensagem ID: 97 - Conteúdo: b', NULL, NULL, '2026-01-20 17:33:56'),
+(96, 14, 23, 'enviar_mensagem', 'Mensagem ID: 98 - Conteúdo: teste', NULL, NULL, '2026-01-20 17:34:55'),
+(97, 14, 23, 'enviar_mensagem', 'Mensagem ID: 99 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-20 17:37:48'),
+(98, 14, 23, 'enviar_mensagem', 'Mensagem ID: 100 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 4,', NULL, NULL, '2026-01-20 17:38:32'),
+(99, 14, 23, 'enviar_mensagem', 'Mensagem ID: 101 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-20 17:41:44'),
+(100, 14, 23, 'enviar_mensagem', 'Mensagem ID: 102 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 7,', NULL, NULL, '2026-01-20 17:42:12'),
+(101, 14, 23, 'enviar_mensagem', 'Mensagem ID: 103 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-20 17:48:02'),
+(102, 14, 23, 'enviar_mensagem', 'Mensagem ID: 104 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 9,', NULL, NULL, '2026-01-20 17:59:48'),
+(103, 14, 23, 'enviar_mensagem', 'Mensagem ID: 105 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10', NULL, NULL, '2026-01-20 18:01:57'),
+(104, 14, 23, 'enviar_mensagem', 'Mensagem ID: 106 - Conteúdo: a', NULL, NULL, '2026-01-20 18:06:05'),
+(105, 14, 4, 'enviar_mensagem', 'Mensagem ID: 107 - Conteúdo: b', NULL, NULL, '2026-01-20 18:06:07'),
+(106, 14, 23, 'enviar_mensagem', 'Mensagem ID: 108 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-20 18:06:27'),
+(107, 15, 23, 'enviar_mensagem', 'Mensagem ID: 109 - Conteúdo: a', NULL, NULL, '2026-01-20 18:16:18'),
+(108, 15, 4, 'enviar_mensagem', 'Mensagem ID: 110 - Conteúdo: b', NULL, NULL, '2026-01-20 18:16:33'),
+(109, 15, 23, 'enviar_mensagem', 'Mensagem ID: 111 - Conteúdo: *???? NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** ', NULL, NULL, '2026-01-20 18:16:42'),
+(110, 15, 23, 'enviar_mensagem', 'Mensagem ID: 112 - Conteúdo: *???? PROPOSTA ATUALIZADA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 5', NULL, NULL, '2026-01-20 18:17:06'),
+(111, 15, 23, 'enviar_mensagem', 'Mensagem ID: 113 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10', NULL, NULL, '2026-01-20 18:26:52'),
+(112, 15, 23, 'enviar_mensagem', 'Mensagem ID: 114 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 9,', NULL, NULL, '2026-01-20 18:38:29');
 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `chat_conversas`
+-- Estrutura para tabela `chat_conversas`
 --
 
 CREATE TABLE `chat_conversas` (
@@ -210,7 +234,7 @@ CREATE TABLE `chat_conversas` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `chat_conversas`
+-- Despejando dados para a tabela `chat_conversas`
 --
 
 INSERT INTO `chat_conversas` (`id`, `produto_id`, `comprador_id`, `vendedor_id`, `ultima_mensagem`, `ultima_mensagem_data`, `comprador_lido`, `vendedor_lido`, `status`, `data_criacao`, `deletado`, `data_delecao`, `usuario_deletou`, `favorito_comprador`, `favorito_vendedor`, `comprador_excluiu`, `vendedor_excluiu`, `ultimo_ip_comprador`, `ultimo_ip_vendedor`, `ultimo_user_agent_comprador`, `ultimo_user_agent_vendedor`) VALUES
@@ -220,14 +244,12 @@ INSERT INTO `chat_conversas` (`id`, `produto_id`, `comprador_id`, `vendedor_id`,
 (8, 25, 3, 4, 'produzindo', '2025-12-16 17:30:27', 1, 0, 'ativo', '2025-12-16 17:30:09', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL),
 (9, 20, 3, 4, 'ok', '2025-12-16 20:39:22', 1, 0, 'ativo', '2025-12-16 20:38:44', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL),
 (10, 24, 3, 4, 'teste', '2025-12-16 21:08:26', 0, 1, 'ativo', '2025-12-16 21:08:06', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL),
-(11, 16, 23, 4, '[Acordo de Compra]', '2026-01-13 04:26:50', 1, 0, 'ativo', '2026-01-10 15:30:40', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL),
-(12, 20, 23, 4, '[Acordo de Compra]', '2026-01-13 03:45:07', 0, 1, 'ativo', '2026-01-13 03:38:08', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL),
-(13, 22, 23, 4, '[Acordo de Compra]', '2026-01-13 04:32:50', 0, 1, 'ativo', '2026-01-13 04:28:32', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
+(15, 16, 23, 4, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 9,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Retirada pelo comprador\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 9,00\n\n**ID da proposta:** 11', '2026-01-20 18:38:29', 1, 0, 'ativo', '2026-01-20 18:16:12', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `chat_mensagens`
+-- Estrutura para tabela `chat_mensagens`
 --
 
 CREATE TABLE `chat_mensagens` (
@@ -248,7 +270,7 @@ CREATE TABLE `chat_mensagens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `chat_mensagens`
+-- Despejando dados para a tabela `chat_mensagens`
 --
 
 INSERT INTO `chat_mensagens` (`id`, `conversa_id`, `remetente_id`, `mensagem`, `tipo`, `dados_json`, `lida`, `data_envio`, `deletado`, `data_delecao`, `usuario_deletou`, `tipo_mensagem`, `anexo_url`, `palavras_ofensivas`) VALUES
@@ -273,35 +295,12 @@ INSERT INTO `chat_mensagens` (`id`, `conversa_id`, `remetente_id`, `mensagem`, `
 (30, 9, 3, 'ok', 'texto', NULL, 1, '2025-12-16 20:39:22', 0, NULL, NULL, 'texto', NULL, NULL),
 (31, 10, 3, 'ok', 'texto', NULL, 1, '2025-12-16 21:08:10', 0, NULL, NULL, 'texto', NULL, NULL),
 (32, 10, 4, 'teste', 'texto', NULL, 1, '2025-12-16 21:08:26', 0, NULL, NULL, 'texto', NULL, NULL),
-(33, 11, 23, 'oi', 'texto', NULL, 1, '2026-01-10 15:30:42', 0, NULL, NULL, 'texto', NULL, NULL),
-(34, 11, 4, 'Olá', 'texto', NULL, 1, '2026-01-10 15:34:59', 0, NULL, NULL, 'texto', NULL, NULL),
-(35, 11, 23, '*NOVA PROPOSTA DE COMPRA*\n\nProduto: teste x\nQuantidade: 1 unidades\nValor unitário: R$ 8,00\nForma de pagamento: Pagamento à Vista\nFrete: Frete por conta do vendedor\nValor do frete: R$ 5,00\nTotal: R$ 13,00\n\nID da proposta: 1', 'texto', NULL, 1, '2026-01-10 19:34:58', 0, NULL, NULL, 'texto', NULL, NULL),
-(36, 11, 23, '*NOVA PROPOSTA DE COMPRA*\n\nProduto: teste x\nQuantidade: 1 unidades\nValor unitário: R$ 8,00\nForma de pagamento: Pagamento à Vista\nFrete: Frete por conta do vendedor\nTotal: R$ 8,00\n\nID da proposta: 1', 'texto', NULL, 1, '2026-01-12 22:00:33', 0, NULL, NULL, 'texto', NULL, NULL),
-(37, 11, 23, 'oi', 'texto', NULL, 1, '2026-01-12 22:19:02', 0, NULL, NULL, 'texto', NULL, NULL),
-(38, 11, 4, 'olá', 'texto', NULL, 1, '2026-01-12 22:19:20', 0, NULL, NULL, 'texto', NULL, NULL),
-(40, 11, 4, 'oi', 'texto', NULL, 1, '2026-01-12 22:20:12', 0, NULL, NULL, 'texto', NULL, NULL),
-(41, 11, 23, 'a', 'texto', NULL, 1, '2026-01-12 22:20:17', 0, NULL, NULL, 'texto', NULL, NULL),
-(42, 11, 23, 'b', 'texto', NULL, 1, '2026-01-12 22:24:09', 0, NULL, NULL, 'texto', NULL, NULL),
-(56, 11, 23, 'a', 'texto', NULL, 1, '2026-01-13 02:42:33', 0, NULL, NULL, 'texto', NULL, NULL),
-(59, 11, 23, 'teste', 'texto', NULL, 1, '2026-01-13 02:59:29', 0, NULL, NULL, 'texto', NULL, NULL),
-(60, 11, 23, 'testando', 'texto', NULL, 1, '2026-01-13 02:59:31', 0, NULL, NULL, 'texto', NULL, NULL),
-(61, 11, 4, 'abc', 'texto', NULL, 1, '2026-01-13 02:59:37', 0, NULL, NULL, 'texto', NULL, NULL),
-(65, 12, 23, 'oi', 'texto', NULL, 1, '2026-01-13 03:38:09', 0, NULL, NULL, 'texto', NULL, NULL),
-(66, 12, 4, 'olá', 'texto', NULL, 1, '2026-01-13 03:38:19', 0, NULL, NULL, 'texto', NULL, NULL),
-(74, 12, 4, 'Nova proposta de compra', 'negociacao', '{\"negociacao_id\":12,\"proposta_id\":\"3\",\"produto_id\":20,\"produto_nome\":\"novo an\\u00fancio\",\"quantidade\":1,\"preco_proposto\":\"5.00\",\"valor_frete\":\"0.00\",\"total\":5,\"forma_pagamento\":\"\\u00e0 vista\",\"opcao_frete\":\"vendedor\",\"enviado_por\":\"Vendedor\",\"status\":\"pendente\",\"tipo_remetente\":\"vendedor\",\"tem_proposta_comprador\":true,\"tem_proposta_vendedor\":true,\"mensagem_id\":\"74\"}', 1, '2026-01-13 03:45:07', 0, NULL, NULL, 'texto', NULL, NULL),
-(78, 11, 23, 'Nova proposta de compra', 'negociacao', '{\"negociacao_id\":11,\"proposta_id\":3,\"produto_id\":16,\"produto_nome\":\"teste x\",\"quantidade\":1,\"preco_proposto\":\"8.00\",\"valor_frete\":\"0.00\",\"total\":8,\"forma_pagamento\":\"\\u00e0 vista\",\"opcao_frete\":\"vendedor\",\"enviado_por\":\"Comprador2\",\"status\":\"pendente\",\"tipo_remetente\":\"comprador\",\"tem_proposta_comprador\":true,\"tem_proposta_vendedor\":true,\"mensagem_id\":\"78\"}', 1, '2026-01-13 04:16:45', 0, NULL, NULL, 'texto', NULL, NULL),
-(79, 11, 23, 'Nova proposta de compra', 'negociacao', '{\"negociacao_id\":11,\"proposta_id\":3,\"produto_id\":16,\"produto_nome\":\"teste x\",\"quantidade\":1,\"preco_proposto\":\"8.00\",\"valor_frete\":\"0.00\",\"total\":8,\"forma_pagamento\":\"\\u00e0 vista\",\"opcao_frete\":\"vendedor\",\"enviado_por\":\"Comprador2\",\"status\":\"pendente\",\"tipo_remetente\":\"comprador\",\"tem_proposta_comprador\":true,\"tem_proposta_vendedor\":true,\"mensagem_id\":\"79\"}', 1, '2026-01-13 04:17:44', 0, NULL, NULL, 'texto', NULL, NULL),
-(80, 11, 23, 'Nova proposta de compra', 'negociacao', '{\"negociacao_id\":11,\"proposta_id\":3,\"produto_id\":16,\"produto_nome\":\"teste x\",\"quantidade\":1,\"preco_proposto\":\"5.00\",\"valor_frete\":\"0.00\",\"total\":5,\"forma_pagamento\":\"\\u00e0 vista\",\"opcao_frete\":\"vendedor\",\"enviado_por\":\"Comprador2\",\"status\":\"pendente\",\"tipo_remetente\":\"comprador\",\"tem_proposta_comprador\":true,\"tem_proposta_vendedor\":true,\"mensagem_id\":\"80\"}', 1, '2026-01-13 04:17:57', 0, NULL, NULL, 'texto', NULL, NULL),
-(81, 11, 23, 'Nova proposta de compra', 'negociacao', '{\"negociacao_id\":11,\"proposta_id\":3,\"produto_id\":16,\"produto_nome\":\"teste x\",\"quantidade\":1,\"preco_proposto\":\"5.00\",\"valor_frete\":\"0.00\",\"total\":5,\"forma_pagamento\":\"\\u00e0 vista\",\"opcao_frete\":\"vendedor\",\"enviado_por\":\"Comprador2\",\"status\":\"pendente\",\"tipo_remetente\":\"comprador\",\"tem_proposta_comprador\":true,\"tem_proposta_vendedor\":true,\"mensagem_id\":\"81\"}', 1, '2026-01-13 04:20:05', 0, NULL, NULL, 'texto', NULL, NULL),
-(82, 11, 4, 'Nova proposta de compra', 'negociacao', '{\"negociacao_id\":11,\"proposta_id\":2,\"produto_id\":16,\"produto_nome\":\"teste x\",\"quantidade\":1,\"preco_proposto\":\"5.00\",\"valor_frete\":\"0.00\",\"total\":5,\"forma_pagamento\":\"\\u00e0 vista\",\"opcao_frete\":\"vendedor\",\"enviado_por\":\"Vendedor\",\"status\":\"pendente\",\"tipo_remetente\":\"vendedor\",\"tem_proposta_comprador\":true,\"tem_proposta_vendedor\":true,\"mensagem_id\":\"82\"}', 1, '2026-01-13 04:24:23', 0, NULL, NULL, 'texto', NULL, NULL),
-(83, 11, 23, 'Nova proposta de compra', 'negociacao', '{\"negociacao_id\":11,\"proposta_id\":3,\"produto_id\":16,\"produto_nome\":\"teste x\",\"quantidade\":1,\"preco_proposto\":\"8.00\",\"valor_frete\":\"0.00\",\"total\":8,\"forma_pagamento\":\"\\u00e0 vista\",\"opcao_frete\":\"vendedor\",\"enviado_por\":\"Comprador2\",\"status\":\"pendente\",\"tipo_remetente\":\"comprador\",\"tem_proposta_comprador\":true,\"tem_proposta_vendedor\":true,\"mensagem_id\":\"83\"}', 1, '2026-01-13 04:26:30', 0, NULL, NULL, 'texto', NULL, NULL),
-(84, 11, 23, 'Nova proposta de compra', 'negociacao', '{\"negociacao_id\":11,\"proposta_id\":3,\"produto_id\":16,\"produto_nome\":\"teste x\",\"quantidade\":1,\"preco_proposto\":\"5.00\",\"valor_frete\":\"2.00\",\"total\":7,\"forma_pagamento\":\"\\u00e0 vista\",\"opcao_frete\":\"vendedor\",\"enviado_por\":\"Comprador2\",\"status\":\"pendente\",\"tipo_remetente\":\"comprador\",\"tem_proposta_comprador\":true,\"tem_proposta_vendedor\":true,\"mensagem_id\":\"84\"}', 1, '2026-01-13 04:26:50', 0, NULL, NULL, 'texto', NULL, NULL),
-(85, 13, 23, 'teste', 'texto', NULL, 1, '2026-01-13 04:28:34', 0, NULL, NULL, 'texto', NULL, NULL),
-(86, 13, 4, 'testando', 'texto', NULL, 1, '2026-01-13 04:28:40', 0, NULL, NULL, 'texto', NULL, NULL),
-(87, 13, 23, 'Nova proposta de compra', 'negociacao', '{\"negociacao_id\":\"13\",\"proposta_id\":\"5\",\"produto_id\":22,\"produto_nome\":\"caixa unidades\",\"quantidade\":1,\"preco_proposto\":\"50.00\",\"valor_frete\":\"1.00\",\"total\":51,\"forma_pagamento\":\"\\u00e0 vista\",\"opcao_frete\":\"vendedor\",\"enviado_por\":\"Comprador2\",\"status\":\"pendente\",\"tipo_remetente\":\"comprador\",\"tem_proposta_comprador\":true,\"tem_proposta_vendedor\":false,\"mensagem_id\":\"87\"}', 1, '2026-01-13 04:28:52', 0, NULL, NULL, 'texto', NULL, NULL),
-(88, 13, 4, 'Nova proposta de compra', 'negociacao', '{\"negociacao_id\":13,\"proposta_id\":\"4\",\"produto_id\":22,\"produto_nome\":\"caixa unidades\",\"quantidade\":1,\"preco_proposto\":\"50.00\",\"valor_frete\":\"1.00\",\"total\":51,\"forma_pagamento\":\"\\u00e0 vista\",\"opcao_frete\":\"vendedor\",\"enviado_por\":\"Vendedor\",\"status\":\"pendente\",\"tipo_remetente\":\"vendedor\",\"tem_proposta_comprador\":true,\"tem_proposta_vendedor\":true,\"mensagem_id\":\"88\"}', 1, '2026-01-13 04:29:21', 0, NULL, NULL, 'texto', NULL, NULL),
-(89, 13, 23, 'Nova proposta de compra', 'negociacao', '{\"negociacao_id\":13,\"proposta_id\":5,\"produto_id\":22,\"produto_nome\":\"caixa unidades\",\"quantidade\":1,\"preco_proposto\":\"50.00\",\"valor_frete\":\"0.00\",\"total\":50,\"forma_pagamento\":\"\\u00e0 vista\",\"opcao_frete\":\"vendedor\",\"enviado_por\":\"Comprador2\",\"status\":\"pendente\",\"tipo_remetente\":\"comprador\",\"tem_proposta_comprador\":true,\"tem_proposta_vendedor\":true,\"mensagem_id\":\"89\"}', 1, '2026-01-13 04:32:04', 0, NULL, NULL, 'texto', NULL, NULL),
-(90, 13, 4, 'Nova proposta de compra', 'negociacao', '{\"negociacao_id\":13,\"proposta_id\":4,\"produto_id\":22,\"produto_nome\":\"caixa unidades\",\"quantidade\":1,\"preco_proposto\":\"50.00\",\"valor_frete\":\"0.00\",\"total\":50,\"forma_pagamento\":\"\\u00e0 vista\",\"opcao_frete\":\"vendedor\",\"enviado_por\":\"Vendedor\",\"status\":\"pendente\",\"tipo_remetente\":\"vendedor\",\"tem_proposta_comprador\":true,\"tem_proposta_vendedor\":true,\"mensagem_id\":\"90\"}', 1, '2026-01-13 04:32:50', 0, NULL, NULL, 'texto', NULL, NULL);
+(109, 15, 23, 'a', 'texto', NULL, 1, '2026-01-20 18:16:18', 0, NULL, NULL, 'texto', NULL, NULL),
+(110, 15, 4, 'b', 'texto', NULL, 1, '2026-01-20 18:16:33', 0, NULL, NULL, 'texto', NULL, NULL),
+(111, 15, 23, '*???? NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Frete por conta do vendedor\n**Valor do frete:** R$ 10,00\n**Valor total:** R$ 18,00\n\n**ID da proposta:** 9', 'texto', NULL, 1, '2026-01-20 18:16:42', 0, NULL, NULL, 'texto', NULL, NULL),
+(112, 15, 23, '*???? PROPOSTA ATUALIZADA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 5,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Frete por conta do vendedor\n**Valor do frete:** R$ 3,00\n**Valor total:** R$ 8,00\n\n**ID da proposta:** 9', 'texto', NULL, 1, '2026-01-20 18:17:06', 0, NULL, NULL, 'texto', NULL, NULL),
+(113, 15, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Retirada pelo comprador\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 10,00\n\n**ID da proposta:** 10', 'texto', NULL, 1, '2026-01-20 18:26:52', 0, NULL, NULL, 'texto', NULL, NULL),
+(114, 15, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 9,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Retirada pelo comprador\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 9,00\n\n**ID da proposta:** 11', 'texto', NULL, 1, '2026-01-20 18:38:29', 0, NULL, NULL, 'texto', NULL, NULL);
 
 --
 -- Acionadores `chat_mensagens`
@@ -318,7 +317,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `compradores`
+-- Estrutura para tabela `compradores`
 --
 
 CREATE TABLE `compradores` (
@@ -341,7 +340,7 @@ CREATE TABLE `compradores` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `compradores`
+-- Despejando dados para a tabela `compradores`
 --
 
 INSERT INTO `compradores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, `foto_perfil_url`, `cpf_cnpj`, `cip`, `cep`, `rua`, `numero`, `complemento`, `estado`, `cidade`, `telefone1`, `telefone2`, `plano`) VALUES
@@ -352,12 +351,12 @@ INSERT INTO `compradores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, 
 (6, 11, 'cpf', 'Rondon', NULL, '41111584800', NULL, '13211873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '11996563500', NULL, 'free'),
 (9, 17, 'cpf', 'Jorge', NULL, '166.076.628-11', NULL, '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '(11) 99656-3500', '', 'free'),
 (10, 18, 'cpf', 'matue', NULL, '166.076.628-11', NULL, '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '(11) 99656-3500', '', 'free'),
-(11, 23, 'cpf', 'Comprador2', NULL, '239.186.590-20', NULL, '78132-752', 'Rua Vereador Saturnino M. Oliveira', '1', '', 'MT', 'Várzea Grande', '(11) 11111-1111', '', 'free');
+(11, 23, 'cpf', 'Comprador2', '', '239.186.590-20', '', '01518-000', 'Rua Justo Azambuja', '79', '', 'SP', 'São Paulo', '(11) 11111-1111', '', 'free');
 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `conversas`
+-- Estrutura para tabela `conversas`
 --
 
 CREATE TABLE `conversas` (
@@ -374,7 +373,7 @@ CREATE TABLE `conversas` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `entregas`
+-- Estrutura para tabela `entregas`
 --
 
 CREATE TABLE `entregas` (
@@ -397,7 +396,7 @@ CREATE TABLE `entregas` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `favoritos`
+-- Estrutura para tabela `favoritos`
 --
 
 CREATE TABLE `favoritos` (
@@ -410,7 +409,7 @@ CREATE TABLE `favoritos` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `mensagens`
+-- Estrutura para tabela `mensagens`
 --
 
 CREATE TABLE `mensagens` (
@@ -427,7 +426,7 @@ CREATE TABLE `mensagens` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `notificacoes`
+-- Estrutura para tabela `notificacoes`
 --
 
 CREATE TABLE `notificacoes` (
@@ -441,71 +440,19 @@ CREATE TABLE `notificacoes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `notificacoes`
+-- Despejando dados para a tabela `notificacoes`
 --
 
 INSERT INTO `notificacoes` (`id`, `usuario_id`, `mensagem`, `tipo`, `lida`, `url`, `data_criacao`) VALUES
-(1, 1, 'Nova solicitação de cadastro de vendedor: SILENE CRISTINA POSSANI', 'info', 1, 'src/admin/solicitacoes.php', '2025-12-01 14:14:23'),
-(2, 1, 'Nova solicitação de cadastro de vendedor: JorgeV', 'info', 1, 'src/admin/solicitacoes.php', '2025-12-02 12:44:56'),
-(3, 1, 'Nova solicitação de cadastro de comprador: teste', 'info', 1, 'src/admin/solicitacoes.php', '2025-12-02 14:16:39'),
-(4, 1, 'Nova solicitação de cadastro de comprador: ok', 'info', 1, 'src/admin/solicitacoes.php', '2025-12-05 01:23:33'),
-(5, 1, 'Nova solicitação de cadastro de comprador: Jorge', 'info', 1, 'src/admin/solicitacoes.php', '2025-12-09 12:02:45'),
-(6, 1, 'Nova solicitação de cadastro de comprador: Jorge', 'info', 0, 'src/admin/solicitacoes.php', '2025-12-09 13:10:53'),
-(7, 1, 'Nova solicitação de cadastro de comprador: ok', 'info', 0, 'src/admin/solicitacoes.php', '2025-12-11 00:11:27'),
-(8, 1, 'Nova solicitação de cadastro de vendedor: test', 'info', 0, 'src/admin/solicitacoes.php', '2025-12-11 17:05:40'),
-(9, 1, 'Nova solicitação de cadastro de vendedor: pagamentoteste', 'info', 0, 'src/admin/solicitacoes.php', '2026-01-08 13:48:24'),
-(10, 1, 'Nova solicitação de cadastro de comprador: Comprador2', 'info', 0, 'src/admin/solicitacoes.php', '2026-01-10 15:12:02'),
-(11, 4, 'Nova proposta para \'teste x\' - Quantidade: 1', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-10 19:34:58'),
-(12, 4, 'Nova proposta para \'teste x\' - Quantidade: 1', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-12 22:00:33'),
-(13, 4, '???? Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-12 22:19:26'),
-(14, 4, '???? Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-12 22:24:21'),
-(15, 4, 'Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-12 22:25:15'),
-(16, 4, 'Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-12 23:23:25'),
-(17, 4, 'Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-12 23:23:33'),
-(18, 4, 'Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-12 23:39:52'),
-(19, 4, 'Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-12 23:57:59'),
-(20, 23, 'Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-12 23:58:44'),
-(21, 23, 'Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-12 23:59:02'),
-(22, 4, '???? Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 00:23:25'),
-(23, 4, '???? Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 00:23:40'),
-(24, 23, '???? Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 00:24:07'),
-(25, 4, '???? Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 00:24:43'),
-(26, 23, '???? Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 00:25:16'),
-(27, 4, '???? Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 02:57:23'),
-(28, 4, '???? Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 02:57:46'),
-(29, 23, '???? Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 02:59:53'),
-(30, 4, '???? Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 03:04:09'),
-(31, 4, 'Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 03:37:50'),
-(32, 4, 'Nova proposta recebida para \'novo anúncio\'', 'info', 0, '../../src/chat/chat.php?produto_id=20&conversa_id=12', '2026-01-13 03:38:23'),
-(33, 4, 'Nova proposta recebida para \'novo anúncio\'', 'info', 0, '../../src/chat/chat.php?produto_id=20&conversa_id=12', '2026-01-13 03:38:54'),
-(34, 4, 'Nova proposta recebida para \'novo anúncio\'', 'info', 0, '../../src/chat/chat.php?produto_id=20&conversa_id=12', '2026-01-13 03:40:52'),
-(35, 4, 'Nova proposta recebida para \'novo anúncio\'', 'info', 0, '../../src/chat/chat.php?produto_id=20&conversa_id=12', '2026-01-13 03:41:41'),
-(37, 4, 'Nova proposta recebida para \'novo anúncio\'', 'info', 0, '../../src/chat/chat.php?produto_id=20&conversa_id=12', '2026-01-13 03:43:31'),
-(38, 4, 'Nova proposta recebida para \'novo anúncio\'', 'info', 0, '../../src/chat/chat.php?produto_id=20&conversa_id=12', '2026-01-13 03:44:31'),
-(39, 23, 'Nova proposta recebida para \'novo anúncio\'', 'info', 0, '../../src/chat/chat.php?produto_id=20&conversa_id=12', '2026-01-13 03:45:07'),
-(40, 23, 'Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 03:45:28'),
-(41, 4, 'Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 03:47:42'),
-(42, 4, 'Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 03:48:04'),
-(43, 4, 'Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 04:16:45'),
-(44, 4, '???? Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 04:17:44'),
-(45, 4, '???? Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 04:17:57'),
-(46, 4, '???? Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 04:20:05'),
-(47, 23, '???? Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 04:24:23'),
-(48, 4, '???? Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 04:26:30'),
-(49, 4, '???? Nova proposta recebida para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=11', '2026-01-13 04:26:50'),
-(50, 4, '???? Nova proposta recebida para \'caixa unidades\'', 'info', 0, '../../src/chat/chat.php?produto_id=22&conversa_id=13', '2026-01-13 04:28:52'),
-(51, 23, '???? Nova proposta recebida para \'caixa unidades\'', 'info', 0, '../../src/chat/chat.php?produto_id=22&conversa_id=13', '2026-01-13 04:29:21'),
-(52, 4, '???? Nova proposta recebida para \'caixa unidades\'', 'info', 0, '../../src/chat/chat.php?produto_id=22&conversa_id=13', '2026-01-13 04:32:04'),
-(53, 23, '???? Nova proposta recebida para \'caixa unidades\'', 'info', 0, '../../src/chat/chat.php?produto_id=22&conversa_id=13', '2026-01-13 04:32:50'),
-(54, 1, 'Nova solicitação de cadastro de vendedor: a', 'info', 0, 'src/admin/solicitacoes.php', '2026-01-14 14:09:43'),
-(55, 1, 'Nova solicitação de cadastro de vendedor: a', 'info', 0, 'src/admin/solicitacoes.php', '2026-01-14 14:20:42'),
-(56, 1, 'Nova solicitação de cadastro de vendedor: a', 'info', 0, 'src/admin/solicitacoes.php', '2026-01-14 19:38:18'),
-(57, 1, 'Nova solicitação de cadastro de transportador: assa', 'info', 0, 'src/admin/solicitacoes.php', '2026-01-19 18:47:54');
+(67, 4, '???? Nova proposta para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=15', '2026-01-20 18:16:42'),
+(68, 4, '???? Proposta atualizada para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=15', '2026-01-20 18:17:06'),
+(69, 4, 'Nova proposta para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=15', '2026-01-20 18:26:52'),
+(70, 4, 'Nova proposta para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=15', '2026-01-20 18:38:29');
 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `pagamentos`
+-- Estrutura para tabela `pagamentos`
 --
 
 CREATE TABLE `pagamentos` (
@@ -524,7 +471,7 @@ CREATE TABLE `pagamentos` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `planos`
+-- Estrutura para tabela `planos`
 --
 
 CREATE TABLE `planos` (
@@ -542,7 +489,7 @@ CREATE TABLE `planos` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `planos`
+-- Despejando dados para a tabela `planos`
 --
 
 INSERT INTO `planos` (`id`, `nome`, `descricao`, `preco_mensal`, `stripe_price_id`, `quantidade_anuncios_pagos`, `quantidade_anuncios_gratis`, `limite_total_anuncios`, `ativo`, `created_at`, `descricao_recursos`) VALUES
@@ -556,7 +503,7 @@ INSERT INTO `planos` (`id`, `nome`, `descricao`, `preco_mensal`, `stripe_price_i
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `produtos`
+-- Estrutura para tabela `produtos`
 --
 
 CREATE TABLE `produtos` (
@@ -585,7 +532,7 @@ CREATE TABLE `produtos` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `produtos`
+-- Despejando dados para a tabela `produtos`
 --
 
 INSERT INTO `produtos` (`id`, `vendedor_id`, `nome`, `descricao`, `preco`, `modo_precificacao`, `embalagem_peso_kg`, `embalagem_unidades`, `estoque_unidades`, `preco_desconto`, `desconto_percentual`, `desconto_ativo`, `desconto_data_inicio`, `desconto_data_fim`, `categoria`, `imagem_url`, `estoque`, `unidade_medida`, `paletizado`, `status`, `data_criacao`, `data_atualizacao`) VALUES
@@ -607,7 +554,7 @@ INSERT INTO `produtos` (`id`, `vendedor_id`, `nome`, `descricao`, `preco`, `modo
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `produto_imagens`
+-- Estrutura para tabela `produto_imagens`
 --
 
 CREATE TABLE `produto_imagens` (
@@ -619,7 +566,7 @@ CREATE TABLE `produto_imagens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `produto_imagens`
+-- Despejando dados para a tabela `produto_imagens`
 --
 
 INSERT INTO `produto_imagens` (`id`, `produto_id`, `imagem_url`, `ordem`, `data_criacao`) VALUES
@@ -645,7 +592,38 @@ INSERT INTO `produto_imagens` (`id`, `produto_id`, `imagem_url`, `ordem`, `data_
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `propostas_comprador`
+-- Estrutura para tabela `propostas`
+--
+
+CREATE TABLE `propostas` (
+  `ID` int(11) NOT NULL,
+  `comprador_id` int(11) NOT NULL,
+  `vendedor_id` int(11) NOT NULL,
+  `produto_id` int(11) NOT NULL,
+  `data_inicio` timestamp NOT NULL DEFAULT current_timestamp(),
+  `data_atualizacao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `preco_proposto` decimal(10,2) NOT NULL,
+  `quantidade_proposta` int(11) NOT NULL,
+  `forma_pagamento` enum('à vista','entrega') NOT NULL,
+  `opcao_frete` enum('vendedor','comprador','entregador') NOT NULL,
+  `valor_frete` decimal(10,2) DEFAULT 0.00,
+  `valor_total` decimal(10,2) DEFAULT NULL,
+  `status` enum('aceita','negociacao','recusada') DEFAULT 'negociacao'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `propostas`
+--
+
+INSERT INTO `propostas` (`ID`, `comprador_id`, `vendedor_id`, `produto_id`, `data_inicio`, `data_atualizacao`, `preco_proposto`, `quantidade_proposta`, `forma_pagamento`, `opcao_frete`, `valor_frete`, `valor_total`, `status`) VALUES
+(9, 23, 4, 16, '2026-01-20 18:16:42', '2026-01-20 18:17:06', 5.00, 1, 'à vista', 'vendedor', 3.00, 8.00, 'negociacao'),
+(10, 23, 4, 16, '2026-01-20 18:26:52', '2026-01-20 18:26:52', 10.00, 1, 'à vista', 'comprador', 0.00, 10.00, 'negociacao'),
+(11, 23, 4, 16, '2026-01-20 18:38:29', '2026-01-20 18:38:29', 9.00, 1, 'à vista', 'comprador', 0.00, 9.00, 'negociacao');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `propostas_comprador`
 --
 
 CREATE TABLE `propostas_comprador` (
@@ -663,18 +641,18 @@ CREATE TABLE `propostas_comprador` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `propostas_comprador`
+-- Despejando dados para a tabela `propostas_comprador`
 --
 
 INSERT INTO `propostas_comprador` (`ID`, `comprador_id`, `produto_id`, `preco_proposto`, `quantidade_proposta`, `data_proposta`, `status`, `forma_pagamento`, `opcao_frete`, `valor_frete`, `finalizada`) VALUES
-(3, 23, 16, 5.00, 1, '2026-01-13 04:26:50', 'pendente', 'à vista', 'vendedor', 2.00, 0),
-(4, 23, 20, 5.00, 1, '2026-01-13 03:44:31', 'pendente', 'à vista', 'vendedor', 0.00, 0),
-(5, 23, 22, 50.00, 1, '2026-01-13 04:32:04', 'pendente', 'à vista', 'vendedor', 0.00, 0);
+(14, 11, 16, 5.00, 1, '2026-01-20 18:17:06', 'enviada', 'à vista', 'vendedor', 3.00, 0),
+(15, 11, 16, 10.00, 1, '2026-01-20 18:26:52', 'enviada', 'à vista', 'comprador', 0.00, 0),
+(16, 11, 16, 9.00, 1, '2026-01-20 18:38:29', 'enviada', 'à vista', 'comprador', 0.00, 0);
 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `propostas_negociacao`
+-- Estrutura para tabela `propostas_negociacao`
 --
 
 CREATE TABLE `propostas_negociacao` (
@@ -692,18 +670,18 @@ CREATE TABLE `propostas_negociacao` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `propostas_negociacao`
+-- Despejando dados para a tabela `propostas_negociacao`
 --
 
 INSERT INTO `propostas_negociacao` (`ID`, `proposta_comprador_id`, `proposta_vendedor_id`, `produto_id`, `data_inicio`, `data_atualizacao`, `valor_total`, `quantidade_final`, `status`, `forma_pagamento`, `opcao_frete`) VALUES
-(11, 3, 2, 16, '2026-01-13 00:23:25', '2026-01-13 04:26:50', 7.00, 1, '', 'à vista', 'vendedor'),
-(12, 4, 3, 20, '2026-01-13 03:38:23', '2026-01-13 03:45:07', 10.00, 1, '', 'à vista', 'vendedor'),
-(13, 5, 4, 22, '2026-01-13 04:28:52', '2026-01-13 04:32:50', 300.00, 20, '', 'à vista', 'entregador');
+(22, 14, NULL, 16, '2026-01-20 18:16:42', '2026-01-20 18:17:06', 8.00, 1, 'negociacao', 'à vista', 'vendedor'),
+(23, 15, NULL, 16, '2026-01-20 18:26:52', '2026-01-20 18:26:52', 10.00, 1, 'negociacao', 'à vista', 'comprador'),
+(24, 16, NULL, 16, '2026-01-20 18:38:29', '2026-01-20 18:38:29', 9.00, 1, 'negociacao', 'à vista', 'comprador');
 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `propostas_vendedor`
+-- Estrutura para tabela `propostas_vendedor`
 --
 
 CREATE TABLE `propostas_vendedor` (
@@ -720,19 +698,10 @@ CREATE TABLE `propostas_vendedor` (
   `finalizada` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Extraindo dados da tabela `propostas_vendedor`
---
-
-INSERT INTO `propostas_vendedor` (`ID`, `vendedor_id`, `produto_id`, `preco_proposto`, `quantidade_proposta`, `data_proposta`, `status`, `forma_pagamento`, `opcao_frete`, `valor_frete`, `finalizada`) VALUES
-(2, 4, 16, 7.00, 1, '2026-01-13 04:24:23', 'pendente', 'à vista', 'vendedor', 0.00, 0),
-(3, 4, 20, 10.00, 1, '2026-01-13 03:45:07', 'pendente', 'à vista', 'vendedor', 0.00, 0),
-(4, 4, 22, 15.00, 20, '2026-01-13 04:32:50', 'pendente', 'à vista', 'entregador', 0.00, 0);
-
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `solicitacoes_cadastro`
+-- Estrutura para tabela `solicitacoes_cadastro`
 --
 
 CREATE TABLE `solicitacoes_cadastro` (
@@ -752,7 +721,7 @@ CREATE TABLE `solicitacoes_cadastro` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `solicitacoes_cadastro`
+-- Despejando dados para a tabela `solicitacoes_cadastro`
 --
 
 INSERT INTO `solicitacoes_cadastro` (`id`, `usuario_id`, `nome`, `email`, `telefone`, `endereco`, `tipo_solicitacao`, `dados_json`, `status`, `data_solicitacao`, `data_analise`, `admin_responsavel`, `observacoes`) VALUES
@@ -785,7 +754,7 @@ INSERT INTO `solicitacoes_cadastro` (`id`, `usuario_id`, `nome`, `email`, `telef
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `transportadores`
+-- Estrutura para tabela `transportadores`
 --
 
 CREATE TABLE `transportadores` (
@@ -809,7 +778,7 @@ CREATE TABLE `transportadores` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `transportadores`
+-- Despejando dados para a tabela `transportadores`
 --
 
 INSERT INTO `transportadores` (`id`, `usuario_id`, `nome_comercial`, `telefone`, `antt`, `numero_antt`, `placa_veiculo`, `modelo_veiculo`, `descricao_veiculo`, `cep`, `rua`, `numero`, `complemento`, `estado`, `cidade`, `plano`, `foto_perfil_url`) VALUES
@@ -819,7 +788,7 @@ INSERT INTO `transportadores` (`id`, `usuario_id`, `nome_comercial`, `telefone`,
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `usuarios`
+-- Estrutura para tabela `usuarios`
 --
 
 CREATE TABLE `usuarios` (
@@ -836,7 +805,7 @@ CREATE TABLE `usuarios` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `usuarios`
+-- Despejando dados para a tabela `usuarios`
 --
 
 INSERT INTO `usuarios` (`id`, `email`, `senha`, `tipo`, `nome`, `status`, `data_criacao`, `data_aprovacao`, `reset_token`, `reset_token_expira`) VALUES
@@ -861,7 +830,7 @@ INSERT INTO `usuarios` (`id`, `email`, `senha`, `tipo`, `nome`, `status`, `data_
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `usuario_avisos_preferencias`
+-- Estrutura para tabela `usuario_avisos_preferencias`
 --
 
 CREATE TABLE `usuario_avisos_preferencias` (
@@ -873,7 +842,7 @@ CREATE TABLE `usuario_avisos_preferencias` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `usuario_avisos_preferencias`
+-- Despejando dados para a tabela `usuario_avisos_preferencias`
 --
 
 INSERT INTO `usuario_avisos_preferencias` (`id`, `usuario_id`, `aviso_regioes_entrega`, `data_criacao`, `data_atualizacao`) VALUES
@@ -883,7 +852,7 @@ INSERT INTO `usuario_avisos_preferencias` (`id`, `usuario_id`, `aviso_regioes_en
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `vendedores`
+-- Estrutura para tabela `vendedores`
 --
 
 CREATE TABLE `vendedores` (
@@ -919,7 +888,7 @@ CREATE TABLE `vendedores` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `vendedores`
+-- Despejando dados para a tabela `vendedores`
 --
 
 INSERT INTO `vendedores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, `cpf_cnpj`, `razao_social`, `foto_perfil_url`, `cip`, `cep`, `rua`, `numero`, `complemento`, `estado`, `cidade`, `telefone1`, `telefone2`, `plano`, `estados_atendidos`, `cidades_atendidas`, `plano_id`, `status_assinatura`, `data_assinatura`, `data_inicio_assinatura`, `data_vencimento_assinatura`, `anuncios_ativos`, `anuncios_pagos_utilizados`, `anuncios_gratis_utilizados`, `stripe_customer_id`, `stripe_subscription_id`) VALUES
@@ -935,7 +904,7 @@ INSERT INTO `vendedores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, `
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `vendedor_anuncios_controle`
+-- Estrutura para tabela `vendedor_anuncios_controle`
 --
 
 CREATE TABLE `vendedor_anuncios_controle` (
@@ -951,7 +920,7 @@ CREATE TABLE `vendedor_anuncios_controle` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `vendedor_assinaturas`
+-- Estrutura para tabela `vendedor_assinaturas`
 --
 
 CREATE TABLE `vendedor_assinaturas` (
@@ -975,7 +944,7 @@ CREATE TABLE `vendedor_assinaturas` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `vendedor_assinaturas`
+-- Despejando dados para a tabela `vendedor_assinaturas`
 --
 
 INSERT INTO `vendedor_assinaturas` (`id`, `vendedor_id`, `plano_id`, `status`, `preco_aprovado`, `data_inicio`, `data_vencimento`, `periodo`, `referencia_mercadopago`, `preferencia_mercadopago`, `unidades_extras`, `created_at`, `updated_at`, `payment_id`, `subscription_id`, `init_point`, `external_reference`) VALUES
@@ -984,7 +953,7 @@ INSERT INTO `vendedor_assinaturas` (`id`, `vendedor_id`, `plano_id`, `status`, `
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `webhook_logs`
+-- Estrutura para tabela `webhook_logs`
 --
 
 CREATE TABLE `webhook_logs` (
@@ -1002,14 +971,14 @@ CREATE TABLE `webhook_logs` (
 --
 
 --
--- Índices para tabela `admin_acoes`
+-- Índices de tabela `admin_acoes`
 --
 ALTER TABLE `admin_acoes`
   ADD PRIMARY KEY (`id`),
   ADD KEY `admin_id` (`admin_id`);
 
 --
--- Índices para tabela `chat_auditoria`
+-- Índices de tabela `chat_auditoria`
 --
 ALTER TABLE `chat_auditoria`
   ADD PRIMARY KEY (`id`),
@@ -1018,7 +987,7 @@ ALTER TABLE `chat_auditoria`
   ADD KEY `idx_data` (`data_acao`);
 
 --
--- Índices para tabela `chat_conversas`
+-- Índices de tabela `chat_conversas`
 --
 ALTER TABLE `chat_conversas`
   ADD PRIMARY KEY (`id`),
@@ -1028,7 +997,7 @@ ALTER TABLE `chat_conversas`
   ADD KEY `idx_chat_conversas_deletado` (`deletado`);
 
 --
--- Índices para tabela `chat_mensagens`
+-- Índices de tabela `chat_mensagens`
 --
 ALTER TABLE `chat_mensagens`
   ADD PRIMARY KEY (`id`),
@@ -1038,14 +1007,14 @@ ALTER TABLE `chat_mensagens`
   ADD KEY `idx_chat_mensagens_deletado` (`deletado`);
 
 --
--- Índices para tabela `compradores`
+-- Índices de tabela `compradores`
 --
 ALTER TABLE `compradores`
   ADD PRIMARY KEY (`id`),
   ADD KEY `usuario_id` (`usuario_id`);
 
 --
--- Índices para tabela `conversas`
+-- Índices de tabela `conversas`
 --
 ALTER TABLE `conversas`
   ADD PRIMARY KEY (`id`),
@@ -1055,7 +1024,7 @@ ALTER TABLE `conversas`
   ADD KEY `produto_id` (`produto_id`);
 
 --
--- Índices para tabela `entregas`
+-- Índices de tabela `entregas`
 --
 ALTER TABLE `entregas`
   ADD PRIMARY KEY (`id`),
@@ -1065,7 +1034,7 @@ ALTER TABLE `entregas`
   ADD KEY `comprador_id` (`comprador_id`);
 
 --
--- Índices para tabela `favoritos`
+-- Índices de tabela `favoritos`
 --
 ALTER TABLE `favoritos`
   ADD PRIMARY KEY (`id`),
@@ -1073,7 +1042,7 @@ ALTER TABLE `favoritos`
   ADD KEY `produto_id` (`produto_id`);
 
 --
--- Índices para tabela `mensagens`
+-- Índices de tabela `mensagens`
 --
 ALTER TABLE `mensagens`
   ADD PRIMARY KEY (`id`),
@@ -1082,14 +1051,14 @@ ALTER TABLE `mensagens`
   ADD KEY `data_envio` (`data_envio`);
 
 --
--- Índices para tabela `notificacoes`
+-- Índices de tabela `notificacoes`
 --
 ALTER TABLE `notificacoes`
   ADD PRIMARY KEY (`id`),
   ADD KEY `usuario_id` (`usuario_id`);
 
 --
--- Índices para tabela `pagamentos`
+-- Índices de tabela `pagamentos`
 --
 ALTER TABLE `pagamentos`
   ADD PRIMARY KEY (`id`),
@@ -1097,34 +1066,43 @@ ALTER TABLE `pagamentos`
   ADD KEY `assinatura_id` (`assinatura_id`);
 
 --
--- Índices para tabela `planos`
+-- Índices de tabela `planos`
 --
 ALTER TABLE `planos`
   ADD PRIMARY KEY (`id`);
 
 --
--- Índices para tabela `produtos`
+-- Índices de tabela `produtos`
 --
 ALTER TABLE `produtos`
   ADD PRIMARY KEY (`id`),
   ADD KEY `vendedor_id` (`vendedor_id`);
 
 --
--- Índices para tabela `produto_imagens`
+-- Índices de tabela `produto_imagens`
 --
 ALTER TABLE `produto_imagens`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_produto_id` (`produto_id`);
 
 --
--- Índices para tabela `propostas_comprador`
+-- Índices de tabela `propostas`
+--
+ALTER TABLE `propostas`
+  ADD PRIMARY KEY (`ID`),
+  ADD KEY `comprador_id` (`comprador_id`),
+  ADD KEY `vendedor_id` (`vendedor_id`),
+  ADD KEY `produto_id` (`produto_id`);
+
+--
+-- Índices de tabela `propostas_comprador`
 --
 ALTER TABLE `propostas_comprador`
   ADD PRIMARY KEY (`ID`),
   ADD KEY `comprador_id` (`comprador_id`);
 
 --
--- Índices para tabela `propostas_negociacao`
+-- Índices de tabela `propostas_negociacao`
 --
 ALTER TABLE `propostas_negociacao`
   ADD PRIMARY KEY (`ID`),
@@ -1132,28 +1110,28 @@ ALTER TABLE `propostas_negociacao`
   ADD KEY `proposta_vendedor_id` (`proposta_vendedor_id`);
 
 --
--- Índices para tabela `propostas_vendedor`
+-- Índices de tabela `propostas_vendedor`
 --
 ALTER TABLE `propostas_vendedor`
   ADD PRIMARY KEY (`ID`),
   ADD KEY `vendedor_id` (`vendedor_id`);
 
 --
--- Índices para tabela `solicitacoes_cadastro`
+-- Índices de tabela `solicitacoes_cadastro`
 --
 ALTER TABLE `solicitacoes_cadastro`
   ADD PRIMARY KEY (`id`),
   ADD KEY `usuario_id` (`usuario_id`);
 
 --
--- Índices para tabela `transportadores`
+-- Índices de tabela `transportadores`
 --
 ALTER TABLE `transportadores`
   ADD PRIMARY KEY (`id`),
   ADD KEY `usuario_id` (`usuario_id`);
 
 --
--- Índices para tabela `usuarios`
+-- Índices de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
   ADD PRIMARY KEY (`id`),
@@ -1161,14 +1139,14 @@ ALTER TABLE `usuarios`
   ADD KEY `reset_token` (`reset_token`);
 
 --
--- Índices para tabela `usuario_avisos_preferencias`
+-- Índices de tabela `usuario_avisos_preferencias`
 --
 ALTER TABLE `usuario_avisos_preferencias`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `usuario_id` (`usuario_id`);
 
 --
--- Índices para tabela `vendedores`
+-- Índices de tabela `vendedores`
 --
 ALTER TABLE `vendedores`
   ADD PRIMARY KEY (`id`),
@@ -1176,14 +1154,14 @@ ALTER TABLE `vendedores`
   ADD KEY `plano_id` (`plano_id`);
 
 --
--- Índices para tabela `vendedor_anuncios_controle`
+-- Índices de tabela `vendedor_anuncios_controle`
 --
 ALTER TABLE `vendedor_anuncios_controle`
   ADD PRIMARY KEY (`id`),
   ADD KEY `vendedor_id` (`vendedor_id`);
 
 --
--- Índices para tabela `vendedor_assinaturas`
+-- Índices de tabela `vendedor_assinaturas`
 --
 ALTER TABLE `vendedor_assinaturas`
   ADD PRIMARY KEY (`id`),
@@ -1191,13 +1169,13 @@ ALTER TABLE `vendedor_assinaturas`
   ADD KEY `plano_id` (`plano_id`);
 
 --
--- Índices para tabela `webhook_logs`
+-- Índices de tabela `webhook_logs`
 --
 ALTER TABLE `webhook_logs`
   ADD PRIMARY KEY (`id`);
 
 --
--- AUTO_INCREMENT de tabelas despejadas
+-- AUTO_INCREMENT para tabelas despejadas
 --
 
 --
@@ -1210,19 +1188,19 @@ ALTER TABLE `admin_acoes`
 -- AUTO_INCREMENT de tabela `chat_auditoria`
 --
 ALTER TABLE `chat_auditoria`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=89;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=113;
 
 --
 -- AUTO_INCREMENT de tabela `chat_conversas`
 --
 ALTER TABLE `chat_conversas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT de tabela `chat_mensagens`
 --
 ALTER TABLE `chat_mensagens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=115;
 
 --
 -- AUTO_INCREMENT de tabela `compradores`
@@ -1258,7 +1236,7 @@ ALTER TABLE `mensagens`
 -- AUTO_INCREMENT de tabela `notificacoes`
 --
 ALTER TABLE `notificacoes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
 
 --
 -- AUTO_INCREMENT de tabela `pagamentos`
@@ -1285,16 +1263,22 @@ ALTER TABLE `produto_imagens`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
+-- AUTO_INCREMENT de tabela `propostas`
+--
+ALTER TABLE `propostas`
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
 -- AUTO_INCREMENT de tabela `propostas_comprador`
 --
 ALTER TABLE `propostas_comprador`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT de tabela `propostas_negociacao`
 --
 ALTER TABLE `propostas_negociacao`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT de tabela `propostas_vendedor`
@@ -1351,17 +1335,17 @@ ALTER TABLE `webhook_logs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- Restrições para despejos de tabelas
+-- Restrições para tabelas despejadas
 --
 
 --
--- Limitadores para a tabela `admin_acoes`
+-- Restrições para tabelas `admin_acoes`
 --
 ALTER TABLE `admin_acoes`
   ADD CONSTRAINT `admin_acoes_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `chat_conversas`
+-- Restrições para tabelas `chat_conversas`
 --
 ALTER TABLE `chat_conversas`
   ADD CONSTRAINT `chat_conversas_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE,
@@ -1369,20 +1353,20 @@ ALTER TABLE `chat_conversas`
   ADD CONSTRAINT `chat_conversas_ibfk_3` FOREIGN KEY (`vendedor_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `chat_mensagens`
+-- Restrições para tabelas `chat_mensagens`
 --
 ALTER TABLE `chat_mensagens`
   ADD CONSTRAINT `chat_mensagens_ibfk_1` FOREIGN KEY (`conversa_id`) REFERENCES `chat_conversas` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `chat_mensagens_ibfk_2` FOREIGN KEY (`remetente_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `compradores`
+-- Restrições para tabelas `compradores`
 --
 ALTER TABLE `compradores`
   ADD CONSTRAINT `compradores_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `conversas`
+-- Restrições para tabelas `conversas`
 --
 ALTER TABLE `conversas`
   ADD CONSTRAINT `conversas_ibfk_1` FOREIGN KEY (`comprador_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
@@ -1390,7 +1374,7 @@ ALTER TABLE `conversas`
   ADD CONSTRAINT `conversas_ibfk_3` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE SET NULL;
 
 --
--- Limitadores para a tabela `entregas`
+-- Restrições para tabelas `entregas`
 --
 ALTER TABLE `entregas`
   ADD CONSTRAINT `entregas_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE,
@@ -1399,96 +1383,104 @@ ALTER TABLE `entregas`
   ADD CONSTRAINT `entregas_ibfk_4` FOREIGN KEY (`comprador_id`) REFERENCES `compradores` (`usuario_id`) ON DELETE SET NULL;
 
 --
--- Limitadores para a tabela `favoritos`
+-- Restrições para tabelas `favoritos`
 --
 ALTER TABLE `favoritos`
   ADD CONSTRAINT `favoritos_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `favoritos_ibfk_2` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `mensagens`
+-- Restrições para tabelas `mensagens`
 --
 ALTER TABLE `mensagens`
   ADD CONSTRAINT `mensagens_ibfk_1` FOREIGN KEY (`conversa_id`) REFERENCES `conversas` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `mensagens_ibfk_2` FOREIGN KEY (`remetente_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `notificacoes`
+-- Restrições para tabelas `notificacoes`
 --
 ALTER TABLE `notificacoes`
   ADD CONSTRAINT `notificacoes_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `pagamentos`
+-- Restrições para tabelas `pagamentos`
 --
 ALTER TABLE `pagamentos`
   ADD CONSTRAINT `pagamentos_ibfk_1` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`id`),
   ADD CONSTRAINT `pagamentos_ibfk_2` FOREIGN KEY (`assinatura_id`) REFERENCES `vendedor_assinaturas` (`id`);
 
 --
--- Limitadores para a tabela `produtos`
+-- Restrições para tabelas `produtos`
 --
 ALTER TABLE `produtos`
   ADD CONSTRAINT `produtos_ibfk_1` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `produto_imagens`
+-- Restrições para tabelas `produto_imagens`
 --
 ALTER TABLE `produto_imagens`
   ADD CONSTRAINT `produto_imagens_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `propostas_comprador`
+-- Restrições para tabelas `propostas`
+--
+ALTER TABLE `propostas`
+  ADD CONSTRAINT `propostas_ibfk_1` FOREIGN KEY (`comprador_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `propostas_ibfk_2` FOREIGN KEY (`vendedor_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `propostas_ibfk_3` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `propostas_comprador`
 --
 ALTER TABLE `propostas_comprador`
   ADD CONSTRAINT `propostas_comprador_ibfk_1` FOREIGN KEY (`comprador_id`) REFERENCES `compradores` (`usuario_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Limitadores para a tabela `propostas_negociacao`
+-- Restrições para tabelas `propostas_negociacao`
 --
 ALTER TABLE `propostas_negociacao`
   ADD CONSTRAINT `propostas_negociacao_ibfk_1` FOREIGN KEY (`proposta_comprador_id`) REFERENCES `propostas_comprador` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `propostas_negociacao_ibfk_2` FOREIGN KEY (`proposta_vendedor_id`) REFERENCES `propostas_vendedor` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Limitadores para a tabela `propostas_vendedor`
+-- Restrições para tabelas `propostas_vendedor`
 --
 ALTER TABLE `propostas_vendedor`
   ADD CONSTRAINT `propostas_vendedor_ibfk_1` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`usuario_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Limitadores para a tabela `solicitacoes_cadastro`
+-- Restrições para tabelas `solicitacoes_cadastro`
 --
 ALTER TABLE `solicitacoes_cadastro`
   ADD CONSTRAINT `solicitacoes_cadastro_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL;
 
 --
--- Limitadores para a tabela `transportadores`
+-- Restrições para tabelas `transportadores`
 --
 ALTER TABLE `transportadores`
   ADD CONSTRAINT `transportadores_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `usuario_avisos_preferencias`
+-- Restrições para tabelas `usuario_avisos_preferencias`
 --
 ALTER TABLE `usuario_avisos_preferencias`
   ADD CONSTRAINT `usuario_avisos_preferencias_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `vendedores`
+-- Restrições para tabelas `vendedores`
 --
 ALTER TABLE `vendedores`
   ADD CONSTRAINT `vendedores_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `vendedores_ibfk_2` FOREIGN KEY (`plano_id`) REFERENCES `planos` (`id`);
 
 --
--- Limitadores para a tabela `vendedor_anuncios_controle`
+-- Restrições para tabelas `vendedor_anuncios_controle`
 --
 ALTER TABLE `vendedor_anuncios_controle`
   ADD CONSTRAINT `vendedor_anuncios_controle_ibfk_1` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`id`);
 
 --
--- Limitadores para a tabela `vendedor_assinaturas`
+-- Restrições para tabelas `vendedor_assinaturas`
 --
 ALTER TABLE `vendedor_assinaturas`
   ADD CONSTRAINT `vendedor_assinaturas_ibfk_1` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`id`),

@@ -647,11 +647,8 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                     <h4>Contato</h4>
                     <div class="contact-info">
                         <p><i class="fas fa-envelope"></i> contato@encontreocampo.com.br</p>
-                        <p><i class="fas fa-phone"></i> (11) 99999-9999</p>
                         <div class="social-links">
-                            <a href="#"><i class="fab fa-facebook"></i></a>
-                            <a href="#"><i class="fab fa-instagram"></i></a>
-                            <a href="#"><i class="fab fa-whatsapp"></i></a>
+                            <a href="#">Instagram</a>
                         </div>
                     </div>
                 </div>

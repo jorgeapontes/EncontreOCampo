@@ -314,10 +314,17 @@ try {
                         <p><?php echo $total_mensagens_nao_lidas; ?> não lidas</p>
                     </div>
                 </a>
-                <a href="vendas.php">
+                <a href="../procurando_transportador.php">
                     <div class="card">
-                        <i class="fas fa-dollar-sign"></i>
-                        <h3>Negociações finalizadas</h3>
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <h3>Procurando transportador </h3>
+                        <p>Ver</p>
+                    </div>
+                </a>
+                <a href="negociacoes.php">
+                    <div class="card">
+                        <i class="fa-solid fa-check"></i>
+                        <h3>Histórico</h3>
                         <p>Ver</p>
                     </div>
                 </a>

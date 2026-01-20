@@ -339,6 +339,8 @@ function getImagePath($path) {
 
     <form method="POST" action="perfil.php" class="perfil-form" enctype="multipart/form-data">
                 <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" style="display: none;">
+                <!-- Campo hidden para guardar o número original -->
+                <input type="hidden" id="numero_original" value="<?php echo htmlspecialchars($transportador['numero'] ?? ''); ?>">
                 <div class="forms-area">
                     <h2>Dados do usuário</h2>
                     
@@ -594,6 +596,44 @@ function getImagePath($path) {
             window.onclick = (e) => { 
                 if (e.target == deleteAccountModal) deleteAccountModal.style.display = 'none'; 
             };
+        }
+
+        // Validação no submit do formulário
+        let precisaAlterarNumero = false;
+        // Quando buscar CEP, ativa a flag
+        function ativarFlagNumero() {
+            precisaAlterarNumero = true;
+        }
+        // Adiciona chamada ao limpar número após buscar CEP
+        const btnBuscar = document.getElementById('buscar-cep-btn');
+        if (btnBuscar) {
+            btnBuscar.addEventListener('click', ativarFlagNumero);
+        }
+        // Se buscar via Enter
+        const cepInput = document.getElementById('cep');
+        if (cepInput) {
+            cepInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') ativarFlagNumero();
+            });
+        }
+        const perfilForm = document.querySelector('.perfil-form');
+        if (perfilForm) {
+            perfilForm.addEventListener('submit', function(e) {
+                const numeroInput = document.getElementById('numero');
+                const numeroOriginal = document.getElementById('numero_original').value;
+                if (!numeroInput.value) {
+                    alert('Por favor, preencha o número do endereço.');
+                    numeroInput.focus();
+                    e.preventDefault();
+                    return false;
+                }
+                if (precisaAlterarNumero && numeroInput.value === numeroOriginal) {
+                    alert('Por favor, digite um número diferente do original após buscar o CEP.');
+                    numeroInput.focus();
+                    e.preventDefault();
+                    return false;
+                }
+            });
         }
     </script>
 </body>

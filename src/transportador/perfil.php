@@ -107,14 +107,14 @@ $mensagem_erro = '';
 
 $transportador_id_fk = $transportador['id'] ?? 0;
 
-// Diretório de upload relativo ao arquivo atual
-$upload_dir = '../uploads/transportadores/'; 
+// Diretório de upload (absoluto para segurança)
+$upload_dir = __DIR__ . '/../../uploads/transportadores/'; 
 if (!is_dir($upload_dir)) {
     mkdir($upload_dir, 0777, true);
 }
 
 // --- LÓGICA DE SALVAMENTO ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['buscar_cep'])) {
     $nome = $_POST['nome'] ?? ($usuario['nome'] ?? '');
     $email = $_POST['email'] ?? ($usuario['email'] ?? '');
     $telefone = $_POST['telefone'] ?? ($transportador['telefone'] ?? '');
@@ -132,8 +132,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $foto_perfil_antiga = $transportador['foto_perfil_url'] ?? '';
     $foto_perfil_nova = $foto_perfil_antiga;
     
-    // Upload Imagem
-    if (isset($_FILES['foto_perfil']) && $_FILES['foto_perfil']['error'] === UPLOAD_ERR_OK) {
+    // Upload Imagem - apenas se transportador_id_fk foi encontrado
+    if ($transportador_id_fk > 0 && isset($_FILES['foto_perfil']) && $_FILES['foto_perfil']['error'] === UPLOAD_ERR_OK) {
         $file_extension = strtolower(pathinfo($_FILES['foto_perfil']['name'], PATHINFO_EXTENSION));
         $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
 
@@ -142,18 +142,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $dest_path = $upload_dir . $new_file_name;
 
             if (move_uploaded_file($_FILES['foto_perfil']['tmp_name'], $dest_path)) {
-                // Salvar o caminho relativo correto no banco
-                $foto_perfil_nova = '../uploads/transportadores/' . $new_file_name;
+                // Salvar o caminho relativo correto no banco (relativo ao arquivo perfil.php)
+                $foto_perfil_nova = '../../uploads/transportadores/' . $new_file_name;
                 
                 // Deletar foto antiga se existir e não for a padrão
                 if ($foto_perfil_antiga && file_exists($foto_perfil_antiga) && strpos($foto_perfil_antiga, 'no-user-image') === false) {
                     @unlink($foto_perfil_antiga);
                 }
+            } else {
+                $mensagem_erro = "Erro ao fazer upload da foto. Verifique as permissões da pasta uploads.";
             }
+        } else {
+            $mensagem_erro = "Formato de imagem não permitido. Use JPG, PNG ou GIF.";
         }
     }
 
     try {
+        // Validar que temos um ID de transportador
+        if ($transportador_id_fk <= 0) {
+            throw new Exception("Erro: Transportador não encontrado no sistema.");
+        }
+        
         $db->beginTransaction();
         
         // 1. Atualiza USUÁRIO
@@ -214,9 +223,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $transportador['estado'] = $estado;
         $transportador['cidade'] = $cidade;
         $transportador['foto_perfil_url'] = $foto_perfil_nova;  // NOVO CAMPO
-        
-        // Refresh após 2 segundos
-        header("Refresh: 2");
 
     } catch (Exception $e) {
         $db->rollBack();
@@ -230,18 +236,34 @@ function getImagePath($path) {
         return '../../img/no-user-image.png';
     }
     
+    // Construir caminho absoluto para verificação
+    $base_dir = __DIR__;
+    
+    // Se o caminho começa com ../../, é relativo à pasta do arquivo
+    if (strpos($path, '../../') === 0) {
+        $abs_path = $base_dir . '/' . $path;
+        return file_exists($abs_path) ? $path : '../../img/no-user-image.png';
+    }
+    
     // Se o caminho já começa com ../, usa direto
     if (strpos($path, '../') === 0) {
-        return file_exists($path) ? $path : '../../img/no-user-image.png';
+        $abs_path = $base_dir . '/' . $path;
+        return file_exists($abs_path) ? $path : '../../img/no-user-image.png';
     }
     
     // Se começa com src/, ajusta
     if (strpos($path, 'src/') === 0) {
         $adjusted_path = '../../' . $path;
-        return file_exists($adjusted_path) ? $adjusted_path : '../../img/no-user-image.png';
+        $abs_path = $base_dir . '/' . $adjusted_path;
+        return file_exists($abs_path) ? $adjusted_path : '../../img/no-user-image.png';
     }
     
-    return file_exists($path) ? $path : '../../img/no-user-image.png';
+    // Caminho absoluto
+    if (file_exists($path)) {
+        return $path;
+    }
+    
+    return '../../img/no-user-image.png';
 }
 ?>
 <!DOCTYPE html>
@@ -311,12 +333,12 @@ function getImagePath($path) {
                                 alt="Foto de Perfil">
                             <div class="foto-overlay"><i class="fas fa-pencil-alt"></i></div>
                         </div>
-                        <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" style="display: none;">
                     </div>
                 </center>
             </div>
 
     <form method="POST" action="perfil.php" class="perfil-form" enctype="multipart/form-data">
+                <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" style="display: none;">
                 <div class="forms-area">
                     <h2>Dados do usuário</h2>
                     
@@ -443,6 +465,7 @@ function getImagePath($path) {
         const fotoPerfilDisplay = document.querySelector('.foto-perfil-display');
         const fotoPerfilInput = document.getElementById('foto_perfil');
         const profileImgPreview = document.getElementById('profile-img-preview');
+        
         if(fotoPerfilDisplay) {
             fotoPerfilDisplay.addEventListener('click', () => { fotoPerfilInput.click(); });
         }
@@ -451,11 +474,26 @@ function getImagePath($path) {
                 const [file] = event.target.files;
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = function(e) { profileImgPreview.src = e.target.result; };
+                    reader.onload = function(e) { 
+                        profileImgPreview.src = e.target.result;
+                        console.log('Arquivo selecionado:', file.name);
+                    };
                     reader.readAsDataURL(file);
                 }
             });
         }
+        
+        // Auto-fechar alerts
+        window.addEventListener('load', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.transition = 'opacity 0.5s';
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 500);
+                }, 5000);
+            });
+        });
         
         // Função Buscar CEP
         function buscarCep() {

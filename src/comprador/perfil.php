@@ -106,7 +106,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':id'    => $usuario_id
             ]);
 
-            // 2. Atualizar tabela COMPRADORES
+            // 2. Processar upload de foto se enviada
+            $foto_perfil_url = $comprador_data['foto_perfil_url'] ?? '';
+            
+            if (isset($_FILES['foto_perfil']) && $_FILES['foto_perfil']['error'] === UPLOAD_ERR_OK) {
+                $upload_dir = __DIR__ . '/../../uploads/compradores/';
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0777, true);
+                }
+                
+                $file_extension = strtolower(pathinfo($_FILES['foto_perfil']['name'], PATHINFO_EXTENSION));
+                $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
+                
+                if (in_array($file_extension, $allowed_extensions)) {
+                    $new_file_name = 'perfil_' . $usuario_id . '_' . time() . '.' . $file_extension;
+                    $dest_path = $upload_dir . $new_file_name;
+                    
+                    if (move_uploaded_file($_FILES['foto_perfil']['tmp_name'], $dest_path)) {
+                        $foto_perfil_url = '../../uploads/compradores/' . $new_file_name;
+                        
+                        // Deletar foto antiga se existir
+                        if (!empty($comprador_data['foto_perfil_url']) && file_exists($comprador_data['foto_perfil_url']) && strpos($comprador_data['foto_perfil_url'], 'no-user-image') === false) {
+                            @unlink($comprador_data['foto_perfil_url']);
+                        }
+                    } else {
+                        throw new Exception("Erro ao fazer upload da foto. Verifique as permissões da pasta uploads.");
+                    }
+                } else {
+                    throw new Exception("Formato de imagem não permitido. Use JPG, PNG ou GIF.");
+                }
+            }
+            
+            // 3. Atualizar tabela COMPRADORES
             $sql_c = "UPDATE compradores SET 
                         nome_comercial = :nome_comercial,
                         tipo_pessoa = :tipo_pessoa,
@@ -118,7 +149,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         cidade = :cidade,
                         rua = :rua,
                         numero = :numero,
-                        complemento = :complemento
+                        complemento = :complemento,
+                        foto_perfil_url = :foto_perfil_url
                       WHERE usuario_id = :id";
             
             $stmt_c = $conn->prepare($sql_c);
@@ -134,16 +166,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':rua'            => $_POST['rua'],
                 ':numero'         => $_POST['numero'],
                 ':complemento'    => $_POST['complemento'],
+                ':foto_perfil_url' => $foto_perfil_url,
                 ':id'             => $usuario_id
             ]);
 
             $conn->commit();
             $_SESSION['usuario_nome'] = $_POST['nome']; // Atualiza nome na sessão
-            $mensagem_sucesso = "Perfil e e-mail atualizados com sucesso!";
+            $mensagem_sucesso = "Perfil atualizado com sucesso!";
             
-            // Redirecionar para evitar reenvio do formulário
-            header("Location: perfil.php?success=1");
-            exit();
+            // Atualizar dados locais para exibição imediata
+            $comprador_data['foto_perfil_url'] = $foto_perfil_url;
             
         } catch (Exception $e) {
             $conn->rollBack();
@@ -222,6 +254,7 @@ try {
 
             <form method="POST" action="" class="perfil-form" enctype="multipart/form-data">
                 <input type="hidden" name="atualizar_perfil" value="1">
+                <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" style="display: none;">
                 
                 <div class="perfil-header-info">
                     <center>
@@ -231,7 +264,6 @@ try {
                                 <div class="foto-overlay"><i class="fas fa-pencil-alt"></i></div>
                             </div>
                         </div>
-                        <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" style="display: none;">
                     </center>
                 </div>
 
@@ -313,14 +345,35 @@ try {
         // Preview da foto
         const fotoPerfilDisplay = document.querySelector('.foto-perfil-display');
         const fotoPerfilInput = document.getElementById('foto_perfil');
-        fotoPerfilDisplay.addEventListener('click', () => fotoPerfilInput.click());
-        fotoPerfilInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => document.getElementById('profile-img-preview').src = e.target.result;
-                reader.readAsDataURL(file);
-            }
+        const profileImgPreview = document.getElementById('profile-img-preview');
+        
+        if(fotoPerfilDisplay) {
+            fotoPerfilDisplay.addEventListener('click', () => fotoPerfilInput.click());
+        }
+        if(fotoPerfilInput) {
+            fotoPerfilInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        profileImgPreview.src = e.target.result;
+                        console.log('Arquivo selecionado:', file.name);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
+        // Auto-fechar alerts
+        window.addEventListener('load', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.transition = 'opacity 0.5s';
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 500);
+                }, 5000);
+            });
         });
 
         // Busca de CEP com salvamento automático

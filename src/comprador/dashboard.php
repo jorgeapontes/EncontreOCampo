@@ -261,7 +261,15 @@ try {
                     </div>
                 </a>
 
-                <a href="#">
+                <a href="../procurando_transportador.php">
+                    <div class="card">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <h3>Procurando transportador </h3>
+                        <p>Ver</p>
+                    </div>
+                </a>
+
+                <a href="negociacoes.php">
                     <div class="card">
                         <i class="fa-solid fa-bag-shopping"></i>
                         <h3>Compras realizadas</h3>

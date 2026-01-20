@@ -1,4 +1,5 @@
 <?php
+// src/chat/chat.php
 session_start();
 require_once __DIR__ . '/../conexao.php';
 require_once __DIR__ . '/chat_config.php';
@@ -25,6 +26,7 @@ if ($produto_id <= 0) {
 $database = new Database();
 $conn = $database->getConnection();
 
+// Buscar informações do produto
 $sql_produto = "SELECT p.*, v.id AS vendedor_sistema_id, u.id AS vendedor_usuario_id, 
                 v.nome_comercial AS nome_vendedor, u.nome AS vendedor_nome
                 FROM produtos p
@@ -63,131 +65,25 @@ if ($eh_vendedor_produto) {
         if ($conversa_info) {
             $outro_usuario_id = $conversa_info['comprador_id'];
             $outro_usuario_nome = $conversa_info['comprador_nome'];
-            
-            // Buscar apenas esta conversa específica para exibir na sidebar
-            $sql_conversas = "SELECT c.*, 
-                             u.nome AS comprador_nome,
-                             (SELECT COUNT(*) FROM chat_mensagens 
-                              WHERE conversa_id = c.id AND lida = 0 AND remetente_id != :usuario_id) as nao_lidas
-                             FROM chat_conversas c
-                             JOIN usuarios u ON c.comprador_id = u.id
-                             WHERE c.id = :conversa_id
-                             ORDER BY c.ultima_mensagem_data DESC";
-            
-            $stmt_conversas = $conn->prepare($sql_conversas);
-            $stmt_conversas->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);
-            $stmt_conversas->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
-            $stmt_conversas->execute();
-            $conversas = $stmt_conversas->fetchAll(PDO::FETCH_ASSOC);
         } else {
             $conversa_id = null;
             $outro_usuario_id = null;
             $outro_usuario_nome = null;
-            // Buscar todas as conversas se a conversa específica não for encontrada
-            $sql_conversas = "SELECT DISTINCT c.*, 
-                              u.nome AS comprador_nome,
-                              (SELECT COUNT(*) FROM chat_mensagens 
-                               WHERE conversa_id = c.id AND lida = 0 AND remetente_id != :usuario_id) as nao_lidas
-                              FROM chat_conversas c
-                              JOIN usuarios u ON c.comprador_id = u.id
-                              WHERE c.produto_id = :produto_id 
-                              AND c.vendedor_id = :usuario_id
-                              ORDER BY c.ultima_mensagem_data DESC";
-            
-            $stmt_conversas = $conn->prepare($sql_conversas);
-            $stmt_conversas->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
-            $stmt_conversas->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
-            $stmt_conversas->execute();
-            $conversas = $stmt_conversas->fetchAll(PDO::FETCH_ASSOC);
         }
     } else {
         $conversa_id = null;
         $outro_usuario_id = null;
         $outro_usuario_nome = null;
-        // Buscar todas as conversas se não houver conversa específica selecionada
-        $sql_conversas = "SELECT DISTINCT c.*, 
-                          u.nome AS comprador_nome,
-                          (SELECT COUNT(*) FROM chat_mensagens 
-                           WHERE conversa_id = c.id AND lida = 0 AND remetente_id != :usuario_id) as nao_lidas
-                          FROM chat_conversas c
-                          JOIN usuarios u ON c.comprador_id = u.id
-                          WHERE c.produto_id = :produto_id 
-                          AND c.vendedor_id = :usuario_id
-                          ORDER BY c.ultima_mensagem_data DESC";
-        
-        $stmt_conversas = $conn->prepare($sql_conversas);
-        $stmt_conversas->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
-        $stmt_conversas->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
-        $stmt_conversas->execute();
-        $conversas = $stmt_conversas->fetchAll(PDO::FETCH_ASSOC);
     }
+    
+    $conversas = null;
+    
 } else {
-    // COMPRADOR 
+    // COMPRADOR
     $conversa_id = obterOuCriarConversa($conn, $produto_id, $usuario_id, $vendedor_usuario_id);
     $outro_usuario_id = $vendedor_usuario_id;
     $outro_usuario_nome = $produto['nome_vendedor'] ?: $produto['vendedor_nome'];
     $conversas = null;
-}
-
-// Buscar endereço do outro usuário (vendedor para comprador, comprador para vendedor)
-if ($eh_vendedor_produto) {
-    // Se é vendedor, buscar endereço do comprador
-    $sql_endereco_outro = "SELECT 
-        c.nome_comercial, c.cep, c.rua, c.numero, c.complemento, 
-        c.cidade, c.estado, c.telefone1, c.telefone2
-        FROM compradores c
-        WHERE c.usuario_id = :outro_id";
-    
-    $outro_tipo = 'comprador';
-} else {
-    // Se é comprador, buscar endereço do vendedor
-    $sql_endereco_outro = "SELECT 
-        v.nome_comercial, v.cep, v.rua, v.numero, v.complemento, 
-        v.cidade, v.estado, v.telefone1, v.telefone2,
-        u.nome as nome_usuario
-        FROM vendedores v
-        JOIN usuarios u ON v.usuario_id = u.id
-        WHERE v.usuario_id = :outro_id";
-    
-    $outro_tipo = 'vendedor';
-}
-
-// Executar query para buscar endereço
-$endereco_outro = null;
-if (isset($outro_usuario_id) && $outro_usuario_id > 0) {
-    $stmt_end_outro = $conn->prepare($sql_endereco_outro);
-    $stmt_end_outro->bindParam(':outro_id', $outro_usuario_id, PDO::PARAM_INT);
-    $stmt_end_outro->execute();
-    $endereco_outro = $stmt_end_outro->fetch(PDO::FETCH_ASSOC);
-}
-
-// Preparar endereço formatado
-$endereco_formatado = '';
-$endereco_maps = '';
-if ($endereco_outro) {
-    $nome_display = $endereco_outro['nome_comercial'] ?? 
-                   ($endereco_outro['nome_usuario'] ?? $outro_usuario_nome);
-    
-    $endereco_formatado = "{$endereco_outro['rua']}, {$endereco_outro['numero']}";
-    if (!empty($endereco_outro['complemento'])) {
-        $endereco_formatado .= " - {$endereco_outro['complemento']}";
-    }
-    $endereco_formatado .= ", {$endereco_outro['cidade']} - {$endereco_outro['estado']}";
-    
-    if (!empty($endereco_outro['cep'])) {
-        $endereco_formatado .= "\nCEP: {$endereco_outro['cep']}";
-    }
-    
-    if (!empty($endereco_outro['telefone1'])) {
-        $telefone_display = $endereco_outro['telefone1'];
-        if (!empty($endereco_outro['telefone2'])) {
-            $telefone_display .= " / {$endereco_outro['telefone2']}";
-        }
-        $endereco_formatado .= "\nTelefone: {$telefone_display}";
-    }
-    
-
-    $endereco_maps = urlencode("{$endereco_outro['rua']} {$endereco_outro['numero']}, {$endereco_outro['cidade']}, {$endereco_outro['estado']}");
 }
 
 // Determinar URL de volta
@@ -201,16 +97,47 @@ if ($eh_vendedor_produto) {
     }
 }
 
+// BUSCAR ENDEREÇO DO OUTRO USUÁRIO PARA EXIBIR NA SIDEBAR
+$outro_usuario_endereco = null;
+$outro_usuario_endereco_maps = null;
+$outro_usuario_telefone = null;
 
+if ($outro_usuario_id) {
+    if ($eh_vendedor_produto) {
+        // Se é vendedor, buscar endereço do comprador
+        $sql_outro_usuario = "SELECT c.rua, c.numero, c.complemento, c.cidade, c.estado, c.cep, c.telefone1
+                             FROM compradores c
+                             WHERE c.usuario_id = :outro_usuario_id";
+    } else {
+        // Se é comprador, buscar endereço do vendedor
+        $sql_outro_usuario = "SELECT v.rua, v.numero, v.complemento, v.cidade, v.estado, v.cep, v.telefone1
+                             FROM vendedores v
+                             WHERE v.usuario_id = :outro_usuario_id";
+    }
+    
+    $stmt_outro = $conn->prepare($sql_outro_usuario);
+    $stmt_outro->bindParam(':outro_usuario_id', $outro_usuario_id, PDO::PARAM_INT);
+    $stmt_outro->execute();
+    $outro_usuario_info = $stmt_outro->fetch(PDO::FETCH_ASSOC);
+    
+    if ($outro_usuario_info) {
+        // Montar endereço completo
+        $endereco_completo = "{$outro_usuario_info['rua']}, {$outro_usuario_info['numero']}";
+        if (!empty($outro_usuario_info['complemento'])) {
+            $endereco_completo .= " - {$outro_usuario_info['complemento']}";
+        }
+        $endereco_completo .= ", {$outro_usuario_info['cidade']} - {$outro_usuario_info['estado']}";
+        
+        $outro_usuario_endereco = $endereco_completo;
+        $outro_usuario_endereco_maps = urlencode($endereco_completo);
+        $outro_usuario_telefone = $outro_usuario_info['telefone1'];
+    }
+}
+
+// array com opções de pagamento após a definição das variáveis
 $opcoes_pagamento = [
-    'à vista' => 'Pagamento à Vista',
-    'entrega' => 'Pagamento na Entrega'
-];
-
-$opcoes_frete = [
-    'vendedor' => 'Frete por Conta do Vendedor (Entrega)',
-    'comprador' => 'Frete por Conta do Comprador (Retirada)',
-    'entregador' => 'A plataforma busca entregador'
+    'pagamento_ato' => 'Pagamento no Ato',
+    'pagamento_entrega' => 'Pagamento na Entrega'
 ];
 ?>
 <!DOCTYPE html>
@@ -241,7 +168,6 @@ $opcoes_frete = [
 <body>
     <div class="chat-container">
         <div class="chat-sidebar">
-        <div class="sidebar-main-content">
             <div class="sidebar-header">
                 <h2>
                     <i class="fas fa-comments"></i>
@@ -257,28 +183,26 @@ $opcoes_frete = [
                     <div class="preco">R$ <?php echo number_format($produto['preco'], 2, ',', '.'); ?></div>
                 </div>
             </div>
-
-            <?php if ($eh_vendedor_produto && $conversas): ?>
+            
+            <?php if ($eh_vendedor_produto): ?>
                 <div class="conversas-lista">
-                    <?php if (count($conversas) > 0): ?>
-                        <?php foreach ($conversas as $conv): ?>
-                            <div class="conversa-item <?php echo ($conversa_id && $conv['id'] == $conversa_id) ? 'ativa' : ''; ?>" 
-                                onclick="location.href='chat.php?produto_id=<?php echo $produto_id; ?>&conversa_id=<?php echo $conv['id']; ?>'">
-                                <div style="flex: 1;">
-                                    <div class="nome"><?php echo htmlspecialchars($conv['comprador_nome']); ?></div>
-                                    <?php if ($conv['ultima_mensagem']): ?>
-                                        <div class="ultima-msg"><?php 
-                                            $msg = htmlspecialchars($conv['ultima_mensagem']);
-                                            // Truncar mensagem muito longa
-                                            echo strlen($msg) > 30 ? substr($msg, 0, 30) . '...' : $msg;
-                                        ?></div>
-                                    <?php endif; ?>
+                    <?php if ($conversa_id && $outro_usuario_id): ?>
+                        <!-- Exibir apenas a conversa atual -->
+                        <div class="conversa-item ativa">
+                            <div style="flex: 1;">
+                                <div class="nome">
+                                    <i class="fas fa-user" style="margin-right: 8px;"></i>
+                                    <?php echo htmlspecialchars($outro_usuario_nome); ?>
                                 </div>
-                                <?php if ($conv['nao_lidas'] > 0): ?>
-                                    <div class="badge-nao-lidas"><?php echo $conv['nao_lidas']; ?></div>
-                                <?php endif; ?>
+                                <div class="ultima-msg">Conversa ativa</div>
                             </div>
-                        <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <!-- Quando não há conversa selecionada -->
+                        <div style="padding: 40px 20px; text-align: center; color: #65676b;">
+                            <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 12px; opacity: 0.3;"></i>
+                            <p style="font-size: 14px;">Nenhuma conversa selecionada</p>
+                        </div>
                     <?php endif; ?>
                 </div>
             <?php elseif (!$eh_vendedor_produto): ?>
@@ -295,260 +219,183 @@ $opcoes_frete = [
                 </div>
             <?php endif; ?>
             
-            <?php if ($conversa_id && $outro_usuario_id && $endereco_outro): ?>
-            <div class="endereco-usuario-sidebar">
-                <div class="endereco-usuario-header">
-                    <h4>
+            <!-- CARD DE ENDEREÇO DO OUTRO USUÁRIO -->
+            <?php if ($conversa_id && $outro_usuario_id && $outro_usuario_endereco): ?>
+                <div class="endereco-card">
+                    <div class="endereco-header">
                         <i class="fas fa-map-marker-alt"></i>
-                        Endereço de <?php echo htmlspecialchars($nome_display ?? $outro_usuario_nome); ?>
-                    </h4>
-                </div>
-                
-                <span class="endereco-texto">
-                    <a href="https://www.google.com/maps/search/?api=1&query=<?php echo $endereco_maps; ?>" 
-                        target="_blank" 
-                        class="btn-ver-maps">
-                            <i class="fas fa-map-marked-alt" style="padding: 5px;"></i>
-                            <?php 
-                                $endereco_linha1 = htmlspecialchars($endereco_outro['rua'] . ', ' . $endereco_outro['numero']);
-                                if (!empty($endereco_outro['complemento'])) {
-                                    $endereco_linha1 .= ' - ' . htmlspecialchars($endereco_outro['complemento']);
-                                }
-                                $endereco_linha1 .= ', ' . htmlspecialchars($endereco_outro['cidade'] . ' - ' . $endereco_outro['estado']);
-                                $endereco_linha1 .= ', ' . htmlspecialchars($endereco_outro['cep']);
-                                echo $endereco_linha1;
-                            ?>
-                        </a>
-                </span>
-                
-                <div class="endereco-usuario-footer">
-                    <small>
-                        <i class="fas fa-info-circle"></i>
-                        Este endereço é fornecido para fins de negociação.
-                    </small>
-                </div>
-            </div>
-
-            <?php elseif ($conversa_id && $outro_usuario_id): ?>
-            <div class="endereco-usuario-sidebar endereco-indisponivel">
-                <div class="endereco-usuario-header">
-                    <h4>
-                        <i class="fas fa-map-marker-alt"></i>
-                        Endereço do <?php echo $eh_vendedor_produto ? 'Comprador' : 'Vendedor'; ?>
-                    </h4>
-                </div>
-                
-                <div class="endereco-usuario-content">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        <p>O <?php echo $eh_vendedor_produto ? 'comprador' : 'vendedor'; ?> ainda não cadastrou um endereço completo.</p>
-                        <small>Solicite as informações de endereço durante a negociação.</small>
+                        <h4>Endereço do <?php echo $eh_vendedor_produto ? 'Comprador' : 'Vendedor'; ?></h4>
+                    </div>
+                    <div class="endereco-info">
+                        <div class="endereco-texto">
+                            <a href="https://www.google.com/maps/search/?api=1&query=<?php echo $outro_usuario_endereco_maps; ?>" 
+                               target="_blank" 
+                               class="endereco-link">
+                                <p>
+                                    <i class="fas fa-map-marked-alt" style="padding: 5px;"></i>
+                                    <?php echo htmlspecialchars($outro_usuario_endereco);?>,
+                                    <?php echo htmlspecialchars($outro_usuario_info['cep'] ?? ''); ?>
+                                </p>
+                                </a>
+                        </div>
+                    </div>
+                    <div class="endereco-usuario-footer">
+                        <small>
+                            <i class="fas fa-info-circle"></i>
+                            Este endereço é fornecido para fins de negociação.
+                        </small>
                     </div>
                 </div>
-            </div>
             <?php endif; ?>
 
-            <div class="negociacao-absolute-bottom" id="negociacao-absolute-bottom">
-            <div class="negociacao-wrapper">
-                <div class="negociacao-content" id="negociacao-content">
-                    <div class="negociacao-content-header">
-                        <center>
-                            <i class="fas fa-handshake"></i>
-                            Enviar Acordo de Compra
-                        </center>
-                    </div>
-                    
-                    <div class="progress-bar">
-                        <div class="progress-bar-fill" id="progress-bar-fill"></div>
-                    </div>
-                    
-                    <div class="etapas-negociacao-sidebar">
-                        <div class="etapa-sidebar active" data-etapa-sidebar="1">1. Dados da Negociação</div>
-                        <div class="etapa-sidebar" data-etapa-sidebar="2">2. Logística e Frete</div>
-                    </div>
-                    
-                    <form id="form-negociacao-sidebar">
-                        <!-- ETAPA 1: Dados da Negociação -->
-                        <div class="etapa-conteudo-sidebar active" id="etapa1-conteudo" data-etapa-sidebar="1">
-                            <div class="form-group">
-                                <label for="quantidade-sidebar">Quantidade *</label>
-                                <input type="number" 
-                                    id="quantidade-sidebar" 
-                                    name="quantidade" 
-                                    min="1" 
-                                    max="<?php echo $produto['estoque']; ?>"
-                                    value="1"
-                                    required>
-                                <small>Máximo: <?php echo $produto['estoque']; ?> unidades disponíveis</small>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="valor_unitario-sidebar">Valor Unitário (R$) *</label>
-                                <?php 
-                                $preco_exibir = $produto['desconto_ativo'] && $produto['preco_desconto'] 
-                                    ? $produto['preco_desconto'] 
-                                    : $produto['preco'];
-                                ?>
-                                <input type="number" 
-                                    id="valor_unitario-sidebar" 
-                                    name="valor_unitario" 
-                                    step="0.01"
-                                    min="0.01"
-                                    value="<?php echo number_format($preco_exibir, 2, '.', ''); ?>"
-                                    required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Forma de Pagamento *</label>
-                                <div class="radio-group">
-                                    <?php foreach ($opcoes_pagamento as $valor => $label): ?>
-                                        <label class="radio-option">
-                                            <input type="radio" 
-                                                name="forma_pagamento" 
-                                                value="<?php echo $valor; ?>"
-                                                <?php echo $valor == 'à vista' ? 'checked' : ''; ?>
-                                                required>
-                                            <span><?php echo $label; ?></span>
-                                        </label>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- ETAPA 2: Logística e Frete -->
-                        <div class="etapa-conteudo-sidebar" id="etapa2-conteudo" data-etapa-sidebar="2">
-                            <div class="form-group">
-                                <label>Opção de Frete *</label>
-                                <div class="radio-group">
-                                    <?php foreach ($opcoes_frete as $valor => $label): ?>
-                                        <label class="radio-option">
-                                            <input type="radio" 
-                                                name="opcao_frete" 
-                                                value="<?php echo $valor; ?>"
-                                                <?php echo $valor == 'vendedor' ? 'checked' : ''; ?>
-                                                required>
-                                            <span><?php echo $label; ?></span>
-                                        </label>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                            
-                            <!-- Conteúdo dinâmico baseado na opção de frete -->
-                            <div id="conteudo-frete-vendedor-sidebar" class="conteudo-frete-sidebar">
-                                <div class="form-group">
-                                    <label for="valor_frete-sidebar">Valor do Frete (R$)</label>
-                                    <input type="number" 
-                                        id="valor_frete-sidebar" 
-                                        name="valor_frete" 
-                                        step="0.01"
-                                        min="0"
-                                        value="0.00">
-                                </div>
-                            </div>
-                            
-                            <div id="conteudo-retirada-sidebar" class="conteudo-frete-sidebar">
-                                <?php 
-                                    // Buscar endereço do vendedor
-                                    $sql_endereco_vendedor = "SELECT 
-                                        v.rua, v.numero, v.complemento, v.cidade, v.estado,
-                                        v.cep, v.nome_comercial
-                                        FROM vendedores v
-                                        WHERE v.usuario_id = :vendedor_id";
-                                    
-                                    $stmt_end = $conn->prepare($sql_endereco_vendedor);
-                                    $stmt_end->bindParam(':vendedor_id', $vendedor_usuario_id, PDO::PARAM_INT);
-                                    $stmt_end->execute();
-                                    $endereco_vendedor = $stmt_end->fetch(PDO::FETCH_ASSOC);
-                                    
-                                    if ($endereco_vendedor):
-                                        $endereco_completo = "{$endereco_vendedor['rua']}, {$endereco_vendedor['numero']}";
-                                        if (!empty($endereco_vendedor['complemento'])) {
-                                            $endereco_completo .= " - {$endereco_vendedor['complemento']}";
-                                        }
-                                        $endereco_completo .= ", {$endereco_vendedor['cidade']} - {$endereco_vendedor['estado']}";
-                                        
-                                        $endereco_maps = urlencode($endereco_completo);
-                                    ?>
-                                    <div class="form-group">
-                                        <label>Endereço para Retirada</label>
-                                        <div class="endereco-vendedor-info">
-                                            <strong><?php echo htmlspecialchars($endereco_vendedor['nome_comercial']); ?></strong><br>
-                                            <?php echo htmlspecialchars($endereco_completo); ?><br>
-                                            CEP: <?php echo htmlspecialchars($endereco_vendedor['cep']); ?>
-                                        </div>
-                                        <a href="https://www.google.com/maps/search/?api=1&query=<?php echo $endereco_maps; ?>" 
-                                        target="_blank" 
-                                        style="color: #1877f2; text-decoration: none; font-weight: 500; font-size: 11px;">
-                                            <i class="fas fa-map-marker-alt"></i> Ver no Google Maps
-                                        </a>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                            
-                            <div id="conteudo-buscar-transportador-sidebar" class="conteudo-frete-sidebar">
-                                <div class="alert alert-info">
-                                        <i class="fas fa-info-circle"></i>
-                                        A plataforma irá buscar um transportador disponível para a entrega.
-                                    </div>
-                                    
-                                    <div id="aviso-pagamento-transportador-sidebar" style="display: none;" class="alert alert-warning">
-                                        <i class="fas fa-exclamation-triangle"></i>
-                                        <span><strong>Atenção:</strong> Para contratar transportador pela plataforma, o pagamento deve ser feito no ato.</span>
-                                    </div>
-                            </div>
-                            
-                            <!-- Resumo da Negociação -->
-                            <div class="resumo-negociacao-sidebar">
-                                <h5><i class="fas fa-receipt"></i> Resumo da Negociação</h5>
-                                <div class="resumo-item-sidebar">
-                                    <span>Quantidade:</span>
-                                    <span id="resumo-quantidade-sidebar">1</span>
-                                </div>
-                                <div class="resumo-item-sidebar">
-                                    <span>Valor Unitário:</span>
-                                    <span id="resumo-valor-unitario-sidebar">R$ <?php echo number_format($preco_exibir, 2, ',', '.'); ?></span>
-                                </div>
-                                <div class="resumo-item-sidebar">
-                                    <span>Subtotal:</span>
-                                    <span id="resumo-subtotal-sidebar">R$ <?php echo number_format($preco_exibir, 2, ',', '.'); ?></span>
-                                </div>
-                                <div class="resumo-item-sidebar">
-                                    <span>Frete:</span>
-                                    <span id="resumo-frete-sidebar">R$ 0,00</span>
-                                </div>
-                                <div class="resumo-item-sidebar">
-                                    <span>Forma de Pagamento:</span>
-                                    <span id="resumo-pagamento-sidebar">Pagamento à Vista</span>
-                                </div>
-                                <div class="resumo-total-sidebar">
-                                    <span>Total:</span>
-                                    <span id="resumo-total-sidebar">R$ <?php echo number_format($preco_exibir, 2, ',', '.'); ?></span>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                    
-                    <!-- Botões -->
-                    <div class="modal-footer-sidebar">
-                        <button type="button" class="btn-prosseguir-acordo" id="btn-prosseguir-acordo-sidebar">
-                            <i class="fas fa-arrow-right"></i> Prosseguir com Acordo
-                        </button>
-                        <button type="button" class="btn-voltar-etapa-sidebar" id="btn-voltar-etapa-sidebar" style="display: none;">
-                            <i class="fas fa-arrow-left"></i> Voltar
-                        </button>
-                        <button type="button" class="btn-finalizar-negociacao-sidebar" id="btn-finalizar-negociacao-sidebar" style="display: none;">
-                            <i class="fas fa-check"></i> Finalizar Acordo
-                        </button>
-                    </div>
-                </div>
-                
-                <button type="button" class="btn-toggle-negociacao" id="btn-abrir-negociacao-sidebar">
-                    <i class="fas fa-handshake"></i> Enviar Acordo de Compra
+            <?php
+if ($conversa_id) {
+    // Buscar a última proposta desta conversa
+    $sql_ultima_proposta = "SELECT * FROM propostas 
+                           WHERE produto_id = :produto_id 
+                           AND comprador_id = :comprador_id 
+                           AND vendedor_id = :vendedor_id 
+                           ORDER BY data_inicio DESC LIMIT 1";
+    
+    $comprador_id_param = $eh_vendedor_produto ? $outro_usuario_id : $usuario_id;
+    $vendedor_id_param = $eh_vendedor_produto ? $usuario_id : $outro_usuario_id;
+    
+    $stmt_proposta = $conn->prepare($sql_ultima_proposta);
+    $stmt_proposta->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+    $stmt_proposta->bindParam(':comprador_id', $comprador_id_param, PDO::PARAM_INT);
+    $stmt_proposta->bindParam(':vendedor_id', $vendedor_id_param, PDO::PARAM_INT);
+    $stmt_proposta->execute();
+    $ultima_proposta = $stmt_proposta->fetch(PDO::FETCH_ASSOC);
+    
+    if ($ultima_proposta) {
+        // Formatando os valores
+        $valor_unitario = number_format($ultima_proposta['preco_proposto'], 2, ',', '.');
+        $valor_total = $ultima_proposta['valor_total'] ? number_format($ultima_proposta['valor_total'], 2, ',', '.') : '0,00';
+        $valor_frete = number_format($ultima_proposta['valor_frete'], 2, ',', '.');
+        
+        // Mapeamento de status
+        $status_texto = [
+            'aceita' => '✅ Aceita',
+            'negociacao' => '🔄 Em Negociação',
+            'recusada' => '❌ Recusada'
+        ];
+        
+        $status_exibir = isset($status_texto[$ultima_proposta['status']]) ? 
+                        $status_texto[$ultima_proposta['status']] : 
+                        $ultima_proposta['status'];
+        $status_class = $ultima_proposta['status'];
+        
+        // Mapeamento de forma de pagamento
+        $forma_pagamento_texto = [
+            'à vista' => 'À Vista',
+            'entrega' => 'Na Entrega'
+        ];
+        
+        $forma_pagamento_exibir = isset($forma_pagamento_texto[$ultima_proposta['forma_pagamento']]) ?
+                                 $forma_pagamento_texto[$ultima_proposta['forma_pagamento']] :
+                                 $ultima_proposta['forma_pagamento'];
+        
+        // Mapeamento de opção de frete
+        $opcao_frete_texto = [
+            'vendedor' => 'Vendedor',
+            'comprador' => 'Comprador',
+            'entregador' => 'Transportador'
+        ];
+        
+        $opcao_frete_exibir = isset($opcao_frete_texto[$ultima_proposta['opcao_frete']]) ?
+                             $opcao_frete_texto[$ultima_proposta['opcao_frete']] :
+                             $ultima_proposta['opcao_frete'];
+        
+        // Data formatada
+        $data_formatada = date('d/m/Y H:i', strtotime($ultima_proposta['data_inicio']));
+?>
+<div class="proposta-card" id="proposta-card">
+    <div class="proposta-header">
+        <i class="fas fa-handshake"></i>
+        <h4>Última Proposta</h4>
+        <div class="proposta-status <?php echo htmlspecialchars($status_class); ?>" 
+             id="proposta-status">
+            <?php echo htmlspecialchars($status_exibir); ?>
+        </div>
+    </div>
+    
+    <div class="proposta-info" id="proposta-info">
+        <div class="proposta-item" id="proposta-quantidade">
+            <span><i class="fas fa-box"></i> Quantidade:</span>
+            <strong><?php echo htmlspecialchars($ultima_proposta['quantidade_proposta']); ?> unidades</strong>
+        </div>
+        
+        <div class="proposta-item" id="proposta-valor-unitario">
+            <span><i class="fas fa-tag"></i> Valor Unitário:</span>
+            <strong>R$ <?php echo htmlspecialchars($valor_unitario); ?></strong>
+        </div>
+        
+        <div class="proposta-item" id="proposta-frete">
+            <span><i class="fas fa-truck"></i> Frete:</span>
+            <strong><?php echo htmlspecialchars($opcao_frete_exibir); ?> (R$ <?php echo htmlspecialchars($valor_frete); ?>)</strong>
+        </div>
+        
+        <div class="proposta-item" id="proposta-pagamento">
+            <span><i class="fas fa-credit-card"></i> Pagamento:</span>
+            <strong><?php echo htmlspecialchars($forma_pagamento_exibir); ?></strong>
+        </div>
+        
+        <div class="proposta-item total" id="proposta-total">
+            <span><i class="fas fa-calculator"></i> Valor Total:</span>
+            <strong>R$ <?php echo htmlspecialchars($valor_total); ?></strong>
+        </div>
+        
+        <div class="proposta-item" id="proposta-data">
+            <span><i class="fas fa-calendar"></i> Data:</span>
+            <small><?php echo htmlspecialchars($data_formatada); ?></small>
+        </div>
+    </div>
+    
+    <div class="proposta-acoes" id="proposta-acoes">
+        <?php if ($ultima_proposta['status'] === 'negociacao') { ?>
+            <?php if ($eh_vendedor_produto) { ?>
+                <!-- Botões para vendedor -->
+                <button type="button" class="btn-accept-proposal" data-action="aceitar" data-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>">
+                    <i class="fas fa-check"></i> Aceitar
                 </button>
-            </div>
-            </div>
-            <!-- FIM DA NEGOCIAÇÃO NA SIDEBAR -->
-            </div>
+                <button type="button" class="btn-counter-proposal" data-action="contrapropor" data-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>">
+                    <i class="fas fa-exchange-alt"></i> Contraproposta
+                </button>
+                <button type="button" class="btn-reject-proposal" data-action="recusar" data-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>">
+                    <i class="fas fa-times"></i> Recusar
+                </button>
+            <?php } else { ?>
+                <!-- Botões para comprador -->
+                <button type="button" class="btn-counter-proposal" data-action="contrapropor" data-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>">
+                    <i class="fas fa-exchange-alt"></i> Contraproposta
+                </button>
+                <button type="button" class="btn-cancel-proposal" data-action="cancelar" data-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+            <?php } ?>
+        <?php } ?>
+    </div>
+    
+    <div class="proposta-footer" id="proposta-footer">
+        <small>
+            <i class="fas fa-info-circle"></i>
+            <span id="proposta-footer-text">
+                Esta proposta foi <?php echo htmlspecialchars($ultima_proposta['status'] === 'negociacao' ? 'enviada' : $ultima_proposta['status']); ?>.
+            </span>
+        </small>
+    </div>
+</div>
+
+<!-- Indicador de atualização (hidden) -->
+<div id="proposta-indicador" 
+     data-proposta-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>"
+     data-status="<?php echo htmlspecialchars($ultima_proposta['status']); ?>"
+     style="display: none;"></div>
+<?php 
+    }
+}
+?>
+
         </div>
         
         <div class="chat-area">
@@ -576,6 +423,12 @@ $opcoes_frete = [
                         <button type="button" class="btn-attach" id="btn-attach-image" title="Enviar Imagem">
                             <i class="fas fa-camera"></i>
                         </button>
+                        
+                        <?php if ($usuario_tipo == 'comprador'): ?>
+                            <button type="button" class="btn-negociar-chat" id="btn-negociar" title="Acordo de Compra">
+                                <i class="fas fa-handshake"></i>
+                            </button>
+                        <?php endif; ?>
                     </div>
                     
                     <input type="file" id="image-input" accept="image/jpeg,image/png,image/gif,image/webp" style="display: none;">
@@ -600,6 +453,239 @@ $opcoes_frete = [
             <?php endif; ?>
         </div>
     </div>
+    
+<!-- MODAL DE NEGOCIAÇÃO -->
+    <div class="modal-negociacao" id="modal-negociacao">
+        <div class="modal-negociacao-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-handshake" style="margin-right: 8px;"></i> Acordo de Compra</h3>
+                <button class="btn-fechar-modal" id="fechar-modal">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Dados do Produto -->
+                <div class="produto-info-modal">
+                    <img src="<?php echo htmlspecialchars($produto['imagem_url'] ?: '../../img/placeholder.png'); ?>" 
+                         alt="<?php echo htmlspecialchars($produto['nome']); ?>">
+                    <div style="flex: 1;">
+                        <h4><?php echo htmlspecialchars($produto['nome']); ?></h4>
+                        <div class="preco" id="preco-produto-modal">
+                            R$ <?php 
+                            $preco_exibir = $produto['desconto_ativo'] && $produto['preco_desconto'] 
+                                ? $produto['preco_desconto'] 
+                                : $produto['preco'];
+                            echo number_format($preco_exibir, 2, ',', '.'); 
+                            ?>
+                            <?php if ($produto['desconto_ativo'] && $produto['preco_desconto']): ?>
+                                <small style="color: #999; text-decoration: line-through; margin-left: 8px;">
+                                    R$ <?php echo number_format($produto['preco'], 2, ',', '.'); ?>
+                                </small>
+                                <small style="color: #42b72a; margin-left: 8px;">
+                                    -<?php echo number_format($produto['desconto_percentual'], 0); ?>%
+                                </small>
+                            <?php endif; ?>
+                        </div>
+                        <small>Estoque: <?php echo $produto['estoque']; ?> unidades</small>
+                    </div>
+                </div>
+                
+                <!-- Etapas -->
+                <div class="etapas-negociacao">
+                    <div class="etapa active" data-etapa="1">1. Dados da Negociação</div>
+                    <div class="etapa" data-etapa="2">2. Logística e Frete</div>
+                </div>
+                
+                <!-- Conteúdo das Etapas -->
+                <form id="form-negociacao">
+                    <!-- ETAPA 1 -->
+                    <div class="etapa-conteudo active" data-etapa="1">
+                        <div class="form-group">
+                            <label for="quantidade">Quantidade *</label>
+                            <input type="number" 
+                                   id="quantidade" 
+                                   name="quantidade" 
+                                   min="1" 
+                                   max="<?php echo $produto['estoque']; ?>"
+                                   value="1"
+                                   required>
+                            <small>Máximo: <?php echo $produto['estoque']; ?> unidades disponíveis</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="valor_unitario">Valor Unitário (R$)</label>
+                            <input type="number" 
+                                   id="valor_unitario" 
+                                   name="valor_unitario" 
+                                   step="0.01"
+                                   min="0.01"
+                                   value="<?php echo number_format($preco_exibir, 2, '.', ''); ?>"
+                                   required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Forma de Pagamento *</label>
+                            <div class="radio-group">
+                                <?php foreach ($opcoes_pagamento as $valor => $label): ?>
+                                    <label class="radio-option">
+                                        <input type="radio" 
+                                               name="forma_pagamento" 
+                                               value="<?php echo $valor; ?>"
+                                               <?php echo $valor == 'pagamento_ato' ? 'checked' : ''; ?>
+                                               required>
+                                        <span><?php echo $label; ?></span>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info" id="info-etapa1">
+                            Preencha os dados da negociação para prosseguir.
+                        </div>
+                    </div>
+                    
+                    <!-- ETAPA 2 -->
+                    <div class="etapa-conteudo" data-etapa="2">
+                        <div class="form-group">
+                            <label>Opção de Frete *</label>
+                            <div class="radio-group">
+                                <label class="radio-option">
+                                    <input type="radio" name="opcao_frete" value="frete_vendedor" required>
+                                    <span>Frete por Conta do Vendedor (Entrega)</span>
+                                </label>
+                                
+                                <label class="radio-option">
+                                    <input type="radio" name="opcao_frete" value="retirada_comprador" required>
+                                    <span>Frete por Conta do Comprador (Retirada)</span>
+                                </label>
+                                
+                                <label class="radio-option">
+                                    <input type="radio" name="opcao_frete" value="buscar_transportador" required>
+                                    <span>A plataforma busca entregador</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Conteúdo dinâmico baseado na opção de frete -->
+                        <div id="conteudo-frete-vendedor" style="display: none;">
+                            <div class="form-group">
+                                <label for="valor_frete">Valor do Frete (R$)</label>
+                                <input type="number" 
+                                       id="valor_frete" 
+                                       name="valor_frete" 
+                                       step="0.01"
+                                       min="0"
+                                       value="0.00">
+                            </div>
+                        </div>
+                        
+                        <div id="conteudo-retirada" style="display: none;">
+                            <?php 
+                            // Buscar endereço do vendedor
+                            $sql_endereco_vendedor = "SELECT 
+                                v.rua, v.numero, v.complemento, v.cidade, v.estado,
+                                v.cep, v.nome_comercial
+                                FROM vendedores v
+                                WHERE v.usuario_id = :vendedor_id";
+                            
+                            $stmt_end = $conn->prepare($sql_endereco_vendedor);
+                            $stmt_end->bindParam(':vendedor_id', $vendedor_usuario_id, PDO::PARAM_INT);
+                            $stmt_end->execute();
+                            $endereco_vendedor = $stmt_end->fetch(PDO::FETCH_ASSOC);
+                            
+                            if ($endereco_vendedor):
+                                $endereco_completo = "{$endereco_vendedor['rua']}, {$endereco_vendedor['numero']}";
+                                if (!empty($endereco_vendedor['complemento'])) {
+                                    $endereco_completo .= " - {$endereco_vendedor['complemento']}";
+                                }
+                                $endereco_completo .= ", {$endereco_vendedor['cidade']} - {$endereco_vendedor['estado']}";
+                                
+                                $endereco_maps = urlencode($endereco_completo);
+                            ?>
+                            <div class="form-group">
+                                <label>Endereço para Retirada</label>
+                                <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
+                                    <strong><?php echo htmlspecialchars($endereco_vendedor['nome_comercial']); ?></strong><br>
+                                    <?php echo htmlspecialchars($endereco_completo); ?><br>
+                                    CEP: <?php echo htmlspecialchars($endereco_vendedor['cep']); ?>
+                                </div>
+                                <a href="https://www.google.com/maps/search/?api=1&query=<?php echo $endereco_maps; ?>" 
+                                   target="_blank" 
+                                   style="color: #1877f2; text-decoration: none; font-weight: 500;">
+                                    <i class="fas fa-map-marker-alt"></i> Ver no Google Maps
+                                </a>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <div id="conteudo-buscar-transportador" style="display: none;">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                A plataforma irá buscar um transportador disponível para a entrega.
+                                Você receberá cotações de transportadores cadastrados.
+                            </div>
+                            
+                            <div id="aviso-pagamento-transportador" style="display: none;" class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>Atenção:</strong> Para contratar transportador pela plataforma, 
+                                o pagamento deve ser feito no ato. Transportadores não aceitam pagamento na entrega.
+                            </div>
+                        </div>
+                        
+                        <!-- Resumo da Negociação -->
+                        <div class="resumo-negociacao">
+                            <h5><i class="fas fa-receipt"></i> Resumo da Negociação</h5>
+                            <div class="resumo-item">
+                                <span>Quantidade:</span>
+                                <span id="resumo-quantidade">1</span>
+                            </div>
+                            <div class="resumo-item">
+                                <span>Valor Unitário:</span>
+                                <span id="resumo-valor-unitario">R$ <?php echo number_format($preco_exibir, 2, ',', '.'); ?></span>
+                            </div>
+                            <div class="resumo-item">
+                                <span>Subtotal:</span>
+                                <span id="resumo-subtotal">R$ <?php echo number_format($preco_exibir, 2, ',', '.'); ?></span>
+                            </div>
+                            <div class="resumo-item">
+                                <span>Frete:</span>
+                                <span id="resumo-frete">R$ 0,00</span>
+                            </div>
+                            <div class="resumo-item">
+                                <span>Forma de Pagamento:</span>
+                                <span id="resumo-pagamento">Pagamento no Ato</span>
+                            </div>
+                            <div class="resumo-total">
+                                <span>Total:</span>
+                                <span id="resumo-total">R$ <?php echo number_format($preco_exibir, 2, ',', '.'); ?></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Avisos dinâmicos -->
+                        <div id="aviso-pagamento-entrega" style="display: none;" class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>O Vendedor deverá cobrar o valor total de R$ <span id="valor-total-aviso">0,00</span> no ato da entrega.</strong>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn-voltar-etapa" id="btn-voltar-etapa" style="display: none;">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </button>
+                
+                <div style="flex: 1;"></div>
+                
+                <button type="button" class="btn-proximo-etapa" id="btn-proximo-etapa">
+                    Próxima Etapa <i class="fas fa-arrow-right"></i>
+                </button>
+                
+                <button type="button" class="btn-finalizar-negociacao" id="btn-finalizar-negociacao" style="display: none;">
+                    <i class="fas fa-check"></i> Finalizar Negociação
+                </button>
+            </div>
+        </div>
+    </div>
 
     <?php if ($conversa_id && $outro_usuario_id): ?>
     <script>
@@ -609,6 +695,7 @@ $opcoes_frete = [
         let carregandoMensagens = false;
 
         // Configuração do Lazy Loading usando Intersection Observer
+        // Usa uma imagem de placeholder leve enquanto a real não carrega
         const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23f0f2f5'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%23a8abaf'%3ECarregando...%3C/text%3E%3C/svg%3E";
 
         const imageObserver = new IntersectionObserver((entries, observer) => {
@@ -628,8 +715,8 @@ $opcoes_frete = [
                 }
             });
         }, {
-            root: document.getElementById('chat-messages'),
-            rootMargin: '200px 0px',
+            root: document.getElementById('chat-messages'), // Observa em relação ao container do chat
+            rootMargin: '200px 0px', // Começa a carregar 200px antes de aparecer
             threshold: 0.01
         });
 
@@ -637,40 +724,32 @@ $opcoes_frete = [
             if (carregandoMensagens) return;
             carregandoMensagens = true;
             
+            // IMPORTANTE: Seu get_messages.php deve retornar a coluna 'tipo' agora
             fetch(`get_messages.php?conversa_id=${conversaId}&ultimo_id=${ultimaMensagemId}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.mensagens.length > 0) {
                         const messagesDiv = document.getElementById('chat-messages');
+                        // Verifica se o usuário estava perto do fim antes de adicionar novas mensagens
                         const estavaNaBase = messagesDiv.scrollHeight - messagesDiv.scrollTop <= messagesDiv.clientHeight + 150;
                         let novasImagens = [];
 
-                        // Processar mensagens sequencialmente para buscar dados de negociação
-                        const processarMensagem = async (msg) => {
+                        data.mensagens.forEach(msg => {
                             if (msg.id > ultimaMensagemId) {
                                 const div = document.createElement('div');
                                 div.className = 'message ' + (msg.remetente_id == usuarioId ? 'sent' : 'received');
                                 
                                 let conteudoMensagem = '';
-                                
-                                // Verificar se é uma mensagem de negociação
-                                if (msg.tipo === 'negociacao') {
-                                    // Buscar dados da negociação
-                                    try {
-                                        const dadosNegociacao = await buscarDadosNegociacao(conversaId, msg.id);
-                                        conteudoMensagem = criarCardNegociacao(dadosNegociacao, msg.remetente_id == usuarioId);
-                                    } catch (e) {
-                                        console.error('Erro ao buscar dados da negociação:', e);
-                                        conteudoMensagem = `<div>Proposta de compra</div>`;
-                                    }
-                                } else if (msg.tipo === 'imagem') {
+                                // Verifica o tipo da mensagem
+                                if (msg.tipo === 'imagem') {
+                                    // Estrutura para Lazy Load
                                     conteudoMensagem = `
                                         <div class="chat-image-container">
                                             <img src="${placeholderImage}" 
-                                                data-src="${msg.mensagem}" 
-                                                class="chat-image lazy-loading" 
-                                                alt="Imagem enviada"
-                                                loading="lazy">
+                                                 data-src="${msg.mensagem}" 
+                                                 class="chat-image lazy-loading" 
+                                                 alt="Imagem enviada"
+                                                 loading="lazy">
                                         </div>`;
                                 } else {
                                     conteudoMensagem = `<div>${escapeHtml(msg.mensagem)}</div>`;
@@ -683,331 +762,29 @@ $opcoes_frete = [
                                 messagesDiv.appendChild(div);
                                 ultimaMensagemId = msg.id;
 
+                                // Se for imagem, adiciona ao array para observar depois
                                 if (msg.tipo === 'imagem') {
                                     novasImagens.push(div.querySelector('.chat-image'));
                                 }
-                                
-                                // Adicionar listeners para botões de negociação
-                                if (msg.tipo === 'negociacao') {
-                                    adicionarListenersNegociacao(div, msg);
-                                }
                             }
-                        };
-
-                        // Processar todas as mensagens
-                        const processarTodasMensagens = async () => {
-                            for (const msg of data.mensagens) {
-                                await processarMensagem(msg);
-                            }
-                            
-                            novasImagens.forEach(img => imageObserver.observe(img));
-
-                            if (estavaNaBase) {
-                                setTimeout(() => {
-                                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                                }, 50);
-                            }
-                        };
-
-                        processarTodasMensagens().finally(() => {
-                            carregandoMensagens = false;
                         });
-                    } else {
-                        carregandoMensagens = false;
+                        
+                        // Inicia observação das novas imagens para lazy load
+                        novasImagens.forEach(img => imageObserver.observe(img));
+
+                        if (estavaNaBase) {
+                             // Pequeno delay para garantir que o DOM atualizou antes de rolar
+                             setTimeout(() => {
+                                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                             }, 50);
+                        }
                     }
+                    carregandoMensagens = false;
                 })
                 .catch(err => {
                     console.error('Erro ao carregar mensagens:', err);
                     carregandoMensagens = false;
                 });
-        }
-
-        // Nova função para buscar dados da negociação
-        async function buscarDadosNegociacao(conversaId, mensagemId) {
-            const response = await fetch(`buscar_dados_negociacao.php?conversa_id=${conversaId}&mensagem_id=${mensagemId}`);
-            const data = await response.json();
-            
-            if (data.success) {
-                return data.dados_negociacao;
-            } else {
-                throw new Error(data.error || 'Erro ao buscar dados da negociação');
-            }
-        }
-
-        // Função para criar o card de negociação
-        function criarCardNegociacao(dados, ehMeu) {
-            const status = dados.status || 'pendente';
-            
-            // Determinar tipo do card baseado no tipo de proposta
-            let tipoCard = dados.tipo_proposta || 'comprador';
-            
-            // Determinar se esta é a proposta mais recente DO REMETENTE
-            const ehMaisRecente = dados.eh_mais_recente || false;
-            
-            // Determinar se o usuário pode responder
-            // Só pode responder se: 
-            // 1. NÃO for dele (ehMeu = false)
-            // 2. Estiver pendente 
-            // 3. FOR a proposta mais recente DO OUTRO USUÁRIO
-            const podeResponder = !ehMeu && status === 'pendente' && ehMaisRecente;
-            
-            // Se NÃO for a mais recente, mostrar indicador
-            const indicadorAntiga = !ehMaisRecente ? 
-                '<div class="indicador-antiga">Proposta anterior</div>' : 
-                '';
-            
-            // Texto do status
-            let statusText = '';
-            if (status === 'aceita') {
-                statusText = 'Acordo Aceito';
-            } else if (status === 'recusada') {
-                statusText = 'Acordo Recusado';
-            } else if (status === 'pendente' && !ehMaisRecente) {
-                statusText = 'Proposta Antiga';
-            } else if (status === 'pendente') {
-                statusText = 'Aguardando Resposta';
-            }
-            
-            let acoesHTML = '';
-            if (podeResponder) {
-                acoesHTML = `
-                    <div class="negociacao-acoes">
-                        <button class="btn-aceitar" data-proposta-id="${dados.proposta_id}" data-negociacao-id="${dados.negociacao_id || 0}" data-mensagem-id="${dados.mensagem_id}">
-                            <i class="fas fa-check"></i> Aceitar Acordo
-                        </button>
-                        <button class="btn-recusar" data-proposta-id="${dados.proposta_id}" data-negociacao-id="${dados.negociacao_id || 0}" data-mensagem-id="${dados.mensagem_id}">
-                            <i class="fas fa-times"></i> Recusar
-                        </button>
-                    </div>
-                `;
-            } else if (statusText) {
-                acoesHTML = `
-                    <div class="negociacao-acoes">
-                        <button class="btn-respondido" disabled>
-                            ${statusText}
-                        </button>
-                    </div>
-                `;
-            }
-            
-            const precoUnitario = dados.preco_unitario || 0;
-            
-            // Adicionar indicador de tipo de proposta
-            let infoTipoProposta = '';
-            
-            // Estilo diferente para propostas antigas
-            const classeAntiga = !ehMaisRecente ? ' antiga' : '';
-            
-            return `
-                <div class="negociacao-card ${tipoCard}${classeAntiga}">
-                    <div class="negociacao-header">
-                        <div class="negociacao-titulo">
-                            <i class="fas fa-handshake"></i>
-                            Acordo de Compra
-                            ${!ehMaisRecente ? '<span class="badge-antiga">(Anterior)</span>' : ''}
-                        </div>
-                        <span class="negociacao-status status-${status}">
-                            ${statusText}
-                        </span>
-                    </div>
-                    
-                    ${infoTipoProposta}
-                    ${indicadorAntiga}
-                    
-                    <div class="negociacao-detalhes">
-                        <div class="detalhe-item">
-                            <span class="detalhe-label">Produto:</span>
-                            <span class="detalhe-valor">${escapeHtml(dados.produto_nome || '')}</span>
-                        </div>
-                        <div class="detalhe-item">
-                            <span class="detalhe-label">Quantidade:</span>
-                            <span class="detalhe-valor">${dados.quantidade} unidades</span>
-                        </div>
-                        <div class="detalhe-item">
-                            <span class="detalhe-label">Valor Unitário:</span>
-                            <span class="detalhe-valor">R$ ${parseFloat(precoUnitario).toFixed(2).replace('.', ',')}</span>
-                        </div>
-                        <div class="detalhe-item">
-                            <span class="detalhe-label">Frete:</span>
-                            <span class="detalhe-valor">${obterDescricaoFrete(dados.opcao_frete)}</span>
-                        </div>
-                        ${dados.valor_frete > 0 ? `
-                        <div class="detalhe-item">
-                            <span class="detalhe-label">Valor do Frete:</span>
-                            <span class="detalhe-valor">R$ ${parseFloat(dados.valor_frete || 0).toFixed(2).replace('.', ',')}</span>
-                        </div>` : ''}
-                        <div class="detalhe-item">
-                            <span class="detalhe-label">Pagamento:</span>
-                            <span class="detalhe-valor">${dados.forma_pagamento === 'à vista' ? 'À Vista' : 'Na Entrega'}</span>
-                        </div>
-                        <div class="detalhe-item">
-                            <span class="detalhe-label">Total:</span>
-                            <span class="detalhe-valor total-valor">
-                                R$ ${parseFloat(dados.total || 0).toFixed(2).replace('.', ',')}
-                            </span>
-                        </div>
-                    </div>
-                    
-                    ${acoesHTML}
-                    
-                    <div class="negociacao-footer">
-                        <span class="enviado-por">Enviado por: ${escapeHtml(dados.enviado_por || '')}</span>
-                        <span class="negociacao-id">Proposta ID: ${dados.proposta_id}</span>
-                    </div>
-                </div>
-            `;
-        }
-
-        function obterDescricaoFrete(opcao) {
-            switch(opcao) {
-                case 'vendedor': return 'Por conta do vendedor';
-                case 'comprador': return 'Retirada pelo comprador';
-                case 'entregador': return 'Buscar transportador';
-                default: return opcao || '';
-            }
-        }
-
-        // Adicionar listeners para os botões de aceitar/recusar
-        function adicionarListenersNegociacao(elementoDiv, mensagem) {
-            const btnAceitar = elementoDiv.querySelector('.btn-aceitar');
-            const btnRecusar = elementoDiv.querySelector('.btn-recusar');
-            
-            if (btnAceitar) {
-                btnAceitar.addEventListener('click', function() {
-                    const negociacaoId = this.getAttribute('data-negociacao-id');
-                    const mensagemId = mensagem.id;
-                    responderNegociacao(negociacaoId, mensagemId, 'aceita');
-                });
-            }
-            
-            if (btnRecusar) {
-                btnRecusar.addEventListener('click', function() {
-                    const negociacaoId = this.getAttribute('data-negociacao-id');
-                    const mensagemId = mensagem.id;
-                    responderNegociacao(negociacaoId, mensagemId, 'recusada');
-                });
-            }
-        }
-
-        function responderNegociacao(propostaId, negociacaoId, mensagemId, acao) {
-            // CORREÇÃO: Usar acao correta na mensagem de confirmação
-            const acaoTexto = acao === 'aceita' ? 'aceitar' : 'recusar';
-            
-            if (!confirm(`Tem certeza que deseja ${acaoTexto} este acordo?`)) {
-                return;
-            }
-            
-            const dados = {
-                proposta_id: propostaId,
-                negociacao_id: negociacaoId,
-                mensagem_id: mensagemId,
-                acao: acao
-            };
-            
-            // Desabilitar botões durante o processamento
-            const buttons = document.querySelectorAll(`[data-proposta-id="${propostaId}"]`);
-            buttons.forEach(btn => {
-                btn.disabled = true;
-                if (acao === 'aceita') {
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Aceitando...';
-                } else {
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recusando...';
-                }
-            });
-            
-            fetch('responder_negociacao.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(dados)
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    // Atualizar o card localmente
-                    atualizarCardNegociacao(negociacaoId || propostaId, acao);
-                    
-                    // Recarregar mensagens para mostrar a resposta
-                    setTimeout(() => carregarMensagens(), 500);
-                    
-                    alert(`Acordo ${acaoTexto} com sucesso!`);
-                } else {
-                    alert('Erro: ' + (data.error || 'Erro desconhecido'));
-                    
-                    // Reabilitar botões
-                    buttons.forEach(btn => {
-                        btn.disabled = false;
-                        if (btn.classList.contains('btn-aceitar')) {
-                            btn.innerHTML = '<i class="fas fa-check"></i> Aceitar Acordo';
-                        } else {
-                            btn.innerHTML = '<i class="fas fa-times"></i> Recusar';
-                        }
-                    });
-                }
-            })
-            .catch(err => {
-                console.error('Erro:', err);
-                alert('Erro de conexão. Tente novamente.');
-                
-                // Reabilitar botões
-                buttons.forEach(btn => {
-                    btn.disabled = false;
-                    if (btn.classList.contains('btn-aceitar')) {
-                        btn.innerHTML = '<i class="fas fa-check"></i> Aceitar Acordo';
-                    } else {
-                        btn.innerHTML = '<i class="fas fa-times"></i> Recusar';
-                    }
-                });
-            });
-        }
-
-        function atualizarCardNegociacao(negociacaoId, status) {
-            const cards = document.querySelectorAll('.negociacao-card');
-            cards.forEach(card => {
-                const cardId = card.querySelector('.negociacao-id');
-                if (cardId && cardId.textContent.includes(negociacaoId)) {
-                    // Atualizar status
-                    const statusElement = card.querySelector('.negociacao-status');
-                    if (statusElement) {
-                        statusElement.className = `negociacao-status status-${status}`;
-                        statusElement.textContent = status === 'aceita' ? 'Aceito' : 'Recusado';
-                    }
-                    
-                    // Remover botões de ação
-                    const acoesElement = card.querySelector('.negociacao-acoes');
-                    if (acoesElement) {
-                        acoesElement.innerHTML = `
-                            <button class="btn-respondido" disabled>
-                                ${status === 'aceita' ? 'Acordo Aceito' : 'Acordo Recusado'}
-                            </button>
-                        `;
-                    }
-                }
-            });
-        }
-
-        function adicionarListenersNegociacao(elementoDiv, mensagem) {
-            const btnAceitar = elementoDiv.querySelector('.btn-aceitar');
-            const btnRecusar = elementoDiv.querySelector('.btn-recusar');
-            
-            if (btnAceitar) {
-                btnAceitar.addEventListener('click', function() {
-                    const propostaId = this.getAttribute('data-proposta-id');
-                    const negociacaoId = this.getAttribute('data-negociacao-id');
-                    const mensagemId = mensagem.id;
-                    responderNegociacao(propostaId, negociacaoId, mensagemId, 'aceita');
-                });
-            }
-            
-            if (btnRecusar) {
-                btnRecusar.addEventListener('click', function() {
-                    const propostaId = this.getAttribute('data-proposta-id');
-                    const negociacaoId = this.getAttribute('data-negociacao-id');
-                    const mensagemId = mensagem.id;
-                    responderNegociacao(propostaId, negociacaoId, mensagemId, 'recusada');
-                });
-            }
         }
         
         function escapeHtml(text) {
@@ -1058,6 +835,7 @@ $opcoes_frete = [
         });
 
         function uploadImagem(file) {
+            // Feedback visual de carregamento no botão
             btnAttach.classList.add('loading');
             attachIcon.className = 'fas fa-spinner';
             btnAttach.disabled = true;
@@ -1073,6 +851,7 @@ $opcoes_frete = [
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
+                    // Limpa o input file e recarrega mensagens
                     fileInput.value = '';
                     carregarMensagens();
                 } else {
@@ -1084,6 +863,7 @@ $opcoes_frete = [
                 alert('Erro de conexão ao enviar imagem.');
             })
             .finally(() => {
+                // Remove feedback visual
                 btnAttach.classList.remove('loading');
                 attachIcon.className = 'fas fa-camera';
                 btnAttach.disabled = false;
@@ -1101,328 +881,301 @@ $opcoes_frete = [
         // Carregar mensagens iniciais
         carregarMensagens();
         
-        // Atualizar a cada 2 segundos
+        // Atualizar a cada 2 segundos (aumentei um pouco para não sobrecarregar com imagens)
         setInterval(carregarMensagens, 2000);
 
-        // ==================== LÓGICA DA NEGOCIAÇÃO NA SIDEBAR ====================
-
-        // Elementos da sidebar
-        const negociacaoWrapper = document.querySelector('.negociacao-wrapper');
-        const negociacaoContent = document.getElementById('negociacao-content');
-        const btnAbrirNegociacaoSidebar = document.getElementById('btn-abrir-negociacao-sidebar');
-        const progressBarFill = document.getElementById('progress-bar-fill');
-
+         // ==================== LÓGICA DO MODAL DE NEGOCIAÇÃO ====================
+        
+        // Elementos do modal
+        const modalNegociacao = document.getElementById('modal-negociacao');
+        const btnAbrirNegociacao = document.getElementById('btn-negociar');
+        const btnFecharModal = document.getElementById('fechar-modal');
+        const btnVoltarEtapa = document.getElementById('btn-voltar-etapa');
+        const btnProximoEtapa = document.getElementById('btn-proximo-etapa');
+        const btnFinalizarNegociacao = document.getElementById('btn-finalizar-negociacao');
+        
         // Elementos das etapas
-        const etapasSidebar = document.querySelectorAll('.etapa-sidebar');
-        const conteudoEtapa1 = document.getElementById('etapa1-conteudo');
-        const conteudoEtapa2 = document.getElementById('etapa2-conteudo');
-        let etapaAtualSidebar = 1;
-
+        const etapas = document.querySelectorAll('.etapa');
+        const conteudosEtapas = document.querySelectorAll('.etapa-conteudo');
+        let etapaAtual = 1;
+        
         // Elementos do formulário
-        const quantidadeInputSidebar = document.getElementById('quantidade-sidebar');
-        const valorUnitarioInputSidebar = document.getElementById('valor_unitario-sidebar');
-        const formaPagamentoInputsSidebar = document.querySelectorAll('input[name="forma_pagamento"]');
-        const opcaoFreteInputsSidebar = document.querySelectorAll('input[name="opcao_frete"]');
-        const valorFreteInputSidebar = document.getElementById('valor_frete-sidebar');
-
+        const quantidadeInput = document.getElementById('quantidade');
+        const valorUnitarioInput = document.getElementById('valor_unitario');
+        const formaPagamentoInputs = document.querySelectorAll('input[name="forma_pagamento"]');
+        const opcaoFreteInputs = document.querySelectorAll('input[name="opcao_frete"]');
+        const valorFreteInput = document.getElementById('valor_frete');
+        
         // Elementos de conteúdo dinâmico
-        const conteudoFreteVendedorSidebar = document.getElementById('conteudo-frete-vendedor-sidebar');
-        const conteudoRetiradaSidebar = document.getElementById('conteudo-retirada-sidebar');
-        const conteudoBuscarTransportadorSidebar = document.getElementById('conteudo-buscar-transportador-sidebar');
-        const avisoPagamentoTransportadorSidebar = document.getElementById('aviso-pagamento-transportador-sidebar');
-
+        const conteudoFreteVendedor = document.getElementById('conteudo-frete-vendedor');
+        const conteudoRetirada = document.getElementById('conteudo-retirada');
+        const conteudoBuscarTransportador = document.getElementById('conteudo-buscar-transportador');
+        const avisoPagamentoTransportador = document.getElementById('aviso-pagamento-transportador');
+        const avisoPagamentoEntrega = document.getElementById('aviso-pagamento-entrega');
+        const valorTotalAviso = document.getElementById('valor-total-aviso');
+        
         // Elementos do resumo
-        const resumoQuantidadeSidebar = document.getElementById('resumo-quantidade-sidebar');
-        const resumoValorUnitarioSidebar = document.getElementById('resumo-valor-unitario-sidebar');
-        const resumoSubtotalSidebar = document.getElementById('resumo-subtotal-sidebar');
-        const resumoFreteSidebar = document.getElementById('resumo-frete-sidebar');
-        const resumoPagamentoSidebar = document.getElementById('resumo-pagamento-sidebar');
-        const resumoTotalSidebar = document.getElementById('resumo-total-sidebar');
-
-        // Botões
-        const btnProsseguirAcordo = document.getElementById('btn-prosseguir-acordo-sidebar');
-        const btnVoltarEtapaSidebar = document.getElementById('btn-voltar-etapa-sidebar');
-        const btnFinalizarNegociacaoSidebar = document.getElementById('btn-finalizar-negociacao-sidebar');
-
-        // Abrir/recolher conteúdo da negociação
-        let negociacaoAberta = false;
-
-        // Função para abrir/fechar negociação com animação suave
-        btnAbrirNegociacaoSidebar.addEventListener('click', () => {
-            if (!negociacaoAberta) {
-                // Abrir negociação
-                negociacaoContent.style.display = 'block';
-                setTimeout(() => {
-                    negociacaoContent.classList.add('active');
-                    negociacaoWrapper.classList.add('open');
-                }, 10);
-                
-                btnAbrirNegociacaoSidebar.innerHTML = '<i class="fas fa-times"></i> Fechar Negociação';
-                btnAbrirNegociacaoSidebar.classList.add('active');
-                negociacaoAberta = true;
-                
-                // Garantir que comece na etapa 1
-                irParaEtapaSidebar(1);
-                atualizarResumoSidebar();
-                
-                // Ajustar altura se necessário
-                ajustarAlturaNegociacao();
-            } else {
-                // Fechar negociação
-                negociacaoContent.classList.remove('active');
-                negociacaoWrapper.classList.remove('open');
-                
-                // Aguardar animação para esconder conteúdo
-                setTimeout(() => {
-                    negociacaoContent.style.display = 'none';
-                }, 300);
-                
-                btnAbrirNegociacaoSidebar.innerHTML = '<i class="fas fa-handshake"></i> Acordo de Compra';
-                btnAbrirNegociacaoSidebar.classList.remove('active');
-                negociacaoAberta = false;
-                resetarFormularioSidebar();
+        const resumoQuantidade = document.getElementById('resumo-quantidade');
+        const resumoValorUnitario = document.getElementById('resumo-valor-unitario');
+        const resumoSubtotal = document.getElementById('resumo-subtotal');
+        const resumoFrete = document.getElementById('resumo-frete');
+        const resumoPagamento = document.getElementById('resumo-pagamento');
+        const resumoTotal = document.getElementById('resumo-total');
+        
+        // Abrir modal
+        btnAbrirNegociacao.addEventListener('click', () => {
+            modalNegociacao.classList.add('active');
+            atualizarResumo();
+        });
+        
+        // Fechar modal
+        btnFecharModal.addEventListener('click', () => {
+            modalNegociacao.classList.remove('active');
+            resetarFormulario();
+        });
+        
+        // Fechar modal ao clicar fora
+        modalNegociacao.addEventListener('click', (e) => {
+            if (e.target === modalNegociacao) {
+                modalNegociacao.classList.remove('active');
+                resetarFormulario();
             }
         });
-
-        // Função para ajustar altura da negociação baseada no espaço disponível
-        function ajustarAlturaNegociacao() {
-            if (!negociacaoAberta) return;
-            
-            const windowHeight = window.innerHeight;
-            const sidebar = document.querySelector('.sidebar-main-content');
-            
-            if (!sidebar) return;
-            
-            // Calcular altura disponível (altura da janela menos altura do header e outros elementos)
-            const headerHeight = document.querySelector('.sidebar-header').offsetHeight;
-            const produtoInfoHeight = document.querySelector('.produto-info-sidebar').offsetHeight;
-            const conversasHeight = document.querySelector('.conversas-lista').offsetHeight;
-            
-            const alturaUsada = headerHeight + produtoInfoHeight + conversasHeight + 100; // +100 para margem
-            let maxHeight = windowHeight - alturaUsada;
-            
-            // Limitar altura máxima e mínima
-            maxHeight = Math.min(maxHeight, 600); // Máximo 600px
-            maxHeight = Math.max(maxHeight, 400); // Mínimo 400px
-            
-            // Aplicar altura máxima
-            negociacaoContent.style.maxHeight = maxHeight + 'px';
-            negociacaoContent.style.overflowY = 'auto';
-        }
-
-        // Adicionar event listener para redimensionamento da janela
-        window.addEventListener('resize', ajustarAlturaNegociacao);
-
-        // Inicializar altura ao abrir
-        if (negociacaoAberta) {
-            setTimeout(ajustarAlturaNegociacao, 100);
-        }
-
-        // Navegação linear entre etapas
-        btnProsseguirAcordo.addEventListener('click', () => {
-            if (validarEtapa1()) {
-                irParaEtapaSidebar(2);
-                ajustarScrollResumo();
+        
+        // Navegação entre etapas
+        etapas.forEach(etapa => {
+            etapa.addEventListener('click', () => {
+                if (!etapa.classList.contains('active')) {
+                    const novaEtapa = parseInt(etapa.dataset.etapa);
+                    if (validarEtapaAtual() && novaEtapa >= etapaAtual) {
+                        irParaEtapa(novaEtapa);
+                    }
+                }
+            });
+        });
+        
+        btnProximoEtapa.addEventListener('click', () => {
+            if (validarEtapaAtual()) {
+                if (etapaAtual < 2) {
+                    irParaEtapa(etapaAtual + 1);
+                }
             }
         });
-
-        btnVoltarEtapaSidebar.addEventListener('click', () => {
-            irParaEtapaSidebar(1);
+        
+        btnVoltarEtapa.addEventListener('click', () => {
+            if (etapaAtual > 1) {
+                irParaEtapa(etapaAtual - 1);
+            }
         });
-
-        function irParaEtapaSidebar(numeroEtapa) {
-            etapaAtualSidebar = numeroEtapa;
-            
+        
+        function irParaEtapa(numeroEtapa) {
             // Atualizar visual das etapas
-            etapasSidebar.forEach(etapa => {
-                if (parseInt(etapa.dataset.etapaSidebar) === numeroEtapa) {
+            etapas.forEach(etapa => {
+                if (parseInt(etapa.dataset.etapa) === numeroEtapa) {
                     etapa.classList.add('active');
                 } else {
                     etapa.classList.remove('active');
                 }
             });
             
-            // Mostrar/esconder conteúdo das etapas
-            if (numeroEtapa === 1) {
-                conteudoEtapa1.classList.add('active');
-                conteudoEtapa2.classList.remove('active');
-                
-                // Atualizar botões
-                btnProsseguirAcordo.style.display = 'block';
-                btnVoltarEtapaSidebar.style.display = 'none';
-                btnFinalizarNegociacaoSidebar.style.display = 'none';
-                
-                // Atualizar barra de progresso
-                progressBarFill.style.width = '50%';
-                
-            } else if (numeroEtapa === 2) {
-                conteudoEtapa1.classList.remove('active');
-                conteudoEtapa2.classList.add('active');
-                
-                // Atualizar botões
-                btnProsseguirAcordo.style.display = 'none';
-                btnVoltarEtapaSidebar.style.display = 'block';
-                btnFinalizarNegociacaoSidebar.style.display = 'block';
-                
-                // Atualizar barra de progresso
-                progressBarFill.style.width = '100%';
-                
-                // Atualizar conteúdo dinâmico
-                atualizarConteudoFreteSidebar();
-                atualizarResumoSidebar();
-                ajustarScrollResumo();
-            }
-        }
-
-        function ajustarScrollResumo() {
-            const resumoElement = document.querySelector('.resumo-negociacao-sidebar');
-            if (resumoElement) {
-                setTimeout(() => {
-                    resumoElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
-            }
-        }
-
-        function validarEtapa1() {
-            // Validar quantidade
-            if (!quantidadeInputSidebar.value || parseInt(quantidadeInputSidebar.value) < 1) {
-                alert('Por favor, insira uma quantidade válida.');
-                quantidadeInputSidebar.focus();
-                return false;
-            }
-            
-            if (parseInt(quantidadeInputSidebar.value) > <?php echo $produto['estoque']; ?>) {
-                alert('Quantidade excede o estoque disponível.');
-                quantidadeInputSidebar.focus();
-                return false;
-            }
-            
-            // Validar valor unitário
-            if (!valorUnitarioInputSidebar.value || parseFloat(valorUnitarioInputSidebar.value) <= 0) {
-                alert('Por favor, insira um valor unitário válido.');
-                valorUnitarioInputSidebar.focus();
-                return false;
-            }
-            
-            // Validar forma de pagamento
-            let formaPagamentoSelecionada = false;
-            formaPagamentoInputsSidebar.forEach(input => {
-                if (input.checked) formaPagamentoSelecionada = true;
+            // Mostrar conteúdo da etapa
+            conteudosEtapas.forEach(conteudo => {
+                if (parseInt(conteudo.dataset.etapa) === numeroEtapa) {
+                    conteudo.classList.add('active');
+                } else {
+                    conteudo.classList.remove('active');
+                }
             });
             
-            if (!formaPagamentoSelecionada) {
-                alert('Por favor, selecione uma forma de pagamento.');
-                return false;
+            // Atualizar botões
+            etapaAtual = numeroEtapa;
+            
+            if (numeroEtapa === 1) {
+                btnVoltarEtapa.style.display = 'none';
+                btnProximoEtapa.style.display = 'block';
+                btnFinalizarNegociacao.style.display = 'none';
+            } else if (numeroEtapa === 2) {
+                btnVoltarEtapa.style.display = 'block';
+                btnProximoEtapa.style.display = 'none';
+                btnFinalizarNegociacao.style.display = 'block';
+            }
+        }
+        
+        function validarEtapaAtual() {
+            if (etapaAtual === 1) {
+                // Validar etapa 1
+                if (!quantidadeInput.value || parseInt(quantidadeInput.value) < 1) {
+                    alert('Por favor, insira uma quantidade válida.');
+                    quantidadeInput.focus();
+                    return false;
+                }
+                
+                if (parseInt(quantidadeInput.value) > <?php echo $produto['estoque']; ?>) {
+                    alert('Quantidade excede o estoque disponível.');
+                    quantidadeInput.focus();
+                    return false;
+                }
+                
+                if (!valorUnitarioInput.value || parseFloat(valorUnitarioInput.value) <= 0) {
+                    alert('Por favor, insira um valor unitário válido.');
+                    valorUnitarioInput.focus();
+                    return false;
+                }
+                
+                let formaPagamentoSelecionada = false;
+                formaPagamentoInputs.forEach(input => {
+                    if (input.checked) formaPagamentoSelecionada = true;
+                });
+                
+                if (!formaPagamentoSelecionada) {
+                    alert('Por favor, selecione uma forma de pagamento.');
+                    return false;
+                }
             }
             
             return true;
         }
-
+        
         // Atualizar conteúdo dinâmico baseado na opção de frete
-        opcaoFreteInputsSidebar.forEach(input => {
+        opcaoFreteInputs.forEach(input => {
             input.addEventListener('change', () => {
-                atualizarConteudoFreteSidebar();
-                atualizarResumoSidebar();
+                atualizarConteudoFrete();
+                atualizarResumo();
             });
         });
-
-        function atualizarConteudoFreteSidebar() {
+        
+        function atualizarConteudoFrete() {
             // Esconder tudo primeiro
-            conteudoFreteVendedorSidebar.style.display = 'none';
-            conteudoRetiradaSidebar.style.display = 'none';
-            conteudoBuscarTransportadorSidebar.style.display = 'none';
-            avisoPagamentoTransportadorSidebar.style.display = 'none';
+            conteudoFreteVendedor.style.display = 'none';
+            conteudoRetirada.style.display = 'none';
+            conteudoBuscarTransportador.style.display = 'none';
+            avisoPagamentoTransportador.style.display = 'none';
             
             // Mostrar conteúdo baseado na opção selecionada
             const opcaoSelecionada = document.querySelector('input[name="opcao_frete"]:checked');
             
             if (opcaoSelecionada) {
                 switch (opcaoSelecionada.value) {
-                    case 'vendedor':
-                        conteudoFreteVendedorSidebar.style.display = 'block';
+                    case 'frete_vendedor':
+                        conteudoFreteVendedor.style.display = 'block';
                         break;
-                    case 'comprador':
-                        conteudoRetiradaSidebar.style.display = 'block';
+                    case 'retirada_comprador':
+                        conteudoRetirada.style.display = 'block';
                         break;
-                    case 'entregador':
-                        conteudoBuscarTransportadorSidebar.style.display = 'block';
+                    case 'buscar_transportador':
+                        conteudoBuscarTransportador.style.display = 'block';
                         
                         // Verificar se pagamento é na entrega
                         const formaPagamentoSelecionada = document.querySelector('input[name="forma_pagamento"]:checked');
-                        if (formaPagamentoSelecionada && formaPagamentoSelecionada.value === 'entrega') {
-                            avisoPagamentoTransportadorSidebar.style.display = 'block';
+                        if (formaPagamentoSelecionada && formaPagamentoSelecionada.value === 'pagamento_entrega') {
+                            avisoPagamentoTransportador.style.display = 'block';
                         }
                         break;
                 }
             }
         }
-
+        
         // Atualizar aviso de pagamento na entrega
-        formaPagamentoInputsSidebar.forEach(input => {
+        formaPagamentoInputs.forEach(input => {
             input.addEventListener('change', () => {
-                atualizarConteudoFreteSidebar();
-                atualizarResumoSidebar();
+                atualizarAvisosPagamento();
+                atualizarResumo();
             });
         });
-
-        // Atualizar resumo quando os valores mudam
-        quantidadeInputSidebar.addEventListener('input', atualizarResumoSidebar);
-        valorUnitarioInputSidebar.addEventListener('input', atualizarResumoSidebar);
-        valorFreteInputSidebar.addEventListener('input', atualizarResumoSidebar);
-
-        function atualizarResumoSidebar() {
-            const quantidade = parseFloat(quantidadeInputSidebar.value) || 1;
-            const valorUnitario = parseFloat(valorUnitarioInputSidebar.value) || <?php echo $preco_exibir; ?>;
-            
-            // Buscar valor do frete baseado na opção selecionada
-            let valorFrete = 0;
+        
+        function atualizarAvisosPagamento() {
+            const formaPagamentoSelecionada = document.querySelector('input[name="forma_pagamento"]:checked');
             const opcaoFreteSelecionada = document.querySelector('input[name="opcao_frete"]:checked');
             
-            if (opcaoFreteSelecionada && opcaoFreteSelecionada.value === 'vendedor') {
-                valorFrete = parseFloat(valorFreteInputSidebar.value) || 0;
+            if (formaPagamentoSelecionada && formaPagamentoSelecionada.value === 'pagamento_entrega') {
+                // Mostrar aviso para frete do vendedor
+                if (opcaoFreteSelecionada && opcaoFreteSelecionada.value === 'frete_vendedor') {
+                    avisoPagamentoEntrega.style.display = 'block';
+                    atualizarValorAviso();
+                } else {
+                    avisoPagamentoEntrega.style.display = 'none';
+                }
+                
+                // Mostrar aviso para buscar transportador
+                if (opcaoFreteSelecionada && opcaoFreteSelecionada.value === 'buscar_transportador') {
+                    avisoPagamentoTransportador.style.display = 'block';
+                }
+            } else {
+                avisoPagamentoEntrega.style.display = 'none';
+                if (opcaoFreteSelecionada && opcaoFreteSelecionada.value === 'buscar_transportador') {
+                    avisoPagamentoTransportador.style.display = 'none';
+                }
             }
+        }
+        
+        function atualizarValorAviso() {
+            const quantidade = parseFloat(quantidadeInput.value) || 1;
+            const valorUnitario = parseFloat(valorUnitarioInput.value) || <?php echo $preco_exibir; ?>;
+            const valorFrete = parseFloat(valorFreteInput.value) || 0;
+            
+            const total = (quantidade * valorUnitario) + valorFrete;
+            valorTotalAviso.textContent = total.toFixed(2).replace('.', ',');
+        }
+        
+        // Atualizar resumo quando os valores mudam
+        quantidadeInput.addEventListener('input', atualizarResumo);
+        valorUnitarioInput.addEventListener('input', atualizarResumo);
+        valorFreteInput.addEventListener('input', atualizarResumo);
+        
+        function atualizarResumo() {
+            const quantidade = parseFloat(quantidadeInput.value) || 1;
+            const valorUnitario = parseFloat(valorUnitarioInput.value) || <?php echo $preco_exibir; ?>;
+            const valorFrete = parseFloat(valorFreteInput.value) || 0;
             
             const subtotal = quantidade * valorUnitario;
             const total = subtotal + valorFrete;
             
             // Atualizar elementos do resumo
-            if (resumoQuantidadeSidebar) {
-                resumoQuantidadeSidebar.textContent = quantidade.toLocaleString('pt-BR');
-            }
-            
-            if (resumoValorUnitarioSidebar) {
-                resumoValorUnitarioSidebar.textContent = 'R$ ' + valorUnitario.toFixed(2).replace('.', ',');
-            }
-            
-            if (resumoSubtotalSidebar) {
-                resumoSubtotalSidebar.textContent = 'R$ ' + subtotal.toFixed(2).replace('.', ',');
-            }
-            
-            if (resumoFreteSidebar) {
-                resumoFreteSidebar.textContent = 'R$ ' + valorFrete.toFixed(2).replace('.', ',');
-            }
-            
-            if (resumoTotalSidebar) {
-                resumoTotalSidebar.textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
-            }
+            resumoQuantidade.textContent = quantidade.toLocaleString('pt-BR');
+            resumoValorUnitario.textContent = 'R$ ' + valorUnitario.toFixed(2).replace('.', ',');
+            resumoSubtotal.textContent = 'R$ ' + subtotal.toFixed(2).replace('.', ',');
+            resumoFrete.textContent = 'R$ ' + valorFrete.toFixed(2).replace('.', ',');
+            resumoTotal.textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
             
             // Atualizar forma de pagamento no resumo
             const formaPagamentoSelecionada = document.querySelector('input[name="forma_pagamento"]:checked');
-            if (formaPagamentoSelecionada && resumoPagamentoSidebar) {
-                if (formaPagamentoSelecionada.value === 'à vista') {
-                    resumoPagamentoSidebar.textContent = 'Pagamento à Vista';
+            if (formaPagamentoSelecionada) {
+                if (formaPagamentoSelecionada.value === 'pagamento_ato') {
+                    resumoPagamento.textContent = 'Pagamento no Ato';
                 } else {
-                    resumoPagamentoSidebar.textContent = 'Pagamento na Entrega';
+                    resumoPagamento.textContent = 'Pagamento na Entrega';
                 }
             }
             
-            // Atualizar aviso de transportador se necessário
-            atualizarConteudoFreteSidebar();
+            // Atualizar avisos
+            atualizarAvisosPagamento();
         }
-
+        
+        // Finalizar negociação
+        btnFinalizarNegociacao.addEventListener('click', () => {
+            if (!validarEtapa2()) {
+                return;
+            }
+            
+            // Coletar dados da negociação
+            const dadosNegociacao = {
+                produto_id: <?php echo $produto_id; ?>,
+                conversa_id: conversaId,
+                quantidade: quantidadeInput.value,
+                valor_unitario: valorUnitarioInput.value,
+                forma_pagamento: document.querySelector('input[name="forma_pagamento"]:checked').value,
+                opcao_frete: document.querySelector('input[name="opcao_frete"]:checked').value,
+                valor_frete: valorFreteInput.value || '0',
+                total: calcularTotal()
+            };
+            
+            // Enviar para o servidor
+            enviarNegociacao(dadosNegociacao);
+        });
+        
         function validarEtapa2() {
             let opcaoFreteSelecionada = false;
-            opcaoFreteInputsSidebar.forEach(input => {
+            opcaoFreteInputs.forEach(input => {
                 if (input.checked) opcaoFreteSelecionada = true;
             });
             
@@ -1435,62 +1188,31 @@ $opcoes_frete = [
             const formaPagamentoSelecionada = document.querySelector('input[name="forma_pagamento"]:checked').value;
             
             // Validação específica para buscar transportador
-            if (opcaoSelecionada === 'entregador' && formaPagamentoSelecionada === 'entrega') {
+            if (opcaoSelecionada === 'buscar_transportador' && formaPagamentoSelecionada === 'pagamento_entrega') {
                 alert('Para contratar transportador pela plataforma, o pagamento deve ser feito no ato. Por favor, altere a forma de pagamento.');
                 return false;
             }
             
             return true;
         }
-
-        function calcularTotalSidebar() {
-            const quantidade = parseFloat(quantidadeInputSidebar.value) || 1;
-            const valorUnitario = parseFloat(valorUnitarioInputSidebar.value) || <?php echo $preco_exibir; ?>;
-            
-            // Buscar valor do frete
-            let valorFrete = 0;
-            const opcaoFreteSelecionada = document.querySelector('input[name="opcao_frete"]:checked');
-            
-            if (opcaoFreteSelecionada && opcaoFreteSelecionada.value === 'vendedor') {
-                valorFrete = parseFloat(valorFreteInputSidebar.value) || 0;
-            }
+        
+        function calcularTotal() {
+            const quantidade = parseFloat(quantidadeInput.value) || 1;
+            const valorUnitario = parseFloat(valorUnitarioInput.value) || <?php echo $preco_exibir; ?>;
+            const valorFrete = parseFloat(valorFreteInput.value) || 0;
             
             return (quantidade * valorUnitario) + valorFrete;
         }
-
-        // Finalizar negociação
-        btnFinalizarNegociacaoSidebar.addEventListener('click', () => {
-            if (!validarEtapa2()) {
-                return;
-            }
-            
-            // Coletar dados da negociação
-            const dadosNegociacao = {
-                produto_id: <?php echo $produto_id; ?>,
-                conversa_id: conversaId,
-                quantidade: quantidadeInputSidebar.value,
-                preco_proposto: valorUnitarioInputSidebar.value,
-                forma_pagamento: document.querySelector('input[name="forma_pagamento"]:checked').value,
-                opcao_frete: document.querySelector('input[name="opcao_frete"]:checked').value,
-                valor_frete: '0', // Valor padrão
-                total: calcularTotalSidebar(),
-                usuario_tipo: '<?php echo $eh_vendedor_produto ? "vendedor" : "comprador"; ?>'
-            };
-            
-            // Se frete for por conta do vendedor, pegar valor do input
-            if (dadosNegociacao.opcao_frete === 'vendedor') {
-                dadosNegociacao.valor_frete = valorFreteInputSidebar.value || '0';
-            }
-            
-            // Enviar para o servidor
-            enviarNegociacaoSidebar(dadosNegociacao);
-        });
-
-        function enviarNegociacaoSidebar(dados) {
+        
+        // No arquivo chat.php, dentro do script, atualize a função enviarNegociacao:
+        function enviarNegociacao(dados) {
             // Mostrar loading
-            btnFinalizarNegociacaoSidebar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-            btnFinalizarNegociacaoSidebar.disabled = true;
-            btnVoltarEtapaSidebar.disabled = true;
+            btnFinalizarNegociacao.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+            btnFinalizarNegociacao.disabled = true;
+            
+            // Adicionar dados adicionais necessários
+            dados.total = calcularTotal();
+            dados.valor_frete = valorFreteInput.value || '0';
             
             // Enviar para o servidor
             fetch('salvar_negociacao.php', {
@@ -1503,74 +1225,483 @@ $opcoes_frete = [
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    alert('✅ Negociação enviada com sucesso!');
+                    // Enviar mensagem automática no chat com os detalhes da negociação
+                    const mensagemNegociacao = `*NOVA PROPOSTA DE COMPRA*\n\n` +
+                        `**Produto:** ${document.querySelector('.produto-info-modal h4').textContent}\n` +
+                        `**Quantidade:** ${dados.quantidade} unidades\n` +
+                        `**Valor unitário:** R$ ${parseFloat(dados.valor_unitario).toFixed(2).replace('.', ',')}\n` +
+                        `**Forma de pagamento:** ${dados.forma_pagamento === 'pagamento_ato' ? 'Pagamento no Ato' : 'Pagamento na Entrega'}\n` +
+                        `**Opção de frete:** ${obterDescricaoFrete(dados.opcao_frete)}\n` +
+                        `**Valor do frete:** R$ ${parseFloat(dados.valor_frete).toFixed(2).replace('.', ',')}\n` +
+                        `**Valor total:** R$ ${parseFloat(dados.total).toFixed(2).replace('.', ',')}\n\n` +
+                        `**ID da proposta:** ${data.proposta_id}`;
                     
-                    // Fechar a negociação
-                    negociacaoContent.classList.remove('active');
-                    negociacaoWrapper.classList.remove('open');
+                    // Enviar como mensagem no chat
+                    return fetch('send_message.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: `conversa_id=${conversaId}&mensagem=${encodeURIComponent(mensagemNegociacao)}`
+                    }).then(() => {
+                        alert('✅ Proposta enviada com sucesso!');
+                        modalNegociacao.classList.remove('active');
+                        resetarFormulario();
+                        
+                        // Recarregar mensagens para mostrar a nova proposta
+                        setTimeout(() => carregarMensagens(), 1000);
+                    });
                     
-                    setTimeout(() => {
-                        negociacaoContent.style.display = 'none';
-                    }, 300);
-                    
-                    btnAbrirNegociacaoSidebar.innerHTML = '<i class="fas fa-handshake"></i> Acordo de Compra';
-                    btnAbrirNegociacaoSidebar.classList.remove('active');
-                    negociacaoAberta = false;
-                    resetarFormularioSidebar();
-                    
-                    // Recarregar mensagens para mostrar o novo card
-                    setTimeout(() => carregarMensagens(), 500);
                 } else {
-                    alert('❌ Erro: ' + (data.error || 'Erro ao enviar negociação'));
+                    alert('❌ Erro ao enviar proposta: ' + (data.error || 'Erro desconhecido'));
                 }
             })
             .catch(err => {
                 console.error('Erro:', err);
-                alert('❌ Erro de conexão. Tente novamente.');
+                alert('❌ Erro de conexão ao enviar proposta.');
             })
             .finally(() => {
-                btnFinalizarNegociacaoSidebar.innerHTML = '<i class="fas fa-check"></i> Finalizar Acordo';
-                btnFinalizarNegociacaoSidebar.disabled = false;
-                btnVoltarEtapaSidebar.disabled = false;
+                btnFinalizarNegociacao.innerHTML = '<i class="fas fa-check"></i> Finalizar Negociação';
+                btnFinalizarNegociacao.disabled = false;
             });
         }
 
-        function obterDescricaoFreteSidebar(opcao) {
+        
+        function obterDescricaoFrete(opcao) {
             switch(opcao) {
-                case 'vendedor': return 'Frete por conta do vendedor';
-                case 'comprador': return 'Retirada pelo comprador';
-                case 'entregador': return 'Buscar transportador na plataforma';
-                default: return '';
+                case 'frete_vendedor': return 'Frete por conta do vendedor';
+                case 'retirada_comprador': return 'Retirada pelo comprador';
+                case 'buscar_transportador': return 'Buscar transportador na plataforma';
+                default: return 'Não especificado';
             }
         }
-
-        function resetarFormularioSidebar() {
+        
+        function resetarFormulario() {
             // Resetar para etapa 1
-            etapaAtualSidebar = 1;
-            irParaEtapaSidebar(1);
+            etapaAtual = 1;
+            irParaEtapa(1);
             
             // Resetar valores
-            quantidadeInputSidebar.value = 1;
-            valorUnitarioInputSidebar.value = <?php echo $preco_exibir; ?>;
+            quantidadeInput.value = 1;
+            valorUnitarioInput.value = <?php echo $preco_exibir; ?>;
             
             // Resetar radio buttons
-            document.querySelector('input[name="forma_pagamento"][value="à vista"]').checked = true;
-            document.querySelector('input[name="opcao_frete"][value="vendedor"]').checked = true;
-            valorFreteInputSidebar.value = '0.00';
+            document.querySelector('input[name="forma_pagamento"][value="pagamento_ato"]').checked = true;
+            opcaoFreteInputs[0].checked = false;
+            opcaoFreteInputs[1].checked = false;
+            opcaoFreteInputs[2].checked = false;
+            valorFreteInput.value = '0.00';
             
             // Esconder conteúdos dinâmicos
-            conteudoFreteVendedorSidebar.style.display = 'none';
-            conteudoRetiradaSidebar.style.display = 'none';
-            conteudoBuscarTransportadorSidebar.style.display = 'none';
-            avisoPagamentoTransportadorSidebar.style.display = 'none';
+            conteudoFreteVendedor.style.display = 'none';
+            conteudoRetirada.style.display = 'none';
+            conteudoBuscarTransportador.style.display = 'none';
+            avisoPagamentoEntrega.style.display = 'none';
+            avisoPagamentoTransportador.style.display = 'none';
             
             // Atualizar resumo
-            atualizarResumoSidebar();
+            atualizarResumo();
         }
-
+        
         // Inicializar
-        atualizarConteudoFreteSidebar();
-        atualizarResumoSidebar();
+        atualizarConteudoFrete();
+        atualizarAvisosPagamento();
+
+        // ==================== ATUALIZAÇÃO AUTOMÁTICA DA PROPOSTA ====================
+let propostaAtualId = <?php echo $ultima_proposta['ID'] ?? 0; ?>;
+let propostaAtualStatus = '<?php echo $ultima_proposta['status'] ?? ''; ?>';
+let verificarPropostaInterval;
+
+// Elementos DOM que serão atualizados
+let propostaStatusElement;
+let propostaQuantidadeElement;
+let propostaValorUnitarioElement;
+let propostaFreteElement;
+let propostaPagamentoElement;
+let propostaTotalElement;
+let propostaDataElement;
+let propostaAcoesElement;
+let propostaFooterTextElement;
+
+// Mapeamentos
+const statusTextMap = {
+    'aceita': '✅ Aceita',
+    'negociacao': '🔄 Em Negociação',
+    'recusada': '❌ Recusada'
+};
+
+const pagamentoTextMap = {
+    'à vista': 'À Vista',
+    'entrega': 'Na Entrega'
+};
+
+const freteTextMap = {
+    'vendedor': 'Vendedor',
+    'comprador': 'Comprador',
+    'entregador': 'Transportador'
+};
+
+// Inicializar elementos DOM após o carregamento
+function inicializarElementosProposta() {
+    propostaStatusElement = document.getElementById('proposta-status');
+    propostaQuantidadeElement = document.getElementById('proposta-quantidade');
+    propostaValorUnitarioElement = document.getElementById('proposta-valor-unitario');
+    propostaFreteElement = document.getElementById('proposta-frete');
+    propostaPagamentoElement = document.getElementById('proposta-pagamento');
+    propostaTotalElement = document.getElementById('proposta-total');
+    propostaDataElement = document.getElementById('proposta-data');
+    propostaAcoesElement = document.getElementById('proposta-acoes');
+    propostaFooterTextElement = document.getElementById('proposta-footer-text');
+}
+
+function verificarNovaProposta() {
+    if (!conversaId) return;
+    
+    fetch(`verificar_proposta.php?conversa_id=${conversaId}&produto_id=${<?php echo $produto_id; ?>}&proposta_atual_id=${propostaAtualId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.nova_proposta && data.proposta) {
+                // Atualizar a proposta
+                atualizarProposta(data.proposta);
+                propostaAtualId = data.proposta.ID;
+                propostaAtualStatus = data.proposta.status;
+                
+                // Atualizar indicador oculto
+                const indicador = document.getElementById('proposta-indicador');
+                if (indicador) {
+                    indicador.dataset.propostaId = data.proposta.ID;
+                    indicador.dataset.status = data.proposta.status;
+                }
+                
+                // Mostrar notificação
+                mostrarNotificacaoProposta('Nova proposta enviada!', 'info');
+            } else if (data.atualizacao_status && data.proposta) {
+                // Apenas atualizar o status
+                atualizarStatusProposta(data.proposta);
+                propostaAtualStatus = data.proposta.status;
+                
+                // Atualizar indicador oculto
+                const indicador = document.getElementById('proposta-indicador');
+                if (indicador) {
+                    indicador.dataset.status = data.proposta.status;
+                }
+            }
+        })
+        .catch(err => console.error('Erro ao verificar proposta:', err));
+}
+
+function atualizarProposta(proposta) {
+    if (!proposta) return;
+    
+    // Formatando valores
+    const valorUnitario = parseFloat(proposta.preco_proposto).toFixed(2).replace('.', ',');
+    const valorFrete = parseFloat(proposta.valor_frete || 0).toFixed(2).replace('.', ',');
+    const valorTotal = parseFloat(proposta.valor_total || 0).toFixed(2).replace('.', ',');
+    
+    // 1. Atualizar status
+    atualizarStatusProposta(proposta);
+    
+    // 2. Atualizar quantidade
+    if (propostaQuantidadeElement) {
+        const strongElement = propostaQuantidadeElement.querySelector('strong');
+        if (strongElement) {
+            strongElement.textContent = `${proposta.quantidade_proposta} unidades`;
+        }
+    }
+    
+    // 3. Atualizar valor unitário
+    if (propostaValorUnitarioElement) {
+        const strongElement = propostaValorUnitarioElement.querySelector('strong');
+        if (strongElement) {
+            strongElement.textContent = `R$ ${valorUnitario}`;
+        }
+    }
+    
+    // 4. Atualizar frete
+    if (propostaFreteElement) {
+        const strongElement = propostaFreteElement.querySelector('strong');
+        if (strongElement) {
+            const freteText = freteTextMap[proposta.opcao_frete] || proposta.opcao_frete;
+            strongElement.textContent = `${freteText} (R$ ${valorFrete})`;
+        }
+    }
+    
+    // 5. Atualizar pagamento
+    if (propostaPagamentoElement) {
+        const strongElement = propostaPagamentoElement.querySelector('strong');
+        if (strongElement) {
+            const pagamentoText = pagamentoTextMap[proposta.forma_pagamento] || proposta.forma_pagamento;
+            strongElement.textContent = pagamentoText;
+        }
+    }
+    
+    // 6. Atualizar total
+    if (propostaTotalElement) {
+        const strongElement = propostaTotalElement.querySelector('strong');
+        if (strongElement) {
+            strongElement.textContent = `R$ ${valorTotal}`;
+        }
+    }
+    
+    // 7. Atualizar data
+    if (propostaDataElement) {
+        const smallElement = propostaDataElement.querySelector('small');
+        if (smallElement) {
+            const dataObj = new Date(proposta.data_inicio);
+            const dataFormatada = `${dataObj.getDate().toString().padStart(2, '0')}/` +
+                                `${(dataObj.getMonth() + 1).toString().padStart(2, '0')}/` +
+                                `${dataObj.getFullYear()} ` +
+                                `${dataObj.getHours().toString().padStart(2, '0')}:` +
+                                `${dataObj.getMinutes().toString().padStart(2, '0')}`;
+            smallElement.textContent = dataFormatada;
+        }
+    }
+    
+    // 8. Atualizar botões de ação
+    atualizarBotoesAcao(proposta);
+    
+    // 9. Atualizar texto do footer
+    atualizarFooterProposta(proposta);
+}
+
+function atualizarStatusProposta(proposta) {
+    if (!propostaStatusElement) return;
+    
+    const statusText = statusTextMap[proposta.status] || proposta.status;
+    propostaStatusElement.textContent = statusText;
+    
+    // Remover classes antigas e adicionar nova
+    propostaStatusElement.classList.remove('aceita', 'negociacao', 'recusada');
+    propostaStatusElement.classList.add(proposta.status);
+}
+
+function atualizarBotoesAcao(proposta) {
+    if (!propostaAcoesElement) return;
+    
+    // Limpar botões existentes
+    while (propostaAcoesElement.firstChild) {
+        propostaAcoesElement.removeChild(propostaAcoesElement.firstChild);
+    }
+    
+    // Adicionar novos botões se estiver em negociação
+    if (proposta.status === 'negociacao') {
+        if (<?php echo $eh_vendedor_produto ? 'true' : 'false'; ?>) {
+            // Botões para vendedor
+            adicionarBotao('btn-accept-proposal', 'Aceitar', 'aceitar', proposta.ID, 'fas fa-check');
+            adicionarBotao('btn-counter-proposal', 'Contraproposta', 'contrapropor', proposta.ID, 'fas fa-exchange-alt');
+            adicionarBotao('btn-reject-proposal', 'Recusar', 'recusar', proposta.ID, 'fas fa-times');
+        } else {
+            // Botões para comprador
+            adicionarBotao('btn-counter-proposal', 'Contraproposta', 'contrapropor', proposta.ID, 'fas fa-exchange-alt');
+            adicionarBotao('btn-cancel-proposal', 'Cancelar', 'cancelar', proposta.ID, 'fas fa-times');
+        }
+    }
+}
+
+function adicionarBotao(classe, texto, acao, propostaId, iconeClasse) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = classe;
+    button.dataset.action = acao;
+    button.dataset.id = propostaId;
+    
+    const icon = document.createElement('i');
+    icon.className = iconeClasse;
+    
+    button.appendChild(icon);
+    button.appendChild(document.createTextNode(` ${texto}`));
+    
+    // Adicionar evento de clique
+    button.addEventListener('click', function() {
+        const acao = this.dataset.action;
+        const id = this.dataset.id;
+        
+        switch(acao) {
+            case 'aceitar':
+                responderProposta('aceita', id);
+                break;
+            case 'recusar':
+            case 'cancelar':
+                responderProposta('recusada', id);
+                break;
+            case 'contrapropor':
+                contrapropor(id);
+                break;
+        }
+    });
+    
+    propostaAcoesElement.appendChild(button);
+}
+
+function atualizarFooterProposta(proposta) {
+    if (!propostaFooterTextElement) return;
+    
+    if (proposta.status === 'negociacao') {
+        propostaFooterTextElement.textContent = 'Esta proposta foi enviada.';
+    } else {
+        propostaFooterTextElement.textContent = `Esta proposta foi ${proposta.status}.`;
+    }
+}
+
+function mostrarNotificacaoProposta(mensagem, tipo) {
+    // Verificar se já existe uma notificação
+    let notificacaoExistente = document.querySelector('.notificacao-proposta');
+    if (notificacaoExistente) {
+        notificacaoExistente.remove();
+    }
+    
+    // Criar notificação
+    const notificacao = document.createElement('div');
+    notificacao.className = `notificacao-proposta ${tipo}`;
+    
+    // Criar elementos individualmente
+    const icon = document.createElement('i');
+    icon.className = `fas fa-${tipo === 'info' ? 'info-circle' : 'check-circle'}`;
+    
+    const span = document.createElement('span');
+    span.textContent = mensagem;
+    
+    const closeButton = document.createElement('button');
+    closeButton.textContent = '×';
+    closeButton.addEventListener('click', function() {
+        notificacao.remove();
+    });
+    
+    notificacao.appendChild(icon);
+    notificacao.appendChild(span);
+    notificacao.appendChild(closeButton);
+    
+    // Adicionar estilos dinâmicos
+    notificacao.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${tipo === 'info' ? '#1877f2' : '#42b72a'};
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    closeButton.style.cssText = `
+        background: none;
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        margin-left: auto;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    
+    // Adicionar ao body
+    document.body.appendChild(notificacao);
+    
+    // Criar animação CSS dinamicamente
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Remover após 5 segundos
+    setTimeout(() => {
+        if (notificacao.parentElement) {
+            notificacao.remove();
+        }
+        if (style.parentElement) {
+            style.remove();
+        }
+    }, 5000);
+}
+
+// Funções de ação da proposta
+function responderProposta(status, propostaId) {
+    const acaoTexto = status === 'aceita' ? 'aceitar' : 
+                     status === 'recusada' ? 'recusar' : 'cancelar';
+    
+    if (!confirm(`Tem certeza que deseja ${acaoTexto} esta proposta?`)) {
+        return;
+    }
+    
+    const botaoAtivo = document.querySelector(`[data-id="${propostaId}"]`);
+    if (botaoAtivo) {
+        const iconeOriginal = botaoAtivo.innerHTML;
+        botaoAtivo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+        botaoAtivo.disabled = true;
+    }
+    
+    fetch('responder_proposta.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            proposta_id: propostaId,
+            status: status,
+            conversa_id: conversaId
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            mostrarNotificacaoProposta(`Proposta ${acaoTexto} com sucesso!`, 'success');
+            // Atualizar imediatamente
+            setTimeout(() => verificarNovaProposta(), 500);
+        } else {
+            alert('Erro ao responder proposta: ' + data.error);
+            if (botaoAtivo) {
+                botaoAtivo.innerHTML = iconeOriginal;
+                botaoAtivo.disabled = false;
+            }
+        }
+    })
+    .catch(err => {
+        console.error('Erro:', err);
+        alert('Erro de conexão');
+        if (botaoAtivo) {
+            botaoAtivo.innerHTML = iconeOriginal;
+            botaoAtivo.disabled = false;
+        }
+    });
+}
+
+function contrapropor(propostaId) {
+    // Abrir modal de negociação
+    const modal = document.getElementById('modal-negociacao');
+    if (modal) {
+        modal.classList.add('active');
+        
+        // Você pode preencher com os dados da proposta atual se quiser
+        // preencherModalComProposta(propostaId);
+    }
+}
+
+// Inicializar quando o DOM estiver carregado
+document.addEventListener('DOMContentLoaded', function() {
+    inicializarElementosProposta();
+    
+    // Iniciar verificação periódica se houver conversa
+    if (conversaId) {
+        verificarPropostaInterval = setInterval(verificarNovaProposta, 3000);
+    }
+});
+
+// Parar verificação quando a página for fechada
+window.addEventListener('beforeunload', function() {
+    if (verificarPropostaInterval) {
+        clearInterval(verificarPropostaInterval);
+    }
+});
     </script>
     <?php endif; ?>
 </body>

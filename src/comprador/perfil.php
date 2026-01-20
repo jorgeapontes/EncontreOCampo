@@ -334,7 +334,10 @@ try {
                         <label for="complemento">Complemento</label>
                         <input type="text" name="complemento" id="complemento" value="<?php echo htmlspecialchars($comprador_data['complemento'] ?? ''); ?>">
                     </div>
-                    
+
+                    <!-- Campo hidden para guardar o número original -->
+                    <input type="hidden" id="numero_original" value="<?php echo htmlspecialchars($comprador_data['numero'] ?? ''); ?>">
+
                     <button type="submit" class="big-button"><i class="fas fa-save"></i> Salvar Alterações</button>
                 </div>
             </form>
@@ -428,6 +431,8 @@ try {
                     document.getElementById('cidade').value = data.data.localidade || '';
                     document.getElementById('estado').value = data.data.uf || '';
                     document.getElementById('complemento').value = data.data.complemento || '';
+                    // Limpar o campo número e focar
+                    document.getElementById('numero').value = '';
                     
                     // Atualizar o campo CEP com formatação
                     if (data.cep_formatado) {
@@ -438,13 +443,6 @@ try {
                     
                     // Mostrar mensagem de sucesso
                     showMessage(data.message, 'success');
-                    
-                    // Forçar um pequeno reload dos dados da página após 1 segundo
-                    setTimeout(() => {
-                        // Recarregar a página para mostrar os dados atualizados
-                        window.location.reload();
-                    }, 1500);
-                    
                     // Focar no campo número após buscar o CEP
                     setTimeout(() => {
                         document.getElementById('numero').focus();
@@ -473,6 +471,44 @@ try {
             const cepMessage = document.getElementById('cep-message');
             cepMessage.innerHTML = '<i class="fas ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle') + '"></i> ' + message;
             cepMessage.className = 'cep-message ' + type;
+        }
+
+        // Validação no submit do formulário
+        let precisaAlterarNumero = false;
+        // Quando buscar CEP, ativa a flag
+        function ativarFlagNumero() {
+            precisaAlterarNumero = true;
+        }
+        // Adiciona chamada ao limpar número após buscar CEP
+        const btnBuscar = document.getElementById('buscar-cep-btn');
+        if (btnBuscar) {
+            btnBuscar.addEventListener('click', ativarFlagNumero);
+        }
+        // Se buscar via Enter
+        const cepInput = document.getElementById('cep');
+        if (cepInput) {
+            cepInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') ativarFlagNumero();
+            });
+        }
+        const perfilForm = document.querySelector('.perfil-form');
+        if (perfilForm) {
+            perfilForm.addEventListener('submit', function(e) {
+                const numeroInput = document.getElementById('numero');
+                const numeroOriginal = document.getElementById('numero_original').value;
+                if (!numeroInput.value) {
+                    alert('Por favor, preencha o número do endereço.');
+                    numeroInput.focus();
+                    e.preventDefault();
+                    return false;
+                }
+                if (precisaAlterarNumero && numeroInput.value === numeroOriginal) {
+                    alert('Por favor, digite um número diferente do original após buscar o CEP.');
+                    numeroInput.focus();
+                    e.preventDefault();
+                    return false;
+                }
+            });
         }
     </script>
 </body>

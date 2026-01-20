@@ -139,8 +139,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <h1>ENCONTRE</h1>
-                <h2>OCAMPO</h2>
+                <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <div>
+                        <h1>ENCONTRE</h1>
+                        <h2>OCAMPO</h2>
+                    </div>
+                </a>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>

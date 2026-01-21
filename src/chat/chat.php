@@ -312,7 +312,7 @@ if ($conversa_id) {
 <div class="proposta-card" id="proposta-card">
     <div class="proposta-header">
         <i class="fas fa-handshake"></i>
-        <h4>Última Proposta</h4>
+        <h4>Acordo de Compra</h4>
         <div class="proposta-status <?php echo htmlspecialchars($status_class); ?>" 
              id="proposta-status">
             <?php echo htmlspecialchars($status_exibir); ?>
@@ -358,16 +358,13 @@ if ($conversa_id) {
                 <button type="button" class="btn-accept-proposal" data-action="aceitar" data-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>">
                     <i class="fas fa-check"></i> Aceitar
                 </button>
-                <button type="button" class="btn-counter-proposal" data-action="contrapropor" data-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>">
-                    <i class="fas fa-exchange-alt"></i> Contraproposta
-                </button>
                 <button type="button" class="btn-reject-proposal" data-action="recusar" data-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>">
                     <i class="fas fa-times"></i> Recusar
                 </button>
             <?php } else { ?>
                 <!-- Botões para comprador -->
                 <button type="button" class="btn-counter-proposal" data-action="contrapropor" data-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>">
-                    <i class="fas fa-exchange-alt"></i> Contraproposta
+                    <i class="fas fa-exchange-alt"></i> Editar Proposta
                 </button>
                 <button type="button" class="btn-cancel-proposal" data-action="cancelar" data-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>">
                     <i class="fas fa-times"></i> Cancelar
@@ -1486,11 +1483,10 @@ function atualizarBotoesAcao(proposta) {
         if (<?php echo $eh_vendedor_produto ? 'true' : 'false'; ?>) {
             // Botões para vendedor
             adicionarBotao('btn-accept-proposal', 'Aceitar', 'aceitar', proposta.ID, 'fas fa-check');
-            adicionarBotao('btn-counter-proposal', 'Contraproposta', 'contrapropor', proposta.ID, 'fas fa-exchange-alt');
             adicionarBotao('btn-reject-proposal', 'Recusar', 'recusar', proposta.ID, 'fas fa-times');
         } else {
             // Botões para comprador
-            adicionarBotao('btn-counter-proposal', 'Contraproposta', 'contrapropor', proposta.ID, 'fas fa-exchange-alt');
+            adicionarBotao('btn-counter-proposal', 'Editar Proposta', 'contrapropor', proposta.ID, 'fas fa-exchange-alt');
             adicionarBotao('btn-cancel-proposal', 'Cancelar', 'cancelar', proposta.ID, 'fas fa-times');
         }
     }

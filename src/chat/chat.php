@@ -363,9 +363,6 @@ if ($conversa_id) {
                 </button>
             <?php } else { ?>
                 <!-- Botões para comprador -->
-                <button type="button" class="btn-counter-proposal" data-action="contrapropor" data-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>">
-                    <i class="fas fa-exchange-alt"></i> Editar Proposta
-                </button>
                 <button type="button" class="btn-cancel-proposal" data-action="cancelar" data-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>">
                     <i class="fas fa-times"></i> Cancelar
                 </button>
@@ -1490,7 +1487,6 @@ function atualizarBotoesAcao(proposta) {
             adicionarBotao('btn-reject-proposal', 'Recusar', 'recusar', proposta.ID, 'fas fa-times');
         } else {
             // Botões para comprador
-            adicionarBotao('btn-counter-proposal', 'Editar Proposta', 'contrapropor', proposta.ID, 'fas fa-exchange-alt');
             adicionarBotao('btn-cancel-proposal', 'Cancelar', 'cancelar', proposta.ID, 'fas fa-times');
         }
     }

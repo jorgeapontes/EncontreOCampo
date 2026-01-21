@@ -1303,7 +1303,16 @@ if ($conversa_id) {
         atualizarAvisosPagamento();
 
         // ==================== ATUALIZAÇÃO AUTOMÁTICA DA PROPOSTA ====================
+<?php
+// Buscar a última data de atualização da proposta
+$ultima_data_atualizacao = null;
+if (isset($ultima_proposta['data_atualizacao'])) {
+    $ultima_data_atualizacao = strtotime($ultima_proposta['data_atualizacao']);
+}
+?>
+
 let propostaAtualId = <?php echo $ultima_proposta['ID'] ?? 0; ?>;
+let propostaAtualDataAtualizacao = '<?php echo $ultima_proposta['data_atualizacao'] ?? ''; ?>';
 let propostaAtualStatus = '<?php echo $ultima_proposta['status'] ?? ''; ?>';
 let verificarPropostaInterval;
 
@@ -1352,13 +1361,14 @@ function inicializarElementosProposta() {
 function verificarNovaProposta() {
     if (!conversaId) return;
     
-    fetch(`verificar_proposta.php?conversa_id=${conversaId}&produto_id=${<?php echo $produto_id; ?>}&proposta_atual_id=${propostaAtualId}`)
+    fetch(`verificar_proposta_v2.php?conversa_id=${conversaId}&produto_id=${<?php echo $produto_id; ?>}&ultima_data=${encodeURIComponent(propostaAtualDataAtualizacao)}`)
         .then(res => res.json())
         .then(data => {
-            if (data.nova_proposta && data.proposta) {
+            if (data.atualizacao && data.proposta) {
                 // Atualizar a proposta
                 atualizarProposta(data.proposta);
                 propostaAtualId = data.proposta.ID;
+                propostaAtualDataAtualizacao = data.proposta.data_atualizacao;
                 propostaAtualStatus = data.proposta.status;
                 
                 // Atualizar indicador oculto
@@ -1368,17 +1378,11 @@ function verificarNovaProposta() {
                     indicador.dataset.status = data.proposta.status;
                 }
                 
-                // Mostrar notificação
-                mostrarNotificacaoProposta('Nova proposta enviada!', 'info');
-            } else if (data.atualizacao_status && data.proposta) {
-                // Apenas atualizar o status
-                atualizarStatusProposta(data.proposta);
-                propostaAtualStatus = data.proposta.status;
-                
-                // Atualizar indicador oculto
-                const indicador = document.getElementById('proposta-indicador');
-                if (indicador) {
-                    indicador.dataset.status = data.proposta.status;
+                // Mostrar notificação se for uma nova proposta ou status mudado
+                if (data.tipo_atualizacao === 'nova_proposta') {
+                    mostrarNotificacaoProposta('Nova proposta enviada!', 'info');
+                } else if (data.tipo_atualizacao === 'status_atualizado') {
+                    mostrarNotificacaoProposta(`Proposta ${data.proposta.status === 'aceita' ? 'aceita' : data.proposta.status === 'recusada' ? 'recusada' : 'atualizada'}!`, 'success');
                 }
             }
         })
@@ -1534,151 +1538,6 @@ function atualizarFooterProposta(proposta) {
         propostaFooterTextElement.textContent = 'Esta proposta foi enviada.';
     } else {
         propostaFooterTextElement.textContent = `Esta proposta foi ${proposta.status}.`;
-    }
-}
-
-function mostrarNotificacaoProposta(mensagem, tipo) {
-    // Verificar se já existe uma notificação
-    let notificacaoExistente = document.querySelector('.notificacao-proposta');
-    if (notificacaoExistente) {
-        notificacaoExistente.remove();
-    }
-    
-    // Criar notificação
-    const notificacao = document.createElement('div');
-    notificacao.className = `notificacao-proposta ${tipo}`;
-    
-    // Criar elementos individualmente
-    const icon = document.createElement('i');
-    icon.className = `fas fa-${tipo === 'info' ? 'info-circle' : 'check-circle'}`;
-    
-    const span = document.createElement('span');
-    span.textContent = mensagem;
-    
-    const closeButton = document.createElement('button');
-    closeButton.textContent = '×';
-    closeButton.addEventListener('click', function() {
-        notificacao.remove();
-    });
-    
-    notificacao.appendChild(icon);
-    notificacao.appendChild(span);
-    notificacao.appendChild(closeButton);
-    
-    // Adicionar estilos dinâmicos
-    notificacao.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${tipo === 'info' ? '#1877f2' : '#42b72a'};
-        color: white;
-        padding: 12px 16px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 14px;
-        animation: slideIn 0.3s ease-out;
-    `;
-    
-    closeButton.style.cssText = `
-        background: none;
-        border: none;
-        color: white;
-        font-size: 20px;
-        cursor: pointer;
-        margin-left: auto;
-        padding: 0;
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    `;
-    
-    // Adicionar ao body
-    document.body.appendChild(notificacao);
-    
-    // Criar animação CSS dinamicamente
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-    `;
-    document.head.appendChild(style);
-    
-    // Remover após 5 segundos
-    setTimeout(() => {
-        if (notificacao.parentElement) {
-            notificacao.remove();
-        }
-        if (style.parentElement) {
-            style.remove();
-        }
-    }, 5000);
-}
-
-// Funções de ação da proposta
-function responderProposta(status, propostaId) {
-    const acaoTexto = status === 'aceita' ? 'aceitar' : 
-                     status === 'recusada' ? 'recusar' : 'cancelar';
-    
-    if (!confirm(`Tem certeza que deseja ${acaoTexto} esta proposta?`)) {
-        return;
-    }
-    
-    const botaoAtivo = document.querySelector(`[data-id="${propostaId}"]`);
-    if (botaoAtivo) {
-        const iconeOriginal = botaoAtivo.innerHTML;
-        botaoAtivo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
-        botaoAtivo.disabled = true;
-    }
-    
-    fetch('responder_proposta.php', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            proposta_id: propostaId,
-            status: status,
-            conversa_id: conversaId
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            mostrarNotificacaoProposta(`Proposta ${acaoTexto} com sucesso!`, 'success');
-            // Atualizar imediatamente
-            setTimeout(() => verificarNovaProposta(), 500);
-        } else {
-            alert('Erro ao responder proposta: ' + data.error);
-            if (botaoAtivo) {
-                botaoAtivo.innerHTML = iconeOriginal;
-                botaoAtivo.disabled = false;
-            }
-        }
-    })
-    .catch(err => {
-        console.error('Erro:', err);
-        alert('Erro de conexão');
-        if (botaoAtivo) {
-            botaoAtivo.innerHTML = iconeOriginal;
-            botaoAtivo.disabled = false;
-        }
-    });
-}
-
-function contrapropor(propostaId) {
-    // Abrir modal de negociação
-    const modal = document.getElementById('modal-negociacao');
-    if (modal) {
-        modal.classList.add('active');
-        
-        // Você pode preencher com os dados da proposta atual se quiser
-        // preencherModalComProposta(propostaId);
     }
 }
 

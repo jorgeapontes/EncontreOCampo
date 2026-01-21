@@ -110,12 +110,12 @@ try {
         ? $opcao_frete_mapa[$dados['opcao_frete']] 
         : 'vendedor';
     
-    // 4. Inserir na tabela propostas (CORRIGIDO)
+    // 4. Inserir na tabela propostas (APENAS ESTA TABELA)
     $sql_proposta = "INSERT INTO propostas 
         (comprador_id, vendedor_id, produto_id, preco_proposto, quantidade_proposta, 
-         forma_pagamento, opcao_frete, valor_frete, valor_total, status) 
+         forma_pagamento, opcao_frete, valor_frete, valor_total, status, data_inicio) 
         VALUES (:comprador_id, :vendedor_id, :produto_id, :preco_proposto, :quantidade_proposta,
-                :forma_pagamento, :opcao_frete, :valor_frete, :valor_total, 'negociacao')";
+                :forma_pagamento, :opcao_frete, :valor_frete, :valor_total, 'negociacao', NOW())";
     
     $stmt_proposta = $conn->prepare($sql_proposta);
     $stmt_proposta->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
@@ -134,55 +134,7 @@ try {
     
     $proposta_id = $conn->lastInsertId();
     
-    // 5. Atualizar também na tabela propostas_comprador (manter compatibilidade)
-    // Primeiro, precisamos obter o comprador_tabela_id (ID na tabela compradores)
-    $sql_comprador_tabela = "SELECT id FROM compradores WHERE usuario_id = :comprador_id";
-    $stmt_comp = $conn->prepare($sql_comprador_tabela);
-    $stmt_comp->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
-    $stmt_comp->execute();
-    $comprador_info = $stmt_comp->fetch(PDO::FETCH_ASSOC);
-    
-    if ($comprador_info) {
-        $comprador_tabela_id = $comprador_info['id'];
-        
-        $sql_proposta_comprador = "INSERT INTO propostas_comprador 
-            (comprador_id, produto_id, preco_proposto, quantidade_proposta, 
-             data_proposta, status, forma_pagamento, opcao_frete, valor_frete) 
-            VALUES (:comprador_id, :produto_id, :preco_proposto, :quantidade_proposta,
-                    NOW(), 'enviada', :forma_pagamento, :opcao_frete, :valor_frete)";
-        
-        $stmt_proposta_comp = $conn->prepare($sql_proposta_comprador);
-        $stmt_proposta_comp->bindParam(':comprador_id', $comprador_tabela_id, PDO::PARAM_INT);
-        $stmt_proposta_comp->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
-        $stmt_proposta_comp->bindParam(':preco_proposto', $preco_proposto);
-        $stmt_proposta_comp->bindParam(':quantidade_proposta', $quantidade_proposta, PDO::PARAM_INT);
-        $stmt_proposta_comp->bindParam(':forma_pagamento', $forma_pagamento);
-        $stmt_proposta_comp->bindParam(':opcao_frete', $opcao_frete);
-        $stmt_proposta_comp->bindParam(':valor_frete', $valor_frete);
-        $stmt_proposta_comp->execute();
-        
-        $proposta_comprador_id = $conn->lastInsertId();
-        
-        // Criar registro na tabela de negociação para compatibilidade
-        $sql_negociacao = "INSERT INTO propostas_negociacao 
-            (proposta_comprador_id, produto_id, data_inicio, data_atualizacao, 
-             valor_total, quantidade_final, status, forma_pagamento, opcao_frete) 
-            VALUES (:proposta_comprador_id, :produto_id, NOW(), NOW(),
-                    :valor_total, :quantidade_final, 'negociacao', :forma_pagamento, :opcao_frete)";
-        
-        $stmt_negociacao = $conn->prepare($sql_negociacao);
-        $stmt_negociacao->bindParam(':proposta_comprador_id', $proposta_comprador_id, PDO::PARAM_INT);
-        $stmt_negociacao->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
-        $stmt_negociacao->bindParam(':valor_total', $valor_total);
-        $stmt_negociacao->bindParam(':quantidade_final', $quantidade_proposta, PDO::PARAM_INT);
-        $stmt_negociacao->bindParam(':forma_pagamento', $forma_pagamento);
-        $stmt_negociacao->bindParam(':opcao_frete', $opcao_frete);
-        $stmt_negociacao->execute();
-        
-        $negociacao_id = $conn->lastInsertId();
-    }
-    
-    // 6. Enviar notificação para o vendedor
+    // 5. Enviar notificação para o vendedor
     // Buscar nome do produto para a notificação
     $sql_produto_info = "SELECT nome FROM produtos WHERE id = :produto_id";
     $stmt_prod = $conn->prepare($sql_produto_info);
@@ -211,9 +163,7 @@ try {
     echo json_encode([
         'success' => true,
         'message' => 'Proposta enviada com sucesso',
-        'proposta_id' => $proposta_id,
-        'proposta_comprador_id' => $proposta_comprador_id ?? null,
-        'negociacao_id' => $negociacao_id ?? null
+        'proposta_id' => $proposta_id
     ]);
     
 } catch (Exception $e) {

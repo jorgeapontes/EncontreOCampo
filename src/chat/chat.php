@@ -355,15 +355,18 @@ if ($conversa_id) {
         <?php if ($ultima_proposta['status'] === 'negociacao') { ?>
             <?php if ($eh_vendedor_produto) { ?>
                 <!-- Botões para vendedor -->
-                <button type="button" class="btn-accept-proposal" data-action="aceitar" data-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>">
+                <button type="button" class="btn-accept-proposal" 
+                        onclick="responderProposta('aceitar', <?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
                     <i class="fas fa-check"></i> Aceitar
                 </button>
-                <button type="button" class="btn-reject-proposal" data-action="recusar" data-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>">
+                <button type="button" class="btn-reject-proposal" 
+                        onclick="responderProposta('recusar', <?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
                     <i class="fas fa-times"></i> Recusar
                 </button>
             <?php } else { ?>
                 <!-- Botões para comprador -->
-                <button type="button" class="btn-cancel-proposal" data-action="cancelar" data-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>">
+                <button type="button" class="btn-cancel-proposal" 
+                        onclick="cancelarProposta(<?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
                     <i class="fas fa-times"></i> Cancelar
                 </button>
             <?php } ?>
@@ -1362,24 +1365,10 @@ function verificarNovaProposta() {
         .then(res => res.json())
         .then(data => {
             if (data.atualizacao && data.proposta) {
-                // Atualizar a proposta
-                atualizarProposta(data.proposta);
-                propostaAtualId = data.proposta.ID;
-                propostaAtualDataAtualizacao = data.proposta.data_atualizacao;
-                propostaAtualStatus = data.proposta.status;
-                
-                // Atualizar indicador oculto
-                const indicador = document.getElementById('proposta-indicador');
-                if (indicador) {
-                    indicador.dataset.propostaId = data.proposta.ID;
-                    indicador.dataset.status = data.proposta.status;
-                }
-                
-                // Mostrar notificação se for uma nova proposta ou status mudado
-                if (data.tipo_atualizacao === 'nova_proposta') {
-                    mostrarNotificacaoProposta('Nova proposta enviada!', 'info');
-                } else if (data.tipo_atualizacao === 'status_atualizado') {
-                    mostrarNotificacaoProposta(`Proposta ${data.proposta.status === 'aceita' ? 'aceita' : data.proposta.status === 'recusada' ? 'recusada' : 'atualizada'}!`, 'success');
+                // Verificar se houve mudança de status
+                if (data.proposta.status !== propostaAtualStatus) {
+                    // Recarregar a página para mostrar mudanças
+                    location.reload();
                 }
             }
         })
@@ -1460,18 +1449,132 @@ function atualizarProposta(proposta) {
     atualizarFooterProposta(proposta);
 }
 
-function atualizarStatusProposta(proposta) {
-    if (!propostaStatusElement) return;
-    
-    const statusText = statusTextMap[proposta.status] || proposta.status;
-    propostaStatusElement.textContent = statusText;
-    
-    // Remover classes antigas e adicionar nova
-    propostaStatusElement.classList.remove('aceita', 'negociacao', 'recusada');
-    propostaStatusElement.classList.add(proposta.status);
+function responderProposta(acao, propostaId) {
+    if (!confirm(`Tem certeza que deseja ${acao === 'aceitar' ? 'aceitar' : 'recusar'} esta proposta?`)) {
+        return;
+    }
+
+    // Encontrar o botão clicado
+    const botao = event.target.closest('button');
+    const textoOriginal = botao.innerHTML;
+    botao.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+    botao.disabled = true;
+
+    // Enviar requisição
+    fetch('responder_proposta.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            acao: acao,
+            proposta_id: propostaId
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Mostrar mensagem de sucesso
+            mostrarNotificacao(`Proposta ${acao === 'aceitar' ? 'aceita' : 'recusada'} com sucesso!`, 'success');
+            
+            // Atualizar a página após 1.5 segundos
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            alert('Erro: ' + data.error);
+            botao.innerHTML = textoOriginal;
+            botao.disabled = false;
+        }
+    })
+    .catch(err => {
+        console.error('Erro:', err);
+        alert('Erro de conexão. Tente novamente.');
+        botao.innerHTML = textoOriginal;
+        botao.disabled = false;
+    });
 }
 
-function atualizarBotoesAcao(proposta) {
+// Função para cancelar proposta (apenas comprador)
+function cancelarProposta(propostaId) {
+    if (!confirm('Tem certeza que deseja cancelar esta proposta?')) {
+        return;
+    }
+
+    const botao = event.target.closest('button');
+    const textoOriginal = botao.innerHTML;
+    botao.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelando...';
+    botao.disabled = true;
+
+    // Enviar requisição para cancelar
+    fetch('responder_proposta.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            acao: 'cancelar',
+            proposta_id: propostaId
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Mostrar mensagem de sucesso
+            mostrarNotificacao('Proposta cancelada com sucesso!', 'success');
+            
+            // Remover o card da proposta após 1 segundo
+            setTimeout(() => {
+                const propostaCard = document.getElementById('proposta-card');
+                if (propostaCard) {
+                    propostaCard.style.opacity = '0.5';
+                    propostaCard.style.transition = 'opacity 0.5s ease';
+                    setTimeout(() => {
+                        propostaCard.remove();
+                    }, 500);
+                }
+            }, 1000);
+        } else {
+            alert('Erro: ' + data.error);
+            botao.innerHTML = textoOriginal;
+            botao.disabled = false;
+        }
+    })
+    .catch(err => {
+        console.error('Erro:', err);
+        alert('Erro de conexão. Tente novamente.');
+        botao.innerHTML = textoOriginal;
+        botao.disabled = false;
+    });
+}
+
+function atualizarStatusPropostaUI(novoStatus) {
+    if (!propostaStatusElement) return;
+    
+    const statusTextMap = {
+        'aceita': '✅ Aceita',
+        'negociacao': '🔄 Em Negociação',
+        'recusada': '❌ Recusada'
+    };
+    
+    const statusText = statusTextMap[novoStatus] || novoStatus;
+    propostaStatusElement.textContent = statusText;
+    
+    // Atualizar classes CSS
+    propostaStatusElement.classList.remove('aceita', 'negociacao', 'recusada');
+    propostaStatusElement.classList.add(novoStatus);
+    
+    // Atualizar botões de ação
+    atualizarBotoesAcaoUI(novoStatus);
+    
+    // Atualizar texto do footer
+    if (propostaFooterTextElement) {
+        propostaFooterTextElement.textContent = `Esta proposta foi ${novoStatus}.`;
+    }
+}
+
+// Atualizar botões de ação na UI
+function atualizarBotoesAcaoUI(status) {
     if (!propostaAcoesElement) return;
     
     // Limpar botões existentes
@@ -1479,19 +1582,70 @@ function atualizarBotoesAcao(proposta) {
         propostaAcoesElement.removeChild(propostaAcoesElement.firstChild);
     }
     
-    // Adicionar novos botões se estiver em negociação
-    if (proposta.status === 'negociacao') {
-        if (<?php echo $eh_vendedor_produto ? 'true' : 'false'; ?>) {
-            // Botões para vendedor
-            adicionarBotao('btn-accept-proposal', 'Aceitar', 'aceitar', proposta.ID, 'fas fa-check');
-            adicionarBotao('btn-reject-proposal', 'Recusar', 'recusar', proposta.ID, 'fas fa-times');
-        } else {
-            // Botões para comprador
-            adicionarBotao('btn-cancel-proposal', 'Cancelar', 'cancelar', proposta.ID, 'fas fa-times');
-        }
+    // Não mostrar botões se a proposta já foi finalizada
+    if (status !== 'negociacao') {
+        const mensagemFinal = document.createElement('div');
+        mensagemFinal.className = 'proposta-finalizada';
+        mensagemFinal.textContent = status === 'aceita' ? '✅ Proposta aceita' : '❌ Proposta recusada';
+        propostaAcoesElement.appendChild(mensagemFinal);
     }
 }
 
+function mostrarNotificacao(mensagem, tipo) {
+    // Criar elemento de notificação
+    const notificacao = document.createElement('div');
+    notificacao.className = `notificacao-chat notificacao-${tipo}`;
+    notificacao.innerHTML = `
+        <i class="fas fa-${tipo === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        <span>${mensagem}</span>
+    `;
+    
+    // Estilo da notificação
+    notificacao.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${tipo === 'success' ? '#d4edda' : '#f8d7da'};
+        color: ${tipo === 'success' ? '#155724' : '#721c24'};
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        z-index: 10000;
+        border: 1px solid ${tipo === 'success' ? '#c3e6cb' : '#f5c6cb'};
+        animation: slideIn 0.3s ease forwards;
+        max-width: 350px;
+    `;
+    
+    // Adicionar animação
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Adicionar ao corpo
+    document.body.appendChild(notificacao);
+    
+    // Remover após 3 segundos
+    setTimeout(() => {
+        notificacao.style.animation = 'slideOut 0.3s ease forwards';
+        setTimeout(() => {
+            notificacao.remove();
+            style.remove();
+        }, 300);
+    }, 3000);
+}
 function adicionarBotao(classe, texto, acao, propostaId, iconeClasse) {
     const button = document.createElement('button');
     button.type = 'button';
@@ -1515,17 +1669,106 @@ function adicionarBotao(classe, texto, acao, propostaId, iconeClasse) {
                 responderProposta('aceita', id);
                 break;
             case 'recusar':
-            case 'cancelar':
                 responderProposta('recusada', id);
                 break;
-            case 'contrapropor':
-                contrapropor(id);
+            case 'cancelar':
+                cancelarProposta(id);
                 break;
         }
     });
     
     propostaAcoesElement.appendChild(button);
 }
+
+const buttonStyles = document.createElement('style');
+buttonStyles.textContent = `
+    .btn-accept-proposal, .btn-reject-proposal, .btn-cancel-proposal {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0 4px;
+        margin-top: 10px;
+    }
+    
+    .btn-accept-proposal {
+        background-color: #42b72a;
+        color: white;
+    }
+    
+    .btn-accept-proposal:hover {
+        background-color: #36a420;
+        transform: translateY(-1px);
+    }
+    
+    .btn-accept-proposal:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .btn-reject-proposal {
+        background-color: #ff4444;
+        color: white;
+    }
+    
+    .btn-reject-proposal:hover {
+        background-color: #ff2222;
+        transform: translateY(-1px);
+    }
+    
+    .btn-reject-proposal:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .btn-cancel-proposal {
+        background-color: #ff9500;
+        color: white;
+    }
+    
+    .btn-cancel-proposal:hover {
+        background-color: #e68900;
+        transform: translateY(-1px);
+    }
+    
+    .btn-cancel-proposal:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .proposta-acoes {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 15px;
+        flex-wrap: wrap;
+    }
+    
+    /* Animações para o card */
+    .proposta-card {
+        transition: all 0.3s ease;
+    }
+    
+    .proposta-card.aceita {
+        border: 2px solid #42b72a;
+        background-color: #f0fff0;
+    }
+    
+    .proposta-card.recusada {
+        border: 2px solid #ff4444;
+        background-color: #fff0f0;
+    }
+`;
+document.head.appendChild(buttonStyles);
 
 function atualizarFooterProposta(proposta) {
     if (!propostaFooterTextElement) return;

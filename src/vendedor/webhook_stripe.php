@@ -14,16 +14,19 @@ $is_production = !in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1
 // Modo PRODUÇÃO (seu site ao vivo):
 // $endpoint_secret = 'whsec_SEU_ENDPOINT_SECRET_DE_PRODUCAO';
 
-// Para facilitar, você pode usar variáveis de ambiente
-$endpoint_secret = getenv('STRIPE_WEBHOOK_SECRET');
+
+// Busca a chave do webhook do .env conforme ambiente
+if ($is_production) {
+    $endpoint_secret = getenv('STRIPE_WEBHOOK_SECRET_LIVE');
+} else {
+    $endpoint_secret = getenv('STRIPE_WEBHOOK_SECRET_TEST');
+}
 
 if (!$endpoint_secret) {
-    // Fallback: Se não houver variável de ambiente, tenta detectar
-    if ($is_production) {
-        $endpoint_secret = 'whsec_Dr9wtGQ6ktoQYNFbQBkGVNqjOnfSfpeT'; // Substitua pela sua chave de produção
-    } else {
-        $endpoint_secret = 'whsec_41933476e94e79ffc132a4c87783cca46b6d6375479641f8114216ae85f2c4ae'; // Sua chave de teste
-    }
+    // Fallback: Se não houver variável de ambiente, lança erro
+    file_put_contents('log_webhook.txt', "[" . date('Y-m-d H:i:s') . "] ERRO: STRIPE_WEBHOOK_SECRET não definido no .env\n", FILE_APPEND);
+    http_response_code(500);
+    exit();
 }
 
 $payload = @file_get_contents('php://input');

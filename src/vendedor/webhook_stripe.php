@@ -7,12 +7,7 @@ require_once __DIR__ . '/../conexao.php';
 // Detectar o ambiente (produção ou teste) baseado no servidor
 $is_production = !in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1']) && $_SERVER['HTTP_HOST'] !== '';
 
-// IMPORTANTE: Use a chave correta baseado no ambiente
-// Modo TESTE (desenvolvimento em localhost):
-// $endpoint_secret = 'whsec_41933476e94e79ffc132a4c87783cca46b6d6375479641f8114216ae85f2c4ae';
 
-// Modo PRODUÇÃO (seu site ao vivo):
-// $endpoint_secret = 'whsec_SEU_ENDPOINT_SECRET_DE_PRODUCAO';
 
 
 // Busca a chave do webhook do .env conforme ambiente

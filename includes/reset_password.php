@@ -1,6 +1,9 @@
 <?php
 session_start();
-require_once '..src/conexao.php'; // Arquivo de conexão com o banco
+require_once '../src/conexao.php'; // Arquivo de conexão com o banco
+
+$database = new Database();
+$conn = $database->getConnection();
 
 $token = $_GET['token'] ?? '';
 $erro = '';
@@ -10,18 +13,16 @@ $email = '';
 if ($token) {
     $sql = "SELECT id, email, reset_token_expira FROM usuarios WHERE reset_token = ? AND reset_token_expira > NOW()";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $token);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt->execute([$token]);
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    if ($result->num_rows === 1) {
-        $usuario = $result->fetch_assoc();
+    if (count($result) === 1) {
+        $usuario = $result[0];
         $valido = true;
         $email = $usuario['email'];
     } else {
         $erro = "Link inválido ou expirado!";
     }
-    $stmt->close();
 }
 ?>
 <!DOCTYPE html>

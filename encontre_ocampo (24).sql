@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 20/01/2026 às 19:42
+-- Tempo de geração: 22/01/2026 às 16:24
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -201,7 +201,69 @@ INSERT INTO `chat_auditoria` (`id`, `conversa_id`, `usuario_id`, `acao`, `detalh
 (109, 15, 23, 'enviar_mensagem', 'Mensagem ID: 111 - Conteúdo: *???? NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** ', NULL, NULL, '2026-01-20 18:16:42'),
 (110, 15, 23, 'enviar_mensagem', 'Mensagem ID: 112 - Conteúdo: *???? PROPOSTA ATUALIZADA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 5', NULL, NULL, '2026-01-20 18:17:06'),
 (111, 15, 23, 'enviar_mensagem', 'Mensagem ID: 113 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10', NULL, NULL, '2026-01-20 18:26:52'),
-(112, 15, 23, 'enviar_mensagem', 'Mensagem ID: 114 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 9,', NULL, NULL, '2026-01-20 18:38:29');
+(112, 15, 23, 'enviar_mensagem', 'Mensagem ID: 114 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 9,', NULL, NULL, '2026-01-20 18:38:29'),
+(113, 15, 23, 'enviar_mensagem', 'Mensagem ID: 115 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-20 23:19:10'),
+(114, 15, 23, 'enviar_mensagem', 'Mensagem ID: 116 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 7,', NULL, NULL, '2026-01-20 23:19:29'),
+(115, 16, 23, 'enviar_mensagem', 'Mensagem ID: 117 - Conteúdo: oi', NULL, NULL, '2026-01-21 01:12:16'),
+(116, 16, 4, 'enviar_mensagem', 'Mensagem ID: 118 - Conteúdo: olá', NULL, NULL, '2026-01-21 01:12:23'),
+(117, 16, 23, 'enviar_mensagem', 'Mensagem ID: 119 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-21 01:14:54'),
+(118, 17, 23, 'enviar_mensagem', 'Mensagem ID: 120 - Conteúdo: oi', NULL, NULL, '2026-01-21 15:49:16'),
+(119, 17, 4, 'enviar_mensagem', 'Mensagem ID: 121 - Conteúdo: olá', NULL, NULL, '2026-01-21 15:49:32'),
+(120, 17, 23, 'enviar_mensagem', 'Mensagem ID: 122 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10', NULL, NULL, '2026-01-21 15:49:43'),
+(121, 17, 23, 'enviar_mensagem', 'Mensagem ID: 123 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-21 15:49:56'),
+(122, 17, 4, 'enviar_mensagem', 'Mensagem ID: 124 - Conteúdo: teste', NULL, NULL, '2026-01-21 15:50:10'),
+(123, 17, 23, 'enviar_mensagem', 'Mensagem ID: 125 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 9,', NULL, NULL, '2026-01-21 15:50:41'),
+(124, 17, 4, 'enviar_mensagem', 'Mensagem ID: 126 - Conteúdo: a', NULL, NULL, '2026-01-21 15:51:05'),
+(125, 17, 23, 'enviar_mensagem', 'Mensagem ID: 127 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-21 15:57:30'),
+(126, 17, 4, 'enviar_mensagem', 'Mensagem ID: 128 - Conteúdo: não mudou', NULL, NULL, '2026-01-21 15:57:52'),
+(127, 17, 4, 'enviar_mensagem', 'Mensagem ID: 129 - Conteúdo: oi', NULL, NULL, '2026-01-21 16:06:04'),
+(128, 17, 23, 'enviar_mensagem', 'Mensagem ID: 130 - Conteúdo: olá', NULL, NULL, '2026-01-21 16:06:07'),
+(129, 17, 23, 'enviar_mensagem', 'Mensagem ID: 131 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 5,', NULL, NULL, '2026-01-21 16:06:15'),
+(130, 17, 23, 'enviar_mensagem', 'Mensagem ID: 132 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-21 16:07:27'),
+(131, 17, 23, 'enviar_mensagem', 'Mensagem ID: 133 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 3,', NULL, NULL, '2026-01-21 16:30:10'),
+(132, 17, 4, 'enviar_mensagem', 'Mensagem ID: 134 - Conteúdo: aqui nada', NULL, NULL, '2026-01-21 16:30:19'),
+(133, 17, 4, 'enviar_mensagem', 'Mensagem ID: 135 - Conteúdo: oi', NULL, NULL, '2026-01-21 17:01:26'),
+(134, 17, 23, 'enviar_mensagem', 'Mensagem ID: 136 - Conteúdo: oi', NULL, NULL, '2026-01-21 17:01:28'),
+(135, 17, 23, 'enviar_mensagem', 'Mensagem ID: 137 - Conteúdo: oi', NULL, NULL, '2026-01-21 17:01:35'),
+(136, 17, 23, 'enviar_mensagem', 'Mensagem ID: 138 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-21 17:01:47'),
+(137, 17, 23, 'enviar_mensagem', 'Mensagem ID: 139 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-21 17:02:29'),
+(138, 17, 23, 'enviar_mensagem', 'Mensagem ID: 140 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-21 17:10:48'),
+(139, 18, 23, 'enviar_mensagem', 'Mensagem ID: 141 - Conteúdo: oi', NULL, NULL, '2026-01-21 17:12:04'),
+(140, 18, 4, 'enviar_mensagem', 'Mensagem ID: 142 - Conteúdo: olá', NULL, NULL, '2026-01-21 17:12:10'),
+(141, 18, 23, 'enviar_mensagem', 'Mensagem ID: 143 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-21 17:12:19'),
+(142, 18, 23, 'enviar_mensagem', 'Mensagem ID: 144 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10', NULL, NULL, '2026-01-21 17:12:52'),
+(143, 18, 23, 'enviar_mensagem', 'Mensagem ID: 145 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 70', NULL, NULL, '2026-01-21 17:15:45'),
+(144, 18, 23, 'enviar_mensagem', 'Mensagem ID: 146 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-21 17:16:45'),
+(145, 18, 23, 'enviar_mensagem', 'Mensagem ID: 147 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-21 17:57:34'),
+(146, 18, 23, 'enviar_mensagem', 'Mensagem ID: 148 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10', NULL, NULL, '2026-01-21 17:59:44'),
+(147, 18, 23, 'enviar_mensagem', 'Mensagem ID: 149 - Conteúdo: ???? *PROPOSTA RECUSADA*\n\nA proposta de compra foi cancelou.\n**ID da proposta:** 17\n**Status:** ❌ Re', NULL, NULL, '2026-01-21 18:07:56'),
+(148, 18, 23, 'enviar_mensagem', 'Mensagem ID: 150 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-21 18:09:03'),
+(149, 18, 23, 'enviar_mensagem', 'Mensagem ID: 151 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10', NULL, NULL, '2026-01-21 18:10:26'),
+(150, 18, 4, 'enviar_mensagem', 'Mensagem ID: 152 - Conteúdo: oi', NULL, NULL, '2026-01-21 18:10:36'),
+(151, 18, 4, 'enviar_mensagem', 'Mensagem ID: 153 - Conteúdo: ???? *PROPOSTA ACEITA*\n\nA proposta de compra foi aceitou.\n**ID da proposta:** 18\n**Status:** ✅ Aceit', NULL, NULL, '2026-01-21 18:20:58'),
+(152, 18, 23, 'enviar_mensagem', 'Mensagem ID: 154 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-21 18:21:33'),
+(153, 18, 4, 'enviar_mensagem', 'Mensagem ID: 155 - Conteúdo: ???? *PROPOSTA RECUSADA*\n\nA proposta de compra foi recusada.\n**ID da proposta:** 19\n**Status:** ❌ Re', NULL, NULL, '2026-01-21 18:21:39'),
+(154, 18, 23, 'enviar_mensagem', 'Mensagem ID: 156 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-21 18:22:44'),
+(155, 18, 23, 'enviar_mensagem', 'Mensagem ID: 157 - Conteúdo: ???? *PROPOSTA RECUSADA*\n\nA proposta de compra foi cancelada.\n**ID da proposta:** 20\n**Status:** ❌ R', NULL, NULL, '2026-01-21 18:22:48'),
+(156, 18, 23, 'enviar_mensagem', 'Mensagem ID: 158 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-21 18:24:29'),
+(157, 18, 23, 'enviar_mensagem', 'Mensagem ID: 159 - Conteúdo: ???? *PROPOSTA RECUSADA*\n\nA proposta de compra foi cancelou.\n**ID da proposta:** 21\n**Status:** ❌ Re', NULL, NULL, '2026-01-21 18:30:12'),
+(158, 18, 23, 'enviar_mensagem', 'Mensagem ID: 160 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 9,', NULL, NULL, '2026-01-21 18:30:27'),
+(159, 18, 4, 'enviar_mensagem', 'Mensagem ID: 161 - Conteúdo: oi', NULL, NULL, '2026-01-21 18:30:51'),
+(160, 18, 23, 'enviar_mensagem', 'Mensagem ID: 162 - Conteúdo: ???? *PROPOSTA RECUSADA*\n\nA proposta de compra foi cancelou.\n**ID da proposta:** 22\n**Status:** ❌ Re', NULL, NULL, '2026-01-21 18:33:08'),
+(161, 18, 23, 'enviar_mensagem', 'Mensagem ID: 163 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,', NULL, NULL, '2026-01-21 18:33:21'),
+(162, 18, 4, 'enviar_mensagem', 'Mensagem ID: 164 - Conteúdo: oi', NULL, NULL, '2026-01-21 18:49:23'),
+(163, 18, 23, 'enviar_mensagem', 'Mensagem ID: 165 - Conteúdo: olá', NULL, NULL, '2026-01-21 18:49:28'),
+(164, 19, 23, 'enviar_mensagem', 'Mensagem ID: 166 - Conteúdo: oi', NULL, NULL, '2026-01-21 19:07:02'),
+(165, 19, 23, 'enviar_mensagem', 'Mensagem ID: 167 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste 1\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 0,', NULL, NULL, '2026-01-21 19:07:16'),
+(166, 19, 23, 'enviar_mensagem', 'Mensagem ID: 168 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste 1\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 0,', NULL, NULL, '2026-01-21 19:07:38'),
+(167, 19, 23, 'enviar_mensagem', 'Mensagem ID: 169 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste 1\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 0,', NULL, NULL, '2026-01-21 19:08:28'),
+(168, 19, 23, 'enviar_mensagem', 'Mensagem ID: 170 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste 1\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 0,', NULL, NULL, '2026-01-21 19:10:18'),
+(169, 19, 23, 'enviar_mensagem', 'Mensagem ID: 171 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste 1\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 0,', NULL, NULL, '2026-01-21 19:10:39'),
+(170, 19, 23, 'enviar_mensagem', 'Mensagem ID: 172 - Conteúdo: oi', NULL, NULL, '2026-01-21 19:11:56'),
+(171, 19, 4, 'enviar_mensagem', 'Mensagem ID: 173 - Conteúdo: olá', NULL, NULL, '2026-01-21 19:11:59'),
+(172, 19, 4, 'enviar_mensagem', 'Mensagem ID: 174 - Conteúdo: certo', NULL, NULL, '2026-01-21 19:12:01'),
+(173, 19, 23, 'enviar_mensagem', 'Mensagem ID: 175 - Conteúdo: certo', NULL, NULL, '2026-01-21 19:12:03'),
+(174, 18, 23, 'enviar_mensagem', 'Mensagem ID: 176 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 2,', NULL, NULL, '2026-01-21 19:15:12');
 
 -- --------------------------------------------------------
 
@@ -244,7 +306,8 @@ INSERT INTO `chat_conversas` (`id`, `produto_id`, `comprador_id`, `vendedor_id`,
 (8, 25, 3, 4, 'produzindo', '2025-12-16 17:30:27', 1, 0, 'ativo', '2025-12-16 17:30:09', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL),
 (9, 20, 3, 4, 'ok', '2025-12-16 20:39:22', 1, 0, 'ativo', '2025-12-16 20:38:44', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL),
 (10, 24, 3, 4, 'teste', '2025-12-16 21:08:26', 0, 1, 'ativo', '2025-12-16 21:08:06', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL),
-(15, 16, 23, 4, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 9,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Retirada pelo comprador\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 9,00\n\n**ID da proposta:** 11', '2026-01-20 18:38:29', 1, 0, 'ativo', '2026-01-20 18:16:12', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
+(18, 16, 23, 4, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 2,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Frete por conta do vendedor\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 2,00\n\n**ID da proposta:** 29', '2026-01-21 19:15:12', 1, 0, 'ativo', '2026-01-21 17:12:02', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL),
+(19, 15, 23, 4, 'certo', '2026-01-21 19:12:03', 1, 0, 'ativo', '2026-01-21 19:07:00', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -295,12 +358,42 @@ INSERT INTO `chat_mensagens` (`id`, `conversa_id`, `remetente_id`, `mensagem`, `
 (30, 9, 3, 'ok', 'texto', NULL, 1, '2025-12-16 20:39:22', 0, NULL, NULL, 'texto', NULL, NULL),
 (31, 10, 3, 'ok', 'texto', NULL, 1, '2025-12-16 21:08:10', 0, NULL, NULL, 'texto', NULL, NULL),
 (32, 10, 4, 'teste', 'texto', NULL, 1, '2025-12-16 21:08:26', 0, NULL, NULL, 'texto', NULL, NULL),
-(109, 15, 23, 'a', 'texto', NULL, 1, '2026-01-20 18:16:18', 0, NULL, NULL, 'texto', NULL, NULL),
-(110, 15, 4, 'b', 'texto', NULL, 1, '2026-01-20 18:16:33', 0, NULL, NULL, 'texto', NULL, NULL),
-(111, 15, 23, '*???? NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Frete por conta do vendedor\n**Valor do frete:** R$ 10,00\n**Valor total:** R$ 18,00\n\n**ID da proposta:** 9', 'texto', NULL, 1, '2026-01-20 18:16:42', 0, NULL, NULL, 'texto', NULL, NULL),
-(112, 15, 23, '*???? PROPOSTA ATUALIZADA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 5,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Frete por conta do vendedor\n**Valor do frete:** R$ 3,00\n**Valor total:** R$ 8,00\n\n**ID da proposta:** 9', 'texto', NULL, 1, '2026-01-20 18:17:06', 0, NULL, NULL, 'texto', NULL, NULL),
-(113, 15, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Retirada pelo comprador\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 10,00\n\n**ID da proposta:** 10', 'texto', NULL, 1, '2026-01-20 18:26:52', 0, NULL, NULL, 'texto', NULL, NULL),
-(114, 15, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 9,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Retirada pelo comprador\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 9,00\n\n**ID da proposta:** 11', 'texto', NULL, 1, '2026-01-20 18:38:29', 0, NULL, NULL, 'texto', NULL, NULL);
+(141, 18, 23, 'oi', 'texto', NULL, 1, '2026-01-21 17:12:04', 0, NULL, NULL, 'texto', NULL, NULL),
+(142, 18, 4, 'olá', 'texto', NULL, 1, '2026-01-21 17:12:10', 0, NULL, NULL, 'texto', NULL, NULL),
+(143, 18, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Retirada pelo comprador\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 8,00\n\n**ID da proposta:** 17', 'texto', NULL, 1, '2026-01-21 17:12:19', 0, NULL, NULL, 'texto', NULL, NULL),
+(144, 18, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10,00\n**Forma de pagamento:** Pagamento na Entrega\n**Opção de frete:** Frete por conta do vendedor\n**Valor do frete:** R$ 5,00\n**Valor total:** R$ 15,00\n\n**ID da proposta:** 17', 'texto', NULL, 1, '2026-01-21 17:12:52', 0, NULL, NULL, 'texto', NULL, NULL),
+(145, 18, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 70,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Buscar transportador na plataforma\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 70,00\n\n**ID da proposta:** 17', 'texto', NULL, 1, '2026-01-21 17:15:45', 0, NULL, NULL, 'texto', NULL, NULL),
+(146, 18, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Buscar transportador na plataforma\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 8,00\n\n**ID da proposta:** 17', 'texto', NULL, 1, '2026-01-21 17:16:45', 0, NULL, NULL, 'texto', NULL, NULL),
+(147, 18, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Buscar transportador na plataforma\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 8,00\n\n**ID da proposta:** 17', 'texto', NULL, 1, '2026-01-21 17:57:34', 0, NULL, NULL, 'texto', NULL, NULL),
+(148, 18, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Frete por conta do vendedor\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 10,00\n\n**ID da proposta:** 17', 'texto', NULL, 1, '2026-01-21 17:59:44', 0, NULL, NULL, 'texto', NULL, NULL),
+(149, 18, 23, '???? *PROPOSTA RECUSADA*\n\nA proposta de compra foi cancelou.\n**ID da proposta:** 17\n**Status:** ❌ Recusada', 'texto', NULL, 1, '2026-01-21 18:07:56', 0, NULL, NULL, 'texto', NULL, NULL),
+(150, 18, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Retirada pelo comprador\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 8,00\n\n**ID da proposta:** 18', 'texto', NULL, 1, '2026-01-21 18:09:03', 0, NULL, NULL, 'texto', NULL, NULL),
+(151, 18, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Frete por conta do vendedor\n**Valor do frete:** R$ 5,00\n**Valor total:** R$ 15,00\n\n**ID da proposta:** 18', 'texto', NULL, 1, '2026-01-21 18:10:26', 0, NULL, NULL, 'texto', NULL, NULL),
+(152, 18, 4, 'oi', 'texto', NULL, 1, '2026-01-21 18:10:36', 0, NULL, NULL, 'texto', NULL, NULL),
+(153, 18, 4, '???? *PROPOSTA ACEITA*\n\nA proposta de compra foi aceitou.\n**ID da proposta:** 18\n**Status:** ✅ Aceita', 'texto', NULL, 1, '2026-01-21 18:20:58', 0, NULL, NULL, 'texto', NULL, NULL),
+(154, 18, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Frete por conta do vendedor\n**Valor do frete:** R$ 3,00\n**Valor total:** R$ 11,00\n\n**ID da proposta:** 19', 'texto', NULL, 1, '2026-01-21 18:21:33', 0, NULL, NULL, 'texto', NULL, NULL),
+(155, 18, 4, '???? *PROPOSTA RECUSADA*\n\nA proposta de compra foi recusada.\n**ID da proposta:** 19\n**Status:** ❌ Recusada', 'texto', NULL, 1, '2026-01-21 18:21:39', 0, NULL, NULL, 'texto', NULL, NULL),
+(156, 18, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Buscar transportador na plataforma\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 8,00\n\n**ID da proposta:** 20', 'texto', NULL, 1, '2026-01-21 18:22:44', 0, NULL, NULL, 'texto', NULL, NULL),
+(157, 18, 23, '???? *PROPOSTA RECUSADA*\n\nA proposta de compra foi cancelada.\n**ID da proposta:** 20\n**Status:** ❌ Recusada', 'texto', NULL, 1, '2026-01-21 18:22:48', 0, NULL, NULL, 'texto', NULL, NULL),
+(158, 18, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Frete por conta do vendedor\n**Valor do frete:** R$ 2,00\n**Valor total:** R$ 10,00\n\n**ID da proposta:** 21', 'texto', NULL, 1, '2026-01-21 18:24:29', 0, NULL, NULL, 'texto', NULL, NULL),
+(159, 18, 23, '???? *PROPOSTA RECUSADA*\n\nA proposta de compra foi cancelou.\n**ID da proposta:** 21\n**Status:** ❌ Recusada', 'texto', NULL, 1, '2026-01-21 18:30:12', 0, NULL, NULL, 'texto', NULL, NULL),
+(160, 18, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 9,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Retirada pelo comprador\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 9,00\n\n**ID da proposta:** 22', 'texto', NULL, 1, '2026-01-21 18:30:27', 0, NULL, NULL, 'texto', NULL, NULL),
+(161, 18, 4, 'oi', 'texto', NULL, 1, '2026-01-21 18:30:51', 0, NULL, NULL, 'texto', NULL, NULL),
+(162, 18, 23, '???? *PROPOSTA RECUSADA*\n\nA proposta de compra foi cancelou.\n**ID da proposta:** 22\n**Status:** ❌ Recusada', 'texto', NULL, 1, '2026-01-21 18:33:08', 0, NULL, NULL, 'texto', NULL, NULL),
+(163, 18, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 8,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Buscar transportador na plataforma\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 8,00\n\n**ID da proposta:** 23', 'texto', NULL, 1, '2026-01-21 18:33:21', 0, NULL, NULL, 'texto', NULL, NULL),
+(164, 18, 4, 'oi', 'texto', NULL, 1, '2026-01-21 18:49:23', 0, NULL, NULL, 'texto', NULL, NULL),
+(165, 18, 23, 'olá', 'texto', NULL, 1, '2026-01-21 18:49:28', 0, NULL, NULL, 'texto', NULL, NULL),
+(166, 19, 23, 'oi', 'texto', NULL, 1, '2026-01-21 19:07:02', 0, NULL, NULL, 'texto', NULL, NULL),
+(167, 19, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste 1\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 0,01\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Retirada pelo comprador\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 0,01\n\n**ID da proposta:** 24', 'texto', NULL, 1, '2026-01-21 19:07:16', 0, NULL, NULL, 'texto', NULL, NULL),
+(168, 19, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste 1\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 0,01\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Frete por conta do vendedor\n**Valor do frete:** R$ 10,00\n**Valor total:** R$ 10,01\n\n**ID da proposta:** 25', 'texto', NULL, 1, '2026-01-21 19:07:38', 0, NULL, NULL, 'texto', NULL, NULL),
+(169, 19, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste 1\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 0,01\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Buscar transportador na plataforma\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 0,01\n\n**ID da proposta:** 26', 'texto', NULL, 1, '2026-01-21 19:08:28', 0, NULL, NULL, 'texto', NULL, NULL),
+(170, 19, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste 1\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 0,01\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Buscar transportador na plataforma\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 0,01\n\n**ID da proposta:** 27', 'texto', NULL, 1, '2026-01-21 19:10:18', 0, NULL, NULL, 'texto', NULL, NULL),
+(171, 19, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste 1\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 0,01\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Buscar transportador na plataforma\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 0,01\n\n**ID da proposta:** 28', 'texto', NULL, 1, '2026-01-21 19:10:39', 0, NULL, NULL, 'texto', NULL, NULL),
+(172, 19, 23, 'oi', 'texto', NULL, 1, '2026-01-21 19:11:56', 0, NULL, NULL, 'texto', NULL, NULL),
+(173, 19, 4, 'olá', 'texto', NULL, 1, '2026-01-21 19:11:59', 0, NULL, NULL, 'texto', NULL, NULL),
+(174, 19, 4, 'certo', 'texto', NULL, 1, '2026-01-21 19:12:01', 0, NULL, NULL, 'texto', NULL, NULL),
+(175, 19, 23, 'certo', 'texto', NULL, 1, '2026-01-21 19:12:03', 0, NULL, NULL, 'texto', NULL, NULL),
+(176, 18, 23, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** teste x\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 2,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Frete por conta do vendedor\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 2,00\n\n**ID da proposta:** 29', 'texto', NULL, 1, '2026-01-21 19:15:12', 0, NULL, NULL, 'texto', NULL, NULL);
 
 --
 -- Acionadores `chat_mensagens`
@@ -351,7 +444,7 @@ INSERT INTO `compradores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, 
 (6, 11, 'cpf', 'Rondon', NULL, '41111584800', NULL, '13211873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '11996563500', NULL, 'free'),
 (9, 17, 'cpf', 'Jorge', NULL, '166.076.628-11', NULL, '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '(11) 99656-3500', '', 'free'),
 (10, 18, 'cpf', 'matue', NULL, '166.076.628-11', NULL, '13211-873', 'Rua Seis', '206', '', 'SP', 'Jundiaí', '(11) 99656-3500', '', 'free'),
-(11, 23, 'cpf', 'Comprador2', '', '239.186.590-20', '', '01518-000', 'Rua Justo Azambuja', '79', '', 'SP', 'São Paulo', '(11) 11111-1111', '', 'free');
+(11, 23, 'cpf', 'Comprador2', NULL, '239.186.590-20', '', '01518-000', 'Rua Justo Azambuja', '79', '', 'SP', 'São Paulo', '(11) 11111-1111', '', 'free');
 
 -- --------------------------------------------------------
 
@@ -444,10 +537,41 @@ CREATE TABLE `notificacoes` (
 --
 
 INSERT INTO `notificacoes` (`id`, `usuario_id`, `mensagem`, `tipo`, `lida`, `url`, `data_criacao`) VALUES
-(67, 4, '???? Nova proposta para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=15', '2026-01-20 18:16:42'),
-(68, 4, '???? Proposta atualizada para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=15', '2026-01-20 18:17:06'),
-(69, 4, 'Nova proposta para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=15', '2026-01-20 18:26:52'),
-(70, 4, 'Nova proposta para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=15', '2026-01-20 18:38:29');
+(74, 4, 'Nova proposta para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=17', '2026-01-21 15:49:43'),
+(75, 4, 'Proposta atualizada para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=17', '2026-01-21 15:49:56'),
+(76, 4, 'Proposta atualizada para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=17', '2026-01-21 15:50:41'),
+(77, 4, 'Proposta atualizada para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=17', '2026-01-21 15:57:30'),
+(78, 4, 'Proposta atualizada para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=17', '2026-01-21 16:06:15'),
+(79, 4, 'Proposta atualizada para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=17', '2026-01-21 16:07:27'),
+(80, 4, 'Proposta atualizada para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=17', '2026-01-21 16:30:10'),
+(81, 4, 'Proposta atualizada para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=17', '2026-01-21 17:01:47'),
+(82, 4, 'Proposta atualizada para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=17', '2026-01-21 17:02:29'),
+(83, 4, 'Nova proposta para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=17', '2026-01-21 17:10:48'),
+(84, 4, 'Nova proposta para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=18', '2026-01-21 17:12:19'),
+(85, 4, 'Proposta atualizada para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=18', '2026-01-21 17:12:52'),
+(86, 4, 'Proposta atualizada para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=18', '2026-01-21 17:15:45'),
+(87, 4, 'Proposta atualizada para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=18', '2026-01-21 17:16:45'),
+(88, 4, 'Proposta atualizada para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=18', '2026-01-21 17:57:34'),
+(89, 4, 'Proposta atualizada para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=18', '2026-01-21 17:59:44'),
+(90, 4, 'Comprador cancelou sua proposta para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16', '2026-01-21 18:07:56'),
+(91, 4, 'Nova proposta para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=18', '2026-01-21 18:09:03'),
+(92, 4, 'Proposta atualizada para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=18', '2026-01-21 18:10:26'),
+(93, 23, 'Vendedor aceitou sua proposta para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16', '2026-01-21 18:20:58'),
+(94, 4, 'Nova proposta para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=18', '2026-01-21 18:21:33'),
+(95, 23, 'Vendedor recusada sua proposta para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16', '2026-01-21 18:21:39'),
+(96, 4, 'Nova proposta para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=18', '2026-01-21 18:22:44'),
+(97, 4, 'Comprador cancelada sua proposta para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16', '2026-01-21 18:22:48'),
+(98, 4, 'Nova proposta para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=18', '2026-01-21 18:24:29'),
+(99, 4, 'Comprador cancelou sua proposta para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16', '2026-01-21 18:30:12'),
+(100, 4, 'Nova proposta para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=18', '2026-01-21 18:30:27'),
+(101, 4, 'Comprador cancelou sua proposta para \'teste x\'', 'info', 0, '../../src/chat/chat.php?produto_id=16', '2026-01-21 18:33:08'),
+(102, 4, 'Nova proposta para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=18', '2026-01-21 18:33:21'),
+(103, 4, 'Nova proposta para \'teste 1\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=15&conversa_id=19', '2026-01-21 19:07:16'),
+(104, 4, 'Nova proposta para \'teste 1\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=15&conversa_id=19', '2026-01-21 19:07:38'),
+(105, 4, 'Nova proposta para \'teste 1\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=15&conversa_id=19', '2026-01-21 19:08:28'),
+(106, 4, 'Nova proposta para \'teste 1\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=15&conversa_id=19', '2026-01-21 19:10:18'),
+(107, 4, 'Nova proposta para \'teste 1\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=15&conversa_id=19', '2026-01-21 19:10:39'),
+(108, 4, 'Nova proposta para \'teste x\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=16&conversa_id=18', '2026-01-21 19:15:12');
 
 -- --------------------------------------------------------
 
@@ -536,8 +660,8 @@ CREATE TABLE `produtos` (
 --
 
 INSERT INTO `produtos` (`id`, `vendedor_id`, `nome`, `descricao`, `preco`, `modo_precificacao`, `embalagem_peso_kg`, `embalagem_unidades`, `estoque_unidades`, `preco_desconto`, `desconto_percentual`, `desconto_ativo`, `desconto_data_inicio`, `desconto_data_fim`, `categoria`, `imagem_url`, `estoque`, `unidade_medida`, `paletizado`, `status`, `data_criacao`, `data_atualizacao`) VALUES
-(15, 1, 'teste 1', '1', 0.01, 'por_quilo', NULL, NULL, 0, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_69398052be9755.34966564.jpeg', 1, NULL, 0, 'ativo', '2025-12-10 14:14:42', '2025-12-10 14:15:18'),
-(16, 1, 'teste x', '', 10.00, 'por_quilo', NULL, NULL, 0, 8.00, 20.00, 1, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_69398067b3f823.59696952.jpg', 1, NULL, 0, 'ativo', '2025-12-10 14:15:03', '2025-12-11 14:50:11'),
+(15, 1, 'teste 1', '1', 0.01, 'por_quilo', NULL, NULL, 10, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_69398052be9755.34966564.jpeg', 0, NULL, 0, 'ativo', '2025-12-10 14:14:42', '2026-01-21 19:13:00'),
+(16, 1, 'teste x', '', 10.00, 'por_quilo', NULL, NULL, NULL, 8.00, 20.00, 1, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_69398067b3f823.59696952.jpg', 9, 'kg', 0, 'ativo', '2025-12-10 14:15:03', '2026-01-21 19:15:20'),
 (17, 1, 'testenovop', '1', 0.01, 'por_quilo', NULL, NULL, 0, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_693983f26c4a61.72410777.jpg', 1, NULL, 0, 'ativo', '2025-12-10 14:30:10', NULL),
 (19, 2, 'testando', '', 1.11, 'por_quilo', NULL, NULL, 0, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_6939a7f7bde745.04338148.jpeg', 11, NULL, 0, 'ativo', '2025-12-10 17:03:51', NULL),
 (20, 1, 'novo anúncio', 'teste novo *anúncio*', 10.00, 'caixa_quilos', 2.000, NULL, NULL, NULL, 0.00, 0, NULL, NULL, 'Frutas Cítricas', '../uploads/produtos/prod_6941720cc53d18.11334749.jpg', 25, 'caixa', 1, 'ativo', '2025-12-16 14:51:56', NULL),
@@ -616,9 +740,19 @@ CREATE TABLE `propostas` (
 --
 
 INSERT INTO `propostas` (`ID`, `comprador_id`, `vendedor_id`, `produto_id`, `data_inicio`, `data_atualizacao`, `preco_proposto`, `quantidade_proposta`, `forma_pagamento`, `opcao_frete`, `valor_frete`, `valor_total`, `status`) VALUES
-(9, 23, 4, 16, '2026-01-20 18:16:42', '2026-01-20 18:17:06', 5.00, 1, 'à vista', 'vendedor', 3.00, 8.00, 'negociacao'),
-(10, 23, 4, 16, '2026-01-20 18:26:52', '2026-01-20 18:26:52', 10.00, 1, 'à vista', 'comprador', 0.00, 10.00, 'negociacao'),
-(11, 23, 4, 16, '2026-01-20 18:38:29', '2026-01-20 18:38:29', 9.00, 1, 'à vista', 'comprador', 0.00, 9.00, 'negociacao');
+(17, 23, 4, 16, '2026-01-21 17:12:19', '2026-01-21 18:07:56', 10.00, 1, 'à vista', 'vendedor', 0.00, 10.00, 'recusada'),
+(18, 23, 4, 16, '2026-01-21 18:09:03', '2026-01-21 18:20:58', 10.00, 1, 'à vista', 'vendedor', 5.00, 15.00, 'aceita'),
+(19, 23, 4, 16, '2026-01-21 18:21:33', '2026-01-21 18:21:39', 8.00, 1, 'à vista', 'vendedor', 3.00, 11.00, 'recusada'),
+(20, 23, 4, 16, '2026-01-21 18:22:44', '2026-01-21 18:22:48', 8.00, 1, 'à vista', 'entregador', 0.00, 8.00, 'recusada'),
+(21, 23, 4, 16, '2026-01-21 18:24:29', '2026-01-21 18:30:12', 8.00, 1, 'à vista', 'vendedor', 2.00, 10.00, 'recusada'),
+(22, 23, 4, 16, '2026-01-21 18:30:27', '2026-01-21 18:33:08', 9.00, 1, 'à vista', 'comprador', 0.00, 9.00, 'recusada'),
+(23, 23, 4, 16, '2026-01-21 18:33:21', '2026-01-21 19:05:54', 8.00, 1, 'à vista', 'entregador', 0.00, 8.00, 'aceita'),
+(24, 23, 4, 15, '2026-01-21 19:07:16', '2026-01-21 19:07:24', 0.01, 1, 'à vista', 'comprador', 0.00, 0.01, 'recusada'),
+(25, 23, 4, 15, '2026-01-21 19:07:38', '2026-01-21 19:07:44', 0.01, 1, 'à vista', 'vendedor', 10.00, 10.01, 'recusada'),
+(26, 23, 4, 15, '2026-01-21 19:08:28', '2026-01-21 19:10:03', 0.01, 1, 'à vista', 'entregador', 0.00, 0.01, 'recusada'),
+(27, 23, 4, 15, '2026-01-21 19:10:18', '2026-01-21 19:10:25', 0.01, 1, 'à vista', 'entregador', 0.00, 0.01, 'recusada'),
+(28, 23, 4, 15, '2026-01-21 19:10:39', '2026-01-21 19:10:46', 0.01, 1, 'à vista', 'entregador', 0.00, 0.01, 'aceita'),
+(29, 23, 4, 16, '2026-01-21 19:15:12', '2026-01-21 19:15:20', 2.00, 1, 'à vista', 'vendedor', 0.00, 2.00, 'aceita');
 
 -- --------------------------------------------------------
 
@@ -640,15 +774,6 @@ CREATE TABLE `propostas_comprador` (
   `finalizada` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Despejando dados para a tabela `propostas_comprador`
---
-
-INSERT INTO `propostas_comprador` (`ID`, `comprador_id`, `produto_id`, `preco_proposto`, `quantidade_proposta`, `data_proposta`, `status`, `forma_pagamento`, `opcao_frete`, `valor_frete`, `finalizada`) VALUES
-(14, 11, 16, 5.00, 1, '2026-01-20 18:17:06', 'enviada', 'à vista', 'vendedor', 3.00, 0),
-(15, 11, 16, 10.00, 1, '2026-01-20 18:26:52', 'enviada', 'à vista', 'comprador', 0.00, 0),
-(16, 11, 16, 9.00, 1, '2026-01-20 18:38:29', 'enviada', 'à vista', 'comprador', 0.00, 0);
-
 -- --------------------------------------------------------
 
 --
@@ -668,15 +793,6 @@ CREATE TABLE `propostas_negociacao` (
   `forma_pagamento` enum('à vista','entrega') DEFAULT NULL,
   `opcao_frete` enum('vendedor','comprador','entregador') DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Despejando dados para a tabela `propostas_negociacao`
---
-
-INSERT INTO `propostas_negociacao` (`ID`, `proposta_comprador_id`, `proposta_vendedor_id`, `produto_id`, `data_inicio`, `data_atualizacao`, `valor_total`, `quantidade_final`, `status`, `forma_pagamento`, `opcao_frete`) VALUES
-(22, 14, NULL, 16, '2026-01-20 18:16:42', '2026-01-20 18:17:06', 8.00, 1, 'negociacao', 'à vista', 'vendedor'),
-(23, 15, NULL, 16, '2026-01-20 18:26:52', '2026-01-20 18:26:52', 10.00, 1, 'negociacao', 'à vista', 'comprador'),
-(24, 16, NULL, 16, '2026-01-20 18:38:29', '2026-01-20 18:38:29', 9.00, 1, 'negociacao', 'à vista', 'comprador');
 
 -- --------------------------------------------------------
 
@@ -1188,19 +1304,19 @@ ALTER TABLE `admin_acoes`
 -- AUTO_INCREMENT de tabela `chat_auditoria`
 --
 ALTER TABLE `chat_auditoria`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=113;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=175;
 
 --
 -- AUTO_INCREMENT de tabela `chat_conversas`
 --
 ALTER TABLE `chat_conversas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT de tabela `chat_mensagens`
 --
 ALTER TABLE `chat_mensagens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=115;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=177;
 
 --
 -- AUTO_INCREMENT de tabela `compradores`
@@ -1236,7 +1352,7 @@ ALTER TABLE `mensagens`
 -- AUTO_INCREMENT de tabela `notificacoes`
 --
 ALTER TABLE `notificacoes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
 
 --
 -- AUTO_INCREMENT de tabela `pagamentos`
@@ -1266,19 +1382,19 @@ ALTER TABLE `produto_imagens`
 -- AUTO_INCREMENT de tabela `propostas`
 --
 ALTER TABLE `propostas`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT de tabela `propostas_comprador`
 --
 ALTER TABLE `propostas_comprador`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de tabela `propostas_negociacao`
 --
 ALTER TABLE `propostas_negociacao`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT de tabela `propostas_vendedor`

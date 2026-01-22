@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } elseif ($_POST['action'] === 'excluir_conversa') {
                     if ($tipo_chat === 'vendedor') {
                         // Vendedor exclui sua visualização
-                        // Também removemos dos favoritos/arquivados para limpar o status
+
                         $sql = "UPDATE chat_conversas SET favorito_vendedor = 0, vendedor_excluiu = 1 WHERE id = :conversa_id";
                     } else {
                         // Comprador exclui sua visualização

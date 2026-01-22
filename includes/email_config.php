@@ -1,8 +1,13 @@
 <?php
+// Carregar variáveis de ambiente
+require_once '../vendor/autoload.php'; // Carregar autoload do Composer
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv->load();
+
 // Carregar PHPMailer manualmente
-require_once __DIR__ . '/../PHPMailer-master/src/PHPMailer.php';
-require_once __DIR__ . '/../PHPMailer-master/src/SMTP.php';
-require_once __DIR__ . '/../PHPMailer-master/src/Exception.php';
+require_once __DIR__ . '/PHPMailer-master/src/PHPMailer.php';
+require_once __DIR__ . '/PHPMailer-master/src/SMTP.php';
+require_once __DIR__ . '/PHPMailer-master/src/Exception.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
@@ -12,17 +17,17 @@ function enviarEmailRecuperacao($destinatario, $nome, $reset_link) {
     $mail = new PHPMailer(true);
     
     try {
-        // Configurações do servidor SMTP da Hostinger
+        // Configurações do servidor SMTP
         $mail->isSMTP();
-        $mail->Host = 'smtp.hostinger.com'; // SMTP da Hostinger
+        $mail->Host = $_ENV['SMTP_HOST'];
         $mail->SMTPAuth = true;
-        $mail->Username = 'seuemail@seudominio.com.br'; // Seu email profissional
-        $mail->Password = 'sua_senha_segura'; // Senha do email
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
+        $mail->Username = $_ENV['SMTP_USERNAME'];
+        $mail->Password = $_ENV['SMTP_PASSWORD'];
+        $mail->SMTPSecure = $_ENV['SMTP_ENCRYPTION'] === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port = $_ENV['SMTP_PORT'];
         
         // Remetente e destinatário
-        $mail->setFrom('seuemail@seudominio.com.br', 'Encontre o Campo');
+        $mail->setFrom($_ENV['SMTP_USERNAME'], 'Encontre o Campo');
         $mail->addAddress($destinatario, $nome);
         
         // Conteúdo do email

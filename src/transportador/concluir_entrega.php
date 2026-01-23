@@ -75,16 +75,165 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['foto_comprovante']))
     <link rel="stylesheet" href="../css/transportador/dashboard.css">
 </head>
 <body>
-    <h1>Concluir Entrega #<?php echo $entrega_id; ?></h1>
-    <?php if ($erro): ?><div style="color:red;"><?php echo $erro; ?></div><?php endif; ?>
-    <?php if ($sucesso): ?><div style="color:green;"><?php echo $sucesso; ?></div><?php endif; ?>
-    <?php if (!$sucesso): ?>
-    <form method="POST" enctype="multipart/form-data">
-        <label for="foto_comprovante">Foto do comprovante de entrega:</label><br>
-        <input type="file" name="foto_comprovante" id="foto_comprovante" accept="image/*" required><br><br>
-        <button type="submit">Concluir Entrega</button>
-    </form>
-    <?php endif; ?>
-    <p><a href="entregas.php">Voltar para Entregas</a></p>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                        <img src="../../img/logo-nova.png" alt="Logo">
+                        <div>
+                            <h1>ENCONTRE</h1>
+                            <h2>O CAMPO</h2>
+                        </div>
+                    </a>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="entregas.php" class="nav-link active">Entregas</a></li>
+                    <li class="nav-item"><a href="dashboard.php" class="nav-link">Painel</a></li>
+                    <li class="nav-item"><a href="perfil.php" class="nav-link">Meu Perfil</a></li>
+                    <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
+                </ul>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main class="main-content">
+        <section class="concluir-entrega-section">
+            <h1>Concluir Entrega #<?php echo $entrega_id; ?></h1>
+            <?php if ($erro): ?><div class="msg-erro"><?php echo $erro; ?></div><?php endif; ?>
+            <?php if ($sucesso): ?><div class="msg-sucesso"><?php echo $sucesso; ?></div><?php endif; ?>
+            <?php if (!$sucesso): ?>
+            <form method="POST" enctype="multipart/form-data" class="form-concluir-entrega">
+                <label for="foto_comprovante">Foto do comprovante de entrega:</label>
+                <input type="file" name="foto_comprovante" id="foto_comprovante" accept="image/*" required>
+                <button type="submit" class="cta-button">Concluir Entrega</button>
+            </form>
+            <?php endif; ?>
+            <button type="button" class="btn-voltar" onclick="window.location.href='entregas.php'"><i class="fas fa-arrow-left"></i> Voltar para Entregas</button>
+        </section>
+    </main>
+    <style>
+    .main-content {
+        max-width: 600px;
+        margin: 48px auto 0 auto;
+        padding: 24px;
+    }
+    .concluir-entrega-section {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        padding: 32px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        align-items: stretch;
+    }
+    .concluir-entrega-section h1 {
+        color: var(--primary-color, #4CAF50);
+        font-size: 2rem;
+        margin-bottom: 8px;
+    }
+    .form-concluir-entrega {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .form-concluir-entrega label {
+        font-weight: 600;
+        color: var(--primary-color, #4CAF50);
+        margin-bottom: 4px;
+    }
+    .form-concluir-entrega input[type="file"] {
+        padding: 8px 0;
+        font-size: 1rem;
+    }
+    .cta-button {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 28px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s, box-shadow 0.2s;
+        box-shadow: 0 2px 8px rgba(76,175,80,0.08);
+        cursor: pointer;
+        margin-top: 8px;
+    }
+    .cta-button:hover {
+        background: linear-gradient(135deg, #388E3C 0%, #4CAF50 100%);
+        color: #fff;
+        box-shadow: 0 4px 16px rgba(76,175,80,0.15);
+    }
+    .btn-voltar {
+        background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%);
+        color: #333;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 28px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s, box-shadow 0.2s;
+        box-shadow: 0 2px 8px rgba(160,160,160,0.08);
+        cursor: pointer;
+        margin-top: 8px;
+    }
+    .btn-voltar:hover {
+        background: linear-gradient(135deg, #bdbdbd 0%, #e0e0e0 100%);
+        color: #111;
+        box-shadow: 0 4px 16px rgba(160,160,160,0.15);
+    }
+    .msg-erro {
+        color: #fff;
+        background: #e57373;
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+    .msg-sucesso {
+        color: #fff;
+        background: #4CAF50;
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+    @media (max-width: 600px) {
+        .main-content, .concluir-entrega-section {
+            padding: 12px 2px;
+        }
+        .concluir-entrega-section h1 {
+            font-size: 1.2rem;
+        }
+    }
+    </style>
+    <script>
+        const hamburger = document.querySelector(".hamburger");
+        const navMenu = document.querySelector(".nav-menu");
+        if (hamburger) {
+            hamburger.addEventListener("click", () => {
+                hamburger.classList.toggle("active");
+                navMenu.classList.toggle("active");
+            });
+            document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
+                hamburger.classList.remove("active");
+                navMenu.classList.remove("active");
+            }));
+        }
+    </script>
 </body>
 </html>

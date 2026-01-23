@@ -68,16 +68,17 @@ $total_mensagens_nao_lidas = 0;
 // Só busca estatísticas se o transportador for ativo
 if (!$is_pendente && $transportador_id) {
     // 1. BUSCAR TODAS AS ENTREGAS DO TRANSPORTADOR
-    $query_entregas = "SELECT e.id, e.endereco_origem, e.endereco_destino, e.status, 
-                              e.data_solicitacao, e.valor_frete, 
-                              p.nome as produto_nome, 
-                              v.nome_comercial as vendedor_nome
-                       FROM entregas e
-                       INNER JOIN produtos p ON e.produto_id = p.id
-                       INNER JOIN vendedores v ON p.vendedor_id = v.id
-                       WHERE e.transportador_id = :transportador_id 
-                       ORDER BY e.data_solicitacao DESC 
-                       LIMIT 10";
+        $query_entregas = "SELECT e.id, e.endereco_origem, e.endereco_destino, e.status, 
+                      e.data_solicitacao, e.valor_frete, 
+                      p.nome as produto_nome, 
+                      v.nome_comercial as vendedor_nome
+                  FROM entregas e
+                  INNER JOIN produtos p ON e.produto_id = p.id
+                  INNER JOIN vendedores v ON p.vendedor_id = v.id
+                  WHERE e.transportador_id = :transportador_id 
+                  AND e.status NOT IN ('entregue', 'cancelada')
+                  ORDER BY e.data_solicitacao DESC 
+                  LIMIT 10";
                        
     $stmt_entregas = $db->prepare($query_entregas);
     $stmt_entregas->bindParam(':transportador_id', $transportador_id);

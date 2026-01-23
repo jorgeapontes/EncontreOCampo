@@ -118,6 +118,46 @@ try {
                 <strong>Seu cadastro está aguardando aprovação.</strong>
             </div>
         <?php endif; ?>
+
+        <section class="historico-entregas">
+            <h2>Histórico de Entregas Finalizadas</h2>
+            <?php
+            if (!$is_pendente && $transportador_id) {
+                $sql_hist = "SELECT e.id, e.endereco_origem, e.endereco_destino, e.valor_frete, e.data_entrega, e.foto_comprovante, p.nome as produto_nome, v.nome_comercial as vendedor_nome
+                    FROM entregas e
+                    INNER JOIN produtos p ON e.produto_id = p.id
+                    INNER JOIN vendedores v ON p.vendedor_id = v.id
+                    WHERE e.transportador_id = :transportador_id AND e.status = 'entregue' AND e.status_detalhado = 'finalizada'
+                    ORDER BY e.data_entrega DESC";
+                $stmt_hist = $db->prepare($sql_hist);
+                $stmt_hist->bindParam(':transportador_id', $transportador_id);
+                $stmt_hist->execute();
+                $entregas_finalizadas = $stmt_hist->fetchAll(PDO::FETCH_ASSOC);
+                if (count($entregas_finalizadas) === 0) {
+                    echo '<p>Nenhuma entrega finalizada ainda.</p>';
+                } else {
+                    echo '<table><thead><tr><th>ID</th><th>Produto</th><th>Vendedor</th><th>Origem</th><th>Destino</th><th>Valor Frete</th><th>Data Entrega</th><th>Comprovante</th></tr></thead><tbody>';
+                    foreach ($entregas_finalizadas as $e) {
+                        echo '<tr>';
+                        echo '<td>' . $e['id'] . '</td>';
+                        echo '<td>' . htmlspecialchars($e['produto_nome']) . '</td>';
+                        echo '<td>' . htmlspecialchars($e['vendedor_nome']) . '</td>';
+                        echo '<td>' . htmlspecialchars(substr($e['endereco_origem'], 0, 20)) . '...</td>';
+                        echo '<td>' . htmlspecialchars(substr($e['endereco_destino'], 0, 20)) . '...</td>';
+                        echo '<td>R$ ' . number_format($e['valor_frete'], 2, ',', '.') . '</td>';
+                        echo '<td>' . ($e['data_entrega'] ? date('d/m/Y', strtotime($e['data_entrega'])) : '-') . '</td>';
+                        if ($e['foto_comprovante']) {
+                            echo '<td><a href="../../uploads/entregas/' . htmlspecialchars($e['foto_comprovante']) . '" target="_blank">Ver Foto</a></td>';
+                        } else {
+                            echo '<td>-</td>';
+                        }
+                        echo '</tr>';
+                    }
+                    echo '</tbody></table>';
+                }
+            }
+            ?>
+        </section>
     </div>
 
     <script>

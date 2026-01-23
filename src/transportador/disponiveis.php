@@ -57,6 +57,64 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
+                <?php if (isset($_GET['erro']) && $_GET['erro']): ?>
+                <div id="popup-erro" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.18);">
+                    <div style="background:#fff;border-radius:14px;box-shadow:0 4px 32px rgba(220,60,60,0.13);padding:38px 32px 28px 32px;max-width:95vw;width:400px;text-align:center;position:relative;">
+                        <div style="font-size:1.18rem;font-weight:600;color:#b3261e;margin-bottom:10px;">Erro ao enviar proposta</div>
+                        <div style="color:#444;font-size:1.05rem;margin-bottom:18px;"><?php echo htmlspecialchars($_GET['erro']); ?></div>
+                        <div style="margin-bottom:10px;color:#b3261e;font-size:0.98rem;">Este aviso será fechado automaticamente em <span id='popup-timer-erro'>10</span>s.</div>
+                        <div style="width:100%;height:7px;background:#fbeaea;border-radius:4px;overflow:hidden;margin-bottom:0;">
+                            <div id="popup-bar-erro" style="height:100%;background:#b3261e;width:100%;transition:width 0.2s;"></div>
+                        </div>
+                        <button onclick="fecharPopupErro()" style="margin-top:18px;background:#b3261e;color:#fff;border:none;border-radius:6px;padding:8px 22px;font-size:1rem;font-weight:500;cursor:pointer;">Fechar agora</button>
+                    </div>
+                </div>
+                <script>
+                    let tempoErro = 10;
+                    let barErro = document.getElementById('popup-bar-erro');
+                    let timerErro = document.getElementById('popup-timer-erro');
+                    let intervalErro = setInterval(function(){
+                        tempoErro--;
+                        if(timerErro) timerErro.textContent = tempoErro;
+                        if(barErro) barErro.style.width = (tempoErro*10) + '%';
+                        if(tempoErro <= 0) fecharPopupErro();
+                    },1000);
+                    function fecharPopupErro(){
+                        let popup = document.getElementById('popup-erro');
+                        if(popup) popup.style.display = 'none';
+                        clearInterval(intervalErro);
+                    }
+                </script>
+                <?php endif; ?>
+        <?php if (isset($_GET['sucesso']) && $_GET['sucesso']): ?>
+        <div id="popup-sucesso" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.18);">
+            <div style="background:#fff;border-radius:14px;box-shadow:0 4px 32px rgba(60,180,120,0.13);padding:38px 32px 28px 32px;max-width:95vw;width:400px;text-align:center;position:relative;">
+                <div style="font-size:1.25rem;font-weight:600;color:#256c3b;margin-bottom:10px;">Proposta de frete enviada!</div>
+                <div style="color:#444;font-size:1.05rem;margin-bottom:18px;">Para ver, editar ou cancelar sua proposta, acesse <a href='entregas.php' style='color:#2566d6;text-decoration:underline;'>Minhas Entregas</a>.</div>
+                <div style="margin-bottom:10px;color:#256c3b;font-size:0.98rem;">Este aviso será fechado automaticamente em <span id='popup-timer'>10</span>s.</div>
+                <div style="width:100%;height:7px;background:#e6f9ed;border-radius:4px;overflow:hidden;margin-bottom:0;">
+                    <div id="popup-bar" style="height:100%;background:#3a7a4d;width:100%;transition:width 0.2s;"></div>
+                </div>
+                <button onclick="fecharPopup()" style="margin-top:18px;background:#256c3b;color:#fff;border:none;border-radius:6px;padding:8px 22px;font-size:1rem;font-weight:500;cursor:pointer;">Fechar agora</button>
+            </div>
+        </div>
+        <script>
+            let tempo = 10;
+            let bar = document.getElementById('popup-bar');
+            let timer = document.getElementById('popup-timer');
+            let interval = setInterval(function(){
+                tempo--;
+                if(timer) timer.textContent = tempo;
+                if(bar) bar.style.width = (tempo*10) + '%';
+                if(tempo <= 0) fecharPopup();
+            },1000);
+            function fecharPopup(){
+                let popup = document.getElementById('popup-sucesso');
+                if(popup) popup.style.display = 'none';
+                clearInterval(interval);
+            }
+        </script>
+        <?php endif; ?>
     <header>
         <nav class="navbar">
             <div class="nav-container">
@@ -103,6 +161,7 @@ try {
     </header>
     <br>
     <div class="main-content">
+
         <section class="header">
             <center>
                 <h1>Bem-vindo(a), <?php echo htmlspecialchars($transportador_nome_comercial); ?>!</h1>
@@ -118,6 +177,182 @@ try {
                 <strong>Seu cadastro está aguardando aprovação.</strong>
             </div>
         <?php endif; ?>
+
+        <section class="acordos-disponiveis">
+        <style>
+            .acordos-disponiveis {
+                max-width: 1200px;
+                margin: 40px auto;
+                background: #f9f9f9;
+                border-radius: 16px;
+                box-shadow: 0 2px 18px rgba(0,0,0,0.06);
+                padding: 32px 24px 24px 24px;
+            }
+            .acordos-lista {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                gap: 28px;
+            }
+            .acordo-card {
+                border-radius: 12px;
+                background: #fff;
+                box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+                padding: 20px 16px 16px 16px;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                min-height: 240px;
+                transition: box-shadow 0.18s, border 0.18s;
+                border: 1.5px solid #e6eaf0;
+            }
+            .acordo-card:hover {
+                box-shadow: 0 6px 18px rgba(60,180,120,0.10);
+                border-color: #b6e2c6;
+            }
+            .acordo-header {
+                font-size: 1.08rem;
+                font-weight: 700;
+                color: #222;
+                margin-bottom: 8px;
+                letter-spacing: 0.01em;
+            }
+            .acordo-info {
+                font-size: 0.97rem;
+                color: #444;
+                margin-bottom: 10px;
+                width: 100%;
+            }
+            .acordo-info strong {
+                color: #3a7a4d;
+                font-weight: 600;
+            }
+            .acordo-actions {
+                margin-top: auto;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .acordo-btn {
+                background: #3a7a4d;
+                color: #fff;
+                border: none;
+                border-radius: 7px;
+                padding: 10px 0;
+                font-size: 1rem;
+                font-weight: 600;
+                cursor: pointer;
+                width: 100%;
+                transition: background 0.18s;
+                box-shadow: 0 1px 4px rgba(60,180,120,0.07);
+            }
+            .acordo-btn:hover {
+                background: #256c3b;
+            }
+            .acordo-card a {
+                color: #2566d6;
+                text-decoration: none;
+                font-size: 0.97rem;
+                margin-bottom: 2px;
+                word-break: break-all;
+                transition: color 0.15s;
+            }
+            .acordo-card a:hover {
+                text-decoration: underline;
+                color: #1741a6;
+            }
+            .acordo-card form label {
+                font-size: 0.97rem;
+                color: #444;
+                margin-bottom: 2px;
+            }
+            .acordo-card form input[type="number"] {
+                width: 100%;
+                padding: 7px 8px;
+                border: 1px solid #dbe5ef;
+                border-radius: 5px;
+                margin-bottom: 8px;
+                font-size: 1rem;
+                background: #f9f9f9;
+                transition: border 0.15s;
+            }
+            .acordo-card form input[type="number"]:focus {
+                border-color: #3a7a4d;
+                outline: none;
+            }
+            @media (max-width: 900px) {
+                .acordos-lista {
+                    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                }
+            }
+            @media (max-width: 600px) {
+                .acordos-disponiveis { padding: 10px 2vw; }
+                .acordos-lista { gap: 14px; }
+                .acordo-card { padding: 10px 6px; min-height: 160px; }
+            }
+        </style>
+            <h2>Acordos disponíveis para entrega</h2>
+            <?php
+            // Buscar acordos de compra com tipo_frete = 'plataforma' e status = 'aceita' e sem transportador definido
+            $sql_acordos = "SELECT p.ID as proposta_id, p.*, 
+                (SELECT nome_comercial FROM compradores WHERE id = p.comprador_id) as comprador_nome,
+                (SELECT cep FROM compradores WHERE id = p.comprador_id) as comprador_cep,
+                (SELECT rua FROM compradores WHERE id = p.comprador_id) as comprador_rua,
+                (SELECT numero FROM compradores WHERE id = p.comprador_id) as comprador_numero,
+                (SELECT cidade FROM compradores WHERE id = p.comprador_id) as comprador_cidade,
+                (SELECT estado FROM compradores WHERE id = p.comprador_id) as comprador_estado,
+                (SELECT nome_comercial FROM vendedores WHERE id = p.vendedor_id) as vendedor_nome,
+                (SELECT cep FROM vendedores WHERE id = p.vendedor_id) as vendedor_cep,
+                (SELECT rua FROM vendedores WHERE id = p.vendedor_id) as vendedor_rua,
+                (SELECT numero FROM vendedores WHERE id = p.vendedor_id) as vendedor_numero,
+                (SELECT cidade FROM vendedores WHERE id = p.vendedor_id) as vendedor_cidade,
+                (SELECT estado FROM vendedores WHERE id = p.vendedor_id) as vendedor_estado,
+                pr.nome as produto_nome, p.quantidade_proposta as quantidade, p.valor_total
+                FROM propostas p
+                INNER JOIN produtos pr ON p.produto_id = pr.id
+                WHERE p.opcao_frete = 'entregador' AND p.status = 'aceita'
+                ORDER BY p.data_inicio DESC";
+            $stmt_acordos = $db->prepare($sql_acordos);
+            $stmt_acordos->execute();
+            $acordos = $stmt_acordos->fetchAll(PDO::FETCH_ASSOC);
+            if (count($acordos) === 0) {
+                echo '<p>Nenhum acordo disponível no momento.</p>';
+            } else {
+                echo '<div class="acordos-lista">';
+                foreach ($acordos as $acordo) {
+                    // Preferir endereço atualizado da negociação, se existir
+                    $origem = $acordo['vendedor_rua'] . ', ' . $acordo['vendedor_numero'] . ' - ' . $acordo['vendedor_cidade'] . '/' . $acordo['vendedor_estado'] . ' - CEP: ' . $acordo['vendedor_cep'];
+                    $destino = $acordo['comprador_rua'] . ', ' . $acordo['comprador_numero'] . ' - ' . $acordo['comprador_cidade'] . '/' . $acordo['comprador_estado'] . ' - CEP: ' . $acordo['comprador_cep'];
+                    $google_maps_url = 'https://www.google.com/maps/dir/?api=1&origin=' . urlencode($origem) . '&destination=' . urlencode($destino) . '&travelmode=driving';
+            ?>
+                    <div class="acordo-card">
+                        <div class="acordo-header">Pedido #<?php echo $acordo['proposta_id']; ?> &bull; <?php echo htmlspecialchars($acordo['produto_nome']); ?></div>
+                        <div class="acordo-info">
+                            <strong>Vendedor:</strong> <?php echo htmlspecialchars($acordo['vendedor_nome']); ?><br>
+                            <strong>Comprador:</strong> <?php echo htmlspecialchars($acordo['comprador_nome']); ?><br>
+                            <strong>Quantidade:</strong> <?php echo htmlspecialchars($acordo['quantidade']); ?><br>
+                            <strong>Valor Total:</strong> R$ <?php echo number_format($acordo['valor_total'], 2, ',', '.'); ?>
+                        </div>
+                        <div class="acordo-info">
+                            <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($origem); ?>" target="_blank">Retirada: <?php echo htmlspecialchars($origem); ?></a><br>
+                            <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($destino); ?>" target="_blank">Entrega: <?php echo htmlspecialchars($destino); ?></a><br>
+                            <a href="<?php echo $google_maps_url; ?>" target="_blank">Ver rota no Google Maps</a>
+                        </div>
+                        <div class="acordo-actions">
+                            <form action="enviar_proposta_frete.php" method="POST" class="form-proposta-frete">
+                                <input type="hidden" name="proposta_id" value="<?php echo $acordo['proposta_id']; ?>">
+                                <label for="valor_frete_<?php echo $acordo['proposta_id']; ?>">Valor do frete (R$):</label>
+                                <input type="number" step="0.01" min="0" name="valor_frete" id="valor_frete_<?php echo $acordo['proposta_id']; ?>" required>
+                                <button type="submit" class="acordo-btn">Enviar Proposta</button>
+                            </form>
+                        </div>
+                    </div>
+            <?php
+                }
+                echo '</div>';
+            }
+            ?>
+        </section>
     </div>
 
     <script>

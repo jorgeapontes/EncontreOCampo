@@ -118,6 +118,56 @@ try {
                 <strong>Seu cadastro está aguardando aprovação.</strong>
             </div>
         <?php endif; ?>
+
+        <section class="entregas">
+            <h2>Minhas Entregas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Destinatário</th>
+                        <th>Endereço</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    // Buscar entregas do transportador
+                    try {
+                        $sql_entregas = "SELECT e.id, d.nome AS destinatario, e.endereco, e.status 
+                                        FROM entregas e 
+                                        INNER JOIN destinatarios d ON e.destinatario_id = d.id 
+                                        WHERE e.transportador_id = :transportador_id 
+                                        ORDER BY e.data_criacao DESC";
+                        $stmt_entregas = $db->prepare($sql_entregas);
+                        $stmt_entregas->bindParam(':transportador_id', $transportador_id, PDO::PARAM_INT);
+                        $stmt_entregas->execute();
+                        $entregas = $stmt_entregas->fetchAll(PDO::FETCH_ASSOC);
+                    } catch (PDOException $e) {
+                        error_log("Erro ao buscar entregas: " . $e->getMessage());
+                        $entregas = [];
+                    }
+
+                    // Exibir entregas
+                    foreach ($entregas as $entrega):
+                    ?>
+                    <tr>
+                        <td><?php echo $entrega['id']; ?></td>
+                        <td><?php echo htmlspecialchars($entrega['destinatario']); ?></td>
+                        <td><?php echo htmlspecialchars($entrega['endereco']); ?></td>
+                        <td><?php echo htmlspecialchars(ucfirst($entrega['status'])); ?></td>
+                        <td>
+                            <a href="entrega_detalhes.php?id=<?php echo $entrega['id']; ?>" class="action-btn edit" title="Ver Detalhes"><i class="fas fa-eye"></i></a>
+                            <?php if ($entrega['status'] == 'pendente' || $entrega['status'] == 'em_transporte'): ?>
+                                <a href="concluir_entrega.php?id=<?php echo $entrega['id']; ?>" class="action-btn" title="Concluir Entrega" style="color: #2196F3;"><i class="fas fa-check-double"></i></a>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </section>
     </div>
 
     <script>

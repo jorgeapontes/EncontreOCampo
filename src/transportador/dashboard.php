@@ -226,7 +226,7 @@ if (!$is_pendente && $transportador_id) {
                     <div class="card">
                         <i class="fas fa-truck-moving"></i>
                         <h3>Entregas disponíveis</h3>
-                        <p><?php echo $total_entregas_em_transporte; ?></p>
+                        <p>Ver</p>
                     </div>
                 </a>
                 <a href="entregas.php">
@@ -303,8 +303,8 @@ if (!$is_pendente && $transportador_id) {
                                     <td><?php echo date('d/m/Y', strtotime($entrega['data_solicitacao'])); ?></td>
                                     <td>
                                         <a href="entrega_detalhes.php?id=<?php echo $entrega['id']; ?>" class="action-btn edit" title="Ver Detalhes"><i class="fas fa-eye"></i></a>
-                                        <?php if ($entrega['status'] == 'pendente'): ?>
-                                            <a href="aceitar_entrega.php?id=<?php echo $entrega['id']; ?>" class="action-btn" title="Aceitar Entrega" style="color: #4CAF50;"><i class="fas fa-check"></i></a>
+                                        <?php if ($entrega['status'] == 'pendente' || $entrega['status'] == 'em_transporte'): ?>
+                                            <a href="concluir_entrega.php?id=<?php echo $entrega['id']; ?>" class="action-btn" title="Concluir Entrega" style="color: #2196F3;"><i class="fas fa-check-double"></i></a>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
@@ -359,8 +359,8 @@ if (!$is_pendente && $transportador_id) {
                                 
                                 <div class="card-entrega-actions">
                                     <a href="entrega_detalhes.php?id=<?php echo $entrega['id']; ?>" class="card-action-btn edit" title="Ver Detalhes"><i class="fas fa-eye"></i></a>
-                                    <?php if ($entrega['status'] == 'pendente'): ?>
-                                        <a href="aceitar_entrega.php?id=<?php echo $entrega['id']; ?>" class="card-action-btn" title="Aceitar Entrega" style="background: #4CAF50; color: white;"><i class="fas fa-check"></i></a>
+                                    <?php if ($entrega['status'] == 'pendente' || $entrega['status'] == 'em_transporte'): ?>
+                                        <a href="concluir_entrega.php?id=<?php echo $entrega['id']; ?>" class="card-action-btn" title="Concluir Entrega" style="background: #2196F3; color: white;"><i class="fas fa-check-double"></i></a>
                                     <?php endif; ?>
                                 </div>
                             </div>

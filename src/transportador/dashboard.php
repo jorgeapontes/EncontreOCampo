@@ -244,6 +244,13 @@ if (!$is_pendente && $transportador_id) {
                         <p>Ver</p>
                     </div>
                 </a>
+                <a href="minhas_propostas.php">
+                    <div class="card">
+                        <i class="fas fa-book"></i>
+                        <h3>Minhas Propostas</h3>
+                        <p>Ver</p>
+                    </div>
+                </a>
                 <a href="meus_chats.php">
                     <div class="card">
                         <i class="fas fa-comments"></i>

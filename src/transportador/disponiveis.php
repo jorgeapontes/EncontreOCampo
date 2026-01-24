@@ -339,7 +339,7 @@ try {
                             <a href="<?php echo $google_maps_url; ?>" target="_blank">Ver rota no Google Maps</a>
                         </div>
                         <div class="acordo-actions">
-                            <form action="../chat/enviar_negociacao_proposta.php" method="POST" class="form-proposta-frete">
+                            <form action="enviar_proposta_frete.php" method="POST" class="form-proposta-frete">
                                 <input type="hidden" name="proposta_id" value="<?php echo $acordo['proposta_id']; ?>">
                                 <label for="valor_frete_<?php echo $acordo['proposta_id']; ?>">Valor do frete (R$):</label>
                                 <input type="number" step="0.01" min="0" name="valor_frete" id="valor_frete_<?php echo $acordo['proposta_id']; ?>" required>

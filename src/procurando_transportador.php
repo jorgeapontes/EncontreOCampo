@@ -13,17 +13,18 @@ $database = new Database();
 $db = $database->getConnection();
 
 // Buscar propostas de frete recebidas para acordos do comprador
-// ALTERAÇÃO: Usamos diretamente o $usuario_id na cláusula WHERE p.comprador_id
-$sql = "SELECT pf.id as proposta_frete_id, pf.valor_frete, pf.status, pf.data_envio, t.nome_comercial as transportador_nome, p.id as proposta_id, pr.nome AS produto_nome, p.quantidade_proposta as quantidade, p.valor_total, pr.imagem_url
-    FROM propostas_frete_transportador pf
-    INNER JOIN propostas p ON pf.proposta_id = p.id
-    INNER JOIN produtos pr ON p.produto_id = pr.id
-    INNER JOIN transportadores t ON pf.transportador_id = t.id
-    WHERE p.comprador_id = :usuario_id AND pf.status IN ('pendente','contraproposta')
-    ORDER BY pf.data_envio DESC";
+$sql = "SELECT pf.id as proposta_frete_id, pf.valor_frete, pf.status, pf.data_envio, 
+               t.nome_comercial as transportador_nome, 
+               p.id as proposta_id, pr.nome AS produto_nome, 
+               p.quantidade_proposta as quantidade, p.valor_total, pr.imagem_url
+        FROM propostas_frete_transportador pf
+        INNER JOIN propostas p ON pf.proposta_id = p.id
+        INNER JOIN produtos pr ON p.produto_id = pr.id
+        INNER JOIN transportadores t ON pf.transportador_id = t.id
+        WHERE p.comprador_id = :usuario_id AND pf.status IN ('pendente','contraproposta')
+        ORDER BY pf.data_envio DESC";
 
 $stmt = $db->prepare($sql);
-// ALTERAÇÃO: Bindamos o usuario_id direto
 $stmt->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
 $stmt->execute();
 $propostas = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -131,7 +132,6 @@ $propostas = $stmt->fetchAll(PDO::FETCH_ASSOC);
     color: var(--text-color);
 }
 
-/* Botão sair na navbar */
 .nav-link.exit-button {
     background: #e53935;
     color: #fff !important;
@@ -157,6 +157,30 @@ $propostas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 .input-contraproposta:focus {
     border: 1.5px solid var(--primary-color);
+}
+
+/* Mensagens de sucesso/erro */
+.alert {
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.alert-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-left: 4px solid #4caf50;
+}
+.alert-error {
+    background: #ffebee;
+    color: #c62828;
+    border-left: 4px solid #f44336;
+}
+.alert i {
+    font-size: 1.3rem;
 }
 </Style>
 <body>
@@ -189,6 +213,21 @@ $propostas = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <main class="container" style="margin-top: 100px;">
         <h1 style="font-size:2rem; font-weight:700; margin-bottom: 10px;">Propostas de Frete Recebidas</h1>
         <p style="color:var(--text-light); margin-bottom: 30px;">Veja e gerencie as propostas de frete enviadas pelos transportadores.</p>
+        
+        <?php if (isset($_GET['sucesso'])): ?>
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            <span><?php echo htmlspecialchars($_GET['sucesso']); ?></span>
+        </div>
+        <?php endif; ?>
+        
+        <?php if (isset($_GET['erro'])): ?>
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span><?php echo htmlspecialchars($_GET['erro']); ?></span>
+        </div>
+        <?php endif; ?>
+        
         <?php if (count($propostas) === 0): ?>
             <div class="empty-state" style="text-align:center; margin: 60px 0; color:var(--text-light);">
                 <h3 style="font-weight:600;">Nenhuma proposta de frete recebida no momento.</h3>
@@ -229,5 +268,7 @@ $propostas = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
         <?php endif; ?>
     </main>
+    
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </body>
 </html>

@@ -275,6 +275,11 @@ try {
                     <p>Caso queria ter mais anúncios ativos, altere seu plano em "Meu Perfil".</p>
                     <p style="margin-top: 10px;"><a href="perfil.php">Alterar plano</a></p>
                 </div>
+                <div class="aviso-item">
+                    <h3><i class="fas fa-box"></i> Alterar estoque</h3>
+                    <p>Se o seu estoque estiver baixo, não esqueça de atualizá-lo para evitar problemas nas vendas. Clique para editar um anúncio para atualizar o estoque.</p>
+                    <p style="margin-top: 10px;"><a href="anuncios.php">Alterar estoque</a></p>
+                </div>
             </div>
             <div class="popup-footer">
                 <div class="checkbox-container">

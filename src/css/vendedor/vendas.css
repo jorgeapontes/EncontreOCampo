@@ -33,6 +33,10 @@ body {
     width: 100%;
     top: 0;
     z-index: 1000;
+    .proposal-card {
+        border: 1px solid #e6e6e6;
+        background: #fff;
+    }
     transition: all 0.3s ease;
 }
 
@@ -45,6 +49,37 @@ body {
     margin: 0 auto;
 }
 
+    .card-actions { display:flex; align-items:center; gap:12px; }
+    .confirm-block { display:flex; flex-direction:column; align-items:center; gap:6px; }
+    .confirm-tip { font-size:12px; color:#666; }
+
+    .archive-btn { position:absolute; top:10px; right:10px; background:transparent; border:none; cursor:pointer; color:#666; font-size:1rem; }
+
+    /* confirm button: azul */
+    .confirm-btn { background: #007bff; color: var(--white); border: none; padding:6px 10px; border-radius:6px; cursor:pointer; font-weight:600; font-size:0.9rem; }
+    .confirm-btn:hover { background: #0069d9; }
+
+    /* confirmed badge: verde */
+    .confirmed-badge { color:#fff; background: var(--primary-color); padding:4px 6px; border-radius:6px; font-weight:700; font-size:0.85rem; }
+
+    /* estilos para selects de filtro/ordenacao e periodo */
+    #filterForm select, #periodForm select, #filterForm label, #periodForm label {
+        font-size: 0.95rem;
+    }
+    #filterForm select, #periodForm select {
+        padding:6px 10px;
+        border-radius:6px;
+        border:1px solid #e0e0e0;
+        background:#fff;
+        color:var(--text-color);
+        box-shadow: none;
+    }
+    #filterForm label, #periodForm label { margin-right:6px; color:#444; font-weight:600; }
+    /* espaçamento para o bloco de filtros */
+    #filterForm { gap:10px; }
+
+    .card-title a.card-link { text-decoration:none; color:inherit; }
+    .card-title a.card-link h3 { margin:0; }
 .logo {
     display: flex;
 }
@@ -399,6 +434,121 @@ th:last-child {
 .anuncio-form .form-group {
     margin-bottom: 20px;
 }
+/* Estilos para o select de período e botões na página de negociações */
+.period-select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#periodForm {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#period_select {
+    padding: 8px 36px 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    background: linear-gradient(180deg,#fff,#fafafa);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    font-size: 0.95rem;
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+#period_select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(76,175,80,0.08);
+}
+
+
+.confirm-btn {
+    background: var(--primary-color);
+    color: var(--white);
+    border: none;
+    padding: 5px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.confirm-btn:hover { background: var(--primary-dark); }
+
+.archive-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    font-size: 0.95rem;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 3;
+}
+
+.proposal-card { background: #fff; border: 1px solid #e6e6e6; }
+.proposal-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.06); transform: translateY(-2px); transition: all 0.18s ease; }
+
+@media (max-width: 768px) {
+    #period_select { padding: 8px 28px 8px 10px; font-size:0.9rem; }
+    .info-cards { flex-direction: column; }
+}
+
+/* Layout for proposal cards */
+.proposal-card {
+    display: flex;
+    gap: 16px;
+    padding: 14px;
+    border-radius: 8px;
+    position: relative;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.proposal-card .card-image {
+    width: 120px;
+    height: 90px;
+    flex: 0 0 120px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #f7f7f7;
+}
+
+.proposal-card .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.proposal-card .card-content {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.proposal-card .card-row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding-right:52px; }
+.proposal-card .card-title h3 { margin:0; font-size:1.05rem; color:var(--text-color); }
+.proposal-card .card-title .date { display:block; color:#777; font-size:0.85rem; }
+
+.card-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-top:8px; }
+.card-grid div { font-size:0.95rem; color:#333; }
+.card-grid strong { display:block; font-size:0.8rem; color:#666; margin-bottom:4px; }
+
+.card-actions { display:flex; align-items:center; gap:8px; justify-content:flex-end; margin-top:10px; }
+.confirmed-badge { color:#fff; background:#007bff; padding:3px 6px; border-radius:6px; font-weight:700; font-size:0.82rem; }
+
+@media (max-width: 768px) {
+    .card-grid { grid-template-columns: repeat(2, 1fr); }
+    .proposal-card { flex-direction:column; align-items:flex-start; }
+    .proposal-card .card-image { width:100%; height:180px; flex:0 0 auto; }
+}
+
 
 .anuncio-form .form-group label {
     display: block;

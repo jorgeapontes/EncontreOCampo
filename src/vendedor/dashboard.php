@@ -326,7 +326,7 @@ try {
                 <a href="negociacoes.php">
                     <div class="card">
                         <i class="fa-solid fa-check"></i>
-                        <h3>Histórico</h3>
+                        <h3>Histórico de vendas</h3>
                         <p>Ver</p>
                     </div>
                 </a>

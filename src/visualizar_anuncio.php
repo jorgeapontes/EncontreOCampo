@@ -335,6 +335,17 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
             margin-top: 10px;
         }
 
+        .aviso-estoque {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border: 1px solid #f5a6af;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #721c24;
+            text-align: center;
+            font-weight: 700;
+        }
+
         .status-info i, .status-alert i {
             margin-right: 5px;
         }
@@ -723,6 +734,13 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                             <i class="fas fa-box"></i>
                             <span><?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?> <?php echo $unidade; ?> disponíveis</span>
                         </div>
+
+                        <?php if ((int)$anuncio['quantidade_disponivel'] <= 0): ?>
+                            <div class="aviso-estoque">
+                                <i class="fas fa-exclamation-circle"></i>
+                                Este anúncio está com o estoque zerado no momento. Você ainda pode visualizar, conversar com o vendedor e solicitar informações sobre reposição.
+                            </div>
+                        <?php endif; ?>
 
                         <!-- Seção de Botões (Desativada para não-logados) -->
                         <div class="botoes-compra <?php echo !$is_logged_in ? 'botoes-compra-desativados' : ''; ?>">

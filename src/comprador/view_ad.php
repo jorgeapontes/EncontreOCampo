@@ -333,6 +333,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
         .btn-disabled { opacity: 0.6 !important; cursor: not-allowed !important; pointer-events: none !important; filter: grayscale(30%) !important; }
         .status-info, .status-alert { padding: 8px 12px; margin-top: 10px; }
         .aviso-pendente { background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border: 1px solid #ffc107; border-radius: 8px; padding: 15px; margin: 20px 0; color: #856404; text-align: center; }
+        .aviso-estoque { background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); border: 1px solid #f5a6af; border-radius: 8px; padding: 15px; margin: 20px 0; color: #721c24; text-align: center; font-weight: 700; }
         
         /* Carrossel */
         .carrossel-container { position: relative; width: 100%; height: 400px; border-radius: var(--radius); overflow: hidden; background: var(--gray); }
@@ -490,11 +491,18 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                             <i class="fas fa-box"></i> <span><?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?> <?php echo $unidade; ?> disponíveis</span>
                         </div>
 
+                        <?php if ((int)$anuncio['quantidade_disponivel'] <= 0): ?>
+                            <div class="aviso-estoque">
+                                <i class="fas fa-exclamation-circle"></i>
+                                Este anúncio está com o estoque zerado no momento. Você ainda pode visualizar, conversar com o vendedor e enviar propostas — peça informação sobre reposição ou prazo de disponibilidade.
+                            </div>
+                        <?php endif; ?>
+
                         <div class="quantidade-selector">
                             <label for="quantidade">Quantidade:</label>
                             <div class="quantidade-control">
                                 <button type="button" class="qty-btn" id="decrease-qty">-</button>
-                                <input type="number" id="quantidade" name="quantidade" value="1" min="1" max="<?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?>">
+                                <input type="number" id="quantidade" name="quantidade" value="1" min="1" max="<?php echo max(1, (int)$anuncio['quantidade_disponivel']); ?>">
                                 <button type="button" class="qty-btn" id="increase-qty">+</button>
                             </div>
                             <span class="unidade-info"><?php echo $unidade; ?></span>
@@ -565,7 +573,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                         </div>
                         <div class="form-group">
                             <label for="quantidade_proposta"><i class="fas fa-box"></i> Quantidade</label>
-                            <input type="number" id="quantidade_proposta" name="quantidade_proposta" min="1" max="<?php echo htmlspecialchars($anuncio['quantidade_disponivel']); ?>" required value="1">
+                            <input type="number" id="quantidade_proposta" name="quantidade_proposta" min="1" max="<?php echo max(1, (int)$anuncio['quantidade_disponivel']); ?>" required value="1">
                         </div>
                     </div>
                     <div class="form-group">

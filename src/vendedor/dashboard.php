@@ -330,6 +330,13 @@ try {
                         <p>Ver</p>
                     </div>
                 </a>
+                <a href="historico_compras.php">
+                    <div class="card">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h3>Histórico de compras</h3>
+                        <p>Ver</p>
+                    </div>
+                </a>
                 <a href="config_logistica.php"> 
                     <div class="card"> 
                         <i class="fas fa-truck"></i> 

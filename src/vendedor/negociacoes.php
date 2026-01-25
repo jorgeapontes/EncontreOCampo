@@ -326,7 +326,13 @@ try {
                                     </div>
 
                                     <div class="card-grid">
-                                        <div><strong>Comprador</strong><div><?php echo htmlspecialchars($p['comprador_nome'] ?? '—'); ?></div></div>
+                                        <div><strong>Comprador</strong><div>
+                                            <?php if (!empty($p['comprador_id'])): ?>
+                                                <a href="../verperfil.php?usuario_id=<?php echo intval($p['comprador_id']); ?>"><?php echo htmlspecialchars($p['comprador_nome'] ?? '—'); ?></a>
+                                            <?php else: ?>
+                                                <?php echo htmlspecialchars($p['comprador_nome'] ?? '—'); ?>
+                                            <?php endif; ?>
+                                        </div></div>
                                         <div><strong>Quantidade</strong><div><?php echo intval($p['quantidade_proposta']); ?></div></div>
                                         <div><strong>Valor</strong><div>R$ <?php echo number_format($p['valor_total'], 2, ',', '.'); ?></div></div>
                                     </div>

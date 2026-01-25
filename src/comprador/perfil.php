@@ -17,6 +17,20 @@ $conn = $database->getConnection();
 $mensagem_sucesso = null;
 $mensagem_erro = null;
 
+// Buscar dados atuais do comprador antes de processar POST
+try {
+    $sql = "SELECT c.*, u.email, u.nome as nome_usuario 
+            FROM compradores c 
+            JOIN usuarios u ON c.usuario_id = u.id 
+            WHERE c.usuario_id = :usuario_id";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $comprador_data = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+} catch (PDOException $e) {
+    $comprador_data = [];
+}
+
 // --- INÍCIO DA LÓGICA DE ATUALIZAÇÃO ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Verificar se é uma busca de CEP via AJAX
@@ -189,24 +203,8 @@ if (isset($_GET['success']) && $_GET['success'] == '1') {
     $mensagem_sucesso = "Perfil e e-mail atualizados com sucesso!";
 }
 
-// 2. BUSCAR DADOS ATUALIZADOS DO COMPRADOR
-try {
-    $sql = "SELECT c.*, u.email, u.nome as nome_usuario 
-            FROM compradores c 
-            JOIN usuarios u ON c.usuario_id = u.id 
-            WHERE c.usuario_id = :usuario_id";
-    
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
-    $stmt->execute();
-    $comprador_data = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$comprador_data) {
-        die("Perfil de comprador não encontrado.");
-    }
-} catch (PDOException $e) {
-    die("Erro ao carregar perfil: " . $e->getMessage());
-}
+// Nota: os dados do comprador já foram carregados acima para preservar
+// o valor de `foto_perfil_url` quando o formulário é enviado sem nova imagem.
 ?>
 
 <!DOCTYPE html>

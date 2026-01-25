@@ -275,7 +275,7 @@ try {
                     <div class="card">
                         <i class="fa-solid fa-bag-shopping"></i>
                         <h3>Compras realizadas</h3>
-                        <p><?php echo $dashboard_data['aceita']; ?></p>
+                        <p>Ver</p>
                     </div>
                 </a>
             <?php endif; ?>

@@ -316,7 +316,7 @@ body {
 /* Estilo unificado dos botões de filtro */
 .filtro-btn {
     background: white;
-    border: 2px solid #2e7d32;
+    border: 1px solid #2e7d32;
     color: #2e7d32;
     padding: 0 20px; /* Padding horizontal */
     height: 54px; /* Mesma altura visual total da barra de pesquisa (approx) */

@@ -327,9 +327,6 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
     <style>
         .preco-dinamico .valor-unitario { font-size: 14px; color: #666; margin-top: 5px; font-style: italic; }
         .preco-dinamico .valor-total-label { font-size: 14px; color: #2E7D32; margin-top: 5px; font-weight: 600; }
-        .btn-chat { background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); color: white; padding: 15px 30px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); }
-        .btn-chat:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4); }
-        .btn-chat i { font-size: 20px; }
         .btn-disabled { opacity: 0.6 !important; cursor: not-allowed !important; pointer-events: none !important; filter: grayscale(30%) !important; }
         .status-info, .status-alert { padding: 8px 12px; margin-top: 10px; }
         .aviso-pendente { background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border: 1px solid #ffc107; border-radius: 8px; padding: 15px; margin: 20px 0; color: #856404; text-align: center; }

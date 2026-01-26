@@ -126,14 +126,13 @@ if (!$is_pendente && $transportador_id) {
     // CONTADOR DE MENSAGENS NÃO LIDAS
     try {
         $query_mensagens = "SELECT COUNT(DISTINCT cm.conversa_id) as total_conversas_nao_lidas
-                            FROM chat_mensagens cm
-                            INNER JOIN chat_conversas cc ON cm.conversa_id = cc.id
-                            WHERE cc.transportador_id = :transportador_id 
-                            AND cm.remetente_id != :usuario_id
-                            AND cm.lida = 0";
-                            
+                    FROM chat_mensagens cm
+                    INNER JOIN chat_conversas cc ON cm.conversa_id = cc.id
+                    WHERE cc.transportador_id = :usuario_id
+                    AND cm.remetente_id != :usuario_id
+                    AND cm.lida = 0";
+
         $stmt_mensagens = $db->prepare($query_mensagens);
-        $stmt_mensagens->bindParam(':transportador_id', $transportador_id, PDO::PARAM_INT);
         $stmt_mensagens->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
         $stmt_mensagens->execute();
         $resultado_msg = $stmt_mensagens->fetch(PDO::FETCH_ASSOC);

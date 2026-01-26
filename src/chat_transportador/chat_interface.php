@@ -113,6 +113,11 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
+    <style>
+        /* Remover bordas/outlines indesejadas em imagens do chat */
+        .chat-messages img { border: none !important; outline: none !important; box-shadow: none !important; }
+        .chat-messages img:focus, .chat-messages img:active { outline: none !important; box-shadow: none !important; border: none !important; }
+    </style>
     <div class="chat-container">
         <div class="chat-sidebar">
             <div class="sidebar-header">
@@ -221,7 +226,32 @@ try {
                         if (msg.id > ultimaMensagemId) {
                             const div = document.createElement('div');
                             div.className = 'message ' + (msg.remetente_id == usuarioId ? 'sent' : 'received');
-                            div.innerHTML = `<div>${escapeHtml(msg.mensagem)}</div><div class="time">${msg.data_formatada}</div>`;
+                            const content = document.createElement('div');
+                            if (msg.tipo === 'imagem') {
+                                const img = document.createElement('img');
+                                img.src = msg.mensagem;
+                                img.style.maxWidth = '320px';
+                                img.style.borderRadius = '8px';
+                                img.style.display = 'block';
+                                img.alt = 'Imagem enviada';
+                                img.addEventListener('click', () => {
+                                    const modal = document.createElement('div');
+                                    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:13000;padding:20px;';
+                                    const big = document.createElement('img');
+                                    big.src = img.src; big.style.maxWidth = '98%'; big.style.maxHeight = '98%'; big.style.borderRadius = '8px';
+                                    modal.appendChild(big);
+                                    modal.addEventListener('click', () => modal.remove());
+                                    document.body.appendChild(modal);
+                                });
+                                content.appendChild(img);
+                            } else {
+                                content.textContent = msg.mensagem;
+                            }
+                            const time = document.createElement('div');
+                            time.className = 'time';
+                            time.textContent = msg.data_formatada;
+                            div.appendChild(content);
+                            div.appendChild(time);
                             container.appendChild(div);
                             ultimaMensagemId = msg.id;
                         }
@@ -258,6 +288,33 @@ try {
         });
 
         document.getElementById('message-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') document.getElementById('send-btn').click(); });
+
+        // Envio de imagem
+        const attachBtn = document.getElementById('btn-attach-image');
+        const imageInput = document.getElementById('image-input');
+        if (attachBtn && imageInput) {
+            attachBtn.addEventListener('click', () => imageInput.click());
+            imageInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const allowed = ['image/jpeg','image/png','image/webp','image/gif'];
+                if (!allowed.includes(file.type)) { alert('Formato não suportado'); imageInput.value = ''; return; }
+                if (file.size > 5 * 1024 * 1024) { alert('Arquivo muito grande (max 5MB)'); imageInput.value = ''; return; }
+                const fd = new FormData();
+                fd.append('conversa_id', conversaId);
+                fd.append('imagem', file);
+                try {
+                    const res = await fetch('send_message.php', { method: 'POST', body: fd });
+                    const data = await res.json();
+                    if (data.success) {
+                        imageInput.value = '';
+                        carregarMensagens();
+                    } else {
+                        alert(data.erro || 'Erro ao enviar imagem');
+                    }
+                } catch (err) { console.error(err); alert('Erro de conexão'); }
+            });
+        }
 
         // Inicial
         carregarMensagens();

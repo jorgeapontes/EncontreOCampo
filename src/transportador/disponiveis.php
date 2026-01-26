@@ -464,9 +464,22 @@ if (isset($_SESSION['usuario_id'])) {
             } else {
                 echo '<div class="acordos-lista">';
                 foreach ($acordos as $acordo) {
-                    // Preferir endereço atualizado da negociação, se existir
-                    $origem = $acordo['vendedor_rua'] . ', ' . $acordo['vendedor_numero'] . ' - ' . $acordo['vendedor_cidade'] . '/' . $acordo['vendedor_estado'] . ' - CEP: ' . $acordo['vendedor_cep'];
-                    $destino = $acordo['comprador_rua'] . ', ' . $acordo['comprador_numero'] . ' - ' . $acordo['comprador_cidade'] . '/' . $acordo['comprador_estado'] . ' - CEP: ' . $acordo['comprador_cep'];
+                    // Preferir endereço salvo na própria proposta (endereco_vendedor / endereco_comprador),
+                    // caso contrário montar a partir dos dados atuais do vendedor/comprador
+                    if (!empty($acordo['endereco_vendedor'])) {
+                        $origem = $acordo['endereco_vendedor'];
+                    } else {
+                            $origem = ($acordo['vendedor_rua'] ?? '') . ', ' . ($acordo['vendedor_numero'] ?? '') . ' - ' . ($acordo['vendedor_cidade'] ?? '') . '/' . ($acordo['vendedor_estado'] ?? '') . ' - CEP: ' . ($acordo['vendedor_cep'] ?? '');
+                    }
+
+                    if (!empty($acordo['endereco_comprador'])) {
+                        $destino = $acordo['endereco_comprador'];
+                    } else {
+                            $destino = ($acordo['comprador_rua'] ?? '') . ', ' . ($acordo['comprador_numero'] ?? '') . ' - ' . ($acordo['comprador_cidade'] ?? '') . '/' . ($acordo['comprador_estado'] ?? '') . ' - CEP: ' . ($acordo['comprador_cep'] ?? '');
+                    }
+                        // Montar endereço sempre a partir dos dados atuais de vendedores/compradores
+                        $origem = ($acordo['vendedor_rua'] ?? '') . ', ' . ($acordo['vendedor_numero'] ?? '') . ' - ' . ($acordo['vendedor_cidade'] ?? '') . '/' . ($acordo['vendedor_estado'] ?? '') . ' - CEP: ' . ($acordo['vendedor_cep'] ?? '');
+                        $destino = ($acordo['comprador_rua'] ?? '') . ', ' . ($acordo['comprador_numero'] ?? '') . ' - ' . ($acordo['comprador_cidade'] ?? '') . '/' . ($acordo['comprador_estado'] ?? '') . ' - CEP: ' . ($acordo['comprador_cep'] ?? '');
                     $google_maps_url = 'https://www.google.com/maps/dir/?api=1&origin=' . urlencode($origem) . '&destination=' . urlencode($destino) . '&travelmode=driving';
             ?>
                     <div class="acordo-card">
@@ -498,13 +511,13 @@ if (isset($_SESSION['usuario_id'])) {
                             </a>
                         </div>
                         <div class="acordo-actions">
-                            <a href="../visualizar_anuncio.php?anuncio_id=<?php echo intval($acordo['produto_id']); ?>" class="acordo-btn" style="background:#2566d6;color:#fff;text-align:center;text-decoration:none;">Ver anúncio</a>
                             <button type="button" class="acordo-btn" style="background:#2E7D32;color:#fff;margin-top:6px;" onclick="startChat(<?php echo $acordo['proposta_id']; ?>)">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:8px;display:inline-block;">
                                     <path d="M20 2H4a2 2 0 0 0-2 2v14l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/>
                                 </svg>
                                 Iniciar chat com <?php echo htmlspecialchars($acordo['comprador_nome']); ?>
                             </button>
+                            <a href="../visualizar_anuncio.php?anuncio_id=<?php echo intval($acordo['produto_id']); ?>" class="acordo-btn" style="background:#2566d6;color:#fff;text-align:center;text-decoration:none;">Ver anúncio</a>
                         </div>
                     </div>
             <?php

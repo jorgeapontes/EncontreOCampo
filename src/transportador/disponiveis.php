@@ -307,7 +307,7 @@ try {
                 (SELECT numero FROM vendedores WHERE id = p.vendedor_id) as vendedor_numero,
                 (SELECT cidade FROM vendedores WHERE id = p.vendedor_id) as vendedor_cidade,
                 (SELECT estado FROM vendedores WHERE id = p.vendedor_id) as vendedor_estado,
-                pr.nome as produto_nome, p.quantidade_proposta as quantidade, p.valor_total
+                pr.nome as produto_nome, pr.imagem_url as produto_imagem, p.quantidade_proposta as quantidade
                 FROM propostas p
                 INNER JOIN produtos pr ON p.produto_id = pr.id
                 WHERE p.opcao_frete = 'entregador' AND p.status = 'aceita'
@@ -331,20 +331,31 @@ try {
                             <strong>Vendedor:</strong> <?php echo htmlspecialchars($acordo['vendedor_nome']); ?><br>
                             <strong>Comprador:</strong> <?php echo htmlspecialchars($acordo['comprador_nome']); ?><br>
                             <strong>Quantidade:</strong> <?php echo htmlspecialchars($acordo['quantidade']); ?><br>
-                            <strong>Valor Total:</strong> R$ <?php echo number_format($acordo['valor_total'], 2, ',', '.'); ?>
                         </div>
+                            <?php $img = $acordo['produto_imagem'] ? htmlspecialchars($acordo['produto_imagem']) : '../../img/placeholder.png'; ?>
+                            <div style="width:100%;height:160px;overflow:hidden;margin-bottom:12px;border-radius:8px;">
+                                <a href="../visualizar_anuncio.php?anuncio_id=<?php echo intval($acordo['produto_id']); ?>">
+                                    <img src="<?php echo $img; ?>" alt="<?php echo htmlspecialchars($acordo['produto_nome']); ?>" style="width:100%;height:160px;object-fit:cover;display:block;border-radius:8px;">
+                                </a>
+                            </div>
                         <div class="acordo-info">
-                            <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($origem); ?>" target="_blank">Retirada: <?php echo htmlspecialchars($origem); ?></a><br>
-                            <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($destino); ?>" target="_blank">Entrega: <?php echo htmlspecialchars($destino); ?></a><br>
-                            <a href="<?php echo $google_maps_url; ?>" target="_blank">Ver rota no Google Maps</a>
+                            Retirada: <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($origem); ?>" target="_blank"><?php echo htmlspecialchars($origem); ?></a><br>
+                            Entrega:<a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($destino); ?>" target="_blank"> <?php echo htmlspecialchars($destino); ?></a><br>
+                            <a href="<?php echo $google_maps_url; ?>" target="_blank" style="display:inline-flex;align-items:center;gap:8px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="flex:0 0 16px;" aria-hidden="true">
+                                    <path fill="#d23f31" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/>
+                                </svg>
+                                Ver rota no Google Maps
+                            </a>
                         </div>
                         <div class="acordo-actions">
-                            <form action="enviar_proposta_frete.php" method="POST" class="form-proposta-frete">
-                                <input type="hidden" name="proposta_id" value="<?php echo $acordo['proposta_id']; ?>">
-                                <label for="valor_frete_<?php echo $acordo['proposta_id']; ?>">Valor do frete (R$):</label>
-                                <input type="number" step="0.01" min="0" name="valor_frete" id="valor_frete_<?php echo $acordo['proposta_id']; ?>" required>
-                                <button type="submit" class="acordo-btn">Enviar Proposta</button>
-                            </form>
+                            <a href="../visualizar_anuncio.php?anuncio_id=<?php echo intval($acordo['produto_id']); ?>" class="acordo-btn" style="background:#2566d6;color:#fff;text-align:center;text-decoration:none;">Ver anúncio</a>
+                            <button type="button" class="acordo-btn" style="background:#2E7D32;color:#fff;margin-top:6px;" onclick="startChat(<?php echo $acordo['proposta_id']; ?>)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:8px;display:inline-block;">
+                                    <path d="M20 2H4a2 2 0 0 0-2 2v14l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/>
+                                </svg>
+                                Iniciar chat com <?php echo htmlspecialchars($acordo['comprador_nome']); ?>
+                            </button>
                         </div>
                     </div>
             <?php
@@ -367,6 +378,27 @@ try {
                 hamburger.classList.remove("active");
                 navMenu.classList.remove("active");
             }));
+        }
+        
+        async function startChat(propostaId) {
+            try {
+                const form = new URLSearchParams();
+                form.append('proposta_id', propostaId);
+                const res = await fetch('../chat/create_conversa_transportador.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: form
+                });
+                const data = await res.json();
+                if (data.success && data.conversa_id) {
+                    window.location.href = '../chat_transportador/chat_interface.php?conversa_id=' + data.conversa_id;
+                } else {
+                    alert(data.erro || 'Erro ao iniciar chat');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Erro de conexão ao iniciar chat');
+            }
         }
     </script>
 </body>

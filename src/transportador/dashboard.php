@@ -230,6 +230,13 @@ if (!$is_pendente && $transportador_id) {
                         <p>Ver</p>
                     </div>
                 </a>
+                <a href="meus_chats.php">
+                    <div class="card">
+                        <i class="fas fa-comments"></i>
+                        <h3>Chats</h3>
+                        <p><?php echo $total_mensagens_nao_lidas; ?> não lidas</p>
+                    </div>
+                </a>
                 <a href="entregas.php">
                     <div class="card">
                         <i class="fas fa-clock"></i>
@@ -249,13 +256,6 @@ if (!$is_pendente && $transportador_id) {
                         <i class="fas fa-book"></i>
                         <h3>Minhas Propostas</h3>
                         <p>Ver</p>
-                    </div>
-                </a>
-                <a href="meus_chats.php">
-                    <div class="card">
-                        <i class="fas fa-comments"></i>
-                        <h3>Chats</h3>
-                        <p><?php echo $total_mensagens_nao_lidas; ?> não lidas</p>
                     </div>
                 </a>
             <?php endif; ?>

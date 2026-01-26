@@ -296,13 +296,7 @@ try {
                                 btnAceitar.style.cssText = 'background:#42b72a;color:#fff;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;';
                                 btnAceitar.addEventListener('click', async () => {
                                     if (!dados || !dados.propostas_transportador_id) return alert('ID da proposta não encontrado');
-                                    btnAceitar.disabled = true;
-                                    btnAceitar.textContent = 'Processando...';
-                                    try {
-                                        const res = await fetch('responder_proposta.php', {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({acao:'aceitar', id: dados.propostas_transportador_id})});
-                                        const j = await res.json();
-                                        if (j.success) { alert('Proposta aceita'); carregarMensagens(); } else alert(j.erro || j.error || 'Erro');
-                                    } catch(e){ console.error(e); alert('Erro de conexão'); }
+                                    await performPropostaAction('aceitar', dados.propostas_transportador_id, btnAceitar, btnRecusar, actions);
                                 });
 
                                 const btnRecusar = document.createElement('button');
@@ -311,13 +305,7 @@ try {
                                 btnRecusar.addEventListener('click', async () => {
                                     if (!dados || !dados.propostas_transportador_id) return alert('ID da proposta não encontrado');
                                     if (!confirm('Deseja recusar esta proposta?')) return;
-                                    btnRecusar.disabled = true;
-                                    btnRecusar.textContent = 'Processando...';
-                                    try {
-                                        const res = await fetch('responder_proposta.php', {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({acao:'recusar', id: dados.propostas_transportador_id})});
-                                        const j = await res.json();
-                                        if (j.success) { alert('Proposta recusada'); carregarMensagens(); } else alert(j.erro || j.error || 'Erro');
-                                    } catch(e){ console.error(e); alert('Erro de conexão'); }
+                                    await performPropostaAction('recusar', dados.propostas_transportador_id, btnRecusar, btnAceitar, actions);
                                 });
 
                                 actions.appendChild(btnRecusar);
@@ -378,12 +366,7 @@ try {
                                                 btnAceitar.style.cssText = 'background:#42b72a;color:#fff;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;';
                                                 btnAceitar.addEventListener('click', async () => {
                                                     if (!dados || !dados.propostas_transportador_id) return alert('ID da proposta não encontrado');
-                                                    btnAceitar.disabled = true; btnAceitar.textContent = 'Processando...';
-                                                    try {
-                                                        const res = await fetch('responder_proposta.php', {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({acao:'aceitar', id: dados.propostas_transportador_id})});
-                                                        const j = await res.json();
-                                                        if (j.success) { alert('Proposta aceita'); carregarMensagens(); } else alert(j.erro || j.error || 'Erro');
-                                                    } catch(e){ console.error(e); alert('Erro de conexão'); }
+                                                    await performPropostaAction('aceitar', dados.propostas_transportador_id, btnAceitar, btnRecusar, actions);
                                                 });
                                                 const btnRecusar = document.createElement('button');
                                                 btnRecusar.textContent = 'Recusar';
@@ -391,12 +374,7 @@ try {
                                                 btnRecusar.addEventListener('click', async () => {
                                                     if (!dados || !dados.propostas_transportador_id) return alert('ID da proposta não encontrado');
                                                     if (!confirm('Deseja recusar esta proposta?')) return;
-                                                    btnRecusar.disabled = true; btnRecusar.textContent = 'Processando...';
-                                                    try {
-                                                        const res = await fetch('responder_proposta.php', {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({acao:'recusar', id: dados.propostas_transportador_id})});
-                                                        const j = await res.json();
-                                                        if (j.success) { alert('Proposta recusada'); carregarMensagens(); } else alert(j.erro || j.error || 'Erro');
-                                                    } catch(e){ console.error(e); alert('Erro de conexão'); }
+                                                    await performPropostaAction('recusar', dados.propostas_transportador_id, btnRecusar, btnAceitar, actions);
                                                 });
                                                 actions.appendChild(btnRecusar); actions.appendChild(btnAceitar); card.appendChild(actions);
                                                 <?php endif; ?>
@@ -431,6 +409,51 @@ try {
         function escapeHtml(text) {
             if (!text) return '';
             return text.replace(/[&<>"']/g, function(m) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m]; });
+        }
+
+        // Centraliza a ação de aceitar/recusar propostas e garante atualização correta da UI
+        async function performPropostaAction(action, ptId, primaryBtn, secondaryBtn, actionsContainer) {
+            const buttons = [];
+            if (primaryBtn) buttons.push({el: primaryBtn});
+            if (secondaryBtn) buttons.push({el: secondaryBtn});
+            buttons.forEach(b => { try { b.el.disabled = true; b.el._oldText = b.el.textContent; b.el.textContent = 'Processando...'; } catch (e) {} });
+            try {
+                const res = await fetch('responder_proposta.php', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({acao: action, id: ptId})});
+                const j = await res.json();
+                if (j.success) {
+                    const finalText = (action === 'aceitar') ? 'Proposta aceita' : 'Proposta recusada';
+                    alert(finalText);
+                    try {
+                        if (actionsContainer) {
+                            actionsContainer.innerHTML = '';
+                            const span = document.createElement('div');
+                            span.style.cssText = 'padding:10px 12px;border-radius:8px;background:#f3f6f4;color:#213;display:inline-block;font-weight:700;';
+                            span.textContent = finalText;
+                            actionsContainer.appendChild(span);
+                        } else {
+                            const firstBtn = buttons.length ? buttons[0].el : null;
+                            if (firstBtn && firstBtn.parentElement) {
+                                const parent = firstBtn.parentElement;
+                                parent.innerHTML = '';
+                                const span = document.createElement('div');
+                                span.style.cssText = 'padding:10px 12px;border-radius:8px;background:#f3f6f4;color:#213;display:inline-block;font-weight:700;';
+                                span.textContent = finalText;
+                                parent.appendChild(span);
+                            }
+                        }
+                        // Garantir que referências a botões tenham estado limpo
+                        buttons.forEach(b => { try { b.el.disabled = false; b.el.textContent = b.el._oldText || b.el.textContent; } catch (e) {} });
+                    } catch (e) { console.error(e); }
+                    carregarMensagens();
+                } else {
+                    alert(j.erro || j.error || 'Erro ao processar');
+                    buttons.forEach(b => { try { b.el.disabled = false; b.el.textContent = b.el._oldText || b.el.textContent; } catch (e) {} });
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Erro de conexão');
+                buttons.forEach(b => { try { b.el.disabled = false; b.el.textContent = b.el._oldText || b.el.textContent; } catch (err) {} });
+            }
         }
 
         document.getElementById('send-btn').addEventListener('click', async () => {

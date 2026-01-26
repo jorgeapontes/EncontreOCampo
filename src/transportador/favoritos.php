@@ -27,9 +27,19 @@ $favoritos = [];
 if ($transportador_id) {
     try {
         $sql = "SELECT tf.id as fav_id, p.*, pr.nome as produto_nome, pr.imagem_url as produto_imagem,
-                   (SELECT nome_comercial FROM compradores WHERE id = p.comprador_id) as comprador_nome,
-                   (SELECT nome_comercial FROM vendedores WHERE id = p.vendedor_id) as vendedor_nome
-                FROM transportador_favoritos tf
+               (SELECT nome_comercial FROM compradores WHERE id = p.comprador_id) as comprador_nome,
+               (SELECT cep FROM compradores WHERE id = p.comprador_id) as comprador_cep,
+               (SELECT rua FROM compradores WHERE id = p.comprador_id) as comprador_rua,
+               (SELECT numero FROM compradores WHERE id = p.comprador_id) as comprador_numero,
+               (SELECT cidade FROM compradores WHERE id = p.comprador_id) as comprador_cidade,
+               (SELECT estado FROM compradores WHERE id = p.comprador_id) as comprador_estado,
+               (SELECT nome_comercial FROM vendedores WHERE id = p.vendedor_id) as vendedor_nome,
+               (SELECT cep FROM vendedores WHERE id = p.vendedor_id) as vendedor_cep,
+               (SELECT rua FROM vendedores WHERE id = p.vendedor_id) as vendedor_rua,
+               (SELECT numero FROM vendedores WHERE id = p.vendedor_id) as vendedor_numero,
+               (SELECT cidade FROM vendedores WHERE id = p.vendedor_id) as vendedor_cidade,
+               (SELECT estado FROM vendedores WHERE id = p.vendedor_id) as vendedor_estado
+            FROM transportador_favoritos tf
                 JOIN propostas p ON tf.proposta_id = p.ID
                 JOIN produtos pr ON p.produto_id = pr.id
                 WHERE tf.transportador_id = :transportador_id
@@ -171,6 +181,19 @@ if ($transportador_id) {
                         </div>
                         <p><strong>Vendedor:</strong> <?php echo htmlspecialchars($f['vendedor_nome']); ?></p>
                         <p><strong>Comprador:</strong> <?php echo htmlspecialchars($f['comprador_nome']); ?></p>
+                        <?php
+                            $origem = ($f['vendedor_rua'] ?? '') . ', ' . ($f['vendedor_numero'] ?? '') . ' - ' . ($f['vendedor_cidade'] ?? '') . '/' . ($f['vendedor_estado'] ?? '') . ' - CEP: ' . ($f['vendedor_cep'] ?? '');
+                            $destino = ($f['comprador_rua'] ?? '') . ', ' . ($f['comprador_numero'] ?? '') . ' - ' . ($f['comprador_cidade'] ?? '') . '/' . ($f['comprador_estado'] ?? '') . ' - CEP: ' . ($f['comprador_cep'] ?? '');
+                            $maps = 'https://www.google.com/maps/dir/?api=1&origin=' . urlencode($origem) . '&destination=' . urlencode($destino) . '&travelmode=driving';
+                        ?>
+                        <div style="margin-top:6px;font-size:0.95rem;">
+                            Retirada: <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($origem); ?>" target="_blank"><?php echo htmlspecialchars($origem); ?></a><br>
+                            Entrega: <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($destino); ?>" target="_blank"><?php echo htmlspecialchars($destino); ?></a><br>
+                            <a href="<?php echo $maps; ?>" target="_blank" style="display:inline-flex;align-items:center;gap:8px;margin-top:6px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="flex:0 0 16px;" aria-hidden="true"><path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+                                Ver rota no Google Maps
+                            </a>
+                        </div>
                         <div class="acordo-actions">
                             <a href="../visualizar_anuncio.php?anuncio_id=<?php echo $produto_id; ?>" class="acordo-btn" style="background:#2566d6">Ver anúncio</a>
                             <button class="acordo-btn" onclick="startChat(<?php echo $proposta_id; ?>)" style="background:#2E7D32">Abrir chat</button>

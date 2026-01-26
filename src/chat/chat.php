@@ -134,6 +134,30 @@ if ($outro_usuario_id) {
     }
 }
 
+if ($conversa_id && $outro_usuario_id) {
+    // Buscar informações do outro usuário para pegar a foto
+    $sql_outro_usuario_foto = "SELECT u.*, 
+        IF(u.tipo = 'comprador', c.foto_perfil_url, 
+           IF(u.tipo = 'vendedor', v.foto_perfil_url,
+              IF(u.tipo = 'transportador', t.foto_perfil_url, NULL))) as foto_perfil
+        FROM usuarios u
+        LEFT JOIN compradores c ON u.tipo = 'comprador' AND u.id = c.usuario_id
+        LEFT JOIN vendedores v ON u.tipo = 'vendedor' AND u.id = v.usuario_id
+        LEFT JOIN transportadores t ON u.tipo = 'transportador' AND u.id = t.usuario_id
+        WHERE u.id = :outro_usuario_id";
+    
+    $stmt_foto = $conn->prepare($sql_outro_usuario_foto);
+    $stmt_foto->bindParam(':outro_usuario_id', $outro_usuario_id, PDO::PARAM_INT);
+    $stmt_foto->execute();
+    $outro_usuario_foto = $stmt_foto->fetch(PDO::FETCH_ASSOC);
+    
+    // Definir a URL da foto do perfil ou usar o ícone padrão
+    $foto_perfil = null;
+    if ($outro_usuario_foto && !empty($outro_usuario_foto['foto_perfil'])) {
+        $foto_perfil = $outro_usuario_foto['foto_perfil'];
+    }
+}
+
 // array com opções de pagamento após a definição das variáveis
 $opcoes_pagamento = [
     'pagamento_ato' => 'Pagamento no Ato',
@@ -399,8 +423,18 @@ if ($conversa_id) {
             <?php if ($conversa_id && $outro_usuario_id): ?>
                 <div class="chat-header">
                     <div class="usuario-info">
-                        <div class="avatar">
-                            <i class="fas fa-user"></i>
+                        <div class="avatar-container">
+                            <?php if ($foto_perfil): ?>
+                                <div class="avatar" id="avatar-usuario" data-foto="<?php echo htmlspecialchars($foto_perfil); ?>" style="cursor: pointer;">
+                                    <img src="<?php echo htmlspecialchars($foto_perfil); ?>" 
+                                        alt="<?php echo htmlspecialchars($outro_usuario_nome); ?>"
+                                        onerror="substituirPorIcone(this);">
+                                </div>
+                            <?php else: ?>
+                                <div class="avatar" id="avatar-usuario" style="cursor: pointer;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            <?php endif; ?>
                         </div>
                         <div>
                             <h3><?php echo htmlspecialchars($outro_usuario_nome); ?></h3>
@@ -412,7 +446,32 @@ if ($conversa_id) {
                         Voltar
                     </a>
                 </div>
-                
+
+                <!-- Modal para visualização ampliada da foto de perfil -->
+                <div id="modal-foto-perfil" class="modal-foto-perfil">
+                    <div class="modal-foto-content">
+                        <div class="modal-foto-header">
+                            <h3>Foto de perfil de <?php echo htmlspecialchars($outro_usuario_nome); ?></h3>
+                            <button class="btn-fechar-foto" id="fechar-foto">&times;</button>
+                        </div>
+                        <div class="modal-foto-body">
+                            <?php if ($foto_perfil): ?>
+                                <img src="<?php echo htmlspecialchars($foto_perfil); ?>" 
+                                    alt="Foto de perfil de <?php echo htmlspecialchars($outro_usuario_nome); ?>"
+                                    id="foto-ampliada">
+                            <?php else: ?>
+                                <div class="sem-foto">
+                                    <i class="fas fa-user-circle"></i>
+                                    <p>Usuário não tem foto de perfil</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="modal-foto-footer">
+                            <button class="btn-fechar-modal-foto" id="fechar-modal-foto">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="chat-messages" id="chat-messages"></div>
                 
                 <div class="chat-input">
@@ -449,8 +508,8 @@ if ($conversa_id) {
                 </div>
             <?php endif; ?>
         </div>
-    </div>
-    
+    </div> 
+
 <!-- MODAL DE NEGOCIAÇÃO -->
     <div class="modal-negociacao" id="modal-negociacao">
         <div class="modal-negociacao-content">
@@ -1796,6 +1855,50 @@ window.addEventListener('beforeunload', function() {
         clearInterval(verificarPropostaInterval);
     }
 });
+
+// Lógica para visualização ampliada da foto de perfil
+const avatarUsuario = document.getElementById('avatar-usuario');
+const modalFotoPerfil = document.getElementById('modal-foto-perfil');
+const btnFecharFoto = document.getElementById('fechar-foto');
+const btnFecharModalFoto = document.getElementById('fechar-modal-foto');
+
+if (avatarUsuario) {
+    avatarUsuario.addEventListener('click', () => {
+        modalFotoPerfil.classList.add('active');
+    });
+}
+
+// Fechar modal ao clicar nos botões de fechar
+if (btnFecharFoto) {
+    btnFecharFoto.addEventListener('click', () => {
+        modalFotoPerfil.classList.remove('active');
+    });
+}
+
+if (btnFecharModalFoto) {
+    btnFecharModalFoto.addEventListener('click', () => {
+        modalFotoPerfil.classList.remove('active');
+    });
+}
+
+// Fechar modal ao clicar fora da imagem
+modalFotoPerfil.addEventListener('click', (e) => {
+    if (e.target === modalFotoPerfil) {
+        modalFotoPerfil.classList.remove('active');
+    }
+});
+
+// Fechar modal com tecla ESC
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalFotoPerfil.classList.contains('active')) {
+        modalFotoPerfil.classList.remove('active');
+    }
+});
+
+function substituirPorIcone(imgElement) {
+    imgElement.style.display = 'none';
+    imgElement.parentElement.innerHTML = '<i class="fas fa-user"></i>';
+}
     </script>
     <?php endif; ?>
 </body>

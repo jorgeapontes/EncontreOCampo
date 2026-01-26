@@ -83,7 +83,27 @@ try {
             }
         }
 
-        // Criar entrega
+        // Resolver vendedor_id para inserir em entregas (pode ser que propostas.vendedor_id seja usuario_id ou id da tabela vendedores)
+        $vendedor_para_entrega = null;
+        if (!empty($row['vendedor_id'])) {
+            // Tentar como id da tabela vendedores
+            $st_vchk = $conn->prepare("SELECT id FROM vendedores WHERE id = :vid LIMIT 1");
+            $st_vchk->bindParam(':vid', $row['vendedor_id'], PDO::PARAM_INT);
+            $st_vchk->execute();
+            $vchk = $st_vchk->fetch(PDO::FETCH_ASSOC);
+            if ($vchk) {
+                $vendedor_para_entrega = $vchk['id'];
+            } else {
+                // Tentar como usuario_id (legado)
+                $st_vchk2 = $conn->prepare("SELECT id FROM vendedores WHERE usuario_id = :uid LIMIT 1");
+                $st_vchk2->bindParam(':uid', $row['vendedor_id'], PDO::PARAM_INT);
+                $st_vchk2->execute();
+                $vchk2 = $st_vchk2->fetch(PDO::FETCH_ASSOC);
+                if ($vchk2) $vendedor_para_entrega = $vchk2['id'];
+            }
+        }
+
+        // Criar entrega (usar NULL para vendedor se não encontrado)
         $sql_ent = "INSERT INTO entregas (produto_id, transportador_id, endereco_origem, endereco_destino, status, data_solicitacao, valor_frete, vendedor_id, comprador_id, data_aceitacao, observacoes, status_detalhado) VALUES (:produto_id, :transportador_id, :end_origem, :end_destino, 'pendente', NOW(), :valor_frete, :vendedor_id, :comprador_id, NOW(), :observacoes, 'aguardando_entrega')";
         $st_ent = $conn->prepare($sql_ent);
         $st_ent->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
@@ -91,7 +111,11 @@ try {
         $st_ent->bindParam(':end_origem', $end_origem);
         $st_ent->bindParam(':end_destino', $end_destino);
         $st_ent->bindParam(':valor_frete', $row['valor_frete']);
-        $st_ent->bindParam(':vendedor_id', $row['vendedor_id'], PDO::PARAM_INT);
+        if ($vendedor_para_entrega !== null) {
+            $st_ent->bindValue(':vendedor_id', $vendedor_para_entrega, PDO::PARAM_INT);
+        } else {
+            $st_ent->bindValue(':vendedor_id', null, PDO::PARAM_NULL);
+        }
         $st_ent->bindParam(':comprador_id', $row['comprador_id'], PDO::PARAM_INT);
         $st_ent->bindParam(':observacoes', $row['observacoes']);
         $st_ent->execute();

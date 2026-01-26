@@ -36,9 +36,9 @@ try {
     }
 
     if ($ultimo_id > 0) {
-        $sql = "SELECT id, remetente_id, mensagem, tipo, DATE_FORMAT(data_envio, '%d/%m %H:%i') as data_formatada, lida FROM chat_mensagens WHERE conversa_id = :conversa_id AND id > :ultimo_id ORDER BY id ASC";
+        $sql = "SELECT id, remetente_id, mensagem, tipo, dados_json, DATE_FORMAT(data_envio, '%d/%m %H:%i') as data_formatada, lida FROM chat_mensagens WHERE conversa_id = :conversa_id AND id > :ultimo_id ORDER BY id ASC";
     } else {
-        $sql = "SELECT id, remetente_id, mensagem, tipo, DATE_FORMAT(data_envio, '%d/%m %H:%i') as data_formatada, lida FROM chat_mensagens WHERE conversa_id = :conversa_id ORDER BY id ASC";
+        $sql = "SELECT id, remetente_id, mensagem, tipo, dados_json, DATE_FORMAT(data_envio, '%d/%m %H:%i') as data_formatada, lida FROM chat_mensagens WHERE conversa_id = :conversa_id ORDER BY id ASC";
     }
 
     $stmt = $conn->prepare($sql);

@@ -86,29 +86,33 @@ $filtro = isset($_GET['filtro']) ? $_GET['filtro'] : 'todas';
 // BUSCAR CONVERSAS DO TRANSPORTADOR
 try {
     // --- ALTERAÇÃO NO SELECT: Filtrar transportador_excluiu = 0 ---
-    $sql = "SELECT 
-                cc.id AS conversa_id,
-                cc.produto_id,
-                cc.ultima_mensagem,
-                cc.ultima_mensagem_data,
-                p.nome AS produto_nome,
-                p.imagem_url AS produto_imagem,
-                p.preco AS produto_preco,
-                v.id AS vendedor_sistema_id,
-                u.id AS vendedor_usuario_id,
-                u.nome AS vendedor_nome,
-                v.nome_comercial AS vendedor_nome_comercial,
-                cc.favorito_transportador AS arquivado,
-                (SELECT COUNT(*) 
-                 FROM chat_mensagens cm 
-                 WHERE cm.conversa_id = cc.id 
-                 AND cm.remetente_id != :usuario_id 
-                 AND cm.lida = 0) AS mensagens_nao_lidas
+        $sql = "SELECT 
+                 cc.id AS conversa_id,
+                 cc.produto_id,
+                 cc.transportador_id,
+                 cc.ultima_mensagem,
+                 cc.ultima_mensagem_data,
+                 p.nome AS produto_nome,
+                 p.imagem_url AS produto_imagem,
+                 p.preco AS produto_preco,
+                cc.comprador_id,
+                uc.nome AS comprador_nome,
+                 v.id AS vendedor_sistema_id,
+                 u.id AS vendedor_usuario_id,
+                 u.nome AS vendedor_nome,
+                 v.nome_comercial AS vendedor_nome_comercial,
+                 cc.favorito_transportador AS arquivado,
+                 (SELECT COUNT(*) 
+                  FROM chat_mensagens cm 
+                  WHERE cm.conversa_id = cc.id 
+                  AND cm.remetente_id != :usuario_id 
+                  AND cm.lida = 0) AS mensagens_nao_lidas
             FROM chat_conversas cc
             INNER JOIN produtos p ON cc.produto_id = p.id
             INNER JOIN vendedores v ON p.vendedor_id = v.id
             INNER JOIN usuarios u ON v.usuario_id = u.id
-            WHERE cc.transportador_id = :usuario_id
+            LEFT JOIN usuarios uc ON cc.comprador_id = uc.id
+            WHERE (cc.transportador_id = :usuario_id OR cc.id IN (SELECT conversa_id FROM chat_mensagens WHERE remetente_id = :usuario_id))
             AND cc.status = 'ativo'
             AND cc.transportador_excluiu = 0"; // <-- LINHA ADICIONADA
     
@@ -150,7 +154,7 @@ try {
     // --- ALTERAÇÃO NA CONTAGEM: Filtrar excluídos ---
     $sql_arquivadas = "SELECT COUNT(*) as total 
                       FROM chat_conversas cc
-                      WHERE cc.transportador_id = :usuario_id 
+                      WHERE (cc.transportador_id = :usuario_id OR cc.id IN (SELECT conversa_id FROM chat_mensagens WHERE remetente_id = :usuario_id))
                       AND cc.status = 'ativo'
                       AND cc.favorito_transportador = 1
                       AND cc.transportador_excluiu = 0"; // <-- LINHA ADICIONADA
@@ -354,7 +358,7 @@ try {
     <div class="main-content">
         <div class="page-header">
             <h1><i class="fas fa-comments"></i> Minhas Conversas</h1>
-            <p>Gerencie seus chats com compradores sobre produtos</p>
+            <p>Gerencie seus chats com usuários sobre produtos</p>
             
             <div class="stats-bar">
                 <div class="stat-item">
@@ -410,12 +414,18 @@ try {
                         $tem_nao_lidas = $conversa['mensagens_nao_lidas'] > 0;
                         $data_formatada = $conversa['ultima_mensagem_data'] ? date('d/m/Y H:i', strtotime($conversa['ultima_mensagem_data'])) : '';
                         $vendedor_display = $conversa['vendedor_nome_comercial'] ?: $conversa['vendedor_nome'];
+                        $contato_display = !empty($conversa['comprador_nome']) ? $conversa['comprador_nome'] : $vendedor_display;
                         $esta_arquivado = $conversa['arquivado'] == 1;
                         
                         if ($mostrar_arquivados || $esta_arquivado) {
                             $chat_url = '#';
                         } else {
-                            $chat_url = "../chat/chat.php?produto_id={$conversa['produto_id']}&ref=meus_chats&aba=" . ($mostrar_arquivados ? 'arquivados' : 'ativos');
+                            // Se conversa tem transportador (este usuário), abrir interface do transportador
+                            if (!empty($conversa['transportador_id']) && $conversa['transportador_id'] == $usuario_id) {
+                                $chat_url = "../chat_transportador/chat_interface.php?conversa_id={$conversa['conversa_id']}";
+                            } else {
+                                $chat_url = "../chat/chat.php?produto_id={$conversa['produto_id']}&ref=meus_chats&aba=" . ($mostrar_arquivados ? 'arquivados' : 'ativos');
+                            }
                         }
                     ?>
                         <div class="conversa-card <?php echo $tem_nao_lidas ? 'nao-lida' : ''; ?> <?php echo $esta_arquivado ? 'arquivado' : ''; ?>" 
@@ -450,8 +460,8 @@ try {
                                     </div>
                                     
                                     <div class="vendedor-info">
-                                        <i class="fas fa-store"></i>
-                                        Vendedor: <?php echo htmlspecialchars($vendedor_display); ?>
+                                        <i class="fas fa-user"></i>
+                                        Contato: <?php echo htmlspecialchars($contato_display); ?>
                                         <span class="produto-preco">- R$ <?php echo number_format($conversa['produto_preco'], 2, ',', '.'); ?></span>
                                     </div>
                                     
@@ -506,7 +516,7 @@ try {
                             <?php elseif ($filtro === 'nao-lidos'): ?>
                                 Você não tem mensagens novas no momento.
                             <?php else: ?>
-                                Quando você conversar com compradores sobre entregas, as conversas aparecerão aqui.
+                                Quando você conversar com usuários sobre entregas, as conversas aparecerão aqui.
                             <?php endif; ?>
                         </p>
                         <?php if (!$mostrar_arquivados && $filtro === 'todas'): ?>
@@ -565,7 +575,7 @@ try {
                 <p>Tem certeza que deseja excluir esta conversa?</p>
                 <ul style="margin-left: 20px; margin-top: 10px; color: #666;">
                     <li>A conversa sumirá da sua lista <strong>permanentemente</strong>.</li>
-                    <li>O comprador ainda poderá ver a conversa.</li>
+                    <li>O outro usuário ainda poderá ver a conversa.</li>
                     <li>O administrador ainda poderá auditar a conversa.</li>
                 </ul>
             </div>

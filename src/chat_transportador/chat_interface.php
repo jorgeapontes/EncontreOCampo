@@ -65,6 +65,38 @@ try {
         $outro_papel = 'Comprador';
     }
 
+    // Determinar id do outro usuário para buscar foto de perfil
+    $outro_usuario_id = null;
+    if ($conv['comprador_id'] == $uid) {
+        $outro_usuario_id = $conv['transportador_id'];
+    } elseif (!empty($conv['transportador_id']) && $conv['transportador_id'] == $uid) {
+        $outro_usuario_id = $conv['comprador_id'];
+    } else {
+        $outro_usuario_id = $conv['comprador_id'];
+    }
+
+    // Buscar foto de perfil do outro usuário (suporta comprador/vendedor/transportador)
+    $foto_perfil = '../../img/no-user-image.png';
+    if (!empty($outro_usuario_id)) {
+        $sql_foto = "SELECT u.*, 
+            IF(u.tipo = 'comprador', c.foto_perfil_url, 
+               IF(u.tipo = 'vendedor', v.foto_perfil_url,
+                  IF(u.tipo = 'transportador', t.foto_perfil_url, NULL))) as foto_perfil
+            FROM usuarios u
+            LEFT JOIN compradores c ON u.tipo = 'comprador' AND u.id = c.usuario_id
+            LEFT JOIN vendedores v ON u.tipo = 'vendedor' AND u.id = v.usuario_id
+            LEFT JOIN transportadores t ON u.tipo = 'transportador' AND u.id = t.usuario_id
+            WHERE u.id = :outro_id LIMIT 1";
+
+        $stmt_foto = $conn->prepare($sql_foto);
+        $stmt_foto->bindParam(':outro_id', $outro_usuario_id, PDO::PARAM_INT);
+        $stmt_foto->execute();
+        $res_foto = $stmt_foto->fetch(PDO::FETCH_ASSOC);
+        if ($res_foto && !empty($res_foto['foto_perfil'])) {
+            $foto_perfil = $res_foto['foto_perfil'];
+        }
+    }
+
 } catch (PDOException $e) {
     echo 'Erro ao carregar conversa.';
     exit();
@@ -114,7 +146,7 @@ try {
             <div class="chat-header">
                 <div class="usuario-info">
                     <div class="avatar-container">
-                        <div class="avatar"><i class="fas fa-user"></i></div>
+                        <img id="outro-avatar" src="<?php echo htmlspecialchars($foto_perfil); ?>" alt="Avatar" style="width:56px;height:56px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid #eee;">
                     </div>
                     <div>
                         <h3><?php echo htmlspecialchars($outro_nome); ?></h3>
@@ -138,6 +170,29 @@ try {
     </div>
 
     <script>
+        // Avatar modal
+        (function(){
+            const avatar = document.getElementById('outro-avatar');
+            if (avatar) {
+                // criar modal dinamicamente
+                const modal = document.createElement('div');
+                modal.id = 'avatar-modal';
+                modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:12000;align-items:center;justify-content:center;padding:20px;';
+                const img = document.createElement('img');
+                img.id = 'avatar-modal-img';
+                img.style.cssText = 'max-width:96%;max-height:96%;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+                modal.appendChild(img);
+                document.body.appendChild(modal);
+
+                avatar.addEventListener('click', function(){
+                    img.src = this.src;
+                    modal.style.display = 'flex';
+                });
+
+                modal.addEventListener('click', function(){ modal.style.display = 'none'; img.src = ''; });
+                document.addEventListener('keydown', function(e){ if (e.key === 'Escape') modal.style.display = 'none'; });
+            }
+        })();
         function goBack(e) {
             if (e) e.preventDefault();
             try {

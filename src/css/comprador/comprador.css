@@ -1,197 +1,199 @@
- /* Estilos base do seu index.css são herdados */
-        
-        .proposta-container {
-            padding-top: 100px;
-            max-width: 750px; /* Largura ideal para formulários */
-            margin: 0 auto;
-        }
+html {
+    scrollbar-gutter: stable;
+}
 
-        /* Título e Contexto */
-        .proposta-container h1 {
-            color: var(--dark-color);
-            margin-bottom: 5px;
-        }
-        
-        /* Box de Contexto do Anúncio */
-        .anuncio-context {
-            background-color: var(--primary-light);
-            color: var(--dark-color);
-            padding: 10px 15px;
-            border-left: 5px solid var(--primary-color);
-            margin-bottom: 25px;
-            font-size: 1.1em;
-            font-weight: 500;
-            border-radius: 4px;
-        }
+.proposta-container {
+    padding-top: 100px;
+    max-width: 750px; /* Largura ideal para formulários */
+    margin: 0 auto;
+}
 
-        /* Detalhes do Anúncio Original */
-        .anuncio-detalhes {
-            background-color: var(--gray);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
+/* Título e Contexto */
+.proposta-container h1 {
+    color: var(--dark-color);
+    margin-bottom: 5px;
+}
 
-        .anuncio-detalhes h3 {
-            color: var(--dark-color);
-            margin-bottom: 15px;
-            border-bottom: 1px dashed #ccc;
-            padding-bottom: 10px;
-        }
-        
-        .detail-group p {
-            margin-bottom: 5px;
-        }
+/* Box de Contexto do Anúncio */
+.anuncio-context {
+    background-color: var(--primary-light);
+    color: var(--dark-color);
+    padding: 10px 15px;
+    border-left: 5px solid var(--primary-color);
+    margin-bottom: 25px;
+    font-size: 1.1em;
+    font-weight: 500;
+    border-radius: 4px;
+}
 
-        /* Formulário de Proposta */
-        .proposta-form {
-            padding: 30px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background-color: var(--white);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        }
+/* Detalhes do Anúncio Original */
+.anuncio-detalhes {
+    background-color: var(--gray);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
 
-        .form-group {
-            margin-bottom: 25px;
-        }
+.anuncio-detalhes h3 {
+    color: var(--dark-color);
+    margin-bottom: 15px;
+    border-bottom: 1px dashed #ccc;
+    padding-bottom: 10px;
+}
 
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: var(--text-color);
-        }
+.detail-group p {
+    margin-bottom: 5px;
+}
 
-        .proposta-form input[type="number"],
-        .proposta-form textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 1em;
-            transition: border-color 0.3s, box-shadow 0.3s;
-            box-sizing: border-box; 
-        }
+/* Formulário de Proposta */
+.proposta-form {
+    padding: 30px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: var(--white);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
 
-        .proposta-form input[type="number"]:focus,
-        .proposta-form textarea:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
-            outline: none;
-        }
-        
-        .proposta-form textarea {
-            resize: vertical;
-        }
+.form-group {
+    margin-bottom: 25px;
+}
 
-        .form-group small {
-            display: block;
-            margin-top: 5px;
-            color: var(--text-light);
-            font-size: 0.9em;
-        }
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--text-color);
+}
 
-        /* Botões */
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            text-decoration: none; 
-            display: inline-block;
-            margin-right: 15px;
-        }
+.proposta-form input[type="number"],
+.proposta-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    box-sizing: border-box; 
+}
 
-        .btn-success {
-            background-color: var(--secondary-color);
-            color: var(--text-color);
-        }
+.proposta-form input[type="number"]:focus,
+.proposta-form textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+    outline: none;
+}
 
-        .btn-success:hover {
-            background-color: #FFB74D;
-        }
+.proposta-form textarea {
+    resize: vertical;
+}
 
-        .btn-secondary {
-            background-color: #e0e0e0;
-            color: #333;
-            border: 1px solid #ccc;
-        }
+.form-group small {
+    display: block;
+    margin-top: 5px;
+    color: var(--text-light);
+    font-size: 0.9em;
+}
 
-        .btn-secondary:hover {
-            background-color: #cccccc;
-        }
-        /*nav-link*/
-        .nav-menu {
-            display: flex;
-            list-style: none;
-            align-items: center;
-        }
+/* Botões */
+.btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-decoration: none; 
+    display: inline-block;
+    margin-right: 15px;
+}
 
-        .nav-item {
-            margin-left: 30px;
-        }
+.btn-success {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+}
 
-        .nav-link {
-            color: var(--text-color);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 1rem;
-            padding: 10px 0;
-            position: relative;
-            transition: color 0.3s ease;
-        }
+.btn-success:hover {
+    background-color: #FFB74D;
+}
 
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: 0;
-            left: 0;
-            background-color: var(--primary-color);
-            transition: width 0.3s ease;
-        }
+.btn-secondary {
+    background-color: #e0e0e0;
+    color: #333;
+    border: 1px solid #ccc;
+}
 
-        .nav-link.active {
-            color: var(--primary-color);
-        }
+.btn-secondary:hover {
+    background-color: #cccccc;
+}
+/*nav-link*/
+.nav-menu {
+    display: flex;
+    list-style: none;
+    align-items: center;
+}
 
-        .nav-link.active::after {
-            width: 100%;
-        }
+.nav-item {
+    margin-left: 30px;
+}
 
-        .nav-link:hover {
-            color: var(--primary-color);
-        }
+.nav-link {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 10px 0;
+    position: relative;
+    transition: color 0.3s ease;
+}
 
-        .nav-link:hover::after {
-            width: 100%;
-        }
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
 
-        .nav-link.exit-button {
-            background-color: rgb(230, 30, 30);
-            color: var(--white);
-            padding: 8px 20px;
-            border-radius: 20px;
-            transition: background-color 0.3s ease;
-            margin-left: 15px;
-        }
+.nav-link.active {
+    color: var(--primary-color);
+}
 
-        .nav-link.exit-button:hover {
-            background-color: rgb(200, 30, 30);
-            color: var(--white);
-        }
+.nav-link.active::after {
+    width: 100%;
+}
 
-        /* Remover sublinhado do botão login */
-        .nav-link.no-underline::after {
-            display: none;
-        }
+.nav-link:hover {
+    color: var(--primary-color);
+}
 
-        .hamburger {
-            display: none;
-            cursor: pointer;
-        }
+.nav-link:hover::after {
+    width: 100%;
+}
+
+.nav-link.exit-button {
+    background-color: rgb(230, 30, 30);
+    color: var(--white);
+    padding: 8px 20px;
+    border-radius: 20px;
+    transition: background-color 0.3s ease;
+    margin-left: 15px;
+}
+
+.nav-link.exit-button:hover {
+    background-color: rgb(200, 30, 30);
+    color: var(--white);
+}
+
+/* Remover sublinhado do botão login */
+.nav-link.no-underline::after {
+    display: none;
+}
+
+.hamburger {
+    display: none;
+    cursor: pointer;
+}

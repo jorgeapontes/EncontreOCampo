@@ -146,7 +146,7 @@ try {
                                         v.estado as vendedor_estado
                                     FROM entregas e
                                     INNER JOIN produtos p ON e.produto_id = p.id
-                                    INNER JOIN vendedores v ON p.vendedor_id = v.id
+                                    INNER JOIN vendedores v ON v.id = COALESCE(e.vendedor_id, p.vendedor_id)
                                     WHERE e.transportador_id = :transportador_id 
                                     AND e.status NOT IN ('entregue', 'cancelada')
                                     ORDER BY e.data_solicitacao DESC";

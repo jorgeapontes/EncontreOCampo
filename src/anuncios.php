@@ -463,12 +463,15 @@ foreach ($anuncios as &$a) {
                     <li class="nav-item">
                         <a href="../index.php" class="nav-link">Home</a>
                     </li>
-                    <?php if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'comprador'): ?>
-                    <li class="nav-item"><a href="comprador/meus_chats.php" class="nav-link"><i class="fas fa-comments"></i>Chats</a></li>
-                    <?php endif; ?>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                         <li class="nav-item">
+                            <a href="" class="nav-link active">Anúncios</a>
+                        </li>
+                        <li class="nav-item">
                             <a href="<?= $_SESSION['usuario_tipo'] ?>/dashboard.php" class="nav-link">Painel</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="<?= $_SESSION['usuario_tipo'] ?>/meus_chats.php" class="nav-link">Chats</a>
                         </li>
                         <li class="nav-item">
                             <a href="<?= $_SESSION['usuario_tipo'] ?>/perfil.php" class="nav-link">Meu Perfil</a>

@@ -103,7 +103,7 @@ try {
                         <a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/dashboard.php' : 'dashboard.php'; ?>" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">
-                        <a href="favoritos.php" class="nav-link active">Favoritos</a>
+                        <a href="meus_chats.php" class="nav-link">Chats</a>
                     </li>
                     <li class="nav-item">
                         <a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/perfil.php' : 'perfil.php'; ?>" class="nav-link">Meu Perfil</a>

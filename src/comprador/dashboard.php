@@ -192,6 +192,9 @@ try {
                         <a href="" class="nav-link active">Painel</a>
                     </li>
                     <li class="nav-item">
+                        <a href="meus_chats.php" class="nav-link">Chats</a>
+                    </li>
+                    <li class="nav-item">
                         <a href="perfil.php" class="nav-link">Meu Perfil</a>
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>

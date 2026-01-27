@@ -21,7 +21,7 @@ $conn = $database->getConnection();
 
 // Buscar info da conversa
 try {
-    $sql_conversa = "SELECT 
+    $sql_conversa = "SELECT
                 cc.*,
                 p.nome AS produto_nome,
                 p.imagem_url AS produto_imagem,
@@ -416,7 +416,7 @@ try {
                         <div class="message-header">
                             <span class="message-remetente">
                                 <?php echo htmlspecialchars($msg['remetente_nome']); ?>
-                                (<?php echo $eh_comprador ? 'Comprador' : 'Vendedor'; ?>)
+                                (<?php echo $eh_comprador ? 'Comprador' : ($conversa['tipo_conversa'] === 'transportador' ? 'Transportador' : 'Vendedor'); ?>)
                             </span>
                             <span class="message-data"><?php echo $msg['data_formatada']; ?></span>
                         </div>

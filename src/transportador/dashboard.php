@@ -71,6 +71,7 @@ if (!$is_pendente && $transportador_id) {
         $query_entregas = "SELECT e.id, e.endereco_origem, e.endereco_destino, e.status, 
                       e.data_solicitacao, e.valor_frete, 
                       p.nome as produto_nome, 
+                      c.nome_comercial as comprador_nome,
                       v.nome_comercial as vendedor_nome,
                       v.cep as vendedor_cep,
                       v.rua as vendedor_rua,
@@ -79,6 +80,7 @@ if (!$is_pendente && $transportador_id) {
                       v.estado as vendedor_estado
                   FROM entregas e
                   INNER JOIN produtos p ON e.produto_id = p.id
+                  LEFT JOIN compradores c ON e.comprador_id = c.id
                   INNER JOIN vendedores v ON v.id = COALESCE(e.vendedor_id, p.vendedor_id)
                   WHERE e.transportador_id = :transportador_id 
                   AND e.status NOT IN ('entregue', 'cancelada')
@@ -279,12 +281,12 @@ if (!$is_pendente && $transportador_id) {
                                 <tr>
                                     <th>ID</th>
                                     <th>Produto</th>
+                                    <th>Comprador</th>
                                     <th>Vendedor</th>
                                     <th>Coleta</th>
                                     <th>Destino</th>
                                     <th>Valor Frete</th>
                                     <th>Status</th>
-                                    <th>Data</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
@@ -306,11 +308,12 @@ if (!$is_pendente && $transportador_id) {
                                     ?>
                                     <td><?php echo $entrega['id']; ?></td>
                                     <td><?php echo htmlspecialchars($entrega['produto_nome']); ?></td>
+                                    <td><?php echo htmlspecialchars($entrega['comprador_nome'] ?? '—'); ?></td>
                                     <td><?php echo htmlspecialchars($entrega['vendedor_nome']); ?></td>
                                     <td><?php echo htmlspecialchars(mb_substr($origem_full, 0, 20)) . (mb_strlen($origem_full) > 20 ? '...' : ''); ?></td>
                                     <td><?php echo htmlspecialchars(mb_substr($destino_full, 0, 20)) . (mb_strlen($destino_full) > 20 ? '...' : ''); ?></td>
                                     <td>R$ <?php echo number_format($entrega['valor_frete'], 2, ',', '.'); ?></td>
-                                    <td>
+                                        <td>
                                         <span class="status <?php echo $entrega['status']; ?>">
                                             <?php 
                                             $status_text = '';
@@ -325,12 +328,13 @@ if (!$is_pendente && $transportador_id) {
                                             ?>
                                         </span>
                                     </td>
-                                    <td><?php echo date('d/m/Y', strtotime($entrega['data_solicitacao'])); ?></td>
                                     <td>
-                                        <a href="entrega_detalhes.php?id=<?php echo $entrega['id']; ?>" class="action-btn edit" title="Ver Detalhes"><i class="fas fa-eye"></i></a>
-                                        <?php if ($entrega['status'] == 'pendente' || $entrega['status'] == 'em_transporte'): ?>
-                                            <a href="concluir_entrega.php?id=<?php echo $entrega['id']; ?>" class="action-btn" title="Concluir Entrega" style="color: #2196F3;"><i class="fas fa-check-double"></i></a>
-                                        <?php endif; ?>
+                                        <div style="display:flex;gap:8px;align-items:center;">
+                                            <a href="entrega_detalhes.php?id=<?php echo $entrega['id']; ?>" class="action-btn" style="display:inline-block;padding:4px 8px;border-radius:6px;background:#eee;color:#333;text-decoration:none;font-weight:600;font-size:0.875rem;">Ver Detalhes</a>
+                                            <?php if ($entrega['status'] == 'pendente' || $entrega['status'] == 'em_transporte'): ?>
+                                                <a href="concluir_entrega.php?id=<?php echo $entrega['id']; ?>" class="action-btn" style="display:inline-block;padding:4px 8px;border-radius:6px;background:#2196F3;color:#fff;text-decoration:none;font-weight:600;font-size:0.875rem;">Concluir Entrega</a>
+                                            <?php endif; ?>
+                                        </div>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -376,6 +380,10 @@ if (!$is_pendente && $transportador_id) {
                                 
                                 <div class="card-entrega-body">
                                     <div class="card-info-item">
+                                        <span class="card-info-label">Comprador</span>
+                                        <span class="card-info-value"><?php echo htmlspecialchars($entrega['comprador_nome'] ?? '—'); ?></span>
+                                    </div>
+                                    <div class="card-info-item">
                                         <span class="card-info-label">Vendedor</span>
                                         <span class="card-info-value"><?php echo htmlspecialchars($entrega['vendedor_nome']); ?></span>
                                     </div>
@@ -396,10 +404,10 @@ if (!$is_pendente && $transportador_id) {
                                     </div>
                                 </div>
                                 
-                                <div class="card-entrega-actions">
-                                    <a href="entrega_detalhes.php?id=<?php echo $entrega['id']; ?>" class="card-action-btn edit" title="Ver Detalhes"><i class="fas fa-eye"></i></a>
+                                <div class="card-entrega-actions" style="display:flex;gap:8px;">
+                                    <a href="entrega_detalhes.php?id=<?php echo $entrega['id']; ?>" class="card-action-btn" style="padding:6px 10px;border-radius:8px;background:#eee;color:#333;text-decoration:none;font-weight:600;font-size:0.875rem;">Ver Detalhes</a>
                                     <?php if ($entrega['status'] == 'pendente' || $entrega['status'] == 'em_transporte'): ?>
-                                        <a href="concluir_entrega.php?id=<?php echo $entrega['id']; ?>" class="card-action-btn" title="Concluir Entrega" style="background: #2196F3; color: white;"><i class="fas fa-check-double"></i></a>
+                                        <a href="concluir_entrega.php?id=<?php echo $entrega['id']; ?>" class="card-action-btn" style="padding:6px 10px;border-radius:8px;background:#2196F3;color:#fff;text-decoration:none;font-weight:600;font-size:0.875rem;">Concluir Entrega</a>
                                     <?php endif; ?>
                                 </div>
                             </div>

@@ -16,6 +16,10 @@
     --radius: 8px;
 }
 
+html {
+    scrollbar-gutter: stable;
+}
+
 /* RESET E ESTILOS GERAIS */
 * {
     margin: 0;

@@ -123,10 +123,11 @@ try {
             <h2>Histórico de Entregas Finalizadas</h2>
             <?php
             if (!$is_pendente && $transportador_id) {
-                $sql_hist = "SELECT e.id, e.endereco_origem, e.endereco_destino, e.valor_frete, e.data_entrega, e.foto_comprovante, p.nome as produto_nome, v.nome_comercial as vendedor_nome
+                $sql_hist = "SELECT e.id, e.endereco_origem, e.endereco_destino, e.valor_frete, e.data_entrega, e.foto_comprovante, p.nome as produto_nome, c.nome_comercial as comprador_nome, v.nome_comercial as vendedor_nome, v.cep as vendedor_cep, v.rua as vendedor_rua, v.numero as vendedor_numero, v.cidade as vendedor_cidade, v.estado as vendedor_estado
                     FROM entregas e
                     INNER JOIN produtos p ON e.produto_id = p.id
-                    INNER JOIN vendedores v ON p.vendedor_id = v.id
+                    LEFT JOIN compradores c ON e.comprador_id = c.id
+                    INNER JOIN vendedores v ON v.id = COALESCE(e.vendedor_id, p.vendedor_id)
                     WHERE e.transportador_id = :transportador_id AND e.status = 'entregue' AND e.status_detalhado = 'finalizada'
                     ORDER BY e.data_entrega DESC";
                 $stmt_hist = $db->prepare($sql_hist);
@@ -136,14 +137,27 @@ try {
                 if (count($entregas_finalizadas) === 0) {
                     echo '<p>Nenhuma entrega finalizada ainda.</p>';
                 } else {
-                    echo '<table><thead><tr><th>ID</th><th>Produto</th><th>Vendedor</th><th>Origem</th><th>Destino</th><th>Valor Frete</th><th>Data Entrega</th><th>Comprovante</th></tr></thead><tbody>';
+                    echo '<table><thead><tr><th>ID</th><th>Produto</th><th>Comprador</th><th>Vendedor</th><th>Origem</th><th>Destino</th><th>Valor Frete</th><th>Data Entrega</th><th>Comprovante</th></tr></thead><tbody>';
                     foreach ($entregas_finalizadas as $e) {
+                        $origem_full = '';
+                        if (!empty(trim($e['endereco_origem'] ?? ''))) {
+                            $origem_full = $e['endereco_origem'];
+                        } else {
+                            $origem_full = (trim($e['vendedor_rua'] ?? '') !== '' ? ($e['vendedor_rua'] . ', ') : '')
+                                . ($e['vendedor_numero'] ?? '')
+                                . (isset($e['vendedor_cidade']) ? ' - ' . $e['vendedor_cidade'] : '')
+                                . (isset($e['vendedor_estado']) ? '/' . $e['vendedor_estado'] : '')
+                                . (!empty($e['vendedor_cep'] ?? '') ? ' - CEP: ' . $e['vendedor_cep'] : '');
+                        }
+                        $destino_full = $e['endereco_destino'] ?? '';
+
                         echo '<tr>';
                         echo '<td>' . $e['id'] . '</td>';
                         echo '<td>' . htmlspecialchars($e['produto_nome']) . '</td>';
+                        echo '<td>' . htmlspecialchars($e['comprador_nome'] ?? '—') . '</td>';
                         echo '<td>' . htmlspecialchars($e['vendedor_nome']) . '</td>';
-                        echo '<td>' . htmlspecialchars(substr($e['endereco_origem'], 0, 20)) . '...</td>';
-                        echo '<td>' . htmlspecialchars(substr($e['endereco_destino'], 0, 20)) . '...</td>';
+                        echo '<td>' . htmlspecialchars(mb_substr($origem_full, 0, 20)) . (mb_strlen($origem_full) > 20 ? '...' : '') . '</td>';
+                        echo '<td>' . htmlspecialchars(mb_substr($destino_full, 0, 20)) . (mb_strlen($destino_full) > 20 ? '...' : '') . '</td>';
                         echo '<td>R$ ' . number_format($e['valor_frete'], 2, ',', '.') . '</td>';
                         echo '<td>' . ($e['data_entrega'] ? date('d/m/Y', strtotime($e['data_entrega'])) : '-') . '</td>';
                         if ($e['foto_comprovante']) {

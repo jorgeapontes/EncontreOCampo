@@ -135,16 +135,21 @@ try {
                 
                 if (!$is_pendente && $transportador_id) {
                     try {
-                        $sql_entregas = "SELECT e.id, e.endereco_origem, e.endereco_destino, e.status, 
-                                              e.data_solicitacao, e.valor_frete, 
-                                              p.nome as produto_nome, 
-                                              v.nome_comercial as vendedor_nome
-                                       FROM entregas e
-                                       INNER JOIN produtos p ON e.produto_id = p.id
-                                       INNER JOIN vendedores v ON p.vendedor_id = v.id
-                                       WHERE e.transportador_id = :transportador_id 
-                                       AND e.status NOT IN ('entregue', 'cancelada')
-                                       ORDER BY e.data_solicitacao DESC";
+                           $sql_entregas = "SELECT e.id, e.endereco_origem, e.endereco_destino, e.status, 
+                                        e.data_solicitacao, e.valor_frete, 
+                                        p.nome as produto_nome, 
+                                        v.nome_comercial as vendedor_nome,
+                                        v.cep as vendedor_cep,
+                                        v.rua as vendedor_rua,
+                                        v.numero as vendedor_numero,
+                                        v.cidade as vendedor_cidade,
+                                        v.estado as vendedor_estado
+                                    FROM entregas e
+                                    INNER JOIN produtos p ON e.produto_id = p.id
+                                    INNER JOIN vendedores v ON p.vendedor_id = v.id
+                                    WHERE e.transportador_id = :transportador_id 
+                                    AND e.status NOT IN ('entregue', 'cancelada')
+                                    ORDER BY e.data_solicitacao DESC";
                                        
                         $stmt_entregas = $db->prepare($sql_entregas);
                         $stmt_entregas->bindParam(':transportador_id', $transportador_id, PDO::PARAM_INT);
@@ -172,13 +177,26 @@ try {
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($entregas as $entrega): ?>
+                            <?php foreach ($entregas as $entrega): 
+                                $origem_full = '';
+                                if (!empty(trim($entrega['endereco_origem'] ?? ''))) {
+                                    $origem_full = $entrega['endereco_origem'];
+                                } else {
+                                    $origem_full = (trim($entrega['vendedor_rua'] ?? '') !== '' ? ($entrega['vendedor_rua'] . ', ') : '')
+                                        . ($entrega['vendedor_numero'] ?? '')
+                                        . (isset($entrega['vendedor_cidade']) ? ' - ' . $entrega['vendedor_cidade'] : '')
+                                        . (isset($entrega['vendedor_estado']) ? '/' . $entrega['vendedor_estado'] : '')
+                                        . (!empty($entrega['vendedor_cep'] ?? '') ? ' - CEP: ' . $entrega['vendedor_cep'] : '');
+                                }
+
+                                $destino_full = $entrega['endereco_destino'] ?? '';
+                            ?>
                             <tr>
                                 <td><?php echo $entrega['id']; ?></td>
                                 <td><?php echo htmlspecialchars($entrega['produto_nome']); ?></td>
                                 <td><?php echo htmlspecialchars($entrega['vendedor_nome']); ?></td>
-                                <td><?php echo htmlspecialchars(substr($entrega['endereco_origem'], 0, 20)) . '...'; ?></td>
-                                <td><?php echo htmlspecialchars(substr($entrega['endereco_destino'], 0, 20)) . '...'; ?></td>
+                                <td><?php echo htmlspecialchars(mb_substr($origem_full, 0, 20)) . (mb_strlen($origem_full) > 20 ? '...' : ''); ?></td>
+                                <td><?php echo htmlspecialchars(mb_substr($destino_full, 0, 20)) . (mb_strlen($destino_full) > 20 ? '...' : ''); ?></td>
                                 <td>R$ <?php echo number_format($entrega['valor_frete'], 2, ',', '.'); ?></td>
                                 <td>
                                     <span class="status <?php echo $entrega['status']; ?>">
@@ -218,7 +236,21 @@ try {
                         }
                     </style>
                     <div class="entregas-cards">
-                        <?php foreach ($entregas as $entrega): ?>
+                        <?php foreach ($entregas as $entrega): 
+                            $origem_full = '';
+                            if (!empty(trim($entrega['endereco_origem'] ?? ''))) {
+                                $origem_full = $entrega['endereco_origem'];
+                            } else {
+                                $origem_full = (trim($entrega['vendedor_rua'] ?? '') !== '' ? ($entrega['vendedor_rua'] . ', ') : '')
+                                    . ($entrega['vendedor_numero'] ?? '')
+                                    . (isset($entrega['vendedor_cidade']) ? ' - ' . $entrega['vendedor_cidade'] : '')
+                                    . (isset($entrega['vendedor_estado']) ? '/' . $entrega['vendedor_estado'] : '')
+                                    . (!empty($entrega['vendedor_cep'] ?? '') ? ' - CEP: ' . $entrega['vendedor_cep'] : '');
+                            }
+
+                            $destino_full = $entrega['endereco_destino'] ?? '';
+
+                        ?>
                         <div class="card-entrega">
                             <div class="card-entrega-header">
                                 <span class="card-entrega-id">#<?php echo $entrega['id']; ?></span>
@@ -251,11 +283,11 @@ try {
                                 </div>
                                 <div class="card-info-item">
                                     <span class="card-info-label">Origem</span>
-                                    <span class="card-info-value small"><?php echo htmlspecialchars(substr($entrega['endereco_origem'], 0, 20)) . '...'; ?></span>
+                                    <span class="card-info-value small"><?php echo htmlspecialchars(mb_substr($origem_full, 0, 40)) . (mb_strlen($origem_full) > 40 ? '...' : ''); ?></span>
                                 </div>
                                 <div class="card-info-item">
                                     <span class="card-info-label">Destino</span>
-                                    <span class="card-info-value small"><?php echo htmlspecialchars(substr($entrega['endereco_destino'], 0, 20)) . '...'; ?></span>
+                                    <span class="card-info-value small"><?php echo htmlspecialchars(mb_substr($destino_full, 0, 40)) . (mb_strlen($destino_full) > 40 ? '...' : ''); ?></span>
                                 </div>
                                 <div class="card-entrega-data">
                                     <i class="far fa-calendar"></i> <?php echo date('d/m/Y', strtotime($entrega['data_solicitacao'])); ?>

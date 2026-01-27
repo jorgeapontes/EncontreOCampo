@@ -109,8 +109,24 @@ try {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Chat - Transportador</title>
+    <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="../chat/css/chat.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        @media (max-width: 768px) {
+            .chat-sidebar {
+                width: 100%;
+                display: <?php echo $conversa_id ? 'none' : 'flex'; ?>;
+            }
+            
+            .chat-area {
+                display: <?php echo $conversa_id ? 'flex' : 'none'; ?>;
+            }
+        }
+    </style>
 </head>
 <body>
     <style>
@@ -141,10 +157,6 @@ try {
                     </div>
                 </div>
             </div>
-
-            <div style="padding:12px;">
-                <a href="#" class="btn-voltar" onclick="goBack(event)">Voltar</a>
-            </div>
         </div>
 
         <div class="chat-area">
@@ -158,7 +170,7 @@ try {
                         <small><?php echo htmlspecialchars($outro_papel); ?></small>
                     </div>
                 </div>
-                <a href="#" class="btn-voltar" onclick="goBack(event)">Voltar</a>
+                <a href="#" class="btn-voltar" onclick="goBack(event)"> <i class="fas fa-arrow-left"></i>Voltar</a>
             </div>
 
             <div class="chat-messages" id="chat-messages"></div>

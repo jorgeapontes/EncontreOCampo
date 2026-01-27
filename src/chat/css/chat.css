@@ -26,6 +26,7 @@ body {
     display: flex;
     flex-direction: column;
     background: #f8f9fa;
+    min-width: 360px;
 }
 
 .sidebar-main-content {

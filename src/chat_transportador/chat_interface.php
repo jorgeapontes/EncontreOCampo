@@ -274,7 +274,7 @@ try {
                                 let dados = null;
                                 try { dados = msg.dados_json ? JSON.parse(msg.dados_json) : null; } catch(e) { dados = null; }
                                 const card = document.createElement('div');
-                                card.style.cssText = 'border:1px solid #e1e4e8;padding:10px;border-radius:8px;background:#fff;max-width:420px;';
+                                card.style.cssText = 'border:1px solid #e1e4e8;padding:10px;border-radius:8px;background:#fff;max-width:420px;color:#1c1e21;';
                                 const title = document.createElement('div');
                                 title.innerHTML = '<strong>Proposta de Entrega</strong>';
                                 card.appendChild(title);
@@ -347,7 +347,7 @@ try {
                                                 }
 
                                                 const card = document.createElement('div');
-                                                card.style.cssText = 'border:1px solid #e1e4e8;padding:10px;border-radius:8px;background:#fff;max-width:420px;';
+                                                card.style.cssText = 'border:1px solid #e1e4e8;padding:10px;border-radius:8px;background:#fff;max-width:420px;color:#1c1e21;';
                                                 const title = document.createElement('div');
                                                 title.innerHTML = '<strong>Proposta de Entrega</strong>';
                                                 card.appendChild(title);

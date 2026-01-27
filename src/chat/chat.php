@@ -480,7 +480,7 @@ if ($conversa_id) {
                             <i class="fas fa-camera"></i>
                         </button>
                         
-                        <?php if ($usuario_tipo == 'comprador'): ?>
+                        <?php if (!$eh_vendedor_produto): ?>
                             <button type="button" class="btn-negociar-chat" id="btn-negociar" title="Acordo de Compra">
                                 <i class="fas fa-handshake"></i>
                             </button>

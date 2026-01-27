@@ -738,21 +738,26 @@ body {
 }
 
 .btn-negociar {
-    background: #42b72a;
+    background: #42b72a; /* verde mais escuro */
     color: white;
     border: none;
-    padding: 10px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* circular */
     display: flex;
     align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 600;
     gap: 6px;
-    transition: background-color 0.2s;
+    transition: transform 0.15s, box-shadow 0.15s, background-color 0.15s;
+    box-shadow: 0 2px 6px rgba(30,122,62,0.18);
 }
 
 .btn-negociar:hover {
-    background: #36a420;
+    background: #42b72a;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(21,95,45,0.18);
 }
 
 /* Botão no chat-input */

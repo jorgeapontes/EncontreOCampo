@@ -29,7 +29,24 @@ try {
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $entrega = null;
 if ($id > 0 && $transportador_id) {
-    $sql = "SELECT e.*, p.nome AS produto_nome, v.nome_comercial AS vendedor_nome FROM entregas e INNER JOIN produtos p ON e.produto_id = p.id INNER JOIN vendedores v ON p.vendedor_id = v.id WHERE e.id = :id AND e.transportador_id = :transportador_id";
+        $sql = "SELECT e.*, p.nome AS produto_nome,
+                                     v.nome_comercial AS vendedor_nome, v.usuario_id AS vendedor_usuario_id,
+                                     v.cep AS vendedor_cep, v.rua AS vendedor_rua, v.numero AS vendedor_numero, v.cidade AS vendedor_cidade, v.estado AS vendedor_estado,
+                                     c.nome_comercial AS comprador_nome, c.usuario_id AS comprador_usuario_id,
+                                     (
+                                             SELECT prop.data_entrega_estimada
+                                             FROM propostas prop
+                                             WHERE prop.produto_id = e.produto_id
+                                                 AND prop.comprador_id = e.comprador_id
+                                                 AND prop.vendedor_id = e.vendedor_id
+                                             ORDER BY prop.data_inicio DESC
+                                             LIMIT 1
+                                     ) AS data_entrega_estimada
+                        FROM entregas e
+                        INNER JOIN produtos p ON e.produto_id = p.id
+                        INNER JOIN vendedores v ON p.vendedor_id = v.id
+                        LEFT JOIN compradores c ON e.comprador_id = c.id
+                        WHERE e.id = :id AND e.transportador_id = :transportador_id LIMIT 1";
     $stmt = $db->prepare($sql);
     $stmt->bindParam(':id', $id, PDO::PARAM_INT);
     $stmt->bindParam(':transportador_id', $transportador_id, PDO::PARAM_INT);
@@ -76,32 +93,66 @@ if ($id > 0 && $transportador_id) {
         </nav>
     </header>
     <main class="main-content">
-        <section class="header">
-            <h1>Detalhes da Entrega</h1>
-        </section>
         <?php if ($entrega): ?>
-        <section class="entrega-detalhes">
-            <div class="entrega-info entrega-info-destacada">
+        <section class="entrega-detalhes" style="margin-top:48px;">
+            <div style="display:flex;justify-content:center;">
+                <div style="flex:1;max-width:1000px;">
+                    <div class="entrega-info entrega-info-destacada" style="margin:0;">
                 <div class="entrega-info-header">
                     <h2>Entrega #<?php echo $entrega['id']; ?></h2>
-                    <span class="status <?php echo $entrega['status']; ?>">Status: <?php echo ucfirst($entrega['status']); ?></span>
-                </div>
+                        <span class="status <?php echo $entrega['status']; ?>">Status: <?php echo ucfirst($entrega['status']); ?></span>
+                    </div>
                 <div class="entrega-info-grid">
-                    <div class="entrega-info-item"><span class="label">Produto:</span> <span><?php echo htmlspecialchars($entrega['produto_nome']); ?></span></div>
-                    <div class="entrega-info-item"><span class="label">Vendedor:</span> <span><?php echo htmlspecialchars($entrega['vendedor_nome']); ?></span></div>
-                    <div class="entrega-info-item"><span class="label">Origem:</span> <span><?php echo htmlspecialchars($entrega['endereco_origem']); ?></span></div>
-                    <div class="entrega-info-item"><span class="label">Destino:</span> <span><?php echo htmlspecialchars($entrega['endereco_destino']); ?></span></div>
-                    <div class="entrega-info-item"><span class="label">Valor do Frete:</span> <span>R$ <?php echo number_format($entrega['valor_frete'], 2, ',', '.'); ?></span></div>
-                    <div class="entrega-info-item"><span class="label">Data da Solicitação:</span> <span><?php echo date('d/m/Y', strtotime($entrega['data_solicitacao'])); ?></span></div>
+                        <?php
+                            // preparar variáveis reutilizáveis
+                            $produto_link = '../visualizar_anuncio.php?anuncio_id=' . intval($entrega['produto_id']);
+                            $origem_full = '';
+                            if (!empty(trim($entrega['endereco_origem'] ?? ''))) {
+                                $origem_full = $entrega['endereco_origem'];
+                            } else {
+                                $origem_full = (trim($entrega['vendedor_rua'] ?? '') !== '' ? ($entrega['vendedor_rua'] . ', ') : '')
+                                    . ($entrega['vendedor_numero'] ?? '')
+                                    . (isset($entrega['vendedor_cidade']) ? ' - ' . $entrega['vendedor_cidade'] : '')
+                                    . (isset($entrega['vendedor_estado']) ? '/' . $entrega['vendedor_estado'] : '')
+                                    . (!empty($entrega['vendedor_cep'] ?? '') ? ' - CEP: ' . $entrega['vendedor_cep'] : '');
+                            }
+                            $destino_full = $entrega['endereco_destino'] ?? '';
+                            $data_limite = !empty($entrega['data_entrega_estimada']) ? $entrega['data_entrega_estimada'] : ($entrega['data_solicitacao'] ?? null);
+                        ?>
+
+                        <!-- Primeira linha: Comprador e Vendedor -->
+                        <div class="entrega-info-item"><span class="label">Comprador:</span> <span>
+                            <?php if (!empty($entrega['comprador_usuario_id'])): ?>
+                                <a href="../verperfil.php?usuario_id=<?php echo intval($entrega['comprador_usuario_id']); ?>"><?php echo htmlspecialchars($entrega['comprador_nome'] ?? '—'); ?></a>
+                            <?php else: echo htmlspecialchars($entrega['comprador_nome'] ?? '—'); endif; ?>
+                        </span></div>
+                        <div class="entrega-info-item"><span class="label">Vendedor:</span> <span>
+                            <?php if (!empty($entrega['vendedor_usuario_id'])): ?>
+                                <a href="../verperfil.php?usuario_id=<?php echo intval($entrega['vendedor_usuario_id']); ?>"><?php echo htmlspecialchars($entrega['vendedor_nome']); ?></a>
+                            <?php else: echo htmlspecialchars($entrega['vendedor_nome']); endif; ?>
+                        </span></div>
+
+                        <!-- Segunda linha: Valor do frete e Data Limite -->
+                        <div class="entrega-info-item"><span class="label">Valor do Frete:</span> <span>R$ <?php echo number_format($entrega['valor_frete'], 2, ',', '.'); ?></span></div>
+                        <div class="entrega-info-item"><span class="label">Data Limite de Entrega:</span> <span><?php echo $data_limite ? date('d/m/Y', strtotime($data_limite)) : '—'; ?></span></div>
+
+                        <!-- Terceira linha: Endereços -->
+                        <div class="entrega-info-item" style="grid-column:1 / -1;"><span class="label">Origem:</span> <span><?php echo htmlspecialchars($origem_full ?: '—'); ?></span></div>
+                        <div class="entrega-info-item" style="grid-column:1 / -1;"><span class="label">Destino:</span> <span><?php echo htmlspecialchars($destino_full ?: '—'); ?></span></div>
+
+                        <!-- Última linha: Produto clicável (ocupar largura) -->
+                        <div class="entrega-info-item" style="grid-column:1 / -1;"><span class="label">Produto:</span> <span><a href="<?php echo $produto_link; ?>"><?php echo htmlspecialchars($entrega['produto_nome']); ?></a></span></div>
                 </div>
-                <?php
-                $origem = $entrega['endereco_origem'];
-                $destino = $entrega['endereco_destino'];
-                $google_maps_url = 'https://www.google.com/maps/dir/?api=1&origin=' . urlencode($origem) . '&destination=' . urlencode($destino) . '&travelmode=driving';
-                ?>
-                <div class="entrega-info-actions">
-                    <a href="<?php echo $google_maps_url; ?>" class="cta-button" target="_blank"><i class="fas fa-route"></i> Ver rota</a>
-                    <button type="button" class="btn-voltar" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Voltar</button>
+                    <?php
+                        $origem = $origem_full;
+                        $destino = $entrega['endereco_destino'] ?? '';
+                        $google_maps_url = 'https://www.google.com/maps/dir/?api=1&origin=' . urlencode($origem) . '&destination=' . urlencode($destino) . '&travelmode=driving';
+                    ?>
+                    <div class="entrega-info-actions" style="display:flex;justify-content:flex-end;gap:12px;">
+                        <a href="<?php echo $google_maps_url; ?>" class="cta-button" target="_blank"><i class="fas fa-route"></i> Ver rota</a>
+                        <a href="#" class="cta-button btn-voltar" onclick="window.history.back();return false;"><i class="fas fa-arrow-left"></i> Voltar</a>
+                    </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -120,8 +171,8 @@ if ($id > 0 && $transportador_id) {
         border-radius: 16px;
         box-shadow: 0 4px 24px rgba(0,0,0,0.08);
         padding: 32px 24px;
-        max-width: 600px;
-        margin: 32px auto 0 auto;
+        max-width: 900px;
+        margin: 48px auto 0 auto;
         display: flex;
         flex-direction: column;
         gap: 24px;

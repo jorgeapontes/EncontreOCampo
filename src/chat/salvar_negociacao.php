@@ -10,12 +10,6 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 
-// VERIFICAR SE É COMPRADOR
-if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprador') {
-    echo json_encode(['success' => false, 'error' => 'Apenas compradores podem enviar propostas']);
-    exit();
-}
-
 // Verificar se é requisição POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'error' => 'Método não permitido']);
@@ -47,7 +41,22 @@ $conn = $database->getConnection();
 try {
     $conn->beginTransaction();
     
-    // 1. Verificar se o usuário tem permissão para negociar neste produto/conversa
+    // 1. Verificar se o usuário NÃO é o vendedor do produto
+    $sql_verificar_vendedor = "SELECT v.usuario_id as vendedor_usuario_id 
+                              FROM produtos p
+                              JOIN vendedores v ON p.vendedor_id = v.id
+                              WHERE p.id = :produto_id";
+                              
+    $stmt_vend = $conn->prepare($sql_verificar_vendedor);
+    $stmt_vend->bindParam(':produto_id', $dados['produto_id'], PDO::PARAM_INT);
+    $stmt_vend->execute();
+    $vendedor_info = $stmt_vend->fetch(PDO::FETCH_ASSOC);
+
+    if ($vendedor_info && $vendedor_info['vendedor_usuario_id'] == $usuario_id) {
+        throw new Exception('Você é o vendedor deste produto e não pode enviar propostas para ele');
+    }
+    
+    // 2. Verificar se o usuário é o comprador da conversa
     $sql_verificar = "SELECT 
         c.id as conversa_id,
         c.comprador_id,
@@ -61,7 +70,7 @@ try {
         AND c.comprador_id = :usuario_id";
     
     $stmt = $conn->prepare($sql_verificar);
-$stmt->bindParam(':conversa_id', $dados['conversa_id'], PDO::PARAM_INT);
+    $stmt->bindParam(':conversa_id', $dados['conversa_id'], PDO::PARAM_INT);
     $stmt->bindParam(':produto_id', $dados['produto_id'], PDO::PARAM_INT);
     $stmt->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
     $stmt->execute();
@@ -71,12 +80,12 @@ $stmt->bindParam(':conversa_id', $dados['conversa_id'], PDO::PARAM_INT);
         throw new Exception('Apenas o comprador da conversa pode enviar propostas');
     }
     
-    // 2. Verificar estoque
+    // 3. Verificar estoque
     if ($dados['quantidade'] > $verificacao['estoque']) {
         throw new Exception('Quantidade solicitada excede o estoque disponível');
     }
     
-    // 3. Preparar valores para inserção/atualização na tabela propostas
+    // 4. Preparar valores para inserção/atualização na tabela propostas
     $comprador_id = $verificacao['comprador_id'];
     $vendedor_id = $verificacao['vendedor_id'];
     $produto_id = $dados['produto_id'];
@@ -110,7 +119,7 @@ $stmt->bindParam(':conversa_id', $dados['conversa_id'], PDO::PARAM_INT);
         ? $opcao_frete_mapa[$dados['opcao_frete']] 
         : 'vendedor';
     
-    // 4. Verificar se já existe uma proposta em negociação para este produto/usuários
+    // 5. Verificar se já existe uma proposta em negociação para este produto/usuários
     $sql_existe = "SELECT ID FROM propostas 
                   WHERE produto_id = :produto_id 
                   AND comprador_id = :comprador_id 
@@ -179,7 +188,7 @@ $stmt->bindParam(':conversa_id', $dados['conversa_id'], PDO::PARAM_INT);
         $acao = 'enviada';
     }
     
-    // 5. Enviar notificação para o vendedor
+    // 6. Enviar notificação para o vendedor
     $sql_produto_info = "SELECT nome FROM produtos WHERE id = :produto_id";
     $stmt_prod = $conn->prepare($sql_produto_info);
     $stmt_prod->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);

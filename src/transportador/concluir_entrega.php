@@ -108,19 +108,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['foto_comprovante']))
             <?php if ($erro): ?><div class="msg-erro"><?php echo $erro; ?></div><?php endif; ?>
             <?php if ($sucesso): ?><div class="msg-sucesso"><?php echo $sucesso; ?></div><?php endif; ?>
             <?php if (!$sucesso): ?>
-            <form method="POST" enctype="multipart/form-data" class="form-concluir-entrega">
-                <label for="foto_comprovante">Foto do comprovante de entrega:</label>
-                <input type="file" name="foto_comprovante" id="foto_comprovante" accept="image/*" required>
-                <button type="submit" class="cta-button">Concluir Entrega</button>
-            </form>
+                <form method="POST" enctype="multipart/form-data" class="form-concluir-entrega">
+                    <label for="foto_comprovante">Foto do comprovante de entrega:</label>
+                    <input type="file" name="foto_comprovante" id="foto_comprovante" accept="image/*" required>
+
+                    <div id="preview-container" style="display:none;margin-top:8px;">
+                        <strong>Pré-visualização:</strong>
+                        <div style="margin-top:8px;"><img id="preview-image" src="" alt="Pré-visualização" style="max-width:100%;max-height:360px;border-radius:8px;border:1px solid #eee;display:block"></div>
+                    </div>
+
+                    <button type="submit" class="cta-button">Concluir Entrega</button>
+                </form>
             <?php endif; ?>
-            <button type="button" class="btn-voltar" onclick="window.location.href='entregas.php'"><i class="fas fa-arrow-left"></i> Voltar para Entregas</button>
         </section>
     </main>
+
+    <div style="display:flex;justify-content:center;margin-top:16px;">
+        <button type="button" class="btn-voltar" onclick="window.location.href='entregas.php'"><i class="fas fa-arrow-left"></i> Voltar para Entregas</button>
+    </div>
     <style>
     .main-content {
         max-width: 600px;
-        margin: 48px auto 0 auto;
+        margin: 80px auto 0 auto;
         padding: 24px;
     }
     .concluir-entrega-section {
@@ -234,6 +243,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['foto_comprovante']))
                 navMenu.classList.remove("active");
             }));
         }
+        // Preview da imagem selecionada
+        (function(){
+            const input = document.getElementById('foto_comprovante');
+            const previewContainer = document.getElementById('preview-container');
+            const previewImage = document.getElementById('preview-image');
+            if (!input) return;
+            input.addEventListener('change', function(e){
+                const file = input.files && input.files[0];
+                if (!file) {
+                    previewContainer.style.display = 'none';
+                    previewImage.src = '';
+                    return;
+                }
+                if (!file.type.match('image.*')) {
+                    alert('Por favor selecione uma imagem.');
+                    input.value = '';
+                    previewContainer.style.display = 'none';
+                    previewImage.src = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(evt){
+                    previewImage.src = evt.target.result;
+                    previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            });
+        })();
     </script>
 </body>
 </html>

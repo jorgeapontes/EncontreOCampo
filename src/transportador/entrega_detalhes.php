@@ -137,7 +137,7 @@ if ($id > 0 && $transportador_id) {
                         <div class="entrega-info-item"><span class="label">Data Limite de Entrega:</span> <span><?php echo $data_limite ? date('d/m/Y', strtotime($data_limite)) : '—'; ?></span></div>
 
                         <!-- Terceira linha: Endereços -->
-                        <div class="entrega-info-item" style="grid-column:1 / -1;"><span class="label">Origem:</span> <span><?php echo htmlspecialchars($origem_full ?: '—'); ?></span></div>
+                        <div class="entrega-info-item" style="grid-column:1 / -1;"><span class="label">Coleta:</span> <span><?php echo htmlspecialchars($origem_full ?: '—'); ?></span></div>
                         <div class="entrega-info-item" style="grid-column:1 / -1;"><span class="label">Destino:</span> <span><?php echo htmlspecialchars($destino_full ?: '—'); ?></span></div>
 
                         <!-- Última linha: Produto clicável (ocupar largura) -->

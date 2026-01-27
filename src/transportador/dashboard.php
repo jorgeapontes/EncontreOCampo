@@ -280,7 +280,7 @@ if (!$is_pendente && $transportador_id) {
                                     <th>ID</th>
                                     <th>Produto</th>
                                     <th>Vendedor</th>
-                                    <th>Origem</th>
+                                    <th>Coleta</th>
                                     <th>Destino</th>
                                     <th>Valor Frete</th>
                                     <th>Status</th>

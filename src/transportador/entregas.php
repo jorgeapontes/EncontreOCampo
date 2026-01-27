@@ -168,7 +168,7 @@ try {
                                 <th>ID</th>
                                 <th>Produto</th>
                                 <th>Vendedor</th>
-                                <th>Origem</th>
+                                <th>Coleta</th>
                                 <th>Destino</th>
                                 <th>Valor Frete</th>
                                 <th>Status</th>
@@ -282,7 +282,7 @@ try {
                                     <span class="card-info-value">R$ <?php echo number_format($entrega['valor_frete'], 2, ',', '.'); ?></span>
                                 </div>
                                 <div class="card-info-item">
-                                    <span class="card-info-label">Origem</span>
+                                    <span class="card-info-label">Entrega</span>
                                     <span class="card-info-value small"><?php echo htmlspecialchars(mb_substr($origem_full, 0, 40)) . (mb_strlen($origem_full) > 40 ? '...' : ''); ?></span>
                                 </div>
                                 <div class="card-info-item">

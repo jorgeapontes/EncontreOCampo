@@ -110,7 +110,8 @@ try {
             INNER JOIN usuarios u ON v.usuario_id = u.id
             WHERE cc.comprador_id = :usuario_id
             AND cc.status = 'ativo'
-            AND cc.comprador_excluiu = 0"; // <-- LINHA ADICIONADA
+            AND cc.comprador_excluiu = 0
+            AND cc.transportador_id IS NULL"; // mostrar apenas conversas sem transportador
     
     if ($mostrar_arquivados) {
         $sql .= " AND cc.favorito_comprador = 1";
@@ -153,7 +154,8 @@ try {
                       WHERE cc.comprador_id = :usuario_id 
                       AND cc.status = 'ativo'
                       AND cc.favorito_comprador = 1
-                      AND cc.comprador_excluiu = 0"; // <-- LINHA ADICIONADA
+                      AND cc.comprador_excluiu = 0
+                      AND cc.transportador_id IS NULL"; // contar apenas conversas sem transportador
     
     $stmt_arquivadas = $conn->prepare($sql_arquivadas);
     $stmt_arquivadas->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);

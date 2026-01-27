@@ -11,6 +11,10 @@
     --gray: #F5F5F5;
 }
 
+html {
+    scrollbar-gutter: stable;
+}
+
 * {
     margin: 0;
     padding: 0;

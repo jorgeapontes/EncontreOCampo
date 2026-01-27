@@ -72,6 +72,7 @@ try {
     $sql = "SELECT 
                 cc.id AS conversa_id,
                 cc.produto_id,
+                cc.transportador_id,
                 cc.ultima_mensagem,
                 cc.ultima_mensagem_data,
                 p.nome AS produto_nome,
@@ -81,10 +82,11 @@ try {
                 uc.nome AS comprador_nome,
                 uc.email AS comprador_email,
                 comp.cpf_cnpj AS comprador_cpf_cnpj,
-                uv.id AS vendedor_id,
-                uv.nome AS vendedor_nome,
-                uv.email AS vendedor_email,
-                vend.cpf_cnpj AS vendedor_cpf_cnpj,
+                CASE WHEN cc.transportador_id IS NOT NULL THEN 'transportador' ELSE 'vendedor' END AS tipo_conversa,
+                COALESCE(uv.id, ut.id) AS outro_participante_id,
+                COALESCE(uv.nome, ut.nome) AS outro_participante_nome,
+                COALESCE(uv.email, ut.email) AS outro_participante_email,
+                COALESCE(vend.cpf_cnpj, NULL) AS outro_participante_cpf_cnpj,
                 (SELECT COUNT(*) FROM chat_mensagens 
                  WHERE conversa_id = cc.id) AS total_mensagens
             FROM chat_conversas cc
@@ -93,6 +95,8 @@ try {
             LEFT JOIN compradores comp ON comp.usuario_id = uc.id
             LEFT JOIN vendedores vend ON p.vendedor_id = vend.id
             LEFT JOIN usuarios uv ON vend.usuario_id = uv.id
+            LEFT JOIN transportadores trans ON cc.transportador_id = trans.id
+            LEFT JOIN usuarios ut ON trans.usuario_id = ut.id
             WHERE 1=1";
     
     // Filtro de busca
@@ -103,10 +107,10 @@ try {
         // Busca por nome, email, CPF ou CNPJ
         $sql .= " AND (
             uc.nome LIKE :busca OR 
-            uv.nome LIKE :busca OR 
+            COALESCE(uv.nome, ut.nome) LIKE :busca OR 
             p.nome LIKE :busca OR
             uc.email LIKE :busca OR
-            uv.email LIKE :busca";
+            COALESCE(uv.email, ut.email) LIKE :busca";
         
         // Se tem números, busca também por CPF/CNPJ
         if ($busca_limpa) {
@@ -732,17 +736,22 @@ try {
                                 
                                 <div class="usuario-item">
                                     <div>
-                                        <i class="fas fa-store"></i>
-                                        <strong>Vendedor:</strong>
-                                        <?php echo htmlspecialchars($conversa['vendedor_nome']); ?>
+                                        <?php if ($conversa['tipo_conversa'] === 'transportador'): ?>
+                                            <i class="fas fa-truck"></i>
+                                            <strong>Transportador:</strong>
+                                        <?php else: ?>
+                                            <i class="fas fa-store"></i>
+                                            <strong>Vendedor:</strong>
+                                        <?php endif; ?>
+                                        <?php echo htmlspecialchars($conversa['outro_participante_nome']); ?>
                                     </div>
                                     <div style="margin-left: 20px;">
-                                        <?php echo htmlspecialchars($conversa['vendedor_email']); ?>
+                                        <?php echo htmlspecialchars($conversa['outro_participante_email']); ?>
                                     </div>
-                                    <?php if ($conversa['vendedor_cpf_cnpj']): ?>
+                                    <?php if ($conversa['outro_participante_cpf_cnpj']): ?>
                                         <div class="cpf-cnpj" style="margin-left: 20px;">
                                             <i class="fas fa-id-card"></i>
-                                            <?php echo htmlspecialchars($conversa['vendedor_cpf_cnpj']); ?>
+                                            <?php echo htmlspecialchars($conversa['outro_participante_cpf_cnpj']); ?>
                                         </div>
                                     <?php endif; ?>
                                 </div>

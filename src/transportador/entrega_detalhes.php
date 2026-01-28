@@ -45,7 +45,7 @@ if ($id > 0 && $transportador_id) {
                         FROM entregas e
                         INNER JOIN produtos p ON e.produto_id = p.id
                         INNER JOIN vendedores v ON p.vendedor_id = v.id
-                        LEFT JOIN compradores c ON e.comprador_id = c.id
+                        LEFT JOIN compradores c ON e.comprador_id = c.usuario_id
                         WHERE e.id = :id AND e.transportador_id = :transportador_id LIMIT 1";
     $stmt = $db->prepare($sql);
     $stmt->bindParam(':id', $id, PDO::PARAM_INT);

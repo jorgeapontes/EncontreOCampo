@@ -126,7 +126,7 @@ try {
                 $sql_hist = "SELECT e.id, e.endereco_origem, e.endereco_destino, e.valor_frete, e.data_entrega, e.foto_comprovante, p.nome as produto_nome, c.nome_comercial as comprador_nome, v.nome_comercial as vendedor_nome, v.cep as vendedor_cep, v.rua as vendedor_rua, v.numero as vendedor_numero, v.cidade as vendedor_cidade, v.estado as vendedor_estado
                     FROM entregas e
                     INNER JOIN produtos p ON e.produto_id = p.id
-                    LEFT JOIN compradores c ON e.comprador_id = c.id
+                    LEFT JOIN compradores c ON e.comprador_id = c.usuario_id
                     INNER JOIN vendedores v ON v.id = COALESCE(e.vendedor_id, p.vendedor_id)
                     WHERE e.transportador_id = :transportador_id AND e.status = 'entregue' AND e.status_detalhado = 'finalizada'
                     ORDER BY e.data_entrega DESC";

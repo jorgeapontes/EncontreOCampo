@@ -27,7 +27,7 @@ try {
     $conn->beginTransaction();
 
     // Buscar proposta_transportador
-        $sql = "SELECT pt.*, p.ID as proposta_id, p.produto_id, p.comprador_id, p.vendedor_id, t.id as transportador_id_sistema, t.usuario_id as transportador_usuario_id
+    $sql = "SELECT pt.*, p.ID as proposta_id, p.produto_id, p.comprador_id, p.vendedor_id, t.id as transportador_id_sistema, t.usuario_id as transportador_usuario_id
             FROM propostas_transportadores pt
             JOIN propostas p ON pt.proposta_id = p.ID
             LEFT JOIN transportadores t ON pt.transportador_id = t.id
@@ -43,7 +43,27 @@ try {
         throw new Exception('Ação não permitida');
     }
 
+    // VERIFICAÇÃO CRÍTICA: Verificar se a proposta já foi respondida
+    if (!empty($row['status']) && $row['status'] !== 'pendente') {
+        throw new Exception('Esta proposta já foi ' . $row['status']);
+    }
+
     if ($acao === 'aceitar') {
+        // Verificar se já existe entrega para este produto+comprador+transportador (evitar coluna inexistente proposta_transportador_id)
+        $transportador_sistema_id = $row['transportador_id_sistema'] ?? null;
+        if ($transportador_sistema_id !== null) {
+            $sql_check = "SELECT id FROM entregas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND transportador_id = :transportador_id AND status != 'cancelada' LIMIT 1";
+            $stmt_check = $conn->prepare($sql_check);
+            $stmt_check->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
+            $stmt_check->bindParam(':comprador_id', $row['comprador_id'], PDO::PARAM_INT);
+            $stmt_check->bindParam(':transportador_id', $transportador_sistema_id, PDO::PARAM_INT);
+            $stmt_check->execute();
+            $entrega_existente = $stmt_check->fetch(PDO::FETCH_ASSOC);
+            if ($entrega_existente) {
+                throw new Exception('Já existe uma entrega para esta proposta');
+            }
+        }
+
         // Atualizar status da proposta transportador
         $sql_up = "UPDATE propostas_transportadores SET status = 'aceita', data_resposta = NOW() WHERE id = :id";
         $stmt_up = $conn->prepare($sql_up);
@@ -189,6 +209,11 @@ try {
         exit();
 
     } elseif ($acao === 'recusar') {
+        // Verificar se já foi respondida
+        if (!empty($row['status']) && $row['status'] !== 'pendente') {
+            throw new Exception('Esta proposta já foi ' . $row['status']);
+        }
+        
         $sql_up = "UPDATE propostas_transportadores SET status = 'recusada', data_resposta = NOW() WHERE id = :id";
         $stmt_up = $conn->prepare($sql_up);
         $stmt_up->bindParam(':id', $pt_id, PDO::PARAM_INT);

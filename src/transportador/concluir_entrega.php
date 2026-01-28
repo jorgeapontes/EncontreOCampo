@@ -72,8 +72,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 file_put_contents($caminho_assinatura, $data_assinatura);
 
                 // 3. Atualizar Banco de Dados
+                // Ajuste: usar os status esperados pelo histórico (status = 'entregue' e status_detalhado = 'finalizada')
                 $sql_update = "UPDATE entregas 
-                               SET status = 'concluida', 
+                               SET status = 'entregue', 
+                                   status_detalhado = 'finalizada',
                                    foto_comprovante = :foto, 
                                    assinatura_comprovante = :assinatura,
                                    data_entrega = NOW() 
@@ -86,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':id' => $entrega_id
                 ]);
 
-                header("Location: entregas.php?sucesso=" . urlencode("Entrega concluída com sucesso!"));
+                header("Location: historico.php?sucesso=" . urlencode("Entrega concluída com sucesso!"));
                 exit();
             } else {
                 $erro = "Erro ao salvar a foto no servidor.";

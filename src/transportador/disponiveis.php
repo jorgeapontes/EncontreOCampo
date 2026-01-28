@@ -443,7 +443,10 @@ if (isset($_SESSION['usuario_id'])) {
                 pr.nome as produto_nome, pr.imagem_url as produto_imagem, p.quantidade_proposta as quantidade
                 FROM propostas p
                 INNER JOIN produtos pr ON p.produto_id = pr.id
-                WHERE p.opcao_frete = 'entregador' AND p.status = 'aceita' AND COALESCE(p.transportador_id, 0) = 0";
+                WHERE p.opcao_frete = 'entregador' AND p.status = 'aceita' AND COALESCE(p.transportador_id, 0) = 0
+                AND NOT EXISTS (
+                    SELECT 1 FROM entregas e WHERE e.produto_id = p.produto_id AND e.comprador_id = p.comprador_id
+                )";
 
             // aplicar filtros de estado (origem = vendedor, destino = comprador)
             if (!empty($filtro_estado_origem)) {

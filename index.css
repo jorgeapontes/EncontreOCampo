@@ -1020,14 +1020,6 @@ input:invalid:not(:focus):not(:placeholder-shown) {
     .carousel-nav {
         gap: 15px;
     }
-    
-    .logo-large h1 {
-        font-size: 2.2rem;
-    }
-
-    .logo-large h2 {
-        font-size: 1.8rem;
-    }
 
     .hero-content {
         padding: 0 15px;
@@ -1065,6 +1057,42 @@ input:invalid:not(:focus):not(:placeholder-shown) {
     .cep-btn {
         padding: 8px 12px;
         font-size: 0.85rem;
+    }
+
+    
+    .icon-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    .nav-link .icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+    }
+    
+    .notificacao-badge {
+        top: -5px;
+        right: -5px;
+        padding: 2px 5px;
+        font-size: 0.6em;
+        min-width: 16px;
+        height: 16px;
+        line-height: 1.2;
+    }
+    
+    /* Ajuste o menu mobile para não cortar a badge */
+    .nav-menu.active .nav-item {
+        margin: 12px 0;
+    }
+    
+    .nav-menu.active .nav-link {
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }
 
@@ -1167,6 +1195,18 @@ input:invalid:not(:focus):not(:placeholder-shown) {
 
 /* Medium devices (tablets, 768px and down) */
 @media screen and (max-width: 768px) {
+    .logo h1 {
+        font-size: 1.5rem !important;
+        line-height: 1.4;
+        margin-top: 8px;
+    }
+    
+    .logo h2 {
+        font-size: 1.1rem !important;
+        margin-top: -7px;
+        line-height: 1.2;
+    }
+
     .hamburger {
         display: block;
     }
@@ -1211,7 +1251,7 @@ input:invalid:not(:focus):not(:placeholder-shown) {
         position: fixed;
         left: -100%;
         top: 70px;
-        margin-top: 40px;
+        margin-top: 18px;
         gap: 0;
         flex-direction: column;
         background-color: var(--white);

@@ -563,7 +563,7 @@ foreach ($anuncios as &$a) {
                                 <span class="filtro-ativo-indicator"></span>
                             <?php endif; ?>
                         </button>
-                        <div class="dropdown-content">
+                        <div class="dropdown-content filtro-dropdown">
                             <form method="GET" action="anuncios.php" class="filtro-form">
                                 <?php if (!empty($termo_pesquisa)): ?> <input type="hidden" name="pesquisa" value="<?= htmlspecialchars($termo_pesquisa) ?>"> <?php endif; ?>
                                 <?php if (!empty($filtro_estado)): ?> <input type="hidden" name="estado" value="<?= htmlspecialchars($filtro_estado) ?>"> <?php endif; ?>

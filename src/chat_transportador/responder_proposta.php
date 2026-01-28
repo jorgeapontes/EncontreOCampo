@@ -50,10 +50,36 @@ try {
         $stmt_up->bindParam(':id', $pt_id, PDO::PARAM_INT);
         $stmt_up->execute();
 
-        // Atualizar proposta master
+        // Determinar id do transportador na tabela `transportadores` (não o usuario_id)
+        $transportador_sistema_id = null;
+        if (!empty($row['transportador_id_sistema'])) {
+            $transportador_sistema_id = (int)$row['transportador_id_sistema'];
+        } elseif (!empty($row['transportador_id'])) {
+            // fallback: caso o campo em propostas_transportadores armazene o usuario_id, tentar resolver para id da tabela transportadores
+            $st_lookup = $conn->prepare("SELECT id FROM transportadores WHERE usuario_id = :uid LIMIT 1");
+            $st_lookup->bindParam(':uid', $row['transportador_id'], PDO::PARAM_INT);
+            $st_lookup->execute();
+            $lk = $st_lookup->fetch(PDO::FETCH_ASSOC);
+            if ($lk) $transportador_sistema_id = (int)$lk['id'];
+        }
+
+        // Se ainda não resolvemos o id do transportador, tentar usar o usuario logado (caso pt armazene outro formato)
+        if ($transportador_sistema_id === null) {
+            $st_lookup2 = $conn->prepare("SELECT id FROM transportadores WHERE usuario_id = :uid LIMIT 1");
+            $st_lookup2->bindParam(':uid', $usuario_id, PDO::PARAM_INT);
+            $st_lookup2->execute();
+            $lk2 = $st_lookup2->fetch(PDO::FETCH_ASSOC);
+            if ($lk2) $transportador_sistema_id = (int)$lk2['id'];
+        }
+
+        // Atualizar proposta master com o id correto do transportador (tabela transportadores)
         $sql_pm = "UPDATE propostas SET status = 'aceita', transportador_id = :transportador_id, data_atualizacao = NOW() WHERE ID = :pid";
         $stmt_pm = $conn->prepare($sql_pm);
-        $stmt_pm->bindParam(':transportador_id', $row['transportador_id'], PDO::PARAM_INT);
+        if ($transportador_sistema_id !== null) {
+            $stmt_pm->bindValue(':transportador_id', $transportador_sistema_id, PDO::PARAM_INT);
+        } else {
+            $stmt_pm->bindValue(':transportador_id', null, PDO::PARAM_NULL);
+        }
         $stmt_pm->bindParam(':pid', $row['proposta_id'], PDO::PARAM_INT);
         $stmt_pm->execute();
 
@@ -107,7 +133,13 @@ try {
         $sql_ent = "INSERT INTO entregas (produto_id, transportador_id, endereco_origem, endereco_destino, status, data_solicitacao, valor_frete, vendedor_id, comprador_id, data_aceitacao, observacoes, status_detalhado) VALUES (:produto_id, :transportador_id, :end_origem, :end_destino, 'pendente', NOW(), :valor_frete, :vendedor_id, :comprador_id, NOW(), :observacoes, 'aguardando_entrega')";
         $st_ent = $conn->prepare($sql_ent);
         $st_ent->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
-        $st_ent->bindParam(':transportador_id', $row['transportador_id'], PDO::PARAM_INT);
+        // Usar o id da tabela transportadores para a entrega
+        if ($transportador_sistema_id !== null) {
+            $st_ent->bindValue(':transportador_id', $transportador_sistema_id, PDO::PARAM_INT);
+        } else {
+            // fallback para caso não tenhamos mapeamento: tentar usar o valor bruto (pior caso)
+            $st_ent->bindValue(':transportador_id', $row['transportador_id'] ?? null, PDO::PARAM_INT);
+        }
         $st_ent->bindParam(':end_origem', $end_origem);
         $st_ent->bindParam(':end_destino', $end_destino);
         $st_ent->bindParam(':valor_frete', $row['valor_frete']);
@@ -122,12 +154,25 @@ try {
 
         // Inserir mensagem no chat notificando aceitação
         // Buscar conversa que contém esse produto/comprador/transportador
-        $sql_conv = "SELECT id FROM chat_conversas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND transportador_id IS NOT NULL LIMIT 1";
-        $st_conv = $conn->prepare($sql_conv);
-        $st_conv->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
-        $st_conv->bindParam(':comprador_id', $row['comprador_id'], PDO::PARAM_INT);
-        $st_conv->execute();
-        $convRow = $st_conv->fetch(PDO::FETCH_ASSOC);
+        $convRow = null;
+        if ($transportador_sistema_id !== null) {
+            $sql_conv = "SELECT id FROM chat_conversas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND transportador_id = :tid LIMIT 1";
+            $st_conv = $conn->prepare($sql_conv);
+            $st_conv->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
+            $st_conv->bindParam(':comprador_id', $row['comprador_id'], PDO::PARAM_INT);
+            $st_conv->bindParam(':tid', $transportador_sistema_id, PDO::PARAM_INT);
+            $st_conv->execute();
+            $convRow = $st_conv->fetch(PDO::FETCH_ASSOC);
+        }
+        if (!$convRow) {
+            // fallback: qualquer conversa existente para esse produto/comprador com transportador preenchido
+            $sql_conv2 = "SELECT id FROM chat_conversas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND transportador_id IS NOT NULL LIMIT 1";
+            $st_conv2 = $conn->prepare($sql_conv2);
+            $st_conv2->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
+            $st_conv2->bindParam(':comprador_id', $row['comprador_id'], PDO::PARAM_INT);
+            $st_conv2->execute();
+            $convRow = $st_conv2->fetch(PDO::FETCH_ASSOC);
+        }
         if ($convRow) {
             $conversa_id = (int)$convRow['id'];
             $msg = "Proposta aceita pelo transportador. Entrega criada.";

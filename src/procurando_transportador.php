@@ -3,8 +3,9 @@
 require_once __DIR__ . '/conexao.php';
 require_once __DIR__ . '/permissions.php';
 
-if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprador') {
-    header("Location: login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador."));
+// Permitir acesso a usuários logados como comprador ou vendedor (vendedores podem também comprar)
+if (!isset($_SESSION['usuario_id']) || !in_array($_SESSION['usuario_tipo'] ?? '', ['comprador', 'vendedor'])) {
+    header("Location: login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador ou Vendedor."));
     exit();
 }
 

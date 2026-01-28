@@ -20,10 +20,9 @@ $database = new Database();
 $conn = $database->getConnection();
 
 try {
-    // Buscar dados da proposta e produto + vendedor (usuario_id)
-    $sql = "SELECT p.produto_id, p.comprador_id, v.usuario_id AS vendedor_usuario_id
+        // Buscar dados da proposta e produto + vendedor (id do vendedor)
+        $sql = "SELECT p.produto_id, p.comprador_id, p.vendedor_id
             FROM propostas p
-            LEFT JOIN vendedores v ON p.vendedor_id = v.id
             WHERE p.ID = :proposta_id LIMIT 1";
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
@@ -37,7 +36,7 @@ try {
 
     $produto_id = (int)$row['produto_id'];
     $comprador_id = (int)$row['comprador_id'];
-    $vendedor_usuario_id = isset($row['vendedor_usuario_id']) ? (int)$row['vendedor_usuario_id'] : 0;
+    $vendedor_id = isset($row['vendedor_id']) ? (int)$row['vendedor_id'] : 0;
     $transportador_usuario_id = (int)$_SESSION['usuario_id'];
 
     // Verificar se já existe conversa com transportador
@@ -59,7 +58,7 @@ try {
     $stmt_ins = $conn->prepare($sql_insert);
     $stmt_ins->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
     $stmt_ins->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
-    $stmt_ins->bindParam(':vendedor_id', $vendedor_usuario_id, PDO::PARAM_INT);
+    $stmt_ins->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
     $stmt_ins->bindParam(':transportador_id', $transportador_usuario_id, PDO::PARAM_INT);
     $stmt_ins->execute();
 

@@ -67,6 +67,7 @@ $total_anuncios = 0;
 $anuncios = [];
 $total_propostas_pendentes = 0;
 $total_mensagens_nao_lidas = 0;
+$total_procurando_transportador_nao_lidas = 0;
 $total_favoritos = 0;
 
 // Só busca estatísticas se o vendedor for ativo
@@ -109,12 +110,13 @@ if (!$is_pendente && $vendedor_id) {
     // CONTADOR DE MENSAGENS NÃO LIDAS
     try {
         $query_mensagens = "SELECT COUNT(DISTINCT cm.conversa_id) as total_conversas_nao_lidas
-                            FROM chat_mensagens cm
-                            INNER JOIN chat_conversas cc ON cm.conversa_id = cc.id
-                            INNER JOIN produtos p ON cc.produto_id = p.id
-                            WHERE p.vendedor_id = :vendedor_id 
-                            AND cm.remetente_id != :usuario_id
-                            AND cm.lida = 0";
+                    FROM chat_mensagens cm
+                    INNER JOIN chat_conversas cc ON cm.conversa_id = cc.id
+                    INNER JOIN produtos p ON cc.produto_id = p.id
+                    WHERE p.vendedor_id = :vendedor_id 
+                    AND cm.remetente_id != :usuario_id
+                    AND cm.lida = 0
+                    AND (cc.transportador_id IS NULL OR cc.transportador_id = 0)";
                             
         $stmt_mensagens = $db->prepare($query_mensagens);
         $stmt_mensagens->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
@@ -126,6 +128,28 @@ if (!$is_pendente && $vendedor_id) {
         
     } catch (PDOException $e) {
         error_log("Erro ao contar mensagens não lidas: " . $e->getMessage());
+    }
+
+    // CONTADOR DE MENSAGENS NÃO LIDAS (conversas com transportador)
+    try {
+        $query_procurando = "SELECT COUNT(DISTINCT cm.conversa_id) as total_procurando_nao_lidas
+                            FROM chat_mensagens cm
+                            INNER JOIN chat_conversas cc ON cm.conversa_id = cc.id
+                            INNER JOIN produtos p ON cc.produto_id = p.id
+                            WHERE p.vendedor_id = :vendedor_id 
+                            AND cm.remetente_id != :usuario_id
+                            AND cm.lida = 0
+                            AND cc.transportador_id IS NOT NULL
+                            AND cc.transportador_id != 0";
+
+        $stmt_procurando = $db->prepare($query_procurando);
+        $stmt_procurando->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
+        $stmt_procurando->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+        $stmt_procurando->execute();
+        $res_proc = $stmt_procurando->fetch(PDO::FETCH_ASSOC);
+        $total_procurando_transportador_nao_lidas = $res_proc['total_procurando_nao_lidas'] ?? 0;
+    } catch (PDOException $e) {
+        error_log("Erro ao contar mensagens de procurando transportador: " . $e->getMessage());
     }
 }
 
@@ -325,7 +349,7 @@ try {
                     <div class="card">
                         <i class="fa-solid fa-magnifying-glass"></i>
                         <h3>Procurando transportador </h3>
-                        <p>Ver</p>
+                        <p><?php echo ($total_procurando_transportador_nao_lidas > 0) ? $total_procurando_transportador_nao_lidas . ' não lidas' : 'Ver'; ?></p>
                     </div>
                 </a>
                 <a href="negociacoes.php">

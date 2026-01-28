@@ -80,7 +80,7 @@ if (!$is_pendente && $transportador_id) {
                       v.estado as vendedor_estado
                   FROM entregas e
                   INNER JOIN produtos p ON e.produto_id = p.id
-                  LEFT JOIN compradores c ON e.comprador_id = c.id
+                  LEFT JOIN compradores c ON e.comprador_id = c.usuario_id
                   INNER JOIN vendedores v ON v.id = COALESCE(e.vendedor_id, p.vendedor_id)
                   WHERE e.transportador_id = :transportador_id 
                   AND e.status NOT IN ('entregue', 'cancelada')

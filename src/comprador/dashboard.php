@@ -36,7 +36,8 @@ $dashboard_data = [
     'recusada' => 0,
     'favoritos' => 0,
     'total_chats' => 0,
-    'chats_nao_lidos' => 0
+    'chats_nao_lidos' => 0,
+    'procurando_nao_lidas' => 0
 ];
 
 $comprador_id = null;
@@ -133,12 +134,12 @@ try {
     
     $dashboard_data['total_chats'] = $chats_result['total_chats'] ?? 0;
     
-    // Chats com mensagens não lidas
+    // Chats com mensagens não lidas (contar apenas mensagens enviadas pelo vendedor)
     $sql_nao_lidos = "SELECT COUNT(DISTINCT cm.conversa_id) as chats_nao_lidos
                       FROM chat_mensagens cm
                       INNER JOIN chat_conversas cc ON cm.conversa_id = cc.id
                       WHERE cc.comprador_id = :usuario_id
-                      AND cm.remetente_id != :usuario_id
+                      AND cm.remetente_id = cc.vendedor_id
                       AND cm.lida = 0";
     
     $stmt_nao_lidos = $conn->prepare($sql_nao_lidos);
@@ -152,6 +153,27 @@ try {
     error_log("Erro ao carregar dados de chats: " . $e->getMessage());
     $dashboard_data['total_chats'] = 0;
     $dashboard_data['chats_nao_lidos'] = 0;
+}
+
+// 6. CONTAR NÃO-LIDAS ESPECÍFICAS DE CONVERSAS COM TRANSPORTADOR (para o card "Procurando transportador")
+try {
+    $sql_procurando = "SELECT COUNT(DISTINCT cm.conversa_id) as procurando_nao_lidas
+                       FROM chat_mensagens cm
+                       INNER JOIN chat_conversas cc ON cm.conversa_id = cc.id
+                       WHERE cc.comprador_id = :usuario_id
+                       AND cc.transportador_id IS NOT NULL
+                       AND cc.transportador_id != 0
+                       AND cm.remetente_id != :usuario_id
+                       AND cm.lida = 0";
+
+    $stmt_procurando = $conn->prepare($sql_procurando);
+    $stmt_procurando->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt_procurando->execute();
+    $res_procurando = $stmt_procurando->fetch(PDO::FETCH_ASSOC);
+    $dashboard_data['procurando_nao_lidas'] = $res_procurando['procurando_nao_lidas'] ?? 0;
+} catch (PDOException $e) {
+    error_log("Erro ao contar não-lidas procurando transportador: " . $e->getMessage());
+    $dashboard_data['procurando_nao_lidas'] = 0;
 }
 ?>
 
@@ -270,7 +292,12 @@ try {
                     <div class="card">
                         <i class="fa-solid fa-magnifying-glass"></i>
                         <h3>Procurando transportador </h3>
-                        <p>Ver</p>
+                        <p>
+                            <?php
+                                $n = (int)$dashboard_data['procurando_nao_lidas'];
+                                echo $n . ' não ' . ($n === 1 ? 'lida' : 'lidas');
+                            ?>
+                        </p>
                     </div>
                 </a>
 

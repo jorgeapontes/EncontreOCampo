@@ -60,15 +60,53 @@ try {
     $stmt_ins->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
     $stmt_ins->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
     $stmt_ins->bindParam(':transportador_id', $transportador_usuario_id, PDO::PARAM_INT);
-    $stmt_ins->execute();
-
-    $new_id = (int)$conn->lastInsertId();
-    echo json_encode(['success' => true, 'conversa_id' => $new_id]);
-    exit();
+    try {
+        $stmt_ins->execute();
+        $new_id = (int)$conn->lastInsertId();
+        echo json_encode(['success' => true, 'conversa_id' => $new_id]);
+        exit();
+    } catch (PDOException $e) {
+        // Se for violação de chave única relacionada ao índice conversa_unica,
+        // retornar a conversa existente para evitar erro de concorrência.
+        if ($e->getCode() === '23000') {
+            error_log('Duplicate conversa detected: ' . $e->getMessage());
+            // Tentar recuperar conversa já existente (mesmo produto/comprador/vendedor)
+            $sql_existing = "SELECT id, transportador_id FROM chat_conversas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND vendedor_id = :vendedor_id LIMIT 1";
+            $stmt_ex = $conn->prepare($sql_existing);
+            $stmt_ex->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+            $stmt_ex->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
+            $stmt_ex->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
+            $stmt_ex->execute();
+            $found = $stmt_ex->fetch(PDO::FETCH_ASSOC);
+            if ($found) {
+                // Se a conversa existe mas não tem transportador associado, atribuí-la ao transportador atual
+                if (empty($found['transportador_id'])) {
+                    $sql_upd = "UPDATE chat_conversas SET transportador_id = :transportador_id WHERE id = :id";
+                    $stmt_upd = $conn->prepare($sql_upd);
+                    $stmt_upd->bindParam(':transportador_id', $transportador_usuario_id, PDO::PARAM_INT);
+                    $stmt_upd->bindParam(':id', $found['id'], PDO::PARAM_INT);
+                    $stmt_upd->execute();
+                    echo json_encode(['success' => true, 'conversa_id' => (int)$found['id'], 'info' => 'Conversa atribuída ao transportador']);
+                    exit();
+                }
+                // Se já está atribuída ao transportador atual, retornar id
+                if ((int)$found['transportador_id'] === $transportador_usuario_id) {
+                    echo json_encode(['success' => true, 'conversa_id' => (int)$found['id']]);
+                    exit();
+                }
+                // Está atribuída a outro transportador
+                echo json_encode(['success' => false, 'erro' => 'Conversa já atribuída a outro transportador']);
+                exit();
+            }
+        }
+        // Se não for duplicata tratada, re-lançar para o catch externo
+        throw $e;
+    }
 
 } catch (PDOException $e) {
     error_log('Erro create_conversa_transportador: ' . $e->getMessage());
-    echo json_encode(['success' => false, 'erro' => 'Erro ao criar conversa']);
+    // Retornar detalhe do erro temporariamente para depuração
+    echo json_encode(['success' => false, 'erro' => 'Erro ao criar conversa', 'detalhe' => $e->getMessage()]);
     exit();
 }
 

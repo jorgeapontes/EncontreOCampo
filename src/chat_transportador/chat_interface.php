@@ -126,14 +126,73 @@ try {
                 display: <?php echo $conversa_id ? 'flex' : 'none'; ?>;
             }
         }
-    </style>
-</head>
-<body>
-    <style>
         /* Remover bordas/outlines indesejadas em imagens do chat */
         .chat-messages img { border: none !important; outline: none !important; box-shadow: none !important; }
         .chat-messages img:focus, .chat-messages img:active { outline: none !important; box-shadow: none !important; border: none !important; }
+        /* Estilo para status de proposta */
+        .proposta-status {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .proposta-aceita {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .proposta-recusada {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .proposta-pendente {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .proposta-card {
+            border: 1px solid #e1e4e8;
+            padding: 12px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            max-width: 420px;
+            color: #1c1e21;
+            margin: 4px 0;
+        }
+        .proposta-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+        .btn-aceitar {
+            background: #42b72a;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-recusar {
+            background: #ff4444;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-aceitar:disabled, .btn-recusar:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
     </style>
+</head>
+<body>
     <div class="chat-container">
         <div class="chat-sidebar">
             <div class="sidebar-header">
@@ -252,6 +311,9 @@ try {
         const usuarioId = <?php echo (int)$_SESSION['usuario_id']; ?>;
         let ultimaMensagemId = 0;
 
+        // Cache para status das propostas já processadas
+        const propostasProcessadas = new Map();
+
         async function carregarMensagens() {
             try {
                 const res = await fetch(`get_messages.php?conversa_id=${conversaId}&ultimo_id=${ultimaMensagemId}`);
@@ -264,6 +326,7 @@ try {
                             const div = document.createElement('div');
                             div.className = 'message ' + (msg.remetente_id == usuarioId ? 'sent' : 'received');
                             const content = document.createElement('div');
+                            
                             if (msg.tipo === 'imagem') {
                                 const img = document.createElement('img');
                                 img.src = msg.mensagem;
@@ -281,127 +344,14 @@ try {
                                     document.body.appendChild(modal);
                                 });
                                 content.appendChild(img);
-                            } else if (msg.tipo === 'proposta') {
-                                // Mensagem de proposta: o campo mensagem pode conter texto humano, e dados extras podem vir em msg.dados_json
-                                let dados = null;
-                                try { dados = msg.dados_json ? JSON.parse(msg.dados_json) : null; } catch(e) { dados = null; }
-                                const card = document.createElement('div');
-                                card.style.cssText = 'border:1px solid #e1e4e8;padding:10px;border-radius:8px;background:#fff;max-width:420px;color:#1c1e21;';
-                                const title = document.createElement('div');
-                                title.innerHTML = '<strong>Proposta de Entrega</strong>';
-                                card.appendChild(title);
-                                const detail = document.createElement('div');
-                                detail.style.marginTop = '8px';
-                                const valorText = dados && dados.valor ? ('R$ ' + parseFloat(dados.valor).toFixed(2).replace('.', ',')) : escapeHtml(msg.mensagem);
-                                detail.innerHTML = `<div><span>Valor:</span> <strong>${valorText}</strong></div>`;
-                                if (dados && dados.prazo) {
-                                    detail.innerHTML += `<div><span>Prazo:</span> <small>${escapeHtml(dados.prazo)}</small></div>`;
-                                }
-                                card.appendChild(detail);
-
-                                // Se for transportador, mostrar botões aceitar/recusar
-                                <?php if ($is_transportador): ?>
-                                const actions = document.createElement('div');
-                                actions.style.cssText = 'display:flex;gap:8px;justify-content:flex-end;margin-top:10px;';
-                                const btnAceitar = document.createElement('button');
-                                btnAceitar.textContent = 'Aceitar';
-                                btnAceitar.style.cssText = 'background:#42b72a;color:#fff;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;';
-                                btnAceitar.addEventListener('click', async () => {
-                                    if (!dados || !dados.propostas_transportador_id) return alert('ID da proposta não encontrado');
-                                    await performPropostaAction('aceitar', dados.propostas_transportador_id, btnAceitar, btnRecusar, actions);
-                                });
-
-                                const btnRecusar = document.createElement('button');
-                                btnRecusar.textContent = 'Recusar';
-                                btnRecusar.style.cssText = 'background:#ff4444;color:#fff;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;';
-                                btnRecusar.addEventListener('click', async () => {
-                                    if (!dados || !dados.propostas_transportador_id) return alert('ID da proposta não encontrado');
-                                    if (!confirm('Deseja recusar esta proposta?')) return;
-                                    await performPropostaAction('recusar', dados.propostas_transportador_id, btnRecusar, btnAceitar, actions);
-                                });
-
-                                actions.appendChild(btnRecusar);
-                                actions.appendChild(btnAceitar);
-                                card.appendChild(actions);
-                                <?php endif; ?>
-
-                                content.appendChild(card);
+                            } else if (msg.tipo === 'proposta' || (msg.mensagem && (msg.mensagem.toUpperCase().indexOf('PROPOSTA') !== -1 || msg.mensagem.indexOf('ID') !== -1))) {
+                                // É uma mensagem de proposta - renderizar como card
+                                renderizarPropostaCard(msg, content);
                             } else {
-                                // Se for texto, tentar detectar formato de proposta enviada por outro fluxo
-                                let rendered = false;
-                                if (msg.mensagem) {
-                                    try {
-                                        // Normalizar o texto: remover asteriscos, múltiplos espaços e NBSP
-                                        let texto = msg.mensagem.replace(/\*/g, '');
-                                        texto = texto.replace(/\u00A0/g, ' ');
-                                        texto = texto.replace(/\s+/g, ' ').trim();
-
-                                        if (texto.toUpperCase().indexOf('PROPOSTA') !== -1) {
-                                            // Mais flexível: aceitar 'ID 3' ou 'ID: 3', 'Valor R$ 12,00' ou 'Valor: R$12.00'
-                                            const idMatch = texto.match(/\bID\b\s*[:\-\s]?\s*(\d+)/i);
-                                            const valorMatch = texto.match(/\bValor\b\s*[:\-\s]?\s*(?:R\$\s*)?([0-9\.\,]+)/i);
-                                            const prazoMatch = texto.match(/\bPrazo\b\s*[:\-\s]?\s*([0-9]{4}-[0-9]{2}-[0-9]{2}|[0-9]{2}\/[0-9]{2}\/[0-9]{4})/i);
-
-                                            if (idMatch || valorMatch || prazoMatch) {
-                                                const dados = {};
-                                                if (idMatch) dados.propostas_transportador_id = parseInt(idMatch[1]);
-                                                if (valorMatch) {
-                                                    const vraw = valorMatch[1].replace(/\./g, '').replace(/,/g, '.');
-                                                    dados.valor = parseFloat(vraw);
-                                                }
-                                                if (prazoMatch) {
-                                                    let p = prazoMatch[1];
-                                                    if (p.indexOf('/') !== -1) {
-                                                        const parts = p.split('/');
-                                                        p = parts[2] + '-' + parts[1] + '-' + parts[0];
-                                                    }
-                                                    dados.prazo = p;
-                                                }
-
-                                                const card = document.createElement('div');
-                                                card.style.cssText = 'border:1px solid #e1e4e8;padding:10px;border-radius:8px;background:#fff;max-width:420px;color:#1c1e21;';
-                                                const title = document.createElement('div');
-                                                title.innerHTML = '<strong>Proposta de Entrega</strong>';
-                                                card.appendChild(title);
-                                                const detail = document.createElement('div');
-                                                detail.style.marginTop = '8px';
-                                                const valorText = (typeof dados.valor === 'number') ? ('R$ ' + dados.valor.toFixed(2).replace('.', ',')) : escapeHtml(texto);
-                                                detail.innerHTML = `<div><span>Valor:</span> <strong>${valorText}</strong></div>`;
-                                                if (dados.prazo) detail.innerHTML += `<div><span>Prazo:</span> <small>${escapeHtml(dados.prazo)}</small></div>`;
-                                                card.appendChild(detail);
-
-                                                <?php if ($is_transportador): ?>
-                                                const actions = document.createElement('div');
-                                                actions.style.cssText = 'display:flex;gap:8px;justify-content:flex-end;margin-top:10px;';
-                                                const btnAceitar = document.createElement('button');
-                                                btnAceitar.textContent = 'Aceitar';
-                                                btnAceitar.style.cssText = 'background:#42b72a;color:#fff;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;';
-                                                btnAceitar.addEventListener('click', async () => {
-                                                    if (!dados || !dados.propostas_transportador_id) return alert('ID da proposta não encontrado');
-                                                    await performPropostaAction('aceitar', dados.propostas_transportador_id, btnAceitar, btnRecusar, actions);
-                                                });
-                                                const btnRecusar = document.createElement('button');
-                                                btnRecusar.textContent = 'Recusar';
-                                                btnRecusar.style.cssText = 'background:#ff4444;color:#fff;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;';
-                                                btnRecusar.addEventListener('click', async () => {
-                                                    if (!dados || !dados.propostas_transportador_id) return alert('ID da proposta não encontrado');
-                                                    if (!confirm('Deseja recusar esta proposta?')) return;
-                                                    await performPropostaAction('recusar', dados.propostas_transportador_id, btnRecusar, btnAceitar, actions);
-                                                });
-                                                actions.appendChild(btnRecusar); actions.appendChild(btnAceitar); card.appendChild(actions);
-                                                <?php endif; ?>
-
-                                                content.appendChild(card);
-                                                rendered = true;
-                                            }
-                                        }
-                                    } catch (e) {
-                                        console.error('Erro ao parsear proposta:', e);
-                                    }
-                                }
-
-                                if (!rendered) content.textContent = msg.mensagem;
+                                // Mensagem de texto normal
+                                content.textContent = msg.mensagem;
                             }
+                            
                             const time = document.createElement('div');
                             time.className = 'time';
                             time.textContent = msg.data_formatada;
@@ -418,53 +368,265 @@ try {
             }
         }
 
+        async function renderizarPropostaCard(msg, content) {
+            // Extrair dados da proposta
+            let dados = null;
+            let propostaId = null;
+            
+            // Tentar extrair do dados_json
+            if (msg.dados_json) {
+                try {
+                    dados = JSON.parse(msg.dados_json);
+                    if (dados && dados.propostas_transportador_id) {
+                        propostaId = dados.propostas_transportador_id;
+                    }
+                } catch(e) {
+                    console.error('Erro ao parsear dados_json:', e);
+                }
+            }
+            
+            // Se não tem dados_json, tentar extrair do texto
+            if (!dados && msg.mensagem) {
+                dados = extrairDadosDoTexto(msg.mensagem);
+                if (dados && dados.propostas_transportador_id) {
+                    propostaId = dados.propostas_transportador_id;
+                }
+            }
+            
+            // Criar o card da proposta
+            const card = document.createElement('div');
+            card.className = 'proposta-card';
+            
+            // Titulo
+            const title = document.createElement('div');
+            title.innerHTML = '<strong><i class="fas fa-handshake" style="margin-right:5px;"></i>Proposta de Entrega</strong>';
+            card.appendChild(title);
+            
+            // Detalhes
+            const detail = document.createElement('div');
+            detail.style.marginTop = '8px';
+            
+            // Valor
+            let valorText = 'Valor não especificado';
+            if (dados && dados.valor) {
+                valorText = 'R$ ' + parseFloat(dados.valor).toFixed(2).replace('.', ',');
+            } else if (msg.mensagem) {
+                // Tentar extrair valor do texto
+                const valorMatch = msg.mensagem.match(/R\$\s*([0-9.,]+)/i) || msg.mensagem.match(/Valor[:\-\s]+([0-9.,]+)/i);
+                if (valorMatch) {
+                    const vraw = valorMatch[1].replace(/\./g, '').replace(/,/g, '.');
+                    valorText = 'R$ ' + parseFloat(vraw).toFixed(2).replace('.', ',');
+                }
+            }
+            
+            detail.innerHTML = `<div style="margin-bottom:5px;"><span style="color:#666;">Valor:</span> <strong style="color:#333;">${valorText}</strong></div>`;
+            
+            // Prazo
+            if (dados && dados.prazo) {
+                const dataFormatada = formatarData(dados.prazo);
+                detail.innerHTML += `<div style="margin-bottom:5px;"><span style="color:#666;">Prazo:</span> <span style="color:#333;">${dataFormatada}</span></div>`;
+            }
+            
+            // ID da proposta (se disponível)
+            if (propostaId) {
+                detail.innerHTML += `<div><span style="color:#666;font-size:12px;">ID: ${propostaId}</span></div>`;
+            }
+            
+            card.appendChild(detail);
+            
+            // Se for transportador, verificar status e mostrar ações apropriadas
+            <?php if ($is_transportador): ?>
+            if (propostaId) {
+                // Verificar status da proposta
+                let status = propostasProcessadas.get(propostaId);
+                
+                if (!status) {
+                    // Buscar status do servidor
+                    try {
+                        const res = await fetch('get_proposta_status.php?id=' + propostaId);
+                        const data = await res.json();
+                        status = data.status || 'pendente';
+                        propostasProcessadas.set(propostaId, status);
+                    } catch(e) {
+                        console.error('Erro ao buscar status:', e);
+                        status = 'pendente';
+                    }
+                }
+                
+                // Criar área de ações/status
+                const actionsContainer = document.createElement('div');
+                actionsContainer.className = 'proposta-actions';
+                
+                if (status === 'pendente') {
+                    // Mostrar botões Aceitar/Recusar
+                    const btnAceitar = document.createElement('button');
+                    btnAceitar.className = 'btn-aceitar';
+                    btnAceitar.textContent = 'Aceitar';
+                    btnAceitar.addEventListener('click', async () => {
+                        if (!propostaId) return alert('ID da proposta não encontrado');
+                        await performPropostaAction('aceitar', propostaId, btnAceitar, btnRecusar, actionsContainer);
+                    });
+
+                    const btnRecusar = document.createElement('button');
+                    btnRecusar.className = 'btn-recusar';
+                    btnRecusar.textContent = 'Recusar';
+                    btnRecusar.addEventListener('click', async () => {
+                        if (!propostaId) return alert('ID da proposta não encontrado');
+                        if (!confirm('Deseja recusar esta proposta?')) return;
+                        await performPropostaAction('recusar', propostaId, btnRecusar, btnAceitar, actionsContainer);
+                    });
+
+                    actionsContainer.appendChild(btnRecusar);
+                    actionsContainer.appendChild(btnAceitar);
+                } else {
+                    // Mostrar status
+                    const statusDiv = document.createElement('div');
+                    statusDiv.className = `proposta-status proposta-${status}`;
+                    statusDiv.textContent = status === 'aceita' ? '✓ Proposta aceita' : 
+                                           status === 'recusada' ? '✗ Proposta recusada' : 
+                                           '⏳ Pendente';
+                    actionsContainer.appendChild(statusDiv);
+                }
+                
+                card.appendChild(actionsContainer);
+            }
+            <?php else: ?>
+            // Para compradores, mostrar apenas o status se disponível
+            if (propostaId) {
+                let status = propostasProcessadas.get(propostaId);
+                
+                if (!status) {
+                    try {
+                        const res = await fetch('get_proposta_status.php?id=' + propostaId);
+                        const data = await res.json();
+                        status = data.status || 'pendente';
+                        propostasProcessadas.set(propostaId, status);
+                    } catch(e) {
+                        status = 'pendente';
+                    }
+                }
+                
+                if (status !== 'pendente') {
+                    const statusDiv = document.createElement('div');
+                    statusDiv.className = `proposta-status proposta-${status}`;
+                    statusDiv.textContent = status === 'aceita' ? '✓ Proposta aceita pelo transportador' : 
+                                           '✗ Proposta recusada pelo transportador';
+                    card.appendChild(statusDiv);
+                }
+            }
+            <?php endif; ?>
+            
+            content.appendChild(card);
+        }
+
+        function extrairDadosDoTexto(texto) {
+            const dados = {};
+            if (!texto) return dados;
+            
+            // Normalizar texto
+            let textoLimpo = texto.replace(/\*/g, '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
+            
+            // Extrair ID
+            const idMatch = textoLimpo.match(/\bID\b\s*[:\-\s]?\s*(\d+)/i);
+            if (idMatch) dados.propostas_transportador_id = parseInt(idMatch[1]);
+            
+            // Extrair valor
+            const valorMatch = textoLimpo.match(/\bValor\b\s*[:\-\s]?\s*(?:R\$\s*)?([0-9.,]+)/i);
+            if (valorMatch) {
+                const vraw = valorMatch[1].replace(/\./g, '').replace(/,/g, '.');
+                dados.valor = parseFloat(vraw);
+            }
+            
+            // Extrair prazo
+            const prazoMatch = textoLimpo.match(/\bPrazo\b\s*[:\-\s]?\s*([0-9]{4}-[0-9]{2}-[0-9]{2}|[0-9]{2}\/[0-9]{2}\/[0-9]{4})/i);
+            if (prazoMatch) {
+                let p = prazoMatch[1];
+                if (p.indexOf('/') !== -1) {
+                    const parts = p.split('/');
+                    p = parts[2] + '-' + parts[1] + '-' + parts[0];
+                }
+                dados.prazo = p;
+            }
+            
+            return dados;
+        }
+
+        function formatarData(dataStr) {
+            try {
+                const data = new Date(dataStr);
+                return data.toLocaleDateString('pt-BR');
+            } catch(e) {
+                return dataStr;
+            }
+        }
+
         function escapeHtml(text) {
             if (!text) return '';
             return text.replace(/[&<>"']/g, function(m) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m]; });
         }
 
-        // Centraliza a ação de aceitar/recusar propostas e garante atualização correta da UI
         async function performPropostaAction(action, ptId, primaryBtn, secondaryBtn, actionsContainer) {
-            const buttons = [];
-            if (primaryBtn) buttons.push({el: primaryBtn});
-            if (secondaryBtn) buttons.push({el: secondaryBtn});
-            buttons.forEach(b => { try { b.el.disabled = true; b.el._oldText = b.el.textContent; b.el.textContent = 'Processando...'; } catch (e) {} });
+            // Desabilitar botões durante processamento
+            if (primaryBtn) primaryBtn.disabled = true;
+            if (secondaryBtn) secondaryBtn.disabled = true;
+            
+            const oldText1 = primaryBtn ? primaryBtn.textContent : '';
+            const oldText2 = secondaryBtn ? secondaryBtn.textContent : '';
+            
+            if (primaryBtn) primaryBtn.textContent = 'Processando...';
+            if (secondaryBtn) secondaryBtn.textContent = 'Processando...';
+            
             try {
-                const res = await fetch('responder_proposta.php', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({acao: action, id: ptId})});
+                const res = await fetch('responder_proposta.php', {
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({acao: action, id: ptId})
+                });
                 const j = await res.json();
+                
                 if (j.success) {
+                    const finalStatus = (action === 'aceitar') ? 'aceita' : 'recusada';
                     const finalText = (action === 'aceitar') ? 'Proposta aceita' : 'Proposta recusada';
+                    
+                    // Atualizar cache
+                    propostasProcessadas.set(ptId, finalStatus);
+                    
+                    // Atualizar UI
+                    if (actionsContainer) {
+                        actionsContainer.innerHTML = '';
+                        const statusDiv = document.createElement('div');
+                        statusDiv.className = `proposta-status proposta-${finalStatus}`;
+                        statusDiv.textContent = finalText;
+                        actionsContainer.appendChild(statusDiv);
+                    }
+                    
                     alert(finalText);
-                    try {
-                        if (actionsContainer) {
-                            actionsContainer.innerHTML = '';
-                            const span = document.createElement('div');
-                            span.style.cssText = 'padding:10px 12px;border-radius:8px;background:#f3f6f4;color:#213;display:inline-block;font-weight:700;';
-                            span.textContent = finalText;
-                            actionsContainer.appendChild(span);
-                        } else {
-                            const firstBtn = buttons.length ? buttons[0].el : null;
-                            if (firstBtn && firstBtn.parentElement) {
-                                const parent = firstBtn.parentElement;
-                                parent.innerHTML = '';
-                                const span = document.createElement('div');
-                                span.style.cssText = 'padding:10px 12px;border-radius:8px;background:#f3f6f4;color:#213;display:inline-block;font-weight:700;';
-                                span.textContent = finalText;
-                                parent.appendChild(span);
-                            }
-                        }
-                        // Garantir que referências a botões tenham estado limpo
-                        buttons.forEach(b => { try { b.el.disabled = false; b.el.textContent = b.el._oldText || b.el.textContent; } catch (e) {} });
-                    } catch (e) { console.error(e); }
-                    carregarMensagens();
+                    // Recarregar mensagens para garantir consistência
+                    setTimeout(carregarMensagens, 500);
                 } else {
                     alert(j.erro || j.error || 'Erro ao processar');
-                    buttons.forEach(b => { try { b.el.disabled = false; b.el.textContent = b.el._oldText || b.el.textContent; } catch (e) {} });
+                    // Reabilitar botões
+                    if (primaryBtn) {
+                        primaryBtn.disabled = false;
+                        primaryBtn.textContent = oldText1;
+                    }
+                    if (secondaryBtn) {
+                        secondaryBtn.disabled = false;
+                        secondaryBtn.textContent = oldText2;
+                    }
                 }
             } catch (e) {
                 console.error(e);
                 alert('Erro de conexão');
-                buttons.forEach(b => { try { b.el.disabled = false; b.el.textContent = b.el._oldText || b.el.textContent; } catch (err) {} });
+                // Reabilitar botões
+                if (primaryBtn) {
+                    primaryBtn.disabled = false;
+                    primaryBtn.textContent = oldText1;
+                }
+                if (secondaryBtn) {
+                    secondaryBtn.disabled = false;
+                    secondaryBtn.textContent = oldText2;
+                }
             }
         }
 

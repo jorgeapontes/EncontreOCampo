@@ -20,257 +20,213 @@ $stmt = $db->prepare($sql);
 $stmt->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
 $stmt->execute();
 $transportador = $stmt->fetch(PDO::FETCH_ASSOC);
+
 if (!$transportador) {
     die('Transportador não encontrado.');
 }
 $transportador_id = $transportador['id'];
 
-// Verificar se entrega pertence ao transportador e está em transporte
+// Verificar se entrega pertence ao transportador
 $sql = "SELECT * FROM entregas WHERE id = :id AND transportador_id = :transportador_id AND status IN ('pendente','em_transporte')";
 $stmt = $db->prepare($sql);
 $stmt->bindParam(':id', $entrega_id, PDO::PARAM_INT);
 $stmt->bindParam(':transportador_id', $transportador_id, PDO::PARAM_INT);
 $stmt->execute();
 $entrega = $stmt->fetch(PDO::FETCH_ASSOC);
+
 if (!$entrega) {
-    die('Entrega não encontrada ou não disponível para conclusão.');
+    header("Location: entregas.php?erro=" . urlencode("Entrega não encontrada ou já concluída."));
+    exit();
 }
 
 $erro = '';
 $sucesso = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['foto_comprovante'])) {
-    $foto = $_FILES['foto_comprovante'];
-    if ($foto['error'] === UPLOAD_ERR_OK) {
-        $ext = strtolower(pathinfo($foto['name'], PATHINFO_EXTENSION));
-        $permitidas = ['jpg','jpeg','png','gif'];
-        if (in_array($ext, $permitidas)) {
-            $nome_arquivo = 'entrega_' . $entrega_id . '_' . time() . '.' . $ext;
-            $destino = '../../uploads/entregas/' . $nome_arquivo;
-            if (!is_dir('../../uploads/entregas/')) {
-                mkdir('../../uploads/entregas/', 0777, true);
-            }
-            if (move_uploaded_file($foto['tmp_name'], $destino)) {
-                $sql_update = "UPDATE entregas SET status = 'entregue', status_detalhado = 'finalizada', foto_comprovante = :foto, data_entrega = NOW() WHERE id = :id";
-                $stmt_update = $db->prepare($sql_update);
-                $stmt_update->bindParam(':foto', $nome_arquivo);
-                $stmt_update->bindParam(':id', $entrega_id, PDO::PARAM_INT);
-                $stmt_update->execute();
-                $sucesso = 'Entrega concluída com sucesso!';
-            } else {
-                $erro = 'Erro ao salvar o arquivo.';
-            }
-        } else {
-            $erro = 'Formato de arquivo não permitido.';
-        }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $foto = $_FILES['foto_comprovante'] ?? null;
+    $assinatura_base64 = $_POST['assinatura_data'] ?? '';
+
+    if (!$foto || $foto['error'] !== UPLOAD_ERR_OK) {
+        $erro = "A foto do comprovante é obrigatória.";
+    } elseif (empty($assinatura_base64)) {
+        $erro = "A assinatura do recebedor é obrigatória.";
     } else {
-        $erro = 'Erro no upload da foto.';
+        try {
+            // 1. Processar Foto
+            $ext = pathinfo($foto['name'], PATHINFO_EXTENSION);
+            $nome_foto = "entrega_" . $entrega_id . "_" . time() . "." . $ext;
+            $caminho_foto = "../../uploads/entregas/" . $nome_foto;
+
+            if (!is_dir("../../uploads/entregas/")) {
+                mkdir("../../uploads/entregas/", 0777, true);
+            }
+
+            // 2. Processar Assinatura (Base64 para Imagem)
+            $assinatura_img = str_replace('data:image/png;base64,', '', $assinatura_base64);
+            $assinatura_img = str_replace(' ', '+', $assinatura_img);
+            $data_assinatura = base64_decode($assinatura_img);
+            $nome_assinatura = "assinatura_" . $entrega_id . "_" . time() . ".png";
+            $caminho_assinatura = "../../uploads/entregas/" . $nome_assinatura;
+
+            if (move_uploaded_file($foto['tmp_name'], $caminho_foto)) {
+                file_put_contents($caminho_assinatura, $data_assinatura);
+
+                // 3. Atualizar Banco de Dados
+                $sql_update = "UPDATE entregas 
+                               SET status = 'concluida', 
+                                   foto_comprovante = :foto, 
+                                   assinatura_comprovante = :assinatura,
+                                   data_entrega = NOW() 
+                               WHERE id = :id";
+                
+                $stmt_up = $db->prepare($sql_update);
+                $stmt_up->execute([
+                    ':foto' => $nome_foto,
+                    ':assinatura' => $nome_assinatura,
+                    ':id' => $entrega_id
+                ]);
+
+                header("Location: entregas.php?sucesso=" . urlencode("Entrega concluída com sucesso!"));
+                exit();
+            } else {
+                $erro = "Erro ao salvar a foto no servidor.";
+            }
+        } catch (Exception $e) {
+            $erro = "Erro técnico: " . $e->getMessage();
+        }
     }
 }
 ?>
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Concluir Entrega</title>
-    <link rel="stylesheet" href="../css/transportador/dashboard.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concluir Entrega - Encontre o Campo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #2E7D32; --dark: #1b5e20; --light: #f1f8e9; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: var(--primary); text-align: center; margin-bottom: 25px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; }
+        
+        /* Estilo da área de Assinatura */
+        .signature-wrapper {
+            border: 2px dashed #ccc;
+            background: #fafafa;
+            border-radius: 8px;
+            position: relative;
+            margin-bottom: 10px;
+            touch-action: none; /* Importante para mobile */
+        }
+        #signature-pad { width: 100%; height: 200px; cursor: crosshair; }
+        .signature-actions { display: flex; justify-content: flex-end; margin-top: 5px; }
+        .btn-clear { background: #f44336; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+
+        input[type="file"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-submit:hover { background: var(--dark); }
+        .alert { padding: 12px; border-radius: 6px; margin-bottom: 20px; text-align: center; }
+        .alert-danger { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+        #preview-container { margin-top: 10px; display: none; text-align: center; }
+        #preview-image { max-width: 100%; border-radius: 8px; max-height: 200px; }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
-                        <img src="../../img/logo-nova.png" alt="Logo">
-                        <div>
-                            <h1>ENCONTRE</h1>
-                            <h2>O CAMPO</h2>
-                        </div>
-                    </a>
-                </div>
-                <ul class="nav-menu">
-                    <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="entregas.php" class="nav-link active">Entregas</a></li>
-                    <li class="nav-item"><a href="dashboard.php" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="perfil.php" class="nav-link">Meu Perfil</a></li>
-                    <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
-                </ul>
-                <div class="hamburger">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
+
+    <div class="container">
+        <h2><i class="fas fa-check-circle"></i> Finalizar Entrega</h2>
+
+        <?php if ($erro): ?>
+            <div class="alert alert-danger"><?php echo $erro; ?></div>
+        <?php endif; ?>
+
+        <form action="" method="POST" enctype="multipart/form-data" id="form-concluir">
+            
+            <div class="form-group">
+                <label for="foto_comprovante">1. Foto do Comprovante (Obrigatório)</label>
+                <input type="file" name="foto_comprovante" id="foto_comprovante" accept="image/*" capture="camera" required>
+                <div id="preview-container">
+                    <img id="preview-image" src="" alt="Preview">
                 </div>
             </div>
-        </nav>
-    </header>
-    <main class="main-content">
-        <section class="concluir-entrega-section">
-            <h1>Concluir Entrega #<?php echo $entrega_id; ?></h1>
-            <?php if ($erro): ?><div class="msg-erro"><?php echo $erro; ?></div><?php endif; ?>
-            <?php if ($sucesso): ?><div class="msg-sucesso"><?php echo $sucesso; ?></div><?php endif; ?>
-            <?php if (!$sucesso): ?>
-                <form method="POST" enctype="multipart/form-data" class="form-concluir-entrega">
-                    <label for="foto_comprovante">Foto do comprovante de entrega:</label>
-                    <input type="file" name="foto_comprovante" id="foto_comprovante" accept="image/*" required>
 
-                    <div id="preview-container" style="display:none;margin-top:8px;">
-                        <strong>Pré-visualização:</strong>
-                        <div style="margin-top:8px;"><img id="preview-image" src="" alt="Pré-visualização" style="max-width:100%;max-height:360px;border-radius:8px;border:1px solid #eee;display:block"></div>
-                    </div>
+            <div class="form-group">
+                <label>2. Assinatura do Recebedor (Na tela)</label>
+                <div class="signature-wrapper">
+                    <canvas id="signature-pad"></canvas>
+                </div>
+                <div class="signature-actions">
+                    <button type="button" class="btn-clear" id="clear-signature">Limpar Assinatura</button>
+                </div>
+                <input type="hidden" name="assinatura_data" id="assinatura_data">
+            </div>
 
-                    <button type="submit" class="cta-button">Concluir Entrega</button>
-                </form>
-            <?php endif; ?>
-        </section>
-    </main>
-
-    <div style="display:flex;justify-content:center;margin-top:16px;">
-        <button type="button" class="btn-voltar" onclick="window.location.href='entregas.php'"><i class="fas fa-arrow-left"></i> Voltar para Entregas</button>
+            <button type="submit" class="btn-submit">
+                <i class="fas fa-truck-loading"></i> CONCLUIR ENTREGA
+            </button>
+            
+            <p style="text-align:center; margin-top:15px;">
+                <a href="entregas.php" style="color: #666; text-decoration:none;">Cancelar</a>
+            </p>
+        </form>
     </div>
-    <style>
-    .main-content {
-        max-width: 600px;
-        margin: 80px auto 0 auto;
-        padding: 24px;
-    }
-    .concluir-entrega-section {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-        padding: 32px 24px;
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-        align-items: stretch;
-    }
-    .concluir-entrega-section h1 {
-        color: var(--primary-color, #4CAF50);
-        font-size: 2rem;
-        margin-bottom: 8px;
-    }
-    .form-concluir-entrega {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    }
-    .form-concluir-entrega label {
-        font-weight: 600;
-        color: var(--primary-color, #4CAF50);
-        margin-bottom: 4px;
-    }
-    .form-concluir-entrega input[type="file"] {
-        padding: 8px 0;
-        font-size: 1rem;
-    }
-    .cta-button {
-        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        padding: 12px 28px;
-        font-size: 1rem;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: background 0.2s, box-shadow 0.2s;
-        box-shadow: 0 2px 8px rgba(76,175,80,0.08);
-        cursor: pointer;
-        margin-top: 8px;
-    }
-    .cta-button:hover {
-        background: linear-gradient(135deg, #388E3C 0%, #4CAF50 100%);
-        color: #fff;
-        box-shadow: 0 4px 16px rgba(76,175,80,0.15);
-    }
-    .btn-voltar {
-        background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%);
-        color: #333;
-        border: none;
-        border-radius: 8px;
-        padding: 12px 28px;
-        font-size: 1rem;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: background 0.2s, box-shadow 0.2s;
-        box-shadow: 0 2px 8px rgba(160,160,160,0.08);
-        cursor: pointer;
-        margin-top: 8px;
-    }
-    .btn-voltar:hover {
-        background: linear-gradient(135deg, #bdbdbd 0%, #e0e0e0 100%);
-        color: #111;
-        box-shadow: 0 4px 16px rgba(160,160,160,0.15);
-    }
-    .msg-erro {
-        color: #fff;
-        background: #e57373;
-        border-radius: 8px;
-        padding: 10px 16px;
-        margin-bottom: 8px;
-        font-weight: 600;
-    }
-    .msg-sucesso {
-        color: #fff;
-        background: #4CAF50;
-        border-radius: 8px;
-        padding: 10px 16px;
-        margin-bottom: 8px;
-        font-weight: 600;
-    }
-    @media (max-width: 600px) {
-        .main-content, .concluir-entrega-section {
-            padding: 12px 2px;
-        }
-        .concluir-entrega-section h1 {
-            font-size: 1.2rem;
-        }
-    }
-    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
     <script>
-        const hamburger = document.querySelector(".hamburger");
-        const navMenu = document.querySelector(".nav-menu");
-        if (hamburger) {
-            hamburger.addEventListener("click", () => {
-                hamburger.classList.toggle("active");
-                navMenu.classList.toggle("active");
-            });
-            document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
-                hamburger.classList.remove("active");
-                navMenu.classList.remove("active");
-            }));
+        // 1. Configuração da Assinatura
+        const canvas = document.getElementById('signature-pad');
+        const signaturePad = new SignaturePad(canvas, {
+            backgroundColor: 'rgb(255, 255, 255)'
+        });
+
+        // Ajustar tamanho do canvas dinamicamente
+        function resizeCanvas() {
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext("2d").scale(ratio, ratio);
+            signaturePad.clear(); 
         }
-        // Preview da imagem selecionada
-        (function(){
-            const input = document.getElementById('foto_comprovante');
+        window.onresize = resizeCanvas;
+        resizeCanvas();
+
+        // Botão Limpar
+        document.getElementById('clear-signature').addEventListener('click', () => {
+            signaturePad.clear();
+        });
+
+        // 2. Preview da Foto
+        document.getElementById('foto_comprovante').addEventListener('change', function(e) {
             const previewContainer = document.getElementById('preview-container');
             const previewImage = document.getElementById('preview-image');
-            if (!input) return;
-            input.addEventListener('change', function(e){
-                const file = input.files && input.files[0];
-                if (!file) {
-                    previewContainer.style.display = 'none';
-                    previewImage.src = '';
-                    return;
-                }
-                if (!file.type.match('image.*')) {
-                    alert('Por favor selecione uma imagem.');
-                    input.value = '';
-                    previewContainer.style.display = 'none';
-                    previewImage.src = '';
-                    return;
-                }
+            const file = e.target.files[0];
+
+            if (file) {
                 const reader = new FileReader();
-                reader.onload = function(evt){
+                reader.onload = function(evt) {
                     previewImage.src = evt.target.result;
                     previewContainer.style.display = 'block';
-                };
+                }
                 reader.readAsDataURL(file);
-            });
-        })();
+            }
+        });
+
+        // 3. Validação antes de enviar
+        document.getElementById('form-concluir').addEventListener('submit', function(e) {
+            if (signaturePad.isEmpty()) {
+                e.preventDefault();
+                alert("Por favor, peça ao recebedor para assinar.");
+                return;
+            }
+
+            // Exporta a assinatura do canvas para o campo oculto em Base64
+            const data = signaturePad.toDataURL('image/png');
+            document.getElementById('assinatura_data').value = data;
+        });
     </script>
 </body>
 </html>

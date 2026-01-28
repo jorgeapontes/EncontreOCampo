@@ -12,12 +12,16 @@ $database = new Database();
 $db = $database->getConnection();
 
 try {
-    $sql = "SELECT e.id, e.endereco_origem, e.endereco_destino, e.valor_frete, e.data_entrega, e.foto_comprovante, p.nome as produto_nome, c.nome_comercial as comprador_nome, v.nome_comercial as vendedor_nome, v.cep as vendedor_cep, v.rua as vendedor_rua, v.numero as vendedor_numero, v.cidade as vendedor_cidade, v.estado as vendedor_estado
+        $sql = "SELECT e.id, e.endereco_origem, e.endereco_destino, e.valor_frete, e.data_entrega, e.foto_comprovante, e.assinatura_comprovante,
+                p.nome as produto_nome,
+                COALESCE(c.nome_comercial, u.nome) as comprador_nome,
+                v.nome_comercial as vendedor_nome, v.cep as vendedor_cep, v.rua as vendedor_rua, v.numero as vendedor_numero, v.cidade as vendedor_cidade, v.estado as vendedor_estado
             FROM entregas e
             LEFT JOIN produtos p ON e.produto_id = p.id
-            LEFT JOIN compradores c ON e.comprador_id = c.id
+            LEFT JOIN compradores c ON c.usuario_id = e.comprador_id
+            LEFT JOIN usuarios u ON u.id = e.comprador_id
             LEFT JOIN vendedores v ON v.id = COALESCE(e.vendedor_id, p.vendedor_id)
-            WHERE e.foto_comprovante IS NOT NULL
+            WHERE (e.foto_comprovante IS NOT NULL OR e.assinatura_comprovante IS NOT NULL)
             ORDER BY e.data_entrega DESC";
 
     $stmt = $db->prepare($sql);
@@ -89,6 +93,7 @@ try {
                         <th>Endereço Origem</th>
                         <th>Endereço Destino</th>
                         <th>Foto</th>
+                        <th>Assinatura</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -137,8 +142,17 @@ try {
                         </td>
                         <td>
                             <?php if (!empty($c['foto_comprovante'])): ?>
-                                <a class="preview-link" href="../../uploads/entregas/<?php echo htmlspecialchars($c['foto_comprovante']); ?>" target="_blank" rel="noopener noreferrer">
+                                <a class="preview-link" href="../../uploads/entregas/<?php echo htmlspecialchars($c['foto_comprovante']); ?>" target="_blank" rel="noopener noreferrer" title="Foto do comprovante">
                                     <img class="thumb" src="../../uploads/entregas/<?php echo htmlspecialchars($c['foto_comprovante']); ?>" alt="Comprovante">
+                                </a>
+                            <?php else: ?>
+                                -
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if (!empty($c['assinatura_comprovante'])): ?>
+                                <a class="preview-link" href="../../uploads/entregas/<?php echo htmlspecialchars($c['assinatura_comprovante']); ?>" target="_blank" rel="noopener noreferrer" title="Assinatura do recebedor">
+                                    <img class="thumb" src="../../uploads/entregas/<?php echo htmlspecialchars($c['assinatura_comprovante']); ?>" alt="Assinatura">
                                 </a>
                             <?php else: ?>
                                 -

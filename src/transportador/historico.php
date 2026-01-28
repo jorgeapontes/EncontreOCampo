@@ -123,7 +123,7 @@ try {
             <h2>Histórico de Entregas Finalizadas</h2>
             <?php
             if (!$is_pendente && $transportador_id) {
-                $sql_hist = "SELECT e.id, e.endereco_origem, e.endereco_destino, e.valor_frete, e.data_entrega, e.foto_comprovante, p.nome as produto_nome, c.nome_comercial as comprador_nome, v.nome_comercial as vendedor_nome, v.cep as vendedor_cep, v.rua as vendedor_rua, v.numero as vendedor_numero, v.cidade as vendedor_cidade, v.estado as vendedor_estado
+                $sql_hist = "SELECT e.id, e.endereco_origem, e.endereco_destino, e.valor_frete, e.data_entrega, e.foto_comprovante, e.assinatura_comprovante, p.nome as produto_nome, c.nome_comercial as comprador_nome, v.nome_comercial as vendedor_nome, v.cep as vendedor_cep, v.rua as vendedor_rua, v.numero as vendedor_numero, v.cidade as vendedor_cidade, v.estado as vendedor_estado
                     FROM entregas e
                     INNER JOIN produtos p ON e.produto_id = p.id
                     LEFT JOIN compradores c ON e.comprador_id = c.usuario_id
@@ -137,7 +137,7 @@ try {
                 if (count($entregas_finalizadas) === 0) {
                     echo '<p>Nenhuma entrega finalizada ainda.</p>';
                 } else {
-                    echo '<table><thead><tr><th>ID</th><th>Produto</th><th>Comprador</th><th>Vendedor</th><th>Origem</th><th>Destino</th><th>Valor Frete</th><th>Data Entrega</th><th>Comprovante</th></tr></thead><tbody>';
+                    echo '<table><thead><tr><th>ID</th><th>Produto</th><th>Comprador</th><th>Vendedor</th><th>Origem</th><th>Destino</th><th>Valor Frete</th><th>Data Entrega</th><th>Comprovante</th><th>Assinatura</th></tr></thead><tbody>';
                     foreach ($entregas_finalizadas as $e) {
                         $origem_full = '';
                         if (!empty(trim($e['endereco_origem'] ?? ''))) {
@@ -160,8 +160,14 @@ try {
                         echo '<td>' . htmlspecialchars(mb_substr($destino_full, 0, 20)) . (mb_strlen($destino_full) > 20 ? '...' : '') . '</td>';
                         echo '<td>R$ ' . number_format($e['valor_frete'], 2, ',', '.') . '</td>';
                         echo '<td>' . ($e['data_entrega'] ? date('d/m/Y', strtotime($e['data_entrega'])) : '-') . '</td>';
-                        if ($e['foto_comprovante']) {
+                        if (!empty($e['foto_comprovante'])) {
                             echo '<td><a href="../../uploads/entregas/' . htmlspecialchars($e['foto_comprovante']) . '" target="_blank">Ver Foto</a></td>';
+                        } else {
+                            echo '<td>-</td>';
+                        }
+
+                        if (!empty($e['assinatura_comprovante'])) {
+                            echo '<td><img src="../../uploads/entregas/' . htmlspecialchars($e['assinatura_comprovante']) . '" alt="Assinatura" style="max-width:120px;max-height:80px;border:1px solid #ddd;border-radius:4px;" /></td>';
                         } else {
                             echo '<td>-</td>';
                         }

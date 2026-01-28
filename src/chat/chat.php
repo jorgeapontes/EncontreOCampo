@@ -946,8 +946,9 @@ if ($conversa_id) {
         // Atualizar a cada 2 segundos (aumentei um pouco para não sobrecarregar com imagens)
         setInterval(carregarMensagens, 2000);
 
-         // ==================== LÓGICA DO MODAL DE NEGOCIAÇÃO ====================
+        // ==================== LÓGICA DO MODAL DE NEGOCIAÇÃO ====================
         
+        <?php if (!$eh_vendedor_produto): ?>
         // Elementos do modal
         const modalNegociacao = document.getElementById('modal-negociacao');
         const btnAbrirNegociacao = document.getElementById('btn-negociar');
@@ -1366,6 +1367,7 @@ if ($conversa_id) {
         // Inicializar
         atualizarConteudoFrete();
         atualizarAvisosPagamento();
+        <?php endif; // Fim da verificação se é comprador ?>
 
         // ==================== ATUALIZAÇÃO AUTOMÁTICA DA PROPOSTA ====================
 <?php

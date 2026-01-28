@@ -190,6 +190,65 @@ try {
             opacity: 0.6;
             cursor: not-allowed;
         }
+        /* Modal de sucesso */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 14000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .modal-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #d4edda;
+            color: #155724;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 15px;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .btn-modal-primary {
+            background: #42b72a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-modal-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -270,6 +329,30 @@ try {
         </div>
     </div>
 
+    <!-- Modal de sucesso ao aceitar proposta -->
+    <div id="modal-sucesso-aceite" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0 0 5px 0;">Proposta Aceita!</h3>
+                    <p style="margin:0;color:#666;">Entrega criada com sucesso.</p>
+                </div>
+            </div>
+            <div style="margin:15px 0;">
+                <p>✅ A entrega foi criada e já está disponível para acompanhamento.</p>
+                <p>📦 Informações de entrega foram repassadas ao transportador.</p>
+                <p>⏳ Aguarde a coleta e entrega do produto.</p>
+            </div>
+            <div class="modal-buttons">
+                <button id="btn-fechar-modal" class="btn-modal-secondary">Continuar no Chat</button>
+                <button id="btn-ver-entregas" class="btn-modal-primary">Ver Minhas Entregas</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Avatar modal
         (function(){
@@ -294,6 +377,7 @@ try {
                 document.addEventListener('keydown', function(e){ if (e.key === 'Escape') modal.style.display = 'none'; });
             }
         })();
+        
         function goBack(e) {
             if (e) e.preventDefault();
             try {
@@ -307,6 +391,7 @@ try {
             // fallback
             window.location.href = '../transportador/meus_chats.php';
         }
+        
         const conversaId = <?php echo (int)$conversa_id; ?>;
         const usuarioId = <?php echo (int)$_SESSION['usuario_id']; ?>;
         let ultimaMensagemId = 0;
@@ -347,6 +432,12 @@ try {
                             } else if (msg.tipo === 'proposta' || (msg.mensagem && (msg.mensagem.toUpperCase().indexOf('PROPOSTA') !== -1 || msg.mensagem.indexOf('ID') !== -1))) {
                                 // É uma mensagem de proposta - renderizar como card
                                 renderizarPropostaCard(msg, content);
+                            } else if (msg.tipo === 'aceite') {
+                                // Mensagem automática de aceite - mostrar como notificação
+                                const notif = document.createElement('div');
+                                notif.className = 'proposta-status proposta-aceita';
+                                notif.innerHTML = `<i class="fas fa-check-circle" style="margin-right:5px;"></i> ${escapeHtml(msg.mensagem)}`;
+                                content.appendChild(notif);
                             } else {
                                 // Mensagem de texto normal
                                 content.textContent = msg.mensagem;
@@ -509,8 +600,9 @@ try {
                 if (status !== 'pendente') {
                     const statusDiv = document.createElement('div');
                     statusDiv.className = `proposta-status proposta-${status}`;
-                    statusDiv.textContent = status === 'aceita' ? '✓ Proposta aceita pelo transportador' : 
-                                           '✗ Proposta recusada pelo transportador';
+                    statusDiv.innerHTML = status === 'aceita' ? 
+                        '<i class="fas fa-check-circle" style="margin-right:5px;"></i> Proposta aceita pelo transportador. Informações de entrega repassadas. Aguarde a entrega.' : 
+                        '<i class="fas fa-times-circle" style="margin-right:5px;"></i> Proposta recusada pelo transportador.';
                     card.appendChild(statusDiv);
                 }
             }
@@ -586,7 +678,6 @@ try {
                 
                 if (j.success) {
                     const finalStatus = (action === 'aceitar') ? 'aceita' : 'recusada';
-                    const finalText = (action === 'aceitar') ? 'Proposta aceita' : 'Proposta recusada';
                     
                     // Atualizar cache
                     propostasProcessadas.set(ptId, finalStatus);
@@ -596,11 +687,19 @@ try {
                         actionsContainer.innerHTML = '';
                         const statusDiv = document.createElement('div');
                         statusDiv.className = `proposta-status proposta-${finalStatus}`;
-                        statusDiv.textContent = finalText;
+                        statusDiv.textContent = finalStatus === 'aceita' ? '✓ Proposta aceita' : '✗ Proposta recusada';
                         actionsContainer.appendChild(statusDiv);
                     }
                     
-                    alert(finalText);
+                    // Se aceitou, mostrar modal de sucesso
+                    if (action === 'aceitar') {
+                        setTimeout(() => {
+                            document.getElementById('modal-sucesso-aceite').style.display = 'flex';
+                        }, 300);
+                    } else {
+                        alert('Proposta recusada com sucesso');
+                    }
+                    
                     // Recarregar mensagens para garantir consistência
                     setTimeout(carregarMensagens, 500);
                 } else {
@@ -629,6 +728,22 @@ try {
                 }
             }
         }
+
+        // Modal de sucesso
+        document.getElementById('btn-fechar-modal').addEventListener('click', function() {
+            document.getElementById('modal-sucesso-aceite').style.display = 'none';
+        });
+
+        document.getElementById('btn-ver-entregas').addEventListener('click', function() {
+            window.location.href = '../transportador/entregas.php';
+        });
+
+        // Fechar modal com ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('modal-sucesso-aceite').style.display = 'none';
+            }
+        });
 
         document.getElementById('send-btn').addEventListener('click', async () => {
             const input = document.getElementById('message-input');

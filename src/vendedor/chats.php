@@ -113,7 +113,8 @@ try {
             INNER JOIN usuarios u ON cc.comprador_id = u.id
             WHERE p.vendedor_id = :vendedor_id
             AND cc.status = 'ativo'
-            AND cc.vendedor_excluiu = 0"; 
+            AND cc.vendedor_excluiu = 0
+            AND (cc.transportador_id IS NULL OR cc.transportador_id = 0)"; 
     
     if ($mostrar_arquivados) {
         $sql_vendedor .= " AND cc.favorito_vendedor = 1";
@@ -194,7 +195,8 @@ try {
                                WHERE p.vendedor_id = :vendedor_id 
                                AND cm.remetente_id != :usuario_id
                                AND cm.lida = 0
-                               AND cc.vendedor_excluiu = 0";
+                               AND cc.vendedor_excluiu = 0
+                               AND (cc.transportador_id IS NULL OR cc.transportador_id = 0)";
     
     if ($mostrar_arquivados) {
         $sql_vendedor_nao_lidas .= " AND cc.favorito_vendedor = 1";
@@ -244,7 +246,8 @@ try {
                                WHERE p.vendedor_id = :vendedor_id 
                                AND cc.status = 'ativo'
                                AND cc.favorito_vendedor = 1
-                               AND cc.vendedor_excluiu = 0";
+                               AND cc.vendedor_excluiu = 0
+                               AND (cc.transportador_id IS NULL OR cc.transportador_id = 0)";
     
     $stmt_arquivadas_vendedor = $conn->prepare($sql_arquivadas_vendedor);
     $stmt_arquivadas_vendedor->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);

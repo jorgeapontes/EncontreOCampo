@@ -390,18 +390,6 @@ require_once 'src/conexao.php';
                                     </div>
                                 </div>
                                 
-                                <div class="form-group">
-                                    <label for="planoComprador">Plano</label>
-                                    <select id="planoComprador" name="planoComprador">
-                                        <option value="free" selected>Grátis</option>
-                                        <option value="basico" disabled>Básico (R$ 29,90/mês)</option>
-                                        <option value="premium" disabled>Premium (R$ 79,90/mês)</option>
-                                        <option value="empresarial" disabled>Empresarial (R$ 199,90/mês)</option>
-                                    </select>
-                                    <small class="form-help" style="color: #666; font-style: italic; display: block; margin-top: 5px;">
-                                        * Todos começam com plano gratuito. Você poderá alterar o plano posteriormente em seu painel.
-                                    </small>
-                                </div>
                                 
                                 <div class="step-navigation">
                                     <button type="button" class="step-btn btn-prev" onclick="prevStep('comprador')">

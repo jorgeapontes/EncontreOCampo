@@ -950,7 +950,7 @@ async function submitForm(e) {
         }
         
         if (response.ok && result.success) {
-            alert('✅ Cadastro realizado com sucesso!\n\nVocê já pode fazer login na sua conta.\n\n⚠️ **Atenção:**\nVocê só poderá realizar negócios após a aprovação do administrador.\nVocê receberá um e-mail quando isso acontecer.');
+            alert('✅ Cadastro realizado com sucesso!\n\nVocê já pode fazer login na sua conta.\n\n⚠️ **Atenção:**\nVocê só poderá realizar negócios após a aprovação do administrador.\n');
             
             mainForm.reset();
             

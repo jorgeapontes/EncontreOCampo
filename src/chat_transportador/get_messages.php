@@ -35,10 +35,11 @@ try {
         exit();
     }
 
+    // Incluir o tipo do remetente (comprador/vendedor/transportador) para permitir filtros no cliente
     if ($ultimo_id > 0) {
-        $sql = "SELECT id, remetente_id, mensagem, tipo, dados_json, DATE_FORMAT(data_envio, '%d/%m %H:%i') as data_formatada, lida FROM chat_mensagens WHERE conversa_id = :conversa_id AND id > :ultimo_id ORDER BY id ASC";
+        $sql = "SELECT m.id, m.remetente_id, m.mensagem, m.tipo, m.dados_json, DATE_FORMAT(m.data_envio, '%d/%m %H:%i') as data_formatada, m.lida, u.tipo AS remetente_tipo FROM chat_mensagens m LEFT JOIN usuarios u ON m.remetente_id = u.id WHERE m.conversa_id = :conversa_id AND m.id > :ultimo_id ORDER BY m.id ASC";
     } else {
-        $sql = "SELECT id, remetente_id, mensagem, tipo, dados_json, DATE_FORMAT(data_envio, '%d/%m %H:%i') as data_formatada, lida FROM chat_mensagens WHERE conversa_id = :conversa_id ORDER BY id ASC";
+        $sql = "SELECT m.id, m.remetente_id, m.mensagem, m.tipo, m.dados_json, DATE_FORMAT(m.data_envio, '%d/%m %H:%i') as data_formatada, m.lida, u.tipo AS remetente_tipo FROM chat_mensagens m LEFT JOIN usuarios u ON m.remetente_id = u.id WHERE m.conversa_id = :conversa_id ORDER BY m.id ASC";
     }
 
     $stmt = $conn->prepare($sql);

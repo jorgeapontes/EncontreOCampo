@@ -408,6 +408,12 @@ try {
                     let estavaNaBase = container.scrollHeight - container.scrollTop <= container.clientHeight + 150;
                     data.mensagens.forEach(msg => {
                         if (msg.id > ultimaMensagemId) {
+                                // Não exibir mensagens enviadas por usuários do tipo 'vendedor'
+                                if (msg.remetente_tipo && msg.remetente_tipo === 'vendedor') {
+                                    // Atualizar ultimaMensagemId para não reprocessar
+                                    if (msg.id > ultimaMensagemId) ultimaMensagemId = msg.id;
+                                    return;
+                                }
                             const div = document.createElement('div');
                             div.className = 'message ' + (msg.remetente_id == usuarioId ? 'sent' : 'received');
                             const content = document.createElement('div');

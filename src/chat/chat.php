@@ -792,6 +792,12 @@ if ($conversa_id) {
 
                         data.mensagens.forEach(msg => {
                             if (msg.id > ultimaMensagemId) {
+                                // Não exibir mensagens enviadas por usuários do tipo 'transportador' quando o usuário atual for vendedor
+                                if (msg.remetente_tipo && msg.remetente_tipo === 'transportador' && <?php echo $eh_vendedor_produto ? 'true' : 'false'; ?>) {
+                                    if (msg.id > ultimaMensagemId) ultimaMensagemId = msg.id;
+                                    return;
+                                }
+
                                 const div = document.createElement('div');
                                 div.className = 'message ' + (msg.remetente_id == usuarioId ? 'sent' : 'received');
                                 

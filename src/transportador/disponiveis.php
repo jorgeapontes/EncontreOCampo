@@ -105,8 +105,11 @@ if (isset($_SESSION['usuario_id'])) {
         }
         .acordos-lista {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            /* limitar largura máxima dos cards para evitar que um único card fique enorme
+               e centralizar a grade quando houver poucas colunas */
+            grid-template-columns: repeat(auto-fit, minmax(260px, 320px));
             gap: 28px;
+            justify-content: center;
         }
         .acordo-card {
             border-radius: 12px;
@@ -120,6 +123,8 @@ if (isset($_SESSION['usuario_id'])) {
             transition: box-shadow 0.18s, border 0.18s;
             border: 1.5px solid #e6eaf0;
             position: relative;
+            max-width: 320px;
+            width: 100%;
         }
         .fav-btn {
             position: absolute;
@@ -208,7 +213,8 @@ if (isset($_SESSION['usuario_id'])) {
         }
         @media (max-width: 900px) {
             .acordos-lista {
-                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(220px, 280px));
+                justify-content: center;
             }
         }
         @media (max-width: 600px) {

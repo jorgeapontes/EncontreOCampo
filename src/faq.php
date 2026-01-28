@@ -16,6 +16,8 @@ if ($is_logged_in) {
         $button_action = 'comprador/dashboard.php';
     } elseif ($usuario_tipo == 'vendedor') {
         $button_action = 'vendedor/dashboard.php';
+    } elseif ($usuario_tipo == 'transportador') {
+        $button_action = 'transportador/dashboard.php';
     } else {
         $button_action = '#'; // Fallback
     }

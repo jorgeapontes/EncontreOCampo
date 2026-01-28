@@ -80,6 +80,7 @@ try {
         .conversa-data { font-size: 13px; color: #999; }
         .ultima-mensagem { font-size: 14px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 500px; }
         .conversa-actions { display: flex; gap: 8px; align-items: center; }
+        .badge-novo { background: #dc3545; color: white; font-size: 12px; padding: 4px 8px; border-radius: 12px; font-weight: 700; }
         .btn-chat { background: #2E7D32; color: white; padding: 10px 18px; border-radius: 5px; text-decoration: none; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; border: none; }
         .btn-chat:hover { background: #1B5E20; }
         .empty-state { padding: 4rem 2rem; text-align: center; color: #999; }
@@ -204,8 +205,16 @@ try {
                         }
                         
                         $data_formatada = $conversa['ultima_mensagem_data'] ? date('d/m/Y H:i', strtotime($conversa['ultima_mensagem_data'])) : '';
+                        $tem_nao_lidas = !empty($conversa['mensagens_nao_lidas']) && $conversa['mensagens_nao_lidas'] > 0;
+                        $esta_arquivado = !empty($conversa['arquivado']) && $conversa['arquivado'] == 1;
+                        $chat_url = "chat_transportador/chat_interface.php?conversa_id=" . $conversa['conversa_id'];
                     ?>
-                    <div class="conversa-card" id="conversa-<?php echo $conversa['conversa_id']; ?>">
+                    <div class="conversa-card <?php echo $tem_nao_lidas ? 'nao-lida' : ''; ?> <?php echo $esta_arquivado ? 'arquivado' : ''; ?>" id="conversa-<?php echo $conversa['conversa_id']; ?>">
+                        <?php if (!$esta_arquivado): ?>
+                            <a href="<?php echo $chat_url; ?>" style="display:flex;gap:1.5rem;align-items:center;text-decoration:none;color:inherit;flex:1;">
+                        <?php else: ?>
+                            <div style="display:flex;gap:1.5rem;align-items:center;flex:1;cursor:default;">
+                        <?php endif; ?>
                         <div class="produto-thumb">
                             <img src="<?php echo htmlspecialchars($imagem_final); ?>" 
                                  alt="<?php echo htmlspecialchars($conversa['produto_nome']); ?>"
@@ -215,7 +224,14 @@ try {
                         </div>
                         <div class="conversa-info">
                             <div style="display:flex;justify-content:space-between;align-items:center;">
-                                <div class="produto-nome-principal"><?php echo htmlspecialchars($conversa['produto_nome']); ?></div>
+                                <div class="produto-nome-principal"><?php echo htmlspecialchars($conversa['produto_nome']); ?>
+                                    <?php if ($esta_arquivado): ?>
+                                        <span class="badge-arquivado"><i class="fas fa-archive"></i> Arquivado</span>
+                                    <?php endif; ?>
+                                    <?php if ($tem_nao_lidas && !$esta_arquivado): ?>
+                                        <span class="badge-novo"><?php echo $conversa['mensagens_nao_lidas']; ?> nova<?php echo $conversa['mensagens_nao_lidas'] > 1 ? 's' : ''; ?></span>
+                                    <?php endif; ?>
+                                </div>
                                 <div class="conversa-data"><?php echo $data_formatada; ?></div>
                             </div>
                             <div style="margin-top:8px;color:#666;">
@@ -227,8 +243,13 @@ try {
                                 </div>
                             <?php endif; ?>
                         </div>
+                        <?php if (!$esta_arquivado): ?>
+                            </a>
+                        <?php else: ?>
+                            </div>
+                        <?php endif; ?>
                         <div class="conversa-actions">
-                            <a href="chat_transportador/chat_interface.php?conversa_id=<?php echo $conversa['conversa_id']; ?>" class="btn-chat">
+                            <a href="<?php echo $chat_url; ?>" class="btn-chat">
                                 <i class="fas fa-comments"></i> Abrir Chat
                             </a>
                         </div>

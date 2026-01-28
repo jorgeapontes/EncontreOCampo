@@ -533,6 +533,10 @@
 }
 
 @media (max-width: 768px) {
+    .page-header {
+        padding-top: 100px !important;
+    }
+    
     .container {
         padding-top: 100px; /* Ajustado para mobile */
         padding-left: 15px;

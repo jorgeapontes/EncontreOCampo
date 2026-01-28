@@ -37,423 +37,185 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin - Encontre O Campo</title>
-    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <title>Dashboard Admin - Encontre o Campo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
-    <style>
-        /* Correções específicas para o modal */
-        .modal-header h3 {
-            color: white !important;
-            font-size: 1.5rem;
-            margin: 0;
-            flex: 1;
-        }
-        
-        .modal-header .user-type-badge {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            backdrop-filter: blur(10px);
-            white-space: nowrap;
-        }
-        
-        .modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 25px 30px !important;
-        }
-        
-        .modal-header-content {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex: 1;
-        }
-        
-        .close-button {
-            position: static !important;
-            margin-left: auto;
-        }
-        
-        /* Estilos para o modal de confirmação */
-        #confirmModal {
-            display: none;
-            position: fixed;
-            z-index: 1002;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        
-        .confirm-modal-content {
-            background-color: #fff;
-            margin: 15% auto;
-            padding: 0;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            overflow: hidden;
-        }
-        
-        .confirm-modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .confirm-modal-header h3 {
-            margin: 0;
-            font-size: 1.3rem;
-        }
-        
-        .confirm-modal-body {
-            padding: 25px;
-            text-align: center;
-            font-size: 1.1rem;
-            color: #333;
-        }
-        
-        .confirm-modal-body strong {
-            color: #667eea;
-        }
-        
-        .confirm-modal-footer {
-            padding: 20px;
-            text-align: center;
-            background-color: #f8f9fa;
-            border-top: 1px solid #e9ecef;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-        
-        .btn-confirm {
-            padding: 10px 25px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            min-width: 120px;
-        }
-        
-        .btn-confirm-yes {
-            background-color: #28a745;
-            color: white;
-        }
-        
-        .btn-confirm-yes:hover {
-            background-color: #218838;
-            transform: translateY(-2px);
-        }
-        
-        .btn-confirm-no {
-            background-color: #dc3545;
-            color: white;
-        }
-        
-        .btn-confirm-no:hover {
-            background-color: #c82333;
-            transform: translateY(-2px);
-        }
-        
-        .btn-cancel {
-            background-color: #6c757d;
-            color: white;
-        }
-        
-        .btn-cancel:hover {
-            background-color: #5a6268;
-            transform: translateY(-2px);
-        }
-
-        /* NOVOS ESTILOS PARA OS CONTAINERS */
-        .modal-container-section {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 25px;
-            padding: 0;
-        }
-
-        .data-container {
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-
-        .data-container.pessoal {
-            border-left-color: #667eea;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e8eaf6 100%);
-        }
-
-        .data-container.especifico {
-            border-left-color: #764ba2;
-            background: linear-gradient(135deg, #f8f9fa 0%, #f3e5f5 100%);
-        }
-
-        .data-container.endereco {
-            border-left-color: #28a745;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e8f5e9 100%);
-        }
-
-        .container-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 18px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid rgba(0,0,0,0.1);
-        }
-
-        .container-header h4 {
-            margin: 0;
-            font-size: 1.1rem;
-            color: #333;
-            font-weight: 600;
-            flex: 1;
-        }
-
-        .container-header-icon {
-            font-size: 1.3rem;
-        }
-
-        .data-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 18px;
-        }
-
-        .data-field {
-            background: white;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #e0e0e0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .field-label {
-            font-size: 0.85rem;
-            color: #666;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-        }
-
-        .field-value {
-            font-size: 1rem;
-            color: #333;
-            font-weight: 500;
-            word-break: break-word;
-        }
-
-        .field-value.empty {
-            color: #999;
-            font-style: italic;
-        }
-
-        .message-box {
-            background: white;
-            padding: 18px;
-            border-radius: 6px;
-            border-left: 4px solid #ffc107;
-            margin-top: 20px;
-        }
-
-        .message-box-label {
-            font-size: 0.85rem;
-            color: #666;
-            font-weight: 600;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-        }
-
-        .message-box-content {
-            background: #fffbf0;
-            padding: 12px;
-            border-radius: 4px;
-            color: #333;
-            line-height: 1.5;
-            font-size: 0.95rem;
-        }
-
-        .modal-body {
-            max-height: 70vh;
-            overflow-y: auto;
-            padding: 30px !important;
-        }
-
-        .modal-body::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .modal-body::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-
-        .modal-body::-webkit-scrollbar-thumb {
-            background: #667eea;
-            border-radius: 10px;
-        }
-
-        .modal-body::-webkit-scrollbar-thumb:hover {
-            background: #764ba2;
-        }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
-
-<!-- NAVBAR -->
-<nav class="navbar">
-    <div class="nav-container">
-        <div class="nav-logo">
-            <img src="../../img/logo-nova.png" class="logo">
-            <div>
-                <h1>ENCONTRE</h1>
-                <h2>O CAMPO</h2>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                        <img src="../../img/logo-nova.png" alt="Logo">
+                        <div>
+                            <h1>ENCONTRE</h1>
+                            <h2>O CAMPO</h2>
+                        </div>
+                    </a>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="dashboard.php" class="nav-link active">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="todos_usuarios.php" class="nav-link">
+                            Usuários
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="chats_admin.php" class="nav-link">
+                            Chats
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="manage_comprovantes.php" class="nav-link">
+                            Comprovantes de entrega
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../../index.php" class="nav-link">
+                            Home
+                        </a>
+                    </li>
+                    <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
+                </ul>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
             </div>
+        </nav>
+    </header>
+    <br>
+
+    <div class="main-content">
+        <section class="header">
+            <center>
+                <h1>Bem-vindo(a), Administrador</h1>
+                <p>Gerencie solicitações de cadastro e usuários do sistema</p>
+            </center>
+        </section>
+
+        <?php if ($feedback_msg): ?>
+            <div class="alert <?= $is_error ? 'alert-error' : 'alert-success' ?>">
+                <?= htmlspecialchars(urldecode($feedback_msg)); ?>
+            </div>
+        <?php endif; ?>
+
+        <div class="info-cards">
+            <a>
+                <div class="card">
+                    <i class="fas fa-user-clock"></i>
+                    <h3>Solicitações pendentes</h3>
+                    <p><?= count($solicitacoes) ?> não lidas</p>
+                </div>
+            </a>
+            <a>
+                <div class="card">
+                    <i class="fas fa-user-check"></i>
+                    <h3>Usuários ativos</h3>
+                    <p>
+                        <?php 
+                        $sql_total = "SELECT COUNT(*) as total FROM usuarios WHERE status = 'ativo'";
+                        $stmt_total = $conn->prepare($sql_total);
+                        $stmt_total->execute();
+                        echo $stmt_total->fetch(PDO::FETCH_ASSOC)['total'];
+                        ?>
+                    </p>
+                </div>
+            </a>
         </div>
-        <div class="nav-links">
-            <a href="dashboard.php" class="nav-link active">Dashboard</a>
-            <a href="todos_usuarios.php" class="nav-link">Todos os Usuários</a>
-            <a href="chats_admin.php" class="nav-link">Chats</a>
-            <a href="manage_comprovantes.php" class="nav-link">Comprovantes de Entrega</a>
-            <a href="../../index.php" class="nav-link">Home</a>
-            <a href="../logout.php" class="nav-link logout">Sair</a>
+
+        <div class="section-anuncios">
+            <div id="header">
+                <h2>Solicitações de Cadastro Pendentes</h2>
+                <div class="table-controls">
+                    <select id="filtro-tipo" class="filter-select">
+                        <option value="todos">Todos</option>
+                        <option value="admin">Administrador</option>
+                        <option value="comprador">Comprador</option>
+                        <option value="vendedor">Vendedor</option>
+                        <option value="transportador">Transportador</option>
+                    </select>
+                    <select id="ordenar-por" class="filter-select">
+                        <option value="recente">Mais recentes</option>
+                        <option value="antigo">Mais antigos</option>
+                        <option value="az">Nome A-Z</option>
+                        <option value="za">Nome Z-A</option>
+                    </select>
+                </div>
+            </div>
+            <?php if (count($solicitacoes) > 0): ?>
+            <div class="table-responsive">
+                <table class="modern-table" id="tabela-solicitacoes">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Tipo</th>
+                            <th>Data Solicitação</th>
+                            <th class="th-center">Detalhes</th>
+                            <th class="th-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($solicitacoes as $s): ?>
+                        <tr data-tipo="<?= $s['tipo_solicitacao'] ?>">
+                            <td><?= $s['id'] ?></td>
+                            <td><?= htmlspecialchars($s['nome']) ?></td>
+                            <td><?= htmlspecialchars($s['email']) ?></td>
+                            <td><span class="badge badge-<?= $s['tipo_solicitacao'] ?>"><?= ucfirst($s['tipo_solicitacao']) ?></span></td>
+                            <td data-data="<?= $s['data_solicitacao'] ?>">
+                                <?= date('d/m/Y H:i', strtotime($s['data_solicitacao'])) ?>
+                            </td>
+                            <td class="td-center">
+                                <button class="btn btn-secondary btn-ver-detalhes"
+                                    data-nome="<?= htmlspecialchars($s['nome']) ?>"
+                                    data-tipo="<?= ucfirst($s['tipo_solicitacao']) ?>"
+                                    data-json='<?= htmlspecialchars(json_encode(json_decode($s["dados_json"], true)), ENT_QUOTES) ?>'>
+                                    Ver Detalhes
+                                </button>
+                            </td>
+                            <td class="actions td-center">
+                                <button class="btn btn-success btn-sm btn-aprovar" 
+                                        data-id="<?= $s['id'] ?>"
+                                        data-nome="<?= htmlspecialchars($s['nome']) ?>"
+                                        data-tipo="<?= $s['tipo_solicitacao'] ?>"
+                                        data-acao="aprovar">
+                                    Aprovar
+                                </button>
+                                <button class="btn btn-danger btn-sm btn-rejeitar"
+                                        data-id="<?= $s['id'] ?>"
+                                        data-nome="<?= htmlspecialchars($s['nome']) ?>"
+                                        data-tipo="<?= $s['tipo_solicitacao'] ?>"
+                                        data-acao="rejeitar">
+                                    Rejeitar
+                                </button>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <a href="todos_usuarios.php" class="btn-ver-todos">Ver todos os usuários cadastrados</a>
+            
+            <?php else: ?>
+                <div class="empty-state">
+                    <h3>Não há solicitações pendentes</h3>
+                    <p>Todas as solicitações foram processadas.</p>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
-</nav>
-
-<div class="container">
-
-    <?php if ($feedback_msg): ?>
-        <div class="alert <?= $is_error ? 'alert-error' : 'alert-success' ?>">
-            <?= htmlspecialchars(urldecode($feedback_msg)); ?>
-        </div>
-    <?php endif; ?>
-
-    <div class="header-section">
-        <h1>Dashboard Administrativo</h1>
-        <p>Gerencie solicitações de cadastro e usuários do sistema</p>
-    </div>
-
-    <div class="stats-cards">
-        <div class="stat-card">
-            <h3>Solicitações Pendentes</h3>
-            <span class="stat-number"><?= count($solicitacoes) ?></span>
-        </div>
-        <div class="stat-card">
-            <h3>Usuários ativos</h3>
-            <span class="stat-number">
-                <?php 
-                $sql_total = "SELECT COUNT(*) as total FROM usuarios WHERE status = 'ativo'";
-                $stmt_total = $conn->prepare($sql_total);
-                $stmt_total->execute();
-                echo $stmt_total->fetch(PDO::FETCH_ASSOC)['total'];
-                ?>
-            </span>
-        </div>
-    </div>
-
-    <div class="section-header">
-        <h2>Solicitações de Cadastro Pendentes</h2>
-
-        <!-- BOTÕES DE FILTRO E ORDENAÇÃO -->
-        <div class="table-controls">
-            <!-- FILTRO -->
-            <select id="filtro-tipo" class="filter-select">
-                <option value="todos">Todos</option>
-                <option value="admin">Administrador</option>
-                <option value="comprador">Comprador</option>
-                <option value="vendedor">Vendedor</option>
-                <option value="transportador">Transportador</option>
-            </select>
-
-            <!-- ORDENAR -->
-            <select id="ordenar-por" class="filter-select">
-                <option value="recente">Mais recente</option>
-                <option value="antigo">Mais antigo</option>
-                <option value="az">Nome A-Z</option>
-                <option value="za">Nome Z-A</option>
-            </select>
-        </div>
-    </div>
-
-    <?php if (count($solicitacoes) > 0): ?>
-    <div class="table-responsive">
-        <table class="modern-table" id="tabela-solicitacoes">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nome</th>
-                    <th>Email</th>
-                    <th>Tipo</th>
-                    <th>Data Solicitação</th>
-                    <th>Detalhes</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($solicitacoes as $s): ?>
-                <tr data-tipo="<?= $s['tipo_solicitacao'] ?>">
-                    <td><?= $s['id'] ?></td>
-                    <td><?= htmlspecialchars($s['nome']) ?></td>
-                    <td><?= htmlspecialchars($s['email']) ?></td>
-                    <td><span class="badge badge-<?= $s['tipo_solicitacao'] ?>"><?= ucfirst($s['tipo_solicitacao']) ?></span></td>
-                    <td data-data="<?= $s['data_solicitacao'] ?>">
-                        <?= date('d/m/Y H:i', strtotime($s['data_solicitacao'])) ?>
-                    </td>
-                    <td>
-                        <button class="btn btn-secondary btn-ver-detalhes"
-                            data-nome="<?= htmlspecialchars($s['nome']) ?>"
-                            data-tipo="<?= ucfirst($s['tipo_solicitacao']) ?>"
-                            data-json='<?= htmlspecialchars(json_encode(json_decode($s["dados_json"], true)), ENT_QUOTES) ?>'>
-                            Ver Detalhes
-                        </button>
-                    </td>
-                    <td class="actions">
-                        <button class="btn btn-success btn-sm btn-aprovar" 
-                                data-id="<?= $s['id'] ?>"
-                                data-nome="<?= htmlspecialchars($s['nome']) ?>"
-                                data-tipo="<?= $s['tipo_solicitacao'] ?>"
-                                data-acao="aprovar">
-                            Aprovar
-                        </button>
-                        <button class="btn btn-danger btn-sm btn-rejeitar"
-                                data-id="<?= $s['id'] ?>"
-                                data-nome="<?= htmlspecialchars($s['nome']) ?>"
-                                data-tipo="<?= $s['tipo_solicitacao'] ?>"
-                                data-acao="rejeitar">
-                            Rejeitar
-                        </button>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-    <div class="section-header">
-        <a href="todos_usuarios.php" class="btn btn-primary">Ver todos os usuários cadastrados</a>
-    </div>
-    <?php else: ?>
-        <div class="empty-state">
-            <h3>Não há solicitações pendentes</h3>
-            <p>Todas as solicitações foram processadas.</p>
-        </div>
-    <?php endif; ?>
-</div>
 
 <!-- MODAL DE DETALHES -->
 <div id="detalhesModal" class="modal">

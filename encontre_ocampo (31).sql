@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 28/01/2026 às 16:07
+-- Tempo de geração: 29/01/2026 às 19:27
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -506,7 +506,7 @@ CREATE TABLE `propostas` (
   `opcao_frete` enum('vendedor','comprador','entregador') NOT NULL,
   `valor_frete` decimal(10,2) DEFAULT 0.00,
   `valor_total` decimal(10,2) DEFAULT NULL,
-  `status` enum('aceita','negociacao','recusada') DEFAULT 'negociacao',
+  `status` enum('aceita','negociacao','recusada','cancelada') DEFAULT 'negociacao',
   `tipo_frete` enum('vendedor','comprador','plataforma') DEFAULT 'vendedor',
   `status_entrega` enum('pendente','aceita','coletado','transporte','entregue','cancelada') DEFAULT 'pendente',
   `data_entrega_estimada` date DEFAULT NULL,

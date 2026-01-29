@@ -141,6 +141,54 @@ try {
             $stmt_update_negociacao->bindParam(':preco_final', $proposta['preco_proposto']);
             $stmt_update_negociacao->bindParam(':quantidade_final', $proposta['quantidade_proposta']);
             $stmt_update_negociacao->execute();
+
+            // 4. Atualizar estoque do produto vendido (evitar estoque negativo)
+            $produto_id = $proposta['produto_id'];
+            $quantidade_vendida = (int)$proposta['quantidade_proposta'];
+
+            // Buscar modo de precificação e colunas de estoque (com lock para segurança)
+            $sql_prod = "SELECT modo_precificacao, estoque, estoque_unidades FROM produtos WHERE id = :produto_id FOR UPDATE";
+            $stmt_prod = $conn->prepare($sql_prod);
+            $stmt_prod->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+            $stmt_prod->execute();
+            $produto_info = $stmt_prod->fetch(PDO::FETCH_ASSOC);
+
+            if (!$produto_info) {
+                $conn->rollBack();
+                redirecionar($proposta_comprador_id, 'erro', "Produto não encontrado para atualizar estoque.");
+            }
+
+            $modo = $produto_info['modo_precificacao'] ?? 'por_quilo';
+            $unit_modes = ['por_unidade', 'caixa_unidades', 'saco_unidades'];
+
+            if (in_array($modo, $unit_modes)) {
+                // decrementa estoque_unidades
+                $col = 'estoque_unidades';
+            } else {
+                // decrementa estoque (kg)
+                $col = 'estoque';
+            }
+
+            $sql_update_estoque = "UPDATE produtos SET $col = $col - :q WHERE id = :produto_id AND $col >= :q";
+            $stmt_update_estoque = $conn->prepare($sql_update_estoque);
+            $stmt_update_estoque->bindParam(':q', $quantidade_vendida, PDO::PARAM_INT);
+            $stmt_update_estoque->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+            $stmt_update_estoque->execute();
+
+            if ($stmt_update_estoque->rowCount() === 0) {
+                $conn->rollBack();
+                redirecionar($proposta_comprador_id, 'erro', "Estoque insuficiente para concluir a venda.");
+            }
+
+            // 5. Se o estoque correspondente zerou, desativar o anúncio
+            if ($col === 'estoque') {
+                $sql_desativar = "UPDATE produtos SET status = 'inativo' WHERE id = :produto_id AND estoque <= 0";
+            } else {
+                $sql_desativar = "UPDATE produtos SET status = 'inativo' WHERE id = :produto_id AND estoque_unidades <= 0";
+            }
+            $stmt_desativar = $conn->prepare($sql_desativar);
+            $stmt_desativar->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+            $stmt_desativar->execute();
             
             $conn->commit();
             

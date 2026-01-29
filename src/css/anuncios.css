@@ -1162,6 +1162,13 @@ body {
         max-height: 80vh;
         overflow-y: auto;
     }
+
+    .social-links {
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        padding-left: 25px;
+    }
 }
 
 /* Popup para Vendedores */

@@ -42,8 +42,13 @@ try {
         throw new Exception('Proposta não encontrada');
     }
     
+    // Verificar se a proposta já foi finalizada (exceto se for cancelamento pelo comprador)
     if ($proposta['status'] !== 'negociacao') {
-        throw new Exception('Esta proposta já foi finalizada');
+        // Permitir cancelamento apenas se a proposta já estiver cancelada e o comprador quiser cancelar novamente?
+        // Ou não permitir alterações em propostas já finalizadas
+        if (!($acao === 'cancelar' && $proposta['status'] === 'cancelada' && $usuario_tipo === 'comprador')) {
+            throw new Exception('Esta proposta já foi finalizada');
+        }
     }
     
     // Validar permissões
@@ -54,7 +59,7 @@ try {
         if ($proposta['comprador_id'] != $usuario_id) {
             throw new Exception('Apenas o comprador desta proposta pode cancelá-la');
         }
-        $nova_status = 'recusada';
+        $nova_status = 'cancelada';
         $mensagem_acao = 'cancelada';
         
     } elseif (($acao === 'aceitar' || $acao === 'recusar') && $usuario_tipo === 'vendedor') {
@@ -103,6 +108,18 @@ try {
         $stmt_update->bindParam(':quantidade', $proposta['quantidade_proposta'], PDO::PARAM_INT);
         $stmt_update->bindParam(':produto_id', $proposta['produto_id'], PDO::PARAM_INT);
         $stmt_update->execute();
+    }
+    
+    // Se foi cancelada, restaurar o estoque (se estava aceita anteriormente)
+    if ($nova_status === 'cancelada' && $proposta['status'] === 'aceita') {
+        $sql_restaurar_estoque = "UPDATE produtos SET 
+                                 estoque = estoque + :quantidade
+                                 WHERE id = :produto_id";
+        
+        $stmt_restaurar = $conn->prepare($sql_restaurar_estoque);
+        $stmt_restaurar->bindParam(':quantidade', $proposta['quantidade_proposta'], PDO::PARAM_INT);
+        $stmt_restaurar->bindParam(':produto_id', $proposta['produto_id'], PDO::PARAM_INT);
+        $stmt_restaurar->execute();
     }
     
     $conn->commit();

@@ -1814,6 +1814,23 @@ html, body {
     border: 1px solid #f5c6cb;
 }
 
+.proposta-status.cancelada {
+            background-color: #e2e3e5;
+            color: #383d41;
+            border: 1px solid #d6d8db;
+        }
+        
+        .proposta-card.cancelada {
+            border: 2px solid #6c757d;
+            background-color: #f8f9fa;
+            opacity: 0.8;
+        }
+        
+        .proposta-finalizada.cancelada {
+            color: #6c757d;
+            font-weight: 600;
+        }
+
 .proposta-info {
     margin-bottom: 16px;
 }

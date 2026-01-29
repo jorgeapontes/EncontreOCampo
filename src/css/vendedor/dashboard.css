@@ -1,13 +1,19 @@
 :root {
-    --primary-color: #4CAF50; /* Verde Principal */
+    --primary-color: #4CAF50;
+    /* Verde Principal */
     --primary-dark: #388E3C;
     --primary-light: #C8E6C9;
     --secondary-color: #6167ea;
-    --dark-color: #2E7D32; /* Verde Escuro */
+    --dark-color: #2E7D32;
+    /* Verde Escuro */
     --light-color: #F1F8E9;
     --text-color: #212121;
     --white: #FFFFFF;
     --gray: #F5F5F5;
+}
+
+html {
+    scrollbar-gutter: stable;
 }
 
 * {
@@ -153,7 +159,8 @@ body {
 
 /* --- Conteúdo Principal --- */
 .main-content {
-    margin-top: 60px; /* Compensa a navbar fixa */
+    margin-top: 60px;
+    /* Compensa a navbar fixa */
     padding: 20px;
     max-width: 1200px;
     margin-left: auto;
@@ -257,7 +264,8 @@ table {
     margin-top: 15px;
 }
 
-th, td {
+th,
+td {
     padding: 12px 15px;
     text-align: left;
 }
@@ -363,15 +371,16 @@ th:last-child {
     .section-perfil {
         padding: 15px;
     }
-    
+
     .section-perfil h2 {
         font-size: 1.3rem;
     }
-    
+
     .perfil-form h3 {
         font-size: 1.1rem;
     }
 }
+
 /* --- Seção de Formulário (Para anuncio_editar.php e similares) --- */
 .form-section {
     background-color: var(--white);
@@ -587,7 +596,7 @@ th:last-child {
 .acoes-rapidas a:hover {
     background: #e9ecef;
     transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .acoes-rapidas i {
@@ -661,11 +670,11 @@ th:last-child {
     .empty-state-container {
         padding: 30px 15px;
     }
-    
+
     .empty-state-container h3 {
         font-size: 20px;
     }
-    
+
     .empty-state-container p {
         font-size: 14px;
     }
@@ -676,16 +685,16 @@ th:last-child {
     .form-section {
         padding: 20px;
     }
-    
+
     .anuncio-form .form-row {
         flex-direction: column;
         gap: 0;
     }
-    
+
     .form-section h2 {
         font-size: 1.3rem;
     }
-    
+
     .form-section h3 {
         font-size: 1.1rem;
     }
@@ -696,6 +705,7 @@ th:last-child {
         padding: 15px;
     }
 }
+
 /* Estado Vazio */
 .empty-state {
     padding: 20px;
@@ -717,19 +727,19 @@ th:last-child {
     .hamburger {
         display: block;
     }
-    
+
     .hamburger.active .bar:nth-child(2) {
         opacity: 0;
     }
-    
+
     .hamburger.active .bar:nth-child(1) {
         transform: translateY(8px) rotate(45deg);
     }
-    
+
     .hamburger.active .bar:nth-child(3) {
         transform: translateY(-8px) rotate(-45deg);
     }
-    
+
     .nav-menu {
         position: fixed;
         left: -100%;
@@ -743,27 +753,27 @@ th:last-child {
         box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
         padding: 20px 0;
     }
-    
+
     .nav-menu.active {
         left: 0;
     }
-    
+
     .nav-item {
         margin: 16px 0;
     }
-    
+
     .nav-link.login-button {
         margin-left: 0;
     }
-    
-    
+
+
     .cta-button {
         float: none;
         width: 100%;
         justify-content: center;
         margin-bottom: 20px;
     }
-    
+
     .section-anuncios h2 {
         display: block;
         width: 100%;
@@ -774,7 +784,7 @@ th:last-child {
     .main-content {
         padding: 15px;
     }
-    
+
     .card {
         text-align: left;
     }
@@ -785,48 +795,48 @@ th:last-child {
    ============================================ */
 
 @media screen and (max-width: 480px) {
-    
+
     /* --- Layout Geral --- */
     .main-content {
         padding: 10px;
         margin-top: 50px;
     }
-    
+
     /* --- Navbar --- */
     .nav-container {
         padding: 10px 15px;
     }
-    
+
     .logo img {
         height: 40px;
     }
-    
+
     .logo h1 {
         font-size: 1.2rem;
         margin-top: 2px;
     }
-    
+
     .logo h2 {
         font-size: 0.9rem;
         margin-top: -8px;
     }
-    
+
     .nav-menu {
         top: 60px;
     }
-    
+
     /* --- Header --- */
     .header h1 {
         font-size: 1.8rem;
         text-align: center;
         padding: 0 10px;
     }
-    
+
     .subtitulo {
         font-size: 14px;
         text-align: center;
     }
-    
+
     /* --- Aviso de Status --- */
     .aviso-status {
         padding: 10px;
@@ -834,53 +844,58 @@ th:last-child {
         font-size: 14px;
         text-align: center;
     }
-    
+
     /* --- Cards de Informação --- */
     .info-cards a {
         padding: 15px 0;
         width: 100%;
-        text-align: left; /* Alinha todo o conteúdo à esquerda */
+        text-align: left;
+        /* Alinha todo o conteúdo à esquerda */
     }
 
     .card i {
         font-size: 1.5rem;
         margin-bottom: 5px;
-        margin-left: 15px; /* Margem à esquerda para o ícone */
+        margin-left: 15px;
+        /* Margem à esquerda para o ícone */
     }
 
     .card h3 {
         font-size: 1rem;
         margin-bottom: 5px;
-        margin-left: 15px; /* Margem à esquerda para o título */
+        margin-left: 15px;
+        /* Margem à esquerda para o título */
     }
 
     .card p {
         font-size: 1.5rem;
-        margin-left: 15px; /* Margem à esquerda para o número */
-        display: block; /* Garante que fique em bloco, não inline */
+        margin-left: 15px;
+        /* Margem à esquerda para o número */
+        display: block;
+        /* Garante que fique em bloco, não inline */
     }
-    
+
     /* --- Seção de Anúncios --- */
     .section-anuncios {
         padding: 15px;
         margin: 0;
         border-radius: 5px;
     }
-    
+
     .section-anuncios #header {
         display: flex;
         flex-direction: column;
         gap: 10px;
         margin-bottom: 15px;
     }
-    
+
     .section-anuncios h2 {
         font-size: 1.3rem;
         text-align: center;
         width: 100%;
         margin-bottom: 10px;
     }
-    
+
     .cta-button {
         float: none;
         width: 100%;
@@ -889,7 +904,7 @@ th:last-child {
         justify-content: center;
         font-size: 14px;
     }
-    
+
     /* --- Tabela de Anúncios (scroll horizontal) --- */
     .tabela-anuncios {
         overflow-x: auto;
@@ -897,147 +912,149 @@ th:last-child {
         margin: 0 -15px;
         padding: 0 15px;
     }
-    
+
     table {
-        min-width: 600px; /* Força o scroll horizontal */
+        min-width: 600px;
+        /* Força o scroll horizontal */
         font-size: 14px;
     }
-    
-    th, td {
+
+    th,
+    td {
         padding: 8px 10px;
     }
-    
+
     th {
         font-size: 12px;
     }
-    
+
     .status {
         font-size: 11px;
         padding: 3px 6px;
     }
-    
+
     .action-btn {
         font-size: 14px;
         margin-right: 5px;
     }
-    
+
     /* --- Estado Vazio --- */
     .empty-state-container {
         padding: 30px 15px;
     }
-    
+
     .empty-state-icon {
         font-size: 36px;
         margin-bottom: 15px;
     }
-    
+
     .empty-state-container h3 {
         font-size: 18px;
         margin-bottom: 10px;
     }
-    
+
     .empty-state-container p {
         font-size: 14px;
         line-height: 1.4;
         margin-bottom: 20px;
     }
-    
+
     .empty-state-button {
         padding: 10px 20px;
         font-size: 14px;
         width: 100%;
         text-align: center;
     }
-    
+
     /* --- Pop-up de Avisos --- */
     .popup-container {
         width: 95%;
         margin: 0 10px;
         max-height: 85vh;
     }
-    
+
     .popup-header {
         padding: 15px;
     }
-    
+
     .popup-header h2 {
         font-size: 18px;
     }
-    
+
     .popup-header i {
         font-size: 22px;
     }
-    
+
     .popup-body {
         padding: 15px;
     }
-    
+
     .aviso-item {
         padding: 12px;
         margin-bottom: 15px;
     }
-    
+
     .aviso-item h3 {
         font-size: 16px;
     }
-    
+
     .aviso-item p {
         font-size: 14px;
     }
-    
+
     .popup-footer {
         padding: 15px;
     }
-    
+
     .checkbox-container label {
         font-size: 12px;
     }
-    
+
     .btn-popup {
         padding: 10px 15px;
         font-size: 13px;
     }
-    
+
     /* --- Menu Hamburger Ajustes --- */
     .hamburger {
         padding: 5px;
     }
-    
+
     .bar {
         width: 20px;
         height: 2px;
         margin: 4px auto;
     }
-    
+
     /* --- Ações Rápidas --- */
     .acoes-rapidas {
         gap: 10px;
         margin: 20px 0;
     }
-    
+
     .acoes-rapidas a {
         width: calc(50% - 10px);
         padding: 15px 10px;
     }
-    
+
     .acoes-rapidas i {
         font-size: 24px;
         margin-bottom: 5px;
     }
-    
+
     /* --- Formulários --- */
     .form-section {
         padding: 15px;
     }
-    
+
     .form-section h2 {
         font-size: 1.2rem;
     }
-    
+
     .form-section h3 {
         font-size: 1rem;
     }
-    
+
     .anuncio-form .form-group input[type="text"],
     .anuncio-form .form-group input[type="number"],
     .anuncio-form .form-group input[type="file"],
@@ -1046,14 +1063,14 @@ th:last-child {
         padding: 10px 12px;
         font-size: 14px;
     }
-    
+
     /* --- Botões de Sair --- */
     .nav-link.exit-button {
         padding: 6px 15px;
         font-size: 14px;
         margin-left: 10px;
     }
-    
+
     /* --- Notificações --- */
     .notificacao-badge {
         font-size: 11px;
@@ -1068,62 +1085,63 @@ th:last-child {
     .logo h1 {
         font-size: 1rem;
     }
-    
+
     .logo h2 {
         font-size: 0.8rem;
     }
-    
+
     .header h1 {
         font-size: 1.5rem;
     }
-    
+
     .card h3 {
         font-size: 0.9rem;
     }
-    
+
     .card p {
         font-size: 1.3rem;
     }
-    
+
     .acoes-rapidas a {
         width: 100%;
     }
 }
 
 @media (max-width: 480px) {
+
     /* Container da tabela */
     .tabela-anuncios {
         overflow-x: visible;
         margin: 0;
         padding: 0;
     }
-    
+
     /* Esconde a tabela tradicional em mobile */
     table {
         display: none;
     }
-    
+
     /* Mostra a versão em cards */
     .cards-anuncios-mobile {
         display: block !important;
     }
-    
+
     /* Cards de anúncios */
     .card-anuncio {
         background: white;
         border-radius: 10px;
         padding: 15px;
         margin-bottom: 15px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         border-left: 4px solid var(--primary-color);
         transition: transform 0.2s ease;
     }
-    
+
     .card-anuncio:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
-    
+
     /* Header do card */
     .card-anuncio-header {
         display: flex;
@@ -1133,11 +1151,11 @@ th:last-child {
         padding-bottom: 10px;
         border-bottom: 1px solid #eee;
     }
-    
+
     .card-anuncio-title {
         flex: 1;
     }
-    
+
     .card-anuncio-title h3 {
         font-size: 1.1rem;
         color: var(--dark-color);
@@ -1145,7 +1163,7 @@ th:last-child {
         font-weight: 600;
         line-height: 1.3;
     }
-    
+
     .card-anuncio-id {
         font-size: 0.8rem;
         color: #666;
@@ -1154,7 +1172,7 @@ th:last-child {
         border-radius: 10px;
         display: inline-block;
     }
-    
+
     /* Status no header */
     .card-anuncio-status {
         font-size: 0.75rem;
@@ -1164,12 +1182,12 @@ th:last-child {
         white-space: nowrap;
         margin-left: 10px;
     }
-    
+
     .status.ativo {
         background-color: var(--primary-light);
         color: var(--primary-dark);
     }
-    
+
     /* Corpo do card */
     .card-anuncio-body {
         display: grid;
@@ -1177,31 +1195,31 @@ th:last-child {
         gap: 10px;
         margin-bottom: 15px;
     }
-    
+
     .card-info-item {
         display: flex;
         flex-direction: column;
     }
-    
+
     .card-info-label {
         font-size: 0.8rem;
         color: #666;
         margin-bottom: 3px;
         font-weight: 500;
     }
-    
+
     .card-info-value {
         font-size: 1rem;
         color: var(--text-color);
         font-weight: 600;
     }
-    
+
     .card-info-value small {
         font-size: 0.8rem;
         color: #666;
         font-weight: normal;
     }
-    
+
     /* Data de criação */
     .card-anuncio-data {
         grid-column: span 2;
@@ -1211,7 +1229,7 @@ th:last-child {
         padding-top: 8px;
         border-top: 1px dashed #eee;
     }
-    
+
     /* Ações do card */
     .card-anuncio-actions {
         display: flex;
@@ -1220,7 +1238,7 @@ th:last-child {
         padding-top: 15px;
         border-top: 1px solid #eee;
     }
-    
+
     .card-action-btn {
         display: flex;
         align-items: center;
@@ -1233,22 +1251,22 @@ th:last-child {
         font-size: 1rem;
         transition: all 0.2s ease;
     }
-    
+
     .card-action-btn.edit {
         background: var(--secondary-color);
         color: white;
     }
-    
+
     .card-action-btn.delete {
         background: #f44336;
         color: white;
     }
-    
+
     .card-action-btn:hover {
         transform: scale(1.1);
         opacity: 0.9;
     }
-    
+
     /* Botões de ação */
     .action-btn {
         display: inline-flex;
@@ -1262,28 +1280,28 @@ th:last-child {
         font-size: 0.9rem;
         margin: 0 3px;
     }
-    
+
     .action-btn.edit {
         background: var(--secondary-color);
         color: white;
     }
-    
+
     .action-btn.delete {
         background: #f44336;
         color: white;
     }
-    
+
     /* Seção de anúncios */
     .section-anuncios {
         padding: 15px;
     }
-    
+
     .section-anuncios h2 {
         font-size: 1.3rem;
         margin-bottom: 15px;
         text-align: center;
     }
-    
+
     /* Header da seção com botões */
     .section-anuncios #header {
         display: flex;
@@ -1291,7 +1309,7 @@ th:last-child {
         gap: 10px;
         margin-bottom: 20px;
     }
-    
+
     .cta-button {
         width: 100%;
         margin: 5px 0;
@@ -1300,35 +1318,35 @@ th:last-child {
         font-size: 14px;
         border-radius: 8px;
     }
-    
+
     /* Estado vazio */
     .empty-state-container {
         padding: 25px 15px;
     }
-    
+
     .empty-state-icon {
         font-size: 36px;
         margin-bottom: 15px;
     }
-    
+
     .empty-state-container h3 {
         font-size: 1.2rem;
         margin-bottom: 10px;
     }
-    
+
     .empty-state-container p {
         font-size: 0.95rem;
         line-height: 1.4;
         margin-bottom: 20px;
     }
-    
+
     .empty-state-button {
         padding: 12px 20px;
         font-size: 14px;
         width: 100%;
         text-align: center;
     }
-    
+
     /* Ajuste para o título dos cards */
     .card-anuncio-title h3 {
         font-size: 1rem;
@@ -1342,17 +1360,17 @@ th:last-child {
         grid-template-columns: 1fr;
         gap: 8px;
     }
-    
+
     .card-anuncio-data {
         grid-column: span 1;
     }
-    
+
     .card-action-btn {
         width: 35px;
         height: 35px;
         font-size: 0.9rem;
     }
-    
+
     .card-anuncio {
         padding: 12px;
     }
@@ -1368,8 +1386,249 @@ th:last-child {
     table {
         display: none;
     }
-    
+
     .cards-anuncios-mobile {
         display: block;
     }
+}
+
+/* Estilos do Pop-up (Mantidos) */
+.popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9998;
+    animation: fadeIn 0.3s ease;
+}
+
+.popup-overlay.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.popup-container {
+    background: white;
+    border-radius: 15px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+    position: relative;
+}
+
+.popup-header {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 15px 15px 0 0;
+    text-align: center;
+    position: relative;
+}
+
+.popup-header h2 {
+    margin: 0;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.popup-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.popup-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.popup-body {
+    padding: 30px;
+}
+
+.aviso-item {
+    background: #f8f9fa;
+    border-left: 4px solid #4CAF50;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.aviso-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.aviso-item h3 {
+    color: #4CAF50;
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.aviso-item p {
+    color: #555;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.aviso-item a {
+    color: #4CAF50;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.aviso-item a:hover {
+    color: #45a049;
+    text-decoration: underline;
+}
+
+.popup-footer {
+    padding: 20px 30px;
+    border-top: 1px solid #e0e0e0;
+    background: #f8f9fa;
+    border-radius: 0 0 15px 15px;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    cursor: pointer;
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #4CAF50;
+}
+
+.checkbox-container label {
+    color: #555;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.popup-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn-popup {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.btn-secondary {
+    background: #e0e0e0;
+    color: #555;
+}
+
+.btn-secondary:hover {
+    background: #d0d0d0;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .popup-container {
+        width: 95%;
+        max-height: 90vh;
+    }
+
+    .popup-actions {
+        flex-direction: column;
+    }
+
+    .btn-popup {
+        width: 100%;
+    }
+}
+
+/* NOVOS ESTILOS PARA LINHAS BLOQUEADAS (Mesmo do anuncios.php) */
+.locked-row {
+    background-color: #f1f2f6;
+    opacity: 0.7;
+}
+
+.locked-row td {
+    color: #636e72;
+}
+
+.locked-badge {
+    background-color: #2d3436;
+    color: #fab1a0;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    text-transform: uppercase;
 }

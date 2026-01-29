@@ -1423,18 +1423,32 @@ function inicializarElementosProposta() {
     propostaDataElement = document.getElementById('proposta-data');
     propostaAcoesElement = document.getElementById('proposta-acoes');
     propostaFooterTextElement = document.getElementById('proposta-footer-text');
+    
+    // Capturar dados do elemento hidden
+    const indicador = document.getElementById('proposta-indicador');
+    if (indicador) {
+        propostaAtualId = indicador.dataset.propostaId || 0;
+        propostaAtualStatus = indicador.dataset.status || '';
+        // Note: não inicializamos propostaAtualDataAtualizacao aqui
+        // pois ela virá do servidor na primeira verificação
+    }
 }
 
 function verificarNovaProposta() {
-    if (!conversaId) return;
+    if (!conversaId || !propostaAtualId) return;
     
     fetch(`verificar_proposta_v2.php?conversa_id=${conversaId}&produto_id=${<?php echo $produto_id; ?>}&ultima_data=${encodeURIComponent(propostaAtualDataAtualizacao)}`)
         .then(res => res.json())
         .then(data => {
             if (data.atualizacao && data.proposta) {
-                // Verificar se houve mudança de status
-                if (data.proposta.status !== propostaAtualStatus) {
-                    // Recarregar a página para mostrar mudanças
+                // Se é a mesma proposta (mesmo ID)
+                if (data.proposta.ID === propostaAtualId) {
+                    // Atualizar normalmente
+                    atualizarProposta(data.proposta);
+                    
+                    // Apenas recarregar se for uma NOVA proposta (diferente ID)
+                } else {
+                    // É uma nova proposta, recarregar página
                     location.reload();
                 }
             }
@@ -1445,31 +1459,30 @@ function verificarNovaProposta() {
 function atualizarProposta(proposta) {
     if (!proposta) return;
     
+    // Inicializar elementos se necessário
+    if (!propostaStatusElement) {
+        inicializarElementosProposta();
+    }
+    
+    // Verificar se o status mudou
+    const statusMudou = proposta.status !== propostaAtualStatus;
+    
     // Formatando valores
-    const valorUnitario = parseFloat(proposta.preco_proposto).toFixed(2).replace('.', ',');
+    const valorUnitario = parseFloat(proposta.preco_proposto || 0).toFixed(2).replace('.', ',');
     const valorFrete = parseFloat(proposta.valor_frete || 0).toFixed(2).replace('.', ',');
     const valorTotal = parseFloat(proposta.valor_total || 0).toFixed(2).replace('.', ',');
     
-    // 1. Atualizar status
-    atualizarStatusProposta(proposta);
-    
-    // 2. Atualizar quantidade
-    if (propostaQuantidadeElement) {
-        const strongElement = propostaQuantidadeElement.querySelector('strong');
-        if (strongElement) {
-            strongElement.textContent = `${proposta.quantidade_proposta} unidades`;
-        }
+    // 1. Atualizar status (sempre)
+    if (propostaStatusElement) {
+        propostaStatusElement.textContent = statusTextMap[proposta.status] || proposta.status;
+        propostaStatusElement.className = 'proposta-status ' + proposta.status;
     }
     
-    // 3. Atualizar valor unitário
-    if (propostaValorUnitarioElement) {
-        const strongElement = propostaValorUnitarioElement.querySelector('strong');
-        if (strongElement) {
-            strongElement.textContent = `R$ ${valorUnitario}`;
-        }
-    }
+    // 2. Atualizar apenas valores numéricos e texto
+    updateElementText(propostaQuantidadeElement, 'strong', `${proposta.quantidade_proposta} unidades`);
+    updateElementText(propostaValorUnitarioElement, 'strong', `R$ ${valorUnitario}`);
     
-    // 4. Atualizar frete
+    // Atualizar frete
     if (propostaFreteElement) {
         const strongElement = propostaFreteElement.querySelector('strong');
         if (strongElement) {
@@ -1478,7 +1491,7 @@ function atualizarProposta(proposta) {
         }
     }
     
-    // 5. Atualizar pagamento
+    // Atualizar pagamento
     if (propostaPagamentoElement) {
         const strongElement = propostaPagamentoElement.querySelector('strong');
         if (strongElement) {
@@ -1487,7 +1500,7 @@ function atualizarProposta(proposta) {
         }
     }
     
-    // 6. Atualizar total
+    // Atualizar total
     if (propostaTotalElement) {
         const strongElement = propostaTotalElement.querySelector('strong');
         if (strongElement) {
@@ -1495,8 +1508,8 @@ function atualizarProposta(proposta) {
         }
     }
     
-    // 7. Atualizar data
-    if (propostaDataElement) {
+    // 3. Atualizar data
+    if (propostaDataElement && proposta.data_inicio) {
         const smallElement = propostaDataElement.querySelector('small');
         if (smallElement) {
             const dataObj = new Date(proposta.data_inicio);
@@ -1509,11 +1522,39 @@ function atualizarProposta(proposta) {
         }
     }
     
-    // 8. Atualizar botões de ação
-    atualizarBotoesAcao(proposta);
+    // 4. Atualizar footer
+    if (propostaFooterTextElement) {
+        propostaFooterTextElement.textContent = proposta.status === 'negociacao' 
+            ? 'Esta proposta foi enviada.' 
+            : `Esta proposta foi ${proposta.status}.`;
+    }
     
-    // 9. Atualizar texto do footer
-    atualizarFooterProposta(proposta);
+    // 5. Apenas atualizar botões se o status mudou PARA FORA DE 'negociacao'
+    if (statusMudou && (proposta.status === 'aceita' || proposta.status === 'recusada')) {
+        // Quando proposta é finalizada, substituir botões por mensagem
+        if (propostaAcoesElement) {
+            propostaAcoesElement.innerHTML = '';
+            const mensagemFinal = document.createElement('div');
+            mensagemFinal.className = 'proposta-finalizada';
+            mensagemFinal.innerHTML = proposta.status === 'aceita' 
+                ? '✅ Proposta aceita' 
+                : '❌ Proposta recusada';
+            propostaAcoesElement.appendChild(mensagemFinal);
+        }
+    }
+    
+    // 6. Atualizar variáveis globais
+    propostaAtualStatus = proposta.status;
+    propostaAtualId = proposta.ID;
+    propostaAtualDataAtualizacao = proposta.data_atualizacao;
+    
+    // Função auxiliar
+    function updateElementText(element, childSelector, text) {
+        if (element) {
+            const child = element.querySelector(childSelector);
+            if (child) child.textContent = text;
+        }
+    }
 }
 
 function responderProposta(acao, propostaId) {
@@ -1541,25 +1582,30 @@ function responderProposta(acao, propostaId) {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            // Mostrar mensagem de sucesso
-            mostrarNotificacao(`Proposta ${acao === 'aceitar' ? 'aceita' : 'recusada'} com sucesso!`, 'success');
+            mostrarNotificacao(data.message, 'success');
             
-            // Atualizar a página após 1.5 segundos
-            setTimeout(() => {
-                location.reload();
-            }, 1500);
+            // Buscar os dados atualizados da proposta
+            return buscarPropostaAtualizada(propostaId);
         } else {
-            alert('Erro: ' + data.error);
-            botao.innerHTML = textoOriginal;
-            botao.disabled = false;
+            throw new Error(data.error || 'Erro desconhecido');
         }
+    })
+    .then(propostaAtualizada => {
+        // Atualizar a UI com os novos dados
+        atualizarProposta(propostaAtualizada);
     })
     .catch(err => {
         console.error('Erro:', err);
-        alert('Erro de conexão. Tente novamente.');
+        alert('Erro: ' + err.message);
         botao.innerHTML = textoOriginal;
         botao.disabled = false;
     });
+}
+
+// Nova função para buscar proposta atualizada
+function buscarPropostaAtualizada(propostaId) {
+    return fetch(`buscar_proposta.php?id=${propostaId}`)
+        .then(res => res.json());
 }
 
 // Função para cancelar proposta (apenas comprador)
@@ -1615,7 +1661,7 @@ function cancelarProposta(propostaId) {
     });
 }
 
-function atualizarStatusPropostaUI(novoStatus) {
+function atualizarStatusProposta(novoStatus) {
     if (!propostaStatusElement) return;
     
     const statusTextMap = {

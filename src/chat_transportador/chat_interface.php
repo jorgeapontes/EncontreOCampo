@@ -39,7 +39,9 @@ try {
 
     $uid = (int)$_SESSION['usuario_id'];
     $is_transportador = ($_SESSION['usuario_tipo'] === 'transportador');
-    $is_comprador = ($_SESSION['usuario_tipo'] === 'comprador');
+    // Considerar `is_comprador` sempre que o usuário for o participante comprador
+    // (permite que vendedores que fizeram a compra atuem como comprador na conversa)
+    $is_comprador = ($conv['comprador_id'] == $uid);
 
     // Verificar se o usuário pertence à conversa
     $belongs = false;
@@ -408,13 +410,7 @@ try {
                     let estavaNaBase = container.scrollHeight - container.scrollTop <= container.clientHeight + 150;
                     data.mensagens.forEach(msg => {
                         if (msg.id > ultimaMensagemId) {
-                                // Não exibir mensagens enviadas por usuários do tipo 'vendedor'
-                                if (msg.remetente_tipo && msg.remetente_tipo === 'vendedor') {
-                                    // Atualizar ultimaMensagemId para não reprocessar
-                                    if (msg.id > ultimaMensagemId) ultimaMensagemId = msg.id;
-                                    return;
-                                }
-                            const div = document.createElement('div');
+                                    const div = document.createElement('div');
                             div.className = 'message ' + (msg.remetente_id == usuarioId ? 'sent' : 'received');
                             const content = document.createElement('div');
                             

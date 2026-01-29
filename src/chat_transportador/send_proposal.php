@@ -4,8 +4,11 @@ require_once __DIR__ . '/../conexao.php';
 
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'comprador') {
-    echo json_encode(['success' => false, 'error' => 'Apenas compradores podem enviar propostas']);
+// Permitir envio de proposta quando o usuário estiver logado.
+// A verificação de permissão mais específica (ser o `comprador_id` da conversa)
+// é feita após buscar a conversa abaixo.
+if (!isset($_SESSION['usuario_id'])) {
+    echo json_encode(['success' => false, 'error' => 'Acesso restrito']);
     exit();
 }
 

@@ -177,62 +177,6 @@ try {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-    <style>
-        /* Estilos do Pop-up (Mantidos) */
-        .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 9998; animation: fadeIn 0.3s ease; }
-        .popup-overlay.active { display: flex; align-items: center; justify-content: center; }
-        .popup-container { background: white; border-radius: 15px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); animation: slideUp 0.3s ease; position: relative; }
-        .popup-header { background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; padding: 25px; border-radius: 15px 15px 0 0; text-align: center; position: relative; }
-        .popup-header h2 { margin: 0; font-size: 24px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .popup-close { position: absolute; top: 15px; right: 15px; background: rgba(255, 255, 255, 0.2); border: none; color: white; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 20px; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
-        .popup-close:hover { background: rgba(255, 255, 255, 0.3); transform: rotate(90deg); }
-        .popup-body { padding: 30px; }
-        .aviso-item { background: #f8f9fa; border-left: 4px solid #4CAF50; padding: 20px; margin-bottom: 20px; border-radius: 8px; transition: all 0.3s; }
-        .aviso-item:hover { transform: translateX(5px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
-        .aviso-item h3 { color: #4CAF50; margin: 0 0 10px 0; font-size: 18px; display: flex; align-items: center; gap: 10px; }
-        .aviso-item p { color: #555; line-height: 1.6; margin: 0; }
-        .aviso-item a { color: #4CAF50; font-weight: 600; text-decoration: none; transition: all 0.3s; }
-        .aviso-item a:hover { color: #45a049; text-decoration: underline; }
-        .popup-footer { padding: 20px 30px; border-top: 1px solid #e0e0e0; background: #f8f9fa; border-radius: 0 0 15px 15px; }
-        .checkbox-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; cursor: pointer; }
-        .checkbox-container input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; accent-color: #4CAF50; }
-        .checkbox-container label { color: #555; font-size: 14px; cursor: pointer; user-select: none; }
-        .popup-actions { display: flex; gap: 10px; justify-content: flex-end; }
-        .btn-popup { padding: 12px 25px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 14px; }
-        .btn-primary { background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3); }
-        .btn-secondary { background: #e0e0e0; color: #555; }
-        .btn-secondary:hover { background: #d0d0d0; }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @media (max-width: 768px) {
-            .popup-container { width: 95%; max-height: 90vh; }
-            .popup-actions { flex-direction: column; }
-            .btn-popup { width: 100%; }
-        }
-
-        /* NOVOS ESTILOS PARA LINHAS BLOQUEADAS (Mesmo do anuncios.php) */
-        .locked-row {
-            background-color: #f1f2f6;
-            opacity: 0.7;
-        }
-        .locked-row td {
-            color: #636e72;
-        }
-        .locked-badge {
-            background-color: #2d3436;
-            color: #fab1a0;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.75em;
-            font-weight: bold;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            text-transform: uppercase;
-        }
-    </style>
 </head>
 <body>
     <header>
@@ -251,6 +195,7 @@ try {
                     <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
                     <li class="nav-item"><a href="../anuncios.php" class="nav-link">Anúncios</a></li>
                     <li class="nav-item"><a href="" class="nav-link active">Painel</a></li>
+                    <li class="nav-item"><a href="chats.php" class="nav-link">Chats</a></li>
                     <li class="nav-item"><a href="perfil.php" class="nav-link">Meu Perfil</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">

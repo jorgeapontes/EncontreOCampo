@@ -1814,6 +1814,44 @@ html, body {
     border: 1px solid #f5c6cb;
 }
 
+.proposta-status.assinando {
+            background-color: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+
+.proposta-card.assinando {
+            border: 2px solid #007bff;
+            background-color: #f0f8ff;
+        }
+
+.proposta-finalizada.assinado {
+    color: #28a745;
+    font-weight: 600;
+    padding: 10px;
+    text-align: center;
+    background-color: #d4edda;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+.proposta-status.cancelada {
+            background-color: #e2e3e5;
+            color: #383d41;
+            border: 1px solid #d6d8db;
+        }
+        
+        .proposta-card.cancelada {
+            border: 2px solid #6c757d;
+            background-color: #f8f9fa;
+            opacity: 0.8;
+        }
+        
+        .proposta-finalizada.cancelada {
+            color: #6c757d;
+            font-weight: 600;
+        }
+
 .proposta-info {
     margin-bottom: 16px;
 }
@@ -2231,3 +2269,166 @@ html, body {
         padding: 20px;
     }
 }
+
+/* Modal de assinatura */
+        .modal-assinatura {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-assinatura.active {
+            display: flex;
+        }
+        
+        .modal-assinatura-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .modal-assinatura-header {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-assinatura-header h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .modal-assinatura-body {
+            padding: 20px;
+        }
+        
+        .canvas-container {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            width: 100%;
+            height: 200px; /* Altura fixa */
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #signature-canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+            cursor: crosshair;
+            touch-action: none;
+            background: white;
+        }
+        
+        .assinatura-botoes {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn-limpar-assinatura {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-assinar {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .btn-fechar-modal-assinatura {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+        
+        .assinatura-info {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #e7f3ff;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .assinatura-status {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .assinatura-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .assinatura-item.assinada {
+            color: #28a745;
+        }
+        
+        .assinatura-item.pendente {
+            color: #ffc107;
+        }
+        
+        .btn-assinar-acordo {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 0 4px;
+            margin-top: 10px;
+        }
+        
+        .btn-assinar-acordo:hover {
+            background-color: #0069d9;
+            transform: translateY(-1px);
+        }
+        
+        .btn-assinar-acordo:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }

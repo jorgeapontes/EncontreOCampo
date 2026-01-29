@@ -508,13 +508,77 @@ body {
 }
 
 @media (max-width: 768px) {
-    body {
-        padding-top: 70px;
+    .hamburger {
+        display: block; /* Mostra o hamburguer em mobile */
     }
     
-    .estados-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 12px;
+    .nav-menu {
+        position: fixed;
+        left: -100%;
+        top: 80px;
+        flex-direction: column;
+        background-color: var(--white);
+        width: 100%;
+        text-align: center;
+        transition: 0.3s;
+        box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
+        padding-top: 20px;
+        padding-bottom: 20px;
+        z-index: 999;
+    }
+    
+    .nav-menu.active {
+        left: 0;
+    }
+    
+    .nav-item {
+        margin: 1.5rem 0;
+    }
+    
+    /* Opcional: animação para transformar hamburguer em X */
+    .hamburger.active .bar:nth-child(2) {
+        opacity: 0;
+    }
+    
+    .hamburger.active .bar:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+    }
+    
+    .hamburger.active .bar:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
+    }
+    
+    .cta-button#btn-marcar-todos {
+        width: 100%;
+        float: none;
+        margin-left: 0;
+        margin-bottom: 15px;
+        padding: 14px;
+        justify-content: center;
+        display: flex;
+    }
+    
+    /* Ajuste do header para acomodar o botão */
+    .controles-superiores #header {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    /* Centralizar o título */
+    .controles-superiores #header h2 {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+    
+    /* Garantir que botões de ação também tenham 100% */
+    .botao-acao {
+        width: 100%;
+        justify-content: center;
+    }
+
+    body {
+        padding-top: 50px;
     }
     
     .controles-superiores {

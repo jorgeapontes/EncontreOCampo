@@ -170,7 +170,7 @@ try {
 
         <section class="section-anuncios">
             <div id="header" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-                <div style="display:flex;align-items:center;gap:16px;">
+                <div class="status" style="display:flex;align-items:center;gap:16px;">
                     <h2 style="margin:0;">Compras (<?php echo count($propostas); ?>)</h2>
                     <form id="filterForm" method="get" style="margin:0;display:flex;align-items:center;gap:8px;">
                         <label for="status_filter">Status:</label>

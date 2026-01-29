@@ -148,18 +148,11 @@ try {
 foreach ($anuncios as &$a) {
     $modo = $a['modo_precificacao'] ?? 'por_quilo';
     
-    // Define a quantidade disponível visual de forma robusta
-    $estoque_unidades = isset($a['estoque_unidades']) ? $a['estoque_unidades'] : null;
-    $estoque_kg = isset($a['estoque_kg']) ? $a['estoque_kg'] : null;
-
-    if ($estoque_unidades !== null && $estoque_kg !== null) {
-        $a['quantidade_disponivel'] = min((float)$estoque_kg, (float)$estoque_unidades);
+    // Define a quantidade disponível visual
+    if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
+        $a['quantidade_disponivel'] = $a['estoque_unidades'] ?? 0;
     } else {
-        if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
-            $a['quantidade_disponivel'] = $estoque_unidades ?? ($estoque_kg ?? 0);
-        } else {
-            $a['quantidade_disponivel'] = $estoque_kg ?? ($estoque_unidades ?? 0);
-        }
+        $a['quantidade_disponivel'] = $a['estoque_kg'] ?? 0;
     }
 
     // Define unidade de medida para exibição

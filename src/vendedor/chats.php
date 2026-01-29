@@ -338,11 +338,6 @@ try {
         .btn-confirm-excluir:hover { background: #c82333; }
         
         @media (max-width: 768px) {
-            .hamburger { display: flex; }
-            .nav-menu { position: fixed; left: -100%; top: 70px; flex-direction: column; background: white; width: 100%; text-align: center; transition: 0.3s; box-shadow: 0 10px 27px rgba(0,0,0,0.05); padding: 2rem 0; }
-            .nav-menu.active { left: 0; }
-            .abas-container { flex-direction: column; }
-            .aba { width: 100%; justify-content: center; }
             .conversas-container { border-radius: 0 0 10px 10px; }
             .conversa-card { flex-direction: column; align-items: flex-start; }
             .conversa-top { flex-direction: column; gap: 5px; }

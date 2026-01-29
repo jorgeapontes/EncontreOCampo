@@ -113,7 +113,8 @@ try {
             INNER JOIN usuarios u ON cc.comprador_id = u.id
             WHERE p.vendedor_id = :vendedor_id
             AND cc.status = 'ativo'
-            AND cc.vendedor_excluiu = 0"; 
+            AND cc.vendedor_excluiu = 0
+            AND cc.transportador_id IS NULL";
     
     if ($mostrar_arquivados) {
         $sql_vendedor .= " AND cc.favorito_vendedor = 1";
@@ -158,7 +159,8 @@ try {
             INNER JOIN usuarios uv ON v.usuario_id = uv.id
             WHERE cc.comprador_id = :usuario_id
             AND cc.status = 'ativo'
-            AND cc.comprador_excluiu = 0";
+            AND cc.comprador_excluiu = 0
+            AND cc.transportador_id IS NULL";
     
     if ($mostrar_arquivados) {
         $sql_comprador .= " AND cc.favorito_comprador = 1";
@@ -194,7 +196,8 @@ try {
                                WHERE p.vendedor_id = :vendedor_id 
                                AND cm.remetente_id != :usuario_id
                                AND cm.lida = 0
-                               AND cc.vendedor_excluiu = 0";
+                               AND cc.vendedor_excluiu = 0
+                               AND cc.transportador_id IS NULL";
     
     if ($mostrar_arquivados) {
         $sql_vendedor_nao_lidas .= " AND cc.favorito_vendedor = 1";
@@ -215,7 +218,8 @@ try {
                                 WHERE cc.comprador_id = :usuario_id
                                 AND cm.remetente_id != :usuario_id
                                 AND cm.lida = 0
-                                AND cc.comprador_excluiu = 0";
+                                AND cc.comprador_excluiu = 0
+                                AND cc.transportador_id IS NULL";
     
     if ($mostrar_arquivados) {
         $sql_comprador_nao_lidas .= " AND cc.favorito_comprador = 1";
@@ -244,7 +248,8 @@ try {
                                WHERE p.vendedor_id = :vendedor_id 
                                AND cc.status = 'ativo'
                                AND cc.favorito_vendedor = 1
-                               AND cc.vendedor_excluiu = 0";
+                               AND cc.vendedor_excluiu = 0
+                               AND cc.transportador_id IS NULL";
     
     $stmt_arquivadas_vendedor = $conn->prepare($sql_arquivadas_vendedor);
     $stmt_arquivadas_vendedor->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
@@ -256,7 +261,8 @@ try {
                                 WHERE cc.comprador_id = :usuario_id 
                                 AND cc.status = 'ativo'
                                 AND cc.favorito_comprador = 1
-                                AND cc.comprador_excluiu = 0";
+                                AND cc.comprador_excluiu = 0
+                                AND cc.transportador_id IS NULL";
     
     $stmt_arquivadas_comprador = $conn->prepare($sql_arquivadas_comprador);
     $stmt_arquivadas_comprador->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
@@ -369,6 +375,9 @@ try {
                     <li class="nav-item"><a href="../anuncios.php" class="nav-link">Anúncios</a></li>
                     <li class="nav-item">
                         <a href="dashboard.php" class="nav-link">Painel</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="chats.php" class="nav-link active">Chats</a>
                     </li>
                     <li class="nav-item">
                         <a href="perfil.php" class="nav-link">Meu Perfil</a>

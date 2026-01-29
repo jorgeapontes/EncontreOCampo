@@ -11,6 +11,10 @@
     --gray: #F5F5F5;
 }
 
+select {
+    font-family: "Montserrat", sans-serif;
+}
+
 * {
     margin: 0;
     padding: 0;

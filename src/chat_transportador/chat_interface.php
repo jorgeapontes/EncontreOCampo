@@ -431,7 +431,7 @@ try {
                                     document.body.appendChild(modal);
                                 });
                                 content.appendChild(img);
-                            } else if (msg.tipo === 'proposta' || (msg.mensagem && (msg.mensagem.toUpperCase().indexOf('PROPOSTA') !== -1 || msg.mensagem.indexOf('ID') !== -1))) {
+                            } else if (msg.tipo === 'proposta' || (msg.mensagem && msg.mensagem.indexOf('ID') !== -1)) {
                                 // É uma mensagem de proposta - renderizar como card
                                 renderizarPropostaCard(msg, content);
                             } else if (msg.tipo === 'aceite') {

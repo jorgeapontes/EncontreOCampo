@@ -42,16 +42,7 @@ try {
         throw new Exception('Proposta não encontrada');
     }
     
-    // Verificar se a proposta já foi finalizada (exceto se for cancelamento pelo comprador)
-    if ($proposta['status'] !== 'negociacao') {
-        // Permitir cancelamento apenas se a proposta já estiver cancelada e o comprador quiser cancelar novamente?
-        // Ou não permitir alterações em propostas já finalizadas
-        if (!($acao === 'cancelar' && $proposta['status'] === 'cancelada' && $usuario_tipo === 'comprador')) {
-            throw new Exception('Esta proposta já foi finalizada');
-        }
-    }
-    
-    // Validar permissões
+    // Validar permissões e definir nova status
     $nova_status = '';
     $mensagem_acao = '';
     
@@ -62,9 +53,23 @@ try {
         $nova_status = 'cancelada';
         $mensagem_acao = 'cancelada';
         
+    } elseif ($acao === 'aceitar_para_assinatura' && $usuario_tipo === 'vendedor') {
+        if ($proposta['vendedor_id'] != $usuario_id) {
+            throw new Exception('Apenas o vendedor desta proposta pode aceitar para assinatura');
+        }
+        if ($proposta['status'] !== 'negociacao') {
+            throw new Exception('Esta proposta não está mais em negociação');
+        }
+        $nova_status = 'assinando';
+        $mensagem_acao = 'aceita e enviada para assinatura';
+        
     } elseif (($acao === 'aceitar' || $acao === 'recusar') && $usuario_tipo === 'vendedor') {
+        // Manter compatibilidade com versão anterior
         if ($proposta['vendedor_id'] != $usuario_id) {
             throw new Exception('Apenas o vendedor desta proposta pode aceitar/recusar');
+        }
+        if ($proposta['status'] !== 'negociacao') {
+            throw new Exception('Esta proposta não está mais em negociação');
         }
         $nova_status = ($acao === 'aceitar') ? 'aceita' : 'recusada';
         $mensagem_acao = ($acao === 'aceitar') ? 'aceita' : 'recusada';
@@ -87,7 +92,7 @@ try {
         throw new Exception('Erro ao atualizar proposta');
     }
     
-    // Se foi aceita, verificar estoque
+    // Se foi aceita (sem assinatura), verificar estoque
     if ($nova_status === 'aceita') {
         $sql_estoque = "SELECT estoque FROM produtos WHERE id = :produto_id";
         $stmt_estoque = $conn->prepare($sql_estoque);

@@ -1,6 +1,5 @@
-// script.js - VERSÃO COMPLETA E CORRIGIDA COM VALIDAÇÃO DE EMAIL DUPLICADO
+// script.js - VERSÃO COMPLETA E CORRIGIDA COM CORS E DEBUG
 
-// script.js - VERIFICAÇÃO DE CARREGAMENTO
 console.log('=== SCRIPT.JS CARREGADO ===');
 
 // Navbar toggle for mobile
@@ -57,6 +56,7 @@ let currentSteps = {
 
 // Função para mostrar/ocultar campos adicionais
 function toggleAdditionalFields() {
+    console.log('toggleAdditionalFields chamado');
     const subject = document.getElementById('subject');
     const compradorFields = document.getElementById('compradorFields');
     const vendedorFields = document.getElementById('vendedorFields');
@@ -88,8 +88,10 @@ function toggleAdditionalFields() {
         setTimeout(() => initializeVendedorMasks(), 100);
     } else if (subject.value === 'transportador') {
         transportadorFields.style.display = 'block';
-        setTimeout(() => initializeTransportadorMasks(), 100);
-        loadEstados();
+        setTimeout(() => {
+            initializeTransportadorMasks();
+            loadEstados();
+        }, 100);
     } else if (subject.value === 'outro') {
         messageGroup.style.display = 'block';
         submitOther.style.display = 'block';
@@ -308,10 +310,13 @@ function prevStep(type) {
     }
 }
 
-// MÁSCARA CEP COM BUSCA AUTOMÁTICA
+// MÁSCARA CEP COM BUSCA AUTOMÁTICA - VERSÃO CORRIGIDA
 function aplicarMascaraCEP(cepInput, tipo) {
     if (!cepInput) return;
-    
+    // Evita adicionar múltiplos listeners ao mesmo input
+    if (cepInput.dataset.cepAutoAttached) return;
+    cepInput.dataset.cepAutoAttached = '1';
+
     let ultimoValor = '';
     let timeoutId;
     
@@ -338,7 +343,7 @@ function aplicarMascaraCEP(cepInput, tipo) {
             timeoutId = setTimeout(() => {
                 ultimoValor = cepLimpo;
                 buscarCEP(cepInput, tipo);
-            }, 800); // Aumentei para 800ms para dar mais tempo
+            }, 800);
         }
     });
     
@@ -360,7 +365,7 @@ function aplicarMascaraCEP(cepInput, tipo) {
     });
 }
 
-// Função genérica para buscar CEP
+// Função genérica para buscar CEP - CORRIGIDA PARA PRODUÇÃO
 function buscarCEP(cepInput, tipo) {
     const cep = cepInput.value.replace(/\D/g, '');
     
@@ -368,6 +373,8 @@ function buscarCEP(cepInput, tipo) {
         alert('❌ CEP inválido! Digite 8 números.');
         return;
     }
+    
+    console.log(`Buscando CEP ${cep} para ${tipo}`);
     
     // Identifica qual tipo de formulário
     if (tipo === 'comprador') {
@@ -379,7 +386,99 @@ function buscarCEP(cepInput, tipo) {
     }
 }
 
-// Função para buscar CEP - COMPRADOR (atualizada para receber parâmetro)
+// FUNÇÃO DE BUSCA CEP UNIFICADA E CORRIGIDA
+async function buscarCEPGenerico(cepInput, tipo) {
+    const cep = cepInput.value.replace(/\D/g, '');
+    
+    if (cep.length !== 8) {
+        alert('❌ CEP inválido! Digite 8 números.');
+        return;
+    }
+    
+    const btnBuscar = cepInput.closest('.cep-container')?.querySelector('button');
+    let originalText = 'Buscar CEP';
+    if (btnBuscar) {
+        originalText = btnBuscar.textContent;
+        btnBuscar.textContent = 'Buscando...';
+        btnBuscar.disabled = true;
+        btnBuscar.classList.add('loading');
+    }
+    
+    try {
+        console.log(`Buscando CEP ${cep} para ${tipo}`);
+        
+        // Usando proxy CORS se necessário
+        const apiUrl = `https://viacep.com.br/ws/${cep}/json/`;
+        
+        const response = await fetch(apiUrl, {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Erro HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Resposta da API:', data);
+        
+        if (data.erro) {
+            alert('CEP não encontrado na base de dados!');
+            if (btnBuscar) {
+                btnBuscar.textContent = originalText;
+                btnBuscar.disabled = false;
+                btnBuscar.classList.remove('loading');
+                btnBuscar.classList.add('error');
+                setTimeout(() => btnBuscar.classList.remove('error'), 2000);
+            }
+            return;
+        }
+        
+        // Preencher campos baseado no tipo
+        if (tipo === 'comprador') {
+            document.getElementById('ruaComprador').value = data.logradouro || '';
+            document.getElementById('cidadeComprador').value = data.localidade || '';
+            document.getElementById('estadoComprador').value = data.uf || '';
+        } else if (tipo === 'vendedor') {
+            document.getElementById('ruaVendedor').value = data.logradouro || '';
+            document.getElementById('cidadeVendedor').value = data.localidade || '';
+            document.getElementById('estadoVendedor').value = data.uf || '';
+        } else if (tipo === 'transportador') {
+            document.getElementById('ruaTransportador').value = data.logradouro || '';
+            document.getElementById('cidadeTransportador').value = data.localidade || '';
+            document.getElementById('estadoTransportador').value = data.uf || '';
+        }
+        
+        if (btnBuscar) {
+            btnBuscar.textContent = '✓ Encontrado';
+            btnBuscar.classList.remove('loading');
+            btnBuscar.classList.add('success');
+            btnBuscar.disabled = false;
+            
+            setTimeout(() => {
+                btnBuscar.textContent = originalText;
+                btnBuscar.classList.remove('success');
+            }, 2000);
+        }
+        
+    } catch (error) {
+        console.error('Erro ao buscar CEP:', error);
+        alert('Erro na busca. Verifique sua conexão e tente novamente.');
+        
+        if (btnBuscar) {
+            btnBuscar.textContent = originalText;
+            btnBuscar.disabled = false;
+            btnBuscar.classList.remove('loading');
+            btnBuscar.classList.add('error');
+            setTimeout(() => btnBuscar.classList.remove('error'), 2000);
+        }
+    }
+}
+
+// Funções específicas atualizadas para usar a função genérica
 function buscarCEPComprador(cepInput = null) {
     const inputElement = cepInput || document.getElementById('cepComprador');
     if (!inputElement) {
@@ -387,70 +486,9 @@ function buscarCEPComprador(cepInput = null) {
         alert('Erro: campo CEP não encontrado');
         return;
     }
-    
-    const cep = inputElement.value.replace(/\D/g, '');
-    
-    if (cep.length !== 8) {
-        alert('❌ CEP inválido! Digite 8 números.');
-        return;
-    }
-    
-    const btnBuscar = inputElement.closest('.cep-container').querySelector('button');
-    let originalText = 'Buscar CEP';
-    if (btnBuscar) {
-        originalText = btnBuscar.textContent;
-        btnBuscar.textContent = 'Buscando...';
-        btnBuscar.disabled = true;
-        btnBuscar.classList.add('loading');
-    }
-        
-    fetch(`https://viacep.com.br/ws/${cep}/json/`)
-        .then(response => response.json())
-        .then(data => {
-            console.log('Resposta da API:', data);
-            
-            if (data.erro) {
-                alert('CEP não encontrado na base de dados!');
-                if (btnBuscar) {
-                    btnBuscar.textContent = originalText;
-                    btnBuscar.disabled = false;
-                    btnBuscar.classList.remove('loading');
-                    btnBuscar.classList.add('error');
-                    setTimeout(() => btnBuscar.classList.remove('error'), 2000);
-                }
-                return;
-            }
-            
-            document.getElementById('ruaComprador').value = data.logradouro || '';
-            document.getElementById('cidadeComprador').value = data.localidade || '';
-            document.getElementById('estadoComprador').value = data.uf || '';
-            
-            if (btnBuscar) {
-                btnBuscar.textContent = '✓ Encontrado';
-                btnBuscar.classList.remove('loading');
-                btnBuscar.classList.add('success');
-                btnBuscar.disabled = false;
-                
-                setTimeout(() => {
-                    btnBuscar.textContent = originalText;
-                    btnBuscar.classList.remove('success');
-                }, 2000);
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-            alert('Erro na busca. Verifique sua conexão.');
-            if (btnBuscar) {
-                btnBuscar.textContent = originalText;
-                btnBuscar.disabled = false;
-                btnBuscar.classList.remove('loading');
-                btnBuscar.classList.add('error');
-                setTimeout(() => btnBuscar.classList.remove('error'), 2000);
-            }
-        });
+    buscarCEPGenerico(inputElement, 'comprador');
 }
 
-// Função para buscar CEP - VENDEDOR (atualizada para receber parâmetro)
 function buscarCEPVendedor(cepInput = null) {
     const inputElement = cepInput || document.getElementById('cepVendedor');
     if (!inputElement) {
@@ -458,70 +496,9 @@ function buscarCEPVendedor(cepInput = null) {
         alert('Erro: campo CEP não encontrado');
         return;
     }
-    
-    const cep = inputElement.value.replace(/\D/g, '');
-    
-    if (cep.length !== 8) {
-        alert('❌ CEP inválido! Digite 8 números.');
-        return;
-    }
-    
-    const btnBuscar = inputElement.closest('.cep-container').querySelector('button');
-    let originalText = 'Buscar CEP';
-    if (btnBuscar) {
-        originalText = btnBuscar.textContent;
-        btnBuscar.textContent = 'Buscando...';
-        btnBuscar.disabled = true;
-        btnBuscar.classList.add('loading');
-    }
-        
-    fetch(`https://viacep.com.br/ws/${cep}/json/`)
-        .then(response => response.json())
-        .then(data => {
-            console.log('Resposta da API:', data);
-            
-            if (data.erro) {
-                alert('CEP não encontrado na base de dados!');
-                if (btnBuscar) {
-                    btnBuscar.textContent = originalText;
-                    btnBuscar.disabled = false;
-                    btnBuscar.classList.remove('loading');
-                    btnBuscar.classList.add('error');
-                    setTimeout(() => btnBuscar.classList.remove('error'), 2000);
-                }
-                return;
-            }
-            
-            document.getElementById('ruaVendedor').value = data.logradouro || '';
-            document.getElementById('cidadeVendedor').value = data.localidade || '';
-            document.getElementById('estadoVendedor').value = data.uf || '';
-            
-            if (btnBuscar) {
-                btnBuscar.textContent = '✓ Encontrado';
-                btnBuscar.classList.remove('loading');
-                btnBuscar.classList.add('success');
-                btnBuscar.disabled = false;
-                
-                setTimeout(() => {
-                    btnBuscar.textContent = originalText;
-                    btnBuscar.classList.remove('success');
-                }, 2000);
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-            alert('Erro na busca. Verifique sua conexão.');
-            if (btnBuscar) {
-                btnBuscar.textContent = originalText;
-                btnBuscar.disabled = false;
-                btnBuscar.classList.remove('loading');
-                btnBuscar.classList.add('error');
-                setTimeout(() => btnBuscar.classList.remove('error'), 2000);
-            }
-        });
+    buscarCEPGenerico(inputElement, 'vendedor');
 }
 
-// Função para buscar CEP - Transportador (atualizada para receber parâmetro)
 function buscarCEPTransportador(cepInput = null) {
     const inputElement = cepInput || document.getElementById('cepTransportador');
     if (!inputElement) {
@@ -529,71 +506,12 @@ function buscarCEPTransportador(cepInput = null) {
         alert('Erro: campo CEP não encontrado');
         return;
     }
-    
-    const cep = inputElement.value.replace(/\D/g, '');
-    
-    if (cep.length !== 8) {
-        alert('❌ CEP inválido! Digite 8 números.');
-        return;
-    }
-    
-    const btnBuscar = inputElement.closest('.cep-container').querySelector('button');
-    let originalText = 'Buscar CEP';
-    if (btnBuscar) {
-        originalText = btnBuscar.textContent;
-        btnBuscar.textContent = 'Buscando...';
-        btnBuscar.disabled = true;
-        btnBuscar.classList.add('loading');
-    }
-        
-    fetch(`https://viacep.com.br/ws/${cep}/json/`)
-        .then(response => response.json())
-        .then(data => {
-            console.log('Resposta da API:', data);
-            
-            if (data.erro) {
-                alert('CEP não encontrado na base de dados!');
-                if (btnBuscar) {
-                    btnBuscar.textContent = originalText;
-                    btnBuscar.disabled = false;
-                    btnBuscar.classList.remove('loading');
-                    btnBuscar.classList.add('error');
-                    setTimeout(() => btnBuscar.classList.remove('error'), 2000);
-                }
-                return;
-            }
-            
-            document.getElementById('ruaTransportador').value = data.logradouro || '';
-            document.getElementById('cidadeTransportador').value = data.localidade || '';
-            document.getElementById('estadoTransportador').value = data.uf || '';
-            
-            if (btnBuscar) {
-                btnBuscar.textContent = '✓ Encontrado';
-                btnBuscar.classList.remove('loading');
-                btnBuscar.classList.add('success');
-                btnBuscar.disabled = false;
-                
-                setTimeout(() => {
-                    btnBuscar.textContent = originalText;
-                    btnBuscar.classList.remove('success');
-                }, 2000);
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-            alert('Erro na busca. Verifique sua conexão.');
-            if (btnBuscar) {
-                btnBuscar.textContent = originalText;
-                btnBuscar.disabled = false;
-                btnBuscar.classList.remove('loading');
-                btnBuscar.classList.add('error');
-                setTimeout(() => btnBuscar.classList.remove('error'), 2000);
-            }
-        });
+    buscarCEPGenerico(inputElement, 'transportador');
 }
 
 // Funções para carregar estados e cidades
 function loadEstados() {
+    console.log('Carregando estados...');
     const estados = [
         "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", 
         "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", 
@@ -601,6 +519,11 @@ function loadEstados() {
     ];
     
     const estadoSelect = document.getElementById('estadoTransportador');
+    if (!estadoSelect) {
+        console.error('Elemento estadoTransportador não encontrado');
+        return;
+    }
+    
     estadoSelect.innerHTML = '<option value="">Selecione o estado...</option>';
     
     estados.forEach(estado => {
@@ -663,12 +586,16 @@ function aplicarMascaraTelefone(input) {
     }
 }
 
-// Funções de inicialização de máscaras
+// Funções de inicialização de máscaras - CORRIGIDAS
 function initializeCompradorMasks() {
+    console.log('Inicializando máscaras do comprador');
     aplicarMascaraTelefone(document.getElementById('telefone1Comprador'));
     aplicarMascaraTelefone(document.getElementById('telefone2Comprador'));
     
-    aplicarMascaraCEP(document.getElementById('cepComprador'), 'comprador');
+    const cepComprador = document.getElementById('cepComprador');
+    if (cepComprador) {
+        aplicarMascaraCEP(cepComprador, 'comprador');
+    }
 
     const cpfCnpjInput = document.getElementById('cpfCnpjComprador');
     if (cpfCnpjInput) {
@@ -704,10 +631,14 @@ function initializeCompradorMasks() {
 }
 
 function initializeVendedorMasks() {
+    console.log('Inicializando máscaras do vendedor');
     aplicarMascaraTelefone(document.getElementById('telefone1Vendedor'));
     aplicarMascaraTelefone(document.getElementById('telefone2Vendedor'));
 
-    aplicarMascaraCEP(document.getElementById('cepVendedor'), 'vendedor');
+    const cepVendedor = document.getElementById('cepVendedor');
+    if (cepVendedor) {
+        aplicarMascaraCEP(cepVendedor, 'vendedor');
+    }
 
     const cpfCnpjInput = document.getElementById('cpfCnpjVendedor');
     if (cpfCnpjInput) {
@@ -724,7 +655,26 @@ function initializeVendedorMasks() {
 }
 
 function initializeTransportadorMasks() {
-    aplicarMascaraTelefone(document.getElementById('telefoneTransportador'));
+    console.log('Inicializando máscaras do transportador');
+    
+    const telefoneInput = document.getElementById('telefoneTransportador');
+    if (telefoneInput) {
+        aplicarMascaraTelefone(telefoneInput);
+    }
+
+    // Procurar o input de CEP do transportador de forma resiliente (vários ambientes/IDs)
+    let cepTransportador = document.getElementById('cepTransportador') ||
+        document.querySelector('#transportadorFields input[id*="cep"]') ||
+        document.querySelector('#transportadorFields input[name*="cep"]') ||
+        document.querySelector('input[id*="transportador"][id*="cep"]') ||
+        document.querySelector('.cep-container input');
+
+    if (cepTransportador) {
+        aplicarMascaraCEP(cepTransportador, 'transportador');
+        console.log('Máscara e busca automática anexadas para CEP do transportador');
+    } else {
+        console.warn('Input de CEP do transportador não encontrado durante inicialização');
+    }
 
     const placaVeiculo = document.getElementById('placaVeiculo');
     if (placaVeiculo) {
@@ -746,13 +696,6 @@ function initializeTransportadorMasks() {
             
             e.target.value = value;
         });
-        
-        placaVeiculo.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                buscarPlacaVeiculo();
-            }
-        });
     }
 
     const numeroANTT = document.getElementById('numeroANTT');
@@ -764,7 +707,7 @@ function initializeTransportadorMasks() {
 }
 
 // ===============================================
-// FUNÇÃO PARA VERIFICAR EMAIL DUPLICADO (NOVA)
+// VERIFICAÇÃO DE EMAIL DUPLICADO
 // ===============================================
 
 async function verificarEmailDuplicado(email) {
@@ -773,7 +716,6 @@ async function verificarEmailDuplicado(email) {
     console.log('Verificando email:', email);
     
     try {
-        // Verificar se o email já está cadastrado antes do envio
         const response = await fetch('src/verificar_email.php', {
             method: 'POST',
             headers: {
@@ -784,20 +726,20 @@ async function verificarEmailDuplicado(email) {
         
         if (!response.ok) {
             console.warn('Erro na verificação de email:', response.status);
-            return false; // Se não conseguir verificar, permite continuar (o backend ainda validará)
+            return false;
         }
         
         const result = await response.json();
         console.log('Resposta da verificação de email:', result);
         
         if (result.success === false && result.message && result.message.includes('já está cadastrado')) {
-            return true; // Email duplicado encontrado
+            return true;
         }
         
-        return false; // Email não está duplicado
+        return false;
     } catch (error) {
         console.error('Erro ao verificar email duplicado:', error);
-        return false; // Em caso de erro, permite continuar (o backend validará)
+        return false;
     }
 }
 
@@ -849,7 +791,7 @@ async function submitForm(e) {
         return;
     }
     
-    // 3. VALIDAÇÃO DE EMAIL DUPLICADO (NOVO)
+    // 3. VALIDAÇÃO DE EMAIL DUPLICADO
     const email = document.getElementById('email').value;
     if (email) {
         console.log('Validando email duplicado...');
@@ -861,7 +803,6 @@ async function submitForm(e) {
         submitButton.style.opacity = '0.7';
         
         try {
-            // Verificar se o email já está cadastrado
             const emailDuplicado = await verificarEmailDuplicado(email);
             
             // Restaurar botão
@@ -877,11 +818,9 @@ async function submitForm(e) {
             }
         } catch (error) {
             console.error('Erro na validação de email:', error);
-            // Restaurar botão mesmo em caso de erro
             submitButton.textContent = originalText;
             submitButton.disabled = false;
             submitButton.style.opacity = '1';
-            // Continua o processo, pois o backend também validará
         }
     }
     
@@ -1000,7 +939,7 @@ async function submitForm(e) {
 }
 
 // =============================================== 
-// CARROSSEL (mantido igual)
+// CARROSSEL
 // ===============================================
 
 let anuncios = [];
@@ -1099,7 +1038,6 @@ function renderCarousel() {
 
         let imagemUrl = produto.imagem_url;
         
-        // Verificar se a imagem existe, caso contrário usar placeholder
         if (!imagemUrl || imagemUrl.trim() === '') {
             imagemUrl = 'img/placeholder.png';
         }
@@ -1250,14 +1188,62 @@ function verAnuncio(id) {
 }
 
 // ===============================================
-// INICIALIZAÇÃO E EVENT LISTENERS
+// INICIALIZAÇÃO E EVENT LISTENERS - CORRIGIDO
 // ===============================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Página carregada - inicializando carrossel...');
+    console.log('🚀 Página carregada - inicializando...');
     
+    // Configurar botões de envio
+    const submitOtherButton = document.getElementById('submitOther');
+    if (submitOtherButton) {
+        submitOtherButton.addEventListener('click', submitForm);
+    }
+    
+    document.querySelectorAll('.btn-ajax-submit').forEach(button => {
+        button.addEventListener('click', submitForm);
+    });
+    
+    // Configurar seleção de tipo de cadastro
+    const subject = document.getElementById('subject');
+    if (subject) {
+        subject.addEventListener('change', toggleAdditionalFields);
+        // Verificar se já tem um valor selecionado
+        if (subject.value) {
+            setTimeout(() => toggleAdditionalFields(), 100);
+        }
+    }
+
+    // Configurar estado do transportador
+    const estadoTransportador = document.getElementById('estadoTransportador');
+    if (estadoTransportador) {
+        estadoTransportador.addEventListener('change', function() {
+            if (this.value) {
+                loadCidades(this.value);
+            }
+        });
+    }
+
+    // Inicializar máscaras/CEP automaticamente para todos os formulários
+    // Isso garante que o CEP do transportador busque automaticamente mesmo em produção
+    try {
+        if (document.getElementById('cepComprador')) {
+            initializeCompradorMasks();
+        }
+        if (document.getElementById('cepVendedor')) {
+            initializeVendedorMasks();
+        }
+        if (document.getElementById('cepTransportador')) {
+            initializeTransportadorMasks();
+        }
+    } catch (err) {
+        console.warn('Erro ao inicializar máscaras automaticamente:', err);
+    }
+
+    // Carregar anúncios
     setTimeout(loadAnuncios, 500);
     
+    // Configurar carrossel
     window.addEventListener('resize', function() {
         updateSlidesToShow();
     });
@@ -1268,6 +1254,7 @@ document.addEventListener('DOMContentLoaded', function() {
         carousel.addEventListener('mouseleave', startAutoSlide);
     }
     
+    // Configurar eventos de toque para carrossel
     let startX = 0;
     let endX = 0;
     
@@ -1294,41 +1281,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-});
 
-// ===============================================
-// INICIALIZAÇÃO E LISTENERS
-// ===============================================
-
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Página carregada - script.js inicializado');
-    
-    const submitOtherButton = document.getElementById('submitOther');
-    if (submitOtherButton) {
-        submitOtherButton.addEventListener('click', submitForm);
-    }
-    
-    document.querySelectorAll('.btn-ajax-submit').forEach(button => {
-        button.addEventListener('click', submitForm);
-    });
-    
-    const subject = document.getElementById('subject');
-    if (subject) {
-        subject.addEventListener('change', toggleAdditionalFields);
-        if (subject.value === 'comprador' || subject.value === 'vendedor' || subject.value === 'transportador' || subject.value === 'outro') {
-            toggleAdditionalFields();
-        }
-    }
-
-    const estadoTransportador = document.getElementById('estadoTransportador');
-    if (estadoTransportador) {
-        estadoTransportador.addEventListener('change', function() {
-            if (this.value) {
-                loadCidades(this.value);
-            }
-        });
-    }
-
+    // Configurar modal de login
     const modal = document.getElementById('loginModal');
     const btnLogin = document.getElementById('openLoginModal'); 
     const span = document.getElementsByClassName('close')[0];
@@ -1336,13 +1290,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnLogin) {
         btnLogin.addEventListener('click', function(e) {
             e.preventDefault();
-            modal.style.display = 'block';
+            if (modal) modal.style.display = 'block';
         });
     }
 
     if (span) {
         span.onclick = function() {
-            modal.style.display = 'none';
+            if (modal) modal.style.display = 'none';
         }
     }
 
@@ -1352,6 +1306,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Configurar scroll suave
     document.querySelectorAll('.cta-button, .buy-btn, #accesbtn').forEach(button => {
         if (button.getAttribute('href') && button.getAttribute('href').startsWith('#')) {
             button.addEventListener('click', function(e) {
@@ -1367,6 +1322,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+
+    // DEBUG: Verificar se todos os elementos estão sendo encontrados
+    console.log('Elementos encontrados:');
+    console.log('- subject:', document.getElementById('subject'));
+    console.log('- cepTransportador:', document.getElementById('cepTransportador'));
+    console.log('- estadoTransportador:', document.getElementById('estadoTransportador'));
+    console.log('- botão buscar CEP transportador:', document.querySelector('#cepTransportador')?.closest('.cep-container')?.querySelector('button'));
 });
 
 // Função para verificar notificações não lidas
@@ -1395,3 +1357,16 @@ function verificarNotificacoes() {
 
 setInterval(verificarNotificacoes, 30000);
 document.addEventListener('DOMContentLoaded', verificarNotificacoes);
+
+// Expor funções para o HTML
+window.buscarCEPComprador = buscarCEPComprador;
+window.buscarCEPVendedor = buscarCEPVendedor;
+window.buscarCEPTransportador = buscarCEPTransportador;
+window.nextStep = nextStep;
+window.prevStep = prevStep;
+window.toggleAdditionalFields = toggleAdditionalFields;
+window.submitForm = submitForm;
+window.nextSlide = nextSlide;
+window.prevSlide = prevSlide;
+window.goToSlide = goToSlide;
+window.verAnuncio = verAnuncio;

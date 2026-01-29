@@ -283,10 +283,6 @@ try {
         margin-left: 0;
         margin-top: 10px;
     }
-
-    .conversa-actions {
-        
-    }
 }
 
 /* --- Ajustes para dispositivos móveis (até 480px) --- */
@@ -504,6 +500,7 @@ try {
                     <li class="nav-item"><a href="../index.php" class="nav-link">Home</a></li>
                     <li class="nav-item"><a href="comprador/dashboard.php" class="nav-link">Painel</a></li>
                     <li class="nav-item"><a href="comprador/perfil.php" class="nav-link">Meu Perfil</a></li>
+                    <li class="nav-item"><a href="comprador/chats.php" class="nav-link">Chats</a></li>
                     <li class="nav-item"><a href="logout.php" class="nav-link exit-button no-underline">Sair</a></li>
                 </ul>
             </div>

@@ -163,6 +163,29 @@ $opcoes_pagamento = [
     'pagamento_ato' => 'Pagamento no Ato',
     'pagamento_entrega' => 'Pagamento na Entrega'
 ];
+
+$usuario_assinou = false;
+if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
+    $sql_assinatura = "SELECT * FROM propostas_assinaturas 
+                      WHERE proposta_id = :proposta_id AND usuario_id = :usuario_id";
+    $stmt_assinatura = $conn->prepare($sql_assinatura);
+    $stmt_assinatura->bindParam(':proposta_id', $ultima_proposta['ID'], PDO::PARAM_INT);
+    $stmt_assinatura->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt_assinatura->execute();
+    $usuario_assinou = $stmt_assinatura->fetch(PDO::FETCH_ASSOC) !== false;
+}
+
+// Verificar se o outro usuário já assinou (se houver)
+$outro_usuario_assinou = false;
+if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
+    $sql_outro_assinatura = "SELECT * FROM propostas_assinaturas 
+                            WHERE proposta_id = :proposta_id AND usuario_id = :outro_usuario_id";
+    $stmt_outro_assinatura = $conn->prepare($sql_outro_assinatura);
+    $stmt_outro_assinatura->bindParam(':proposta_id', $ultima_proposta['ID'], PDO::PARAM_INT);
+    $stmt_outro_assinatura->bindParam(':outro_usuario_id', $outro_usuario_id, PDO::PARAM_INT);
+    $stmt_outro_assinatura->execute();
+    $outro_usuario_assinou = $stmt_outro_assinatura->fetch(PDO::FETCH_ASSOC) !== false;
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -299,9 +322,11 @@ if ($conversa_id) {
         
         // Mapeamento de status
         $status_texto = [
+            'assinando' => '📝 Assinando',
             'aceita' => '✅ Aceita',
             'negociacao' => '🔄 Em Negociação',
-            'recusada' => '❌ Recusada'
+            'recusada' => '❌ Recusada',
+            'cancelada' => '⏹️ Cancelada'
         ];
         
         $status_exibir = isset($status_texto[$ultima_proposta['status']]) ? 
@@ -331,7 +356,28 @@ if ($conversa_id) {
                              $ultima_proposta['opcao_frete'];
         
         // Data formatada
-        $data_formatada = date('d/m/Y H:i', strtotime($ultima_proposta['data_inicio']));
+        $data_formatada = date('d/m/Y H:i', strtotime($ultima_proposta['data_inicio'])); 
+        
+        $assinaturas_info = '';
+            if ($ultima_proposta['status'] === 'assinando') {
+                $sql_assinaturas = "SELECT u.nome, u.tipo, pa.data_assinatura 
+                                   FROM propostas_assinaturas pa
+                                   JOIN usuarios u ON pa.usuario_id = u.id
+                                   WHERE pa.proposta_id = :proposta_id";
+                $stmt_assinaturas = $conn->prepare($sql_assinaturas);
+                $stmt_assinaturas->bindParam(':proposta_id', $ultima_proposta['ID'], PDO::PARAM_INT);
+                $stmt_assinaturas->execute();
+                $assinaturas = $stmt_assinaturas->fetchAll(PDO::FETCH_ASSOC);
+                
+                $assinaturas_info = '<div class="assinaturas-info">';
+                foreach ($assinaturas as $assinatura) {
+                    $data = date('d/m/Y H:i', strtotime($assinatura['data_assinatura']));
+                    $assinaturas_info .= '<small><i class="fas fa-check-circle" style="color: #28a745;"></i> ' .
+                                       htmlspecialchars($assinatura['nome']) . 
+                                       ' (' . $assinatura['tipo'] . ') assinou em ' . $data . '</small><br>';
+                }
+                $assinaturas_info .= '</div>';
+            }
 ?>
 <div class="proposta-card" id="proposta-card">
     <div class="proposta-header">
@@ -380,8 +426,8 @@ if ($conversa_id) {
             <?php if ($eh_vendedor_produto) { ?>
                 <!-- Botões para vendedor -->
                 <button type="button" class="btn-accept-proposal" 
-                        onclick="responderProposta('aceitar', <?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
-                    <i class="fas fa-check"></i> Aceitar
+                        onclick="aceitarPropostaParaAssinatura(<?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
+                    <i class="fas fa-check"></i> Aceitar e Enviar para Assinatura
                 </button>
                 <button type="button" class="btn-reject-proposal" 
                         onclick="responderProposta('recusar', <?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
@@ -394,6 +440,21 @@ if ($conversa_id) {
                     <i class="fas fa-times"></i> Cancelar
                 </button>
             <?php } ?>
+        <?php } elseif ($ultima_proposta['status'] === 'assinando') { ?>
+            <?php if (!$usuario_assinou): ?>
+                <button type="button" class="btn-assinar-acordo" 
+                        onclick="abrirModalAssinatura(<?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
+                    <i class="fas fa-signature"></i> Assinar Acordo
+                </button>
+            <?php else: ?>
+                <div class="proposta-finalizada assinado">
+                    <i class="fas fa-check-circle" style="color: #28a745;"></i> Você já assinou este acordo
+                </div>
+            <?php endif; ?>
+        <?php } elseif ($ultima_proposta['status'] === 'cancelada') { ?>
+            <div class="proposta-finalizada cancelada">
+                <i class="fas fa-ban"></i> Proposta cancelada pelo comprador
+            </div>
         <?php } ?>
     </div>
     
@@ -401,7 +462,17 @@ if ($conversa_id) {
         <small>
             <i class="fas fa-info-circle"></i>
             <span id="proposta-footer-text">
-                Esta proposta foi <?php echo htmlspecialchars($ultima_proposta['status'] === 'negociacao' ? 'enviada' : $ultima_proposta['status']); ?>.
+                <?php 
+                if ($ultima_proposta['status'] === 'negociacao') {
+                    echo 'Esta proposta foi enviada.';
+                } elseif ($ultima_proposta['status'] === 'assinando') {
+                    echo 'Aguardando assinaturas para concluir o acordo.';
+                } elseif ($ultima_proposta['status'] === 'cancelada') {
+                    echo 'Esta proposta foi cancelada pelo comprador.';
+                } else {
+                    echo "Esta proposta foi {$ultima_proposta['status']}.";
+                }
+                ?>
             </span>
         </small>
     </div>
@@ -739,6 +810,44 @@ if ($conversa_id) {
                 <button type="button" class="btn-finalizar-negociacao" id="btn-finalizar-negociacao" style="display: none;">
                     <i class="fas fa-check"></i> Finalizar Negociação
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE ASSINATURA DIGITAL -->
+    <div class="modal-assinatura" id="modal-assinatura">
+        <div class="modal-assinatura-content">
+            <div class="modal-assinatura-header">
+                <h3>
+                    <i class="fas fa-signature"></i>
+                    Assinar Acordo
+                </h3>
+                <button class="btn-fechar-modal-assinatura" id="fechar-modal-assinatura">&times;</button>
+            </div>
+            
+            <div class="modal-assinatura-body">
+                <div class="assinatura-info">
+                    <p><strong>Proposta ID:</strong> <span id="assinatura-proposta-id"></span></p>
+                    <p><strong>Produto:</strong> <span id="assinatura-produto-nome"><?php echo htmlspecialchars($produto['nome']); ?></span></p>
+                    <p>Desenhe sua assinatura no quadro abaixo:</p>
+                </div>
+                
+                <div class="canvas-container">
+                    <canvas id="signature-canvas"></canvas>
+                </div>
+                
+                <div class="assinatura-status" id="assinatura-status">
+                    <!-- Será preenchido via JavaScript -->
+                </div>
+                
+                <div class="assinatura-botoes">
+                    <button type="button" class="btn-limpar-assinatura" id="limpar-assinatura">
+                        <i class="fas fa-eraser"></i> Limpar
+                    </button>
+                    <button type="button" class="btn-assinar" id="confirmar-assinatura">
+                        <i class="fas fa-check"></i> Confirmar Assinatura
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -1396,9 +1505,11 @@ let propostaFooterTextElement;
 
 // Mapeamentos
 const statusTextMap = {
+    'assinando': '📝 Assinando',
     'aceita': '✅ Aceita',
     'negociacao': '🔄 Em Negociação',
-    'recusada': '❌ Recusada'
+    'recusada': '❌ Recusada',
+    'cancelada': '⏹️ Cancelada'
 };
 
 const pagamentoTextMap = {
@@ -1474,7 +1585,15 @@ function atualizarProposta(proposta) {
     
     // 1. Atualizar status (sempre)
     if (propostaStatusElement) {
-        propostaStatusElement.textContent = statusTextMap[proposta.status] || proposta.status;
+        const statusTextMap = {
+            'aceita': '✅ Aceita',
+            'negociacao': '🔄 Em Negociação',
+            'recusada': '❌ Recusada',
+            'cancelada': '⏹️ Cancelada'
+        };
+        
+        const statusText = statusTextMap[proposta.status] || proposta.status;
+        propostaStatusElement.textContent = statusText;
         propostaStatusElement.className = 'proposta-status ' + proposta.status;
     }
     
@@ -1524,26 +1643,46 @@ function atualizarProposta(proposta) {
     
     // 4. Atualizar footer
     if (propostaFooterTextElement) {
-        propostaFooterTextElement.textContent = proposta.status === 'negociacao' 
-            ? 'Esta proposta foi enviada.' 
-            : `Esta proposta foi ${proposta.status}.`;
+        if (proposta.status === 'negociacao') {
+            propostaFooterTextElement.textContent = 'Esta proposta foi enviada.';
+        } else if (proposta.status === 'cancelada') {
+            propostaFooterTextElement.textContent = 'Esta proposta foi cancelada pelo comprador.';
+        } else {
+            propostaFooterTextElement.textContent = `Esta proposta foi ${proposta.status}.`;
+        }
     }
     
     // 5. Apenas atualizar botões se o status mudou PARA FORA DE 'negociacao'
-    if (statusMudou && (proposta.status === 'aceita' || proposta.status === 'recusada')) {
+    if (statusMudou && (proposta.status === 'aceita' || proposta.status === 'recusada' || proposta.status === 'cancelada')) {
         // Quando proposta é finalizada, substituir botões por mensagem
         if (propostaAcoesElement) {
             propostaAcoesElement.innerHTML = '';
             const mensagemFinal = document.createElement('div');
-            mensagemFinal.className = 'proposta-finalizada';
-            mensagemFinal.innerHTML = proposta.status === 'aceita' 
-                ? '✅ Proposta aceita' 
-                : '❌ Proposta recusada';
+            mensagemFinal.className = 'proposta-finalizada ' + proposta.status;
+            
+            if (proposta.status === 'aceita') {
+                mensagemFinal.innerHTML = '✅ Proposta aceita';
+            } else if (proposta.status === 'recusada') {
+                mensagemFinal.innerHTML = '❌ Proposta recusada';
+            } else if (proposta.status === 'cancelada') {
+                mensagemFinal.innerHTML = '<i class="fas fa-ban"></i> Proposta cancelada pelo comprador';
+            }
+            
             propostaAcoesElement.appendChild(mensagemFinal);
         }
     }
     
-    // 6. Atualizar variáveis globais
+    // 6. Adicionar/remover classe cancelada do card
+    const propostaCard = document.getElementById('proposta-card');
+    if (propostaCard) {
+        if (proposta.status === 'cancelada') {
+            propostaCard.classList.add('cancelada');
+        } else {
+            propostaCard.classList.remove('cancelada');
+        }
+    }
+    
+    // 7. Atualizar variáveis globais
     propostaAtualStatus = proposta.status;
     propostaAtualId = proposta.ID;
     propostaAtualDataAtualizacao = proposta.data_atualizacao;
@@ -1558,7 +1697,13 @@ function atualizarProposta(proposta) {
 }
 
 function responderProposta(acao, propostaId) {
-    if (!confirm(`Tem certeza que deseja ${acao === 'aceitar' ? 'aceitar' : 'recusar'} esta proposta?`)) {
+    if (acao === 'aceitar') {
+        // Usar a nova função para assinatura
+        aceitarPropostaParaAssinatura(propostaId);
+        return;
+    }
+    
+    if (!confirm(`Tem certeza que deseja ${acao === 'recusar' ? 'recusar' : 'aceitar'} esta proposta?`)) {
         return;
     }
 
@@ -1636,17 +1781,14 @@ function cancelarProposta(propostaId) {
             // Mostrar mensagem de sucesso
             mostrarNotificacao('Proposta cancelada com sucesso!', 'success');
             
-            // Remover o card da proposta após 1 segundo
-            setTimeout(() => {
-                const propostaCard = document.getElementById('proposta-card');
-                if (propostaCard) {
-                    propostaCard.style.opacity = '0.5';
-                    propostaCard.style.transition = 'opacity 0.5s ease';
-                    setTimeout(() => {
-                        propostaCard.remove();
-                    }, 500);
-                }
-            }, 1000);
+            // Atualizar o status da proposta para "cancelada"
+            // Em vez de remover o card, apenas atualizar o status
+            if (propostaAtualId === propostaId) {
+                // Atualizar o status localmente
+                propostaAtualStatus = 'cancelada';
+                // Chamar função para atualizar a UI
+                atualizarStatusProposta('cancelada');
+            }
         } else {
             alert('Erro: ' + data.error);
             botao.innerHTML = textoOriginal;
@@ -1667,14 +1809,15 @@ function atualizarStatusProposta(novoStatus) {
     const statusTextMap = {
         'aceita': '✅ Aceita',
         'negociacao': '🔄 Em Negociação',
-        'recusada': '❌ Recusada'
+        'recusada': '❌ Recusada',
+        'cancelada': '⏹️ Cancelada'
     };
     
     const statusText = statusTextMap[novoStatus] || novoStatus;
     propostaStatusElement.textContent = statusText;
     
     // Atualizar classes CSS
-    propostaStatusElement.classList.remove('aceita', 'negociacao', 'recusada');
+    propostaStatusElement.classList.remove('aceita', 'negociacao', 'recusada', 'cancelada');
     propostaStatusElement.classList.add(novoStatus);
     
     // Atualizar botões de ação
@@ -1682,10 +1825,25 @@ function atualizarStatusProposta(novoStatus) {
     
     // Atualizar texto do footer
     if (propostaFooterTextElement) {
-        propostaFooterTextElement.textContent = `Esta proposta foi ${novoStatus}.`;
+        if (novoStatus === 'negociacao') {
+            propostaFooterTextElement.textContent = 'Esta proposta foi enviada.';
+        } else if (novoStatus === 'cancelada') {
+            propostaFooterTextElement.textContent = 'Esta proposta foi cancelada pelo comprador.';
+        } else {
+            propostaFooterTextElement.textContent = `Esta proposta foi ${novoStatus}.`;
+        }
+    }
+    
+    // Adicionar classe ao card se for cancelada
+    const propostaCard = document.getElementById('proposta-card');
+    if (propostaCard) {
+        if (novoStatus === 'cancelada') {
+            propostaCard.classList.add('cancelada');
+        } else {
+            propostaCard.classList.remove('cancelada');
+        }
     }
 }
-
 // Atualizar botões de ação na UI
 function atualizarBotoesAcaoUI(status) {
     if (!propostaAcoesElement) return;
@@ -1698,8 +1856,16 @@ function atualizarBotoesAcaoUI(status) {
     // Não mostrar botões se a proposta já foi finalizada
     if (status !== 'negociacao') {
         const mensagemFinal = document.createElement('div');
-        mensagemFinal.className = 'proposta-finalizada';
-        mensagemFinal.textContent = status === 'aceita' ? '✅ Proposta aceita' : '❌ Proposta recusada';
+        mensagemFinal.className = `proposta-finalizada ${status}`;
+        
+        if (status === 'aceita') {
+            mensagemFinal.innerHTML = '✅ Proposta aceita';
+        } else if (status === 'recusada') {
+            mensagemFinal.innerHTML = '❌ Proposta recusada';
+        } else if (status === 'cancelada') {
+            mensagemFinal.innerHTML = '<i class="fas fa-ban"></i> Proposta cancelada pelo comprador';
+        }
+        
         propostaAcoesElement.appendChild(mensagemFinal);
     }
 }
@@ -1952,6 +2118,451 @@ document.addEventListener('keydown', (e) => {
 function substituirPorIcone(imgElement) {
     imgElement.style.display = 'none';
     imgElement.parentElement.innerHTML = '<i class="fas fa-user"></i>';
+}
+
+// ==================== LÓGICA DE ASSINATURA DIGITAL ====================
+
+// Variáveis para o canvas de assinatura
+let signatureCanvas;
+let signatureCtx;
+let isDrawing = false;
+let lastX = 0;
+let lastY = 0;
+let propostaParaAssinar = null;
+
+// Elementos do modal de assinatura
+const modalAssinatura = document.getElementById('modal-assinatura');
+const btnFecharAssinatura = document.getElementById('fechar-modal-assinatura');
+const btnLimparAssinatura = document.getElementById('limpar-assinatura');
+const btnConfirmarAssinatura = document.getElementById('confirmar-assinatura');
+const canvas = document.getElementById('signature-canvas');
+const assinaturaStatusDiv = document.getElementById('assinatura-status');
+
+// Inicializar canvas quando a página carregar
+document.addEventListener('DOMContentLoaded', function() {
+    if (canvas) {
+        signatureCanvas = canvas;
+        signatureCtx = canvas.getContext('2d');
+        inicializarCanvas(); // Chama a função que configura tudo
+    }
+
+    // Event listeners para o modal de assinatura
+    if (btnFecharAssinatura) {
+        btnFecharAssinatura.addEventListener('click', fecharModalAssinatura);
+    }
+    
+    if (btnLimparAssinatura) {
+        btnLimparAssinatura.addEventListener('click', limparAssinatura);
+    }
+    
+    if (btnConfirmarAssinatura) {
+        btnConfirmarAssinatura.addEventListener('click', confirmarAssinatura);
+    }
+    
+    // Fechar modal ao clicar fora
+    modalAssinatura.addEventListener('click', (e) => {
+        if (e.target === modalAssinatura) {
+            fecharModalAssinatura();
+        }
+    });
+    
+    // Fechar modal com ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modalAssinatura.classList.contains('active')) {
+            fecharModalAssinatura();
+        }
+    });
+});
+
+function inicializarCanvas() {
+    if (!canvas || !signatureCtx) return;
+    
+    // Configurar canvas inicialmente
+    ajustarCanvasParaDPI();
+    
+    // Limpar canvas
+    signatureCtx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Eventos do mouse
+    canvas.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isDrawing = true;
+        const pos = getMousePos(canvas, e);
+        [lastX, lastY] = [pos.x / (window.devicePixelRatio || 1), pos.y / (window.devicePixelRatio || 1)];
+    });
+    
+    canvas.addEventListener('mousemove', (e) => {
+        if (!isDrawing) return;
+        e.preventDefault();
+        const pos = getMousePos(canvas, e);
+        
+        signatureCtx.beginPath();
+        signatureCtx.moveTo(lastX, lastY);
+        signatureCtx.lineTo(pos.x / (window.devicePixelRatio || 1), pos.y / (window.devicePixelRatio || 1));
+        signatureCtx.stroke();
+        
+        [lastX, lastY] = [pos.x / (window.devicePixelRatio || 1), pos.y / (window.devicePixelRatio || 1)];
+    });
+    
+    canvas.addEventListener('mouseup', () => {
+        isDrawing = false;
+    });
+    
+    canvas.addEventListener('mouseout', () => {
+        isDrawing = false;
+    });
+    
+    // Touch events para dispositivos móveis
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        isDrawing = true;
+        const touch = e.touches[0];
+        const pos = getTouchPos(canvas, touch);
+        [lastX, lastY] = [pos.x / (window.devicePixelRatio || 1), pos.y / (window.devicePixelRatio || 1)];
+    });
+    
+    canvas.addEventListener('touchmove', (e) => {
+        if (!isDrawing) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        const pos = getTouchPos(canvas, touch);
+        
+        signatureCtx.beginPath();
+        signatureCtx.moveTo(lastX, lastY);
+        signatureCtx.lineTo(pos.x / (window.devicePixelRatio || 1), pos.y / (window.devicePixelRatio || 1));
+        signatureCtx.stroke();
+        
+        [lastX, lastY] = [pos.x / (window.devicePixelRatio || 1), pos.y / (window.devicePixelRatio || 1)];
+    });
+    
+    canvas.addEventListener('touchend', () => {
+        isDrawing = false;
+    });
+}
+
+// Função para obter posição do mouse
+function getMousePos(canvas, evt) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: evt.clientX - rect.left,
+        y: evt.clientY - rect.top
+    };
+}
+
+// Função para obter posição do touch
+function getTouchPos(canvas, touch) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
+    };
+}
+
+function getCoordenadas(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY,
+        preventDefault: () => e.preventDefault() // Adicionar método preventDefault
+    };
+}
+
+// Função auxiliar para obter coordenadas do touch
+function getCoordenadasTouch(touch) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    return {
+        x: (touch.clientX - rect.left) * scaleX,
+        y: (touch.clientY - rect.top) * scaleY,
+        preventDefault: () => {} // Método vazio para touch
+    };
+}
+
+function ajustarCanvasParaDPI() {
+    if (!canvas || !signatureCtx) return;
+    
+    const dpi = window.devicePixelRatio || 1;
+    const container = canvas.parentElement;
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
+    
+    // Definir dimensões físicas do canvas (considerando DPI)
+    canvas.width = containerWidth * dpi;
+    canvas.height = containerHeight * dpi;
+    
+    // Redefinir o contexto
+    signatureCtx = canvas.getContext('2d');
+    
+    // Aplicar escala DPI
+    signatureCtx.scale(dpi, dpi);
+    
+    // Definir dimensões CSS (em pixels de CSS)
+    canvas.style.width = containerWidth + 'px';
+    canvas.style.height = containerHeight + 'px';
+    
+    // Configurar estilo da linha
+    signatureCtx.lineWidth = 2;
+    signatureCtx.lineCap = 'round';
+    signatureCtx.lineJoin = 'round';
+    signatureCtx.strokeStyle = '#000000';
+}
+
+function iniciarDesenho(coords) {
+    isDrawing = true;
+    [lastX, lastY] = [coords.x, coords.y];
+}
+
+function desenhar(coords) {
+    if (!isDrawing) return;
+    
+    // Chamar preventDefault se existir
+    if (coords.preventDefault && typeof coords.preventDefault === 'function') {
+        coords.preventDefault();
+    }
+    
+    signatureCtx.beginPath();
+    signatureCtx.moveTo(lastX, lastY);
+    signatureCtx.lineTo(coords.x, coords.y);
+    signatureCtx.stroke();
+    
+    [lastX, lastY] = [coords.x, coords.y];
+}
+
+function pararDesenho() {
+    isDrawing = false;
+}
+
+function limparAssinatura() {
+    if (!canvas || !signatureCtx) return;
+    
+    // Obter dimensões considerando DPI
+    const dpi = window.devicePixelRatio || 1;
+    const container = canvas.parentElement;
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
+    
+    // Limpar toda a área do canvas
+    signatureCtx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Restaurar transformações e estilo
+    signatureCtx.setTransform(dpi, 0, 0, dpi, 0, 0);
+    signatureCtx.lineWidth = 2;
+    signatureCtx.lineCap = 'round';
+    signatureCtx.lineJoin = 'round';
+    signatureCtx.strokeStyle = '#000000';
+}
+
+function abrirModalAssinatura(propostaId) {
+    propostaParaAssinar = propostaId;
+    
+    // Atualizar ID da proposta no modal
+    document.getElementById('assinatura-proposta-id').textContent = propostaId;
+    
+    // Abrir modal primeiro para que as dimensões estejam disponíveis
+    modalAssinatura.classList.add('active');
+    
+    // Pequeno delay para garantir que o modal está renderizado
+    setTimeout(() => {
+        // Reinicializar canvas com as dimensões corretas
+        if (canvas && signatureCtx) {
+            ajustarCanvasParaDPI();
+            limparAssinatura();
+        }
+        
+        // Buscar informações das assinaturas
+        buscarInformacoesAssinaturas(propostaId);
+    }, 50);
+}
+function fecharModalAssinatura() {
+    modalAssinatura.classList.remove('active');
+    propostaParaAssinar = null;
+}
+
+function buscarInformacoesAssinaturas(propostaId) {
+    fetch(`buscar_assinaturas.php?proposta_id=${propostaId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                atualizarStatusAssinaturas(data.assinaturas, data.outro_usuario_nome);
+            }
+        })
+        .catch(err => console.error('Erro ao buscar assinaturas:', err));
+}
+
+function atualizarStatusAssinaturas(assinaturas, outroUsuarioNome) {
+    // Corrigir: remover a verificação da variável não definida
+    if (!assinaturaStatusDiv || !outroUsuarioNome) return;
+    
+    const usuarioAtualAssinou = assinaturas.some(a => a.usuario_id == usuarioId);
+    const outroUsuarioAssinou = assinaturas.some(a => a.usuario_id != usuarioId);
+    
+    let html = `
+        <div class="assinatura-item ${usuarioAtualAssinou ? 'assinada' : 'pendente'}">
+            <i class="fas fa-${usuarioAtualAssinou ? 'check-circle' : 'clock'}"></i>
+            <span>Você: ${usuarioAtualAssinou ? 'Assinou' : 'Pendente'}</span>
+        </div>
+        <div class="assinatura-item ${outroUsuarioAssinou ? 'assinada' : 'pendente'}">
+            <i class="fas fa-${outroUsuarioAssinou ? 'check-circle' : 'clock'}"></i>
+            <span>${outroUsuarioNome}: ${outroUsuarioAssinou ? 'Assinou' : 'Pendente'}</span>
+        </div>
+    `;
+    
+    assinaturaStatusDiv.innerHTML = html;
+}
+
+function confirmarAssinatura() {
+    if (!propostaParaAssinar) {
+        alert('Erro: Proposta não encontrada.');
+        return;
+    }
+    
+    // Verificação simples: verificar se houve algum desenho
+    // Pegando uma amostra de pixels
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.getImageData(canvas.width/2 - 50, canvas.height/2 - 25, 100, 50).data;
+    
+    let hasSignature = false;
+    for (let i = 0; i < imageData.length; i += 4) {
+        // Se encontrar algum pixel não branco (R, G, ou B diferente de 255)
+        // ou não totalmente transparente (A diferente de 0)
+        if (imageData[i] < 250 || imageData[i + 1] < 250 || imageData[i + 2] < 250 || imageData[i + 3] > 10) {
+            hasSignature = true;
+            break;
+        }
+    }
+    
+    if (!hasSignature) {
+        alert('Por favor, desenhe sua assinatura no quadro antes de confirmar.');
+        return;
+    }
+    
+    // Mostrar loading
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+    btn.disabled = true;
+    
+    // Converter para base64
+    const signatureData = canvas.toDataURL('image/png');
+    const base64Image = signatureData.split(',')[1];
+    
+    // Enviar para o servidor
+    fetch('salvar_assinatura.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            proposta_id: propostaParaAssinar,
+            assinatura_imagem: base64Image
+        })
+    })
+    .then(async response => {
+        const text = await response.text();
+        console.log('Resposta:', text);
+        
+        try {
+            const data = JSON.parse(text);
+            
+            if (data.success) {
+                // Sucesso
+                if (data.ambas_assinadas) {
+                    mostrarNotificacao('🎉 Acordo assinado por ambas as partes! Proposta aceita.', 'success');
+                } else {
+                    mostrarNotificacao('✅ Sua assinatura foi registrada! Aguarde a outra parte.', 'success');
+                }
+                
+                fecharModalAssinatura();
+                
+                // Pequeno delay para o usuário ver a mensagem
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+                
+            } else {
+                // Erro do servidor
+                throw new Error(data.error || 'Erro desconhecido');
+            }
+        } catch (e) {
+            if (text.includes('success') || text.includes('assinatura')) {
+                // Se parece ser um JSON mas não foi parseado corretamente
+                mostrarNotificacao('Assinatura salva!', 'success');
+                fecharModalAssinatura();
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                throw new Error('Resposta inválida do servidor: ' + text.substring(0, 50));
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        
+        // Verificar se foi um erro de rede ou de servidor
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            alert('Erro de conexão. Verifique sua internet e tente novamente.');
+        } else {
+            alert('Erro: ' + error.message);
+        }
+        
+        // Restaurar botão
+        const btn = document.getElementById('confirmar-assinatura');
+        if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    });
+}
+
+// Nova função para aceitar proposta e enviar para assinatura
+function aceitarPropostaParaAssinatura(propostaId) {
+    if (!confirm('Ao aceitar esta proposta, ela será enviada para assinatura digital de ambas as partes. Deseja continuar?')) {
+        return;
+    }
+
+    // Encontrar o botão clicado
+    const botao = event.target.closest('button');
+    const textoOriginal = botao.innerHTML;
+    botao.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+    botao.disabled = true;
+
+    // Enviar requisição para mudar status para 'assinando'
+    fetch('responder_proposta.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            acao: 'aceitar_para_assinatura',
+            proposta_id: propostaId
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            mostrarNotificacao('Proposta aceita! Aguarde as assinaturas para concluir.', 'success');
+            
+            // Recarregar a página para atualizar interface
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+            
+        } else {
+            alert('Erro: ' + data.error);
+            botao.innerHTML = textoOriginal;
+            botao.disabled = false;
+        }
+    })
+    .catch(err => {
+        console.error('Erro:', err);
+        alert('Erro de conexão. Tente novamente.');
+        botao.innerHTML = textoOriginal;
+        botao.disabled = false;
+    });
 }
     </script>
     <?php endif; ?>

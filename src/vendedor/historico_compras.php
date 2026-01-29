@@ -134,7 +134,7 @@ try {
     <br>
     <div class="main-content">
         <section class="header">
-            <center><h1>Histórico de Compras (como Comprador)</h1></center>
+            <center><h1>Histórico de Compras</h1></center>
         </section>
 
         <form id="periodForm" method="get" style="margin-bottom:12px;display:flex;align-items:center;gap:8px;">

@@ -68,19 +68,13 @@ try {
             if ($lk2) $transportador_sistema_id = (int)$lk2['id'];
         }
 
-        // Verificar se já existe entrega para este produto+comprador+transportador
-        if ($transportador_sistema_id !== null) {
-            $sql_check = "SELECT id FROM entregas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND transportador_id = :transportador_id AND status != 'cancelada' LIMIT 1";
-            $stmt_check = $conn->prepare($sql_check);
-            $stmt_check->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
-            $stmt_check->bindParam(':comprador_id', $row['comprador_id'], PDO::PARAM_INT);
-            $stmt_check->bindParam(':transportador_id', $transportador_sistema_id, PDO::PARAM_INT);
-            $stmt_check->execute();
-            $entrega_existente = $stmt_check->fetch(PDO::FETCH_ASSOC);
-            if ($entrega_existente) {
-                throw new Exception('Já existe uma entrega para esta proposta');
-            }
-        }
+        // Observação: removida verificação que impedía o mesmo transportador
+        // de aceitar múltiplas propostas para o mesmo produto/comprador.
+        // A lógica de criação de entregas já evita duplicatas por
+        // (produto_id, transportador_id, comprador_id) quando necessário
+        // em funções separadas. Se preferir manter algum bloqueio, podemos
+        // ajustar para checar por uma coluna de vínculo entre entrega e
+        // proposta_transportador (recomendado para rastreabilidade).
 
         // Atualizar status da proposta transportador
         $sql_up = "UPDATE propostas_transportadores SET status = 'aceita', data_resposta = NOW() WHERE id = :id";
@@ -88,8 +82,8 @@ try {
         $stmt_up->bindParam(':id', $pt_id, PDO::PARAM_INT);
         $stmt_up->execute();
 
-        // Atualizar proposta master com o id correto do transportador (tabela transportadores)
-        $sql_pm = "UPDATE propostas SET status = 'aceita', transportador_id = :transportador_id, data_atualizacao = NOW() WHERE ID = :pid";
+        // Atualizar proposta master apenas com o id do transportador (não alterar o status)
+        $sql_pm = "UPDATE propostas SET transportador_id = :transportador_id, data_atualizacao = NOW() WHERE ID = :pid";
         $stmt_pm = $conn->prepare($sql_pm);
         if ($transportador_sistema_id !== null) {
             $stmt_pm->bindValue(':transportador_id', $transportador_sistema_id, PDO::PARAM_INT);

@@ -445,6 +445,11 @@ body {
         width: 100px;
         height: 100px;
     }
+
+    .foto-overlay {
+        width: 100px;
+        height: 100px;
+    }
 }
 
 @media (max-width: 576px) {

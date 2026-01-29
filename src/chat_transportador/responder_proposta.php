@@ -82,12 +82,23 @@ try {
         $stmt_up->bindParam(':id', $pt_id, PDO::PARAM_INT);
         $stmt_up->execute();
 
-        // Atualizar proposta master apenas com o id do transportador (não alterar o status)
+        // Garantir que gravamos o id correto da tabela `transportadores` em `propostas.transportador_id`
+        // (usar o usuario logado como fonte de verdade). Isso evita inconsistências entre
+        // ids legacy/usuario_id e o id da tabela `transportadores`, e impede que o anúncio
+        // continue aparecendo em `disponiveis.php` após aceite.
+        $transportador_para_proposta = null;
+        $st_get_t = $conn->prepare("SELECT id FROM transportadores WHERE usuario_id = :uid LIMIT 1");
+        $st_get_t->bindParam(':uid', $usuario_id, PDO::PARAM_INT);
+        $st_get_t->execute();
+        $tres = $st_get_t->fetch(PDO::FETCH_ASSOC);
+        if ($tres) $transportador_para_proposta = (int)$tres['id'];
+
         $sql_pm = "UPDATE propostas SET transportador_id = :transportador_id, data_atualizacao = NOW() WHERE ID = :pid";
         $stmt_pm = $conn->prepare($sql_pm);
-        if ($transportador_sistema_id !== null) {
-            $stmt_pm->bindValue(':transportador_id', $transportador_sistema_id, PDO::PARAM_INT);
+        if ($transportador_para_proposta !== null) {
+            $stmt_pm->bindValue(':transportador_id', $transportador_para_proposta, PDO::PARAM_INT);
         } else {
+            // fallback: manter valor atual (não sobrescrever com NULL)
             $stmt_pm->bindValue(':transportador_id', null, PDO::PARAM_NULL);
         }
         $stmt_pm->bindParam(':pid', $row['proposta_id'], PDO::PARAM_INT);

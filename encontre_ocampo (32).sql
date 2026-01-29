@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 29/01/2026 às 19:27
+-- Tempo de geração: 29/01/2026 às 21:36
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -506,7 +506,7 @@ CREATE TABLE `propostas` (
   `opcao_frete` enum('vendedor','comprador','entregador') NOT NULL,
   `valor_frete` decimal(10,2) DEFAULT 0.00,
   `valor_total` decimal(10,2) DEFAULT NULL,
-  `status` enum('aceita','negociacao','recusada','cancelada') DEFAULT 'negociacao',
+  `status` enum('assinando','aceita','negociacao','recusada','cancelada') DEFAULT 'negociacao',
   `tipo_frete` enum('vendedor','comprador','plataforma') DEFAULT 'vendedor',
   `status_entrega` enum('pendente','aceita','coletado','transporte','entregue','cancelada') DEFAULT 'pendente',
   `data_entrega_estimada` date DEFAULT NULL,
@@ -528,6 +528,23 @@ INSERT INTO `propostas` (`ID`, `comprador_id`, `vendedor_id`, `produto_id`, `dat
 (69, 30, 33, 33, '2026-01-28 14:46:36', '2026-01-28 14:46:43', 5.00, 1, 'à vista', 'entregador', 100.00, 100.00, 'aceita', 'vendedor', 'pendente', '2026-01-30', 4, NULL, NULL, NULL, 0, 0),
 (70, 30, 32, 32, '2026-01-28 14:53:32', '2026-01-28 14:53:37', 10.00, 1, 'à vista', 'entregador', 111.00, 111.00, 'aceita', 'vendedor', 'pendente', '2026-01-29', 5, NULL, NULL, NULL, 0, 0),
 (71, 30, 32, 32, '2026-01-28 15:06:15', '2026-01-28 15:06:15', 10.00, 1, 'à vista', 'entregador', 0.00, 10.00, 'negociacao', 'vendedor', 'pendente', NULL, NULL, NULL, NULL, NULL, 0, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `propostas_assinaturas`
+--
+
+CREATE TABLE `propostas_assinaturas` (
+  `id` int(11) NOT NULL,
+  `proposta_id` int(11) NOT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `assinatura_hash` varchar(255) NOT NULL COMMENT 'Hash SHA256 da assinatura',
+  `assinatura_imagem` text DEFAULT NULL COMMENT 'Base64 da imagem da assinatura (opcional)',
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` text DEFAULT NULL,
+  `data_assinatura` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -917,6 +934,15 @@ ALTER TABLE `propostas`
   ADD KEY `transportador_id` (`transportador_id`);
 
 --
+-- Índices de tabela `propostas_assinaturas`
+--
+ALTER TABLE `propostas_assinaturas`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_assinatura` (`proposta_id`,`usuario_id`),
+  ADD KEY `proposta_id` (`proposta_id`),
+  ADD KEY `usuario_id` (`usuario_id`);
+
+--
 -- Índices de tabela `propostas_transportadores`
 --
 ALTER TABLE `propostas_transportadores`
@@ -1085,6 +1111,12 @@ ALTER TABLE `propostas`
   MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
 
 --
+-- AUTO_INCREMENT de tabela `propostas_assinaturas`
+--
+ALTER TABLE `propostas_assinaturas`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de tabela `propostas_transportadores`
 --
 ALTER TABLE `propostas_transportadores`
@@ -1240,6 +1272,13 @@ ALTER TABLE `propostas`
   ADD CONSTRAINT `propostas_ibfk_3` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `propostas_ibfk_4` FOREIGN KEY (`transportador_id`) REFERENCES `transportadores` (`id`),
   ADD CONSTRAINT `propostas_ibfk_5` FOREIGN KEY (`transportador_id`) REFERENCES `transportadores` (`id`);
+
+--
+-- Restrições para tabelas `propostas_assinaturas`
+--
+ALTER TABLE `propostas_assinaturas`
+  ADD CONSTRAINT `propostas_assinaturas_ibfk_1` FOREIGN KEY (`proposta_id`) REFERENCES `propostas` (`ID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `propostas_assinaturas_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
 -- Restrições para tabelas `propostas_transportadores`

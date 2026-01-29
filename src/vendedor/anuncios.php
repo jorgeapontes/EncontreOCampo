@@ -53,10 +53,18 @@ $anuncios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 foreach ($anuncios as &$a) {
     // Lógica de estoque visual
     $modo = $a['modo_precificacao'] ?? 'por_quilo';
-    if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
-        $a['quantidade_disponivel'] = $a['estoque_unidades'] ?? 0;
+    $estoque_unidades = isset($a['estoque_unidades']) ? $a['estoque_unidades'] : null;
+    $estoque_kg = isset($a['estoque']) ? $a['estoque'] : null;
+
+    if ($estoque_unidades !== null && $estoque_kg !== null) {
+        // Ambos os estoques existem: usar o menor valor para evitar inconsistência visual
+        $a['quantidade_disponivel'] = min((float)$estoque_kg, (float)$estoque_unidades);
     } else {
-        $a['quantidade_disponivel'] = $a['estoque'] ?? 0;
+        if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
+            $a['quantidade_disponivel'] = $estoque_unidades ?? ($estoque_kg ?? 0);
+        } else {
+            $a['quantidade_disponivel'] = $estoque_kg ?? ($estoque_unidades ?? 0);
+        }
     }
 
     // Lógica de unidade de medida

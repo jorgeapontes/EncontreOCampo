@@ -79,10 +79,17 @@ try {
 
 // Ajustar campos de exibição conforme modo de precificação
 $modo = $anuncio['modo_precificacao'] ?? 'por_quilo';
-if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
-    $anuncio['quantidade_disponivel'] = $anuncio['estoque_unidades'] ?? 0;
+$estoque_unidades = isset($anuncio['estoque_unidades']) ? $anuncio['estoque_unidades'] : null;
+$estoque_kg = isset($anuncio['estoque_kg']) ? $anuncio['estoque_kg'] : null;
+
+if ($estoque_unidades !== null && $estoque_kg !== null) {
+    $anuncio['quantidade_disponivel'] = min((float)$estoque_kg, (float)$estoque_unidades);
 } else {
-    $anuncio['quantidade_disponivel'] = $anuncio['estoque_kg'] ?? 0;
+    if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
+        $anuncio['quantidade_disponivel'] = $estoque_unidades ?? ($estoque_kg ?? 0);
+    } else {
+        $anuncio['quantidade_disponivel'] = $estoque_kg ?? ($estoque_unidades ?? 0);
+    }
 }
 switch ($modo) {
     case 'por_unidade': $anuncio['unidade_medida'] = 'unidade'; break;

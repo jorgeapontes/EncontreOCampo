@@ -538,6 +538,7 @@ if (isset($_SESSION['usuario_id'])) {
             </div>
             <?php
             // Buscar acordos de compra com tipo_frete = 'plataforma' e status = 'aceita' e sem transportador definido
+            // E que NÃO TENHAM uma proposta de transporte ACEITA
             $sql_acordos = "SELECT p.ID as proposta_id, p.*, 
                 (SELECT nome_comercial FROM compradores WHERE id = p.comprador_id) as comprador_nome,
                 (SELECT cep FROM compradores WHERE id = p.comprador_id) as comprador_cep,
@@ -552,13 +553,11 @@ if (isset($_SESSION['usuario_id'])) {
                 (SELECT cidade FROM vendedores WHERE id = p.vendedor_id) as vendedor_cidade,
                 (SELECT estado FROM vendedores WHERE id = p.vendedor_id) as vendedor_estado,
                 pr.nome as produto_nome, pr.imagem_url as produto_imagem, p.quantidade_proposta as quantidade
-                                FROM propostas p
+                FROM propostas p
                 INNER JOIN produtos pr ON p.produto_id = pr.id
-                                WHERE p.opcao_frete = 'entregador' AND p.status = 'aceita' AND COALESCE(p.transportador_id, 0) = 0
-                                                    -- Removida a verificação que impedia múltiplos transportadores aceitarem
-                                                    -- o mesmo produto/comprador. A criação de entregas já valida duplicatas
-                                                    -- por (produto_id, transportador_id, comprador_id) em criar_entrega_apos_aceite.php.
-                                                    ";
+                WHERE p.opcao_frete = 'entregador' 
+                AND p.status = 'aceita' 
+                AND p.frete_resolvido = 0";
 
             // aplicar filtros de estado (origem = vendedor, destino = comprador)
             if (!empty($filtro_estado_origem)) {

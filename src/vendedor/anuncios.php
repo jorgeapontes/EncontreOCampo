@@ -94,60 +94,6 @@ try {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-    
-    <style>
-        /* Estilos Visuais para Bloqueio */
-        .locked-row {
-            background-color: #f1f2f6;
-            opacity: 0.7;
-        }
-        .locked-row td {
-            color: #636e72;
-        }
-        .locked-row img {
-            filter: grayscale(100%);
-            opacity: 0.6;
-        }
-        .locked-badge {
-            background-color: #2d3436;
-            color: #fab1a0;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.75em;
-            font-weight: bold;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            text-transform: uppercase;
-        }
-        .limit-alert {
-            background-color: #fff3cd;
-            color: #856404;
-            padding: 15px;
-            margin: 20px auto;
-            max-width: 800px;
-            border: 1px solid #ffeeba;
-            border-radius: 8px;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        .limit-alert a {
-            color: #856404;
-            text-decoration: underline;
-            font-weight: bold;
-        }
-        
-        /* Ajuste responsivo */
-        @media (max-width: 768px) {
-            .limit-alert {
-                flex-direction: column;
-                text-align: center;
-            }
-        }
-    </style>
 </head>
 <body>
     <nav class="navbar">

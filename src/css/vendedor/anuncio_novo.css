@@ -378,19 +378,19 @@ body {
     .hamburger {
         display: block;
     }
-    
+
     .hamburger.active .bar:nth-child(2) {
         opacity: 0;
     }
-    
+
     .hamburger.active .bar:nth-child(1) {
         transform: translateY(8px) rotate(45deg);
     }
-    
+
     .hamburger.active .bar:nth-child(3) {
         transform: translateY(-8px) rotate(-45deg);
     }
-    
+
     .nav-menu {
         position: fixed;
         left: -100%;
@@ -404,11 +404,11 @@ body {
         box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
         padding: 20px 0;
     }
-    
+
     .nav-menu.active {
         left: 0;
     }
-    
+
     .nav-item {
         margin: 16px 0;
     }
@@ -416,14 +416,14 @@ body {
     .top-info {
         flex-direction: column;
     }
-    
+
     .foto-produto-display img,
     .default-image,
     .foto-overlay {
         width: 100%;
         max-width: 300px;
     }
-    
+
     .form-group-row {
         flex-direction: column;
         gap: 0;
@@ -434,7 +434,7 @@ body {
     .main-content {
         padding: 15px;
     }
-    
+
     .header h1 {
         font-size: 1.8rem;
     }
@@ -617,8 +617,13 @@ body {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Estilos para novas imagens */
@@ -633,6 +638,7 @@ body {
 
 /* ===== RESPONSIVO PARA TELAS 480px ===== */
 @media (max-width: 480px) {
+
     /* Ajustes gerais */
     .main-content {
         padding: 10px;
@@ -693,7 +699,7 @@ body {
         align-items: center;
         justify-content: center;
         font-size: 1.2rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         cursor: pointer;
     }
 
@@ -726,7 +732,8 @@ body {
     .default-image {
         width: 100% !important;
         max-width: 100% !important;
-        height: 200px !important; /* Reduzido de 300px para 200px */
+        height: 200px !important;
+        /* Reduzido de 300px para 200px */
         aspect-ratio: 4/3 !important;
         margin: 0 auto;
     }
@@ -779,7 +786,8 @@ body {
     .form-group select,
     .form-group textarea {
         padding: 10px 12px;
-        font-size: 16px; /* Previne zoom no iOS */
+        font-size: 16px;
+        /* Previne zoom no iOS */
     }
 
     /* Galeria de imagens */
@@ -875,6 +883,7 @@ body {
 
 /* Ajustes para telas ainda menores */
 @media (max-width: 360px) {
+
     .foto-produto-display,
     .foto-overlay,
     .default-image {
@@ -908,5 +917,135 @@ body {
 
 /* Botão flutuante de voltar (será adicionado via JavaScript) */
 .floating-back-button {
+    display: none;
+}
+
+/* CSS FIXES */
+.foto-produto-display {
+    width: 100%;
+    height: 300px;
+    /* Altura fixa */
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ddd;
+}
+
+.foto-produto-display img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Garante que a imagem preencha sem distorcer */
+    display: block;
+}
+
+.galeria-imagens {
+    margin-top: 20px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    background: #f9f9f9;
+}
+
+.imagens-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.imagem-item {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #ddd;
+    cursor: grab;
+    background: #fff;
+}
+
+.imagem-item.dragging {
+    opacity: 0.5;
+    border-color: #4CAF50;
+}
+
+.imagem-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    /* Importante para drag n drop */
+}
+
+.btn-acao {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: 0.2s;
+}
+
+.btn-acao.principal {
+    top: 5px;
+    right: 40px;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.btn-acao.principal.active {
+    background: #FFD700;
+    color: #000;
+}
+
+.btn-acao.remover {
+    top: 5px;
+    right: 5px;
+    background: rgba(220, 53, 69, 0.8);
+}
+
+.loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.spinner {
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #4CAF50;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Estilos para o campo status (oculto) */
+.status-hidden-field {
     display: none;
 }

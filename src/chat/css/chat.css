@@ -20,6 +20,11 @@ body {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
+/* Impedir que conteúdo interno force scroll horizontal da página */
+html, body {
+    overflow-x: hidden;
+}
+
 .chat-sidebar {
     position: relative;
     height: 100vh;
@@ -147,6 +152,11 @@ body {
     background: #ffffff;
 }
 
+/* Permitir que o flex item encolha corretamente e não force overflow */
+.chat-area {
+    min-width: 0;
+}
+
 .chat-header {
     height: 80px;
     padding: 0 24px;
@@ -212,6 +222,7 @@ body {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
+    overflow-x: hidden;
     background: #f0f2f5;
     display: flex;
     flex-direction: column;
@@ -235,7 +246,11 @@ body {
     max-width: 70%;
     padding: 10px 14px;
     border-radius: 18px;
+    /* Quebra linhas longas e evita overflow horizontal */
+    overflow-wrap: anywhere;
     word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
     animation: fadeIn 0.3s ease;
     font-size: 15px;
     line-height: 1.4;
@@ -336,6 +351,11 @@ body {
     transition: border 0.2s;
     font-family: 'Inter', sans-serif;
     background: #f0f2f5;
+}
+
+/* Allow input to shrink inside flex without causing overflow */
+.chat-input input[type="text"] {
+    min-width: 0;
 }
 
 .chat-input input[type="text"]:focus {

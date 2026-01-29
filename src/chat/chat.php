@@ -427,7 +427,7 @@ if ($conversa_id) {
                 <!-- Botões para vendedor -->
                 <button type="button" class="btn-accept-proposal" 
                         onclick="aceitarPropostaParaAssinatura(<?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
-                    <i class="fas fa-check"></i> Aceitar e Enviar para Assinatura
+                    <i class="fas fa-check"></i> Aceitar
                 </button>
                 <button type="button" class="btn-reject-proposal" 
                         onclick="responderProposta('recusar', <?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
@@ -1377,65 +1377,64 @@ if ($conversa_id) {
         }
         
         // No arquivo chat.php, dentro do script, atualize a função enviarNegociacao:
-        function enviarNegociacao(dados) {
-            // Mostrar loading
-            btnFinalizarNegociacao.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
-            btnFinalizarNegociacao.disabled = true;
+function enviarNegociacao(dados) {
+    // Mostrar loading
+    btnFinalizarNegociacao.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+    btnFinalizarNegociacao.disabled = true;
+    
+    // Adicionar dados adicionais necessários
+    dados.total = calcularTotal();
+    dados.valor_frete = valorFreteInput.value || '0';
+    
+    // Enviar para o servidor
+    fetch('salvar_negociacao.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dados)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Enviar mensagem automática no chat com os detalhes da negociação
+            const mensagemNegociacao = `*NOVA PROPOSTA DE COMPRA*\n\n` +
+                `**Produto:** ${document.querySelector('.produto-info-modal h4').textContent}\n` +
+                `**Quantidade:** ${dados.quantidade} unidades\n` +
+                `**Valor unitário:** R$ ${parseFloat(dados.valor_unitario).toFixed(2).replace('.', ',')}\n` +
+                `**Forma de pagamento:** ${dados.forma_pagamento === 'pagamento_ato' ? 'Pagamento no Ato' : 'Pagamento na Entrega'}\n` +
+                `**Opção de frete:** ${obterDescricaoFrete(dados.opcao_frete)}\n` +
+                `**Valor do frete:** R$ ${parseFloat(dados.valor_frete).toFixed(2).replace('.', ',')}\n` +
+                `**Valor total:** R$ ${parseFloat(dados.total).toFixed(2).replace('.', ',')}\n\n` +
+                `**ID da proposta:** ${data.proposta_id}`;
             
-            // Adicionar dados adicionais necessários
-            dados.total = calcularTotal();
-            dados.valor_frete = valorFreteInput.value || '0';
-            
-            // Enviar para o servidor
-            fetch('salvar_negociacao.php', {
+            // Enviar como mensagem no chat
+            return fetch('send_message.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(dados)
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    // Enviar mensagem automática no chat com os detalhes da negociação
-                    const mensagemNegociacao = `*NOVA PROPOSTA DE COMPRA*\n\n` +
-                        `**Produto:** ${document.querySelector('.produto-info-modal h4').textContent}\n` +
-                        `**Quantidade:** ${dados.quantidade} unidades\n` +
-                        `**Valor unitário:** R$ ${parseFloat(dados.valor_unitario).toFixed(2).replace('.', ',')}\n` +
-                        `**Forma de pagamento:** ${dados.forma_pagamento === 'pagamento_ato' ? 'Pagamento no Ato' : 'Pagamento na Entrega'}\n` +
-                        `**Opção de frete:** ${obterDescricaoFrete(dados.opcao_frete)}\n` +
-                        `**Valor do frete:** R$ ${parseFloat(dados.valor_frete).toFixed(2).replace('.', ',')}\n` +
-                        `**Valor total:** R$ ${parseFloat(dados.total).toFixed(2).replace('.', ',')}\n\n` +
-                        `**ID da proposta:** ${data.proposta_id}`;
-                    
-                    // Enviar como mensagem no chat
-                    return fetch('send_message.php', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                        body: `conversa_id=${conversaId}&mensagem=${encodeURIComponent(mensagemNegociacao)}`
-                    }).then(() => {
-                        alert('✅ Proposta enviada com sucesso!');
-                        modalNegociacao.classList.remove('active');
-                        resetarFormulario();
-                        
-                        // Recarregar mensagens para mostrar a nova proposta
-                        setTimeout(() => carregarMensagens(), 1000);
-                    });
-                    
-                } else {
-                    alert('❌ Erro ao enviar proposta: ' + (data.error || 'Erro desconhecido'));
-                }
-            })
-            .catch(err => {
-                console.error('Erro:', err);
-                alert('❌ Erro de conexão ao enviar proposta.');
-            })
-            .finally(() => {
-                btnFinalizarNegociacao.innerHTML = '<i class="fas fa-check"></i> Finalizar Negociação';
-                btnFinalizarNegociacao.disabled = false;
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `conversa_id=${conversaId}&mensagem=${encodeURIComponent(mensagemNegociacao)}`
+            }).then(() => {
+                alert('✅ Proposta enviada com sucesso!');
+                modalNegociacao.classList.remove('active');
+                resetarFormulario();
+                
+                // Recarregar mensagens para mostrar a nova proposta
+                setTimeout(() => carregarMensagens(), 1000);
             });
+            
+        } else {
+            alert('❌ Erro ao enviar proposta: ' + (data.error || 'Erro desconhecido'));
         }
-
+    })
+    .catch(err => {
+        console.error('Erro:', err);
+        alert('❌ Erro de conexão ao enviar proposta.');
+    })
+    .finally(() => {
+        btnFinalizarNegociacao.innerHTML = '<i class="fas fa-check"></i> Finalizar Negociação';
+        btnFinalizarNegociacao.disabled = false;
+    });
+}
         
         function obterDescricaoFrete(opcao) {
             switch(opcao) {

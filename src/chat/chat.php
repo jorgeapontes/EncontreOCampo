@@ -301,7 +301,8 @@ if ($conversa_id) {
         $status_texto = [
             'aceita' => '✅ Aceita',
             'negociacao' => '🔄 Em Negociação',
-            'recusada' => '❌ Recusada'
+            'recusada' => '❌ Recusada',
+            'cancelada' => '⏹️ Cancelada'
         ];
         
         $status_exibir = isset($status_texto[$ultima_proposta['status']]) ? 
@@ -1398,7 +1399,8 @@ let propostaFooterTextElement;
 const statusTextMap = {
     'aceita': '✅ Aceita',
     'negociacao': '🔄 Em Negociação',
-    'recusada': '❌ Recusada'
+    'recusada': '❌ Recusada',
+    'cancelada': '⏹️ Cancelada'
 };
 
 const pagamentoTextMap = {
@@ -1474,7 +1476,15 @@ function atualizarProposta(proposta) {
     
     // 1. Atualizar status (sempre)
     if (propostaStatusElement) {
-        propostaStatusElement.textContent = statusTextMap[proposta.status] || proposta.status;
+        const statusTextMap = {
+            'aceita': '✅ Aceita',
+            'negociacao': '🔄 Em Negociação',
+            'recusada': '❌ Recusada',
+            'cancelada': '⏹️ Cancelada'
+        };
+        
+        const statusText = statusTextMap[proposta.status] || proposta.status;
+        propostaStatusElement.textContent = statusText;
         propostaStatusElement.className = 'proposta-status ' + proposta.status;
     }
     
@@ -1524,26 +1534,46 @@ function atualizarProposta(proposta) {
     
     // 4. Atualizar footer
     if (propostaFooterTextElement) {
-        propostaFooterTextElement.textContent = proposta.status === 'negociacao' 
-            ? 'Esta proposta foi enviada.' 
-            : `Esta proposta foi ${proposta.status}.`;
+        if (proposta.status === 'negociacao') {
+            propostaFooterTextElement.textContent = 'Esta proposta foi enviada.';
+        } else if (proposta.status === 'cancelada') {
+            propostaFooterTextElement.textContent = 'Esta proposta foi cancelada pelo comprador.';
+        } else {
+            propostaFooterTextElement.textContent = `Esta proposta foi ${proposta.status}.`;
+        }
     }
     
     // 5. Apenas atualizar botões se o status mudou PARA FORA DE 'negociacao'
-    if (statusMudou && (proposta.status === 'aceita' || proposta.status === 'recusada')) {
+    if (statusMudou && (proposta.status === 'aceita' || proposta.status === 'recusada' || proposta.status === 'cancelada')) {
         // Quando proposta é finalizada, substituir botões por mensagem
         if (propostaAcoesElement) {
             propostaAcoesElement.innerHTML = '';
             const mensagemFinal = document.createElement('div');
-            mensagemFinal.className = 'proposta-finalizada';
-            mensagemFinal.innerHTML = proposta.status === 'aceita' 
-                ? '✅ Proposta aceita' 
-                : '❌ Proposta recusada';
+            mensagemFinal.className = 'proposta-finalizada ' + proposta.status;
+            
+            if (proposta.status === 'aceita') {
+                mensagemFinal.innerHTML = '✅ Proposta aceita';
+            } else if (proposta.status === 'recusada') {
+                mensagemFinal.innerHTML = '❌ Proposta recusada';
+            } else if (proposta.status === 'cancelada') {
+                mensagemFinal.innerHTML = '<i class="fas fa-ban"></i> Proposta cancelada pelo comprador';
+            }
+            
             propostaAcoesElement.appendChild(mensagemFinal);
         }
     }
     
-    // 6. Atualizar variáveis globais
+    // 6. Adicionar/remover classe cancelada do card
+    const propostaCard = document.getElementById('proposta-card');
+    if (propostaCard) {
+        if (proposta.status === 'cancelada') {
+            propostaCard.classList.add('cancelada');
+        } else {
+            propostaCard.classList.remove('cancelada');
+        }
+    }
+    
+    // 7. Atualizar variáveis globais
     propostaAtualStatus = proposta.status;
     propostaAtualId = proposta.ID;
     propostaAtualDataAtualizacao = proposta.data_atualizacao;
@@ -1636,17 +1666,14 @@ function cancelarProposta(propostaId) {
             // Mostrar mensagem de sucesso
             mostrarNotificacao('Proposta cancelada com sucesso!', 'success');
             
-            // Remover o card da proposta após 1 segundo
-            setTimeout(() => {
-                const propostaCard = document.getElementById('proposta-card');
-                if (propostaCard) {
-                    propostaCard.style.opacity = '0.5';
-                    propostaCard.style.transition = 'opacity 0.5s ease';
-                    setTimeout(() => {
-                        propostaCard.remove();
-                    }, 500);
-                }
-            }, 1000);
+            // Atualizar o status da proposta para "cancelada"
+            // Em vez de remover o card, apenas atualizar o status
+            if (propostaAtualId === propostaId) {
+                // Atualizar o status localmente
+                propostaAtualStatus = 'cancelada';
+                // Chamar função para atualizar a UI
+                atualizarStatusProposta('cancelada');
+            }
         } else {
             alert('Erro: ' + data.error);
             botao.innerHTML = textoOriginal;
@@ -1667,14 +1694,15 @@ function atualizarStatusProposta(novoStatus) {
     const statusTextMap = {
         'aceita': '✅ Aceita',
         'negociacao': '🔄 Em Negociação',
-        'recusada': '❌ Recusada'
+        'recusada': '❌ Recusada',
+        'cancelada': '⏹️ Cancelada'
     };
     
     const statusText = statusTextMap[novoStatus] || novoStatus;
     propostaStatusElement.textContent = statusText;
     
     // Atualizar classes CSS
-    propostaStatusElement.classList.remove('aceita', 'negociacao', 'recusada');
+    propostaStatusElement.classList.remove('aceita', 'negociacao', 'recusada', 'cancelada');
     propostaStatusElement.classList.add(novoStatus);
     
     // Atualizar botões de ação
@@ -1682,10 +1710,25 @@ function atualizarStatusProposta(novoStatus) {
     
     // Atualizar texto do footer
     if (propostaFooterTextElement) {
-        propostaFooterTextElement.textContent = `Esta proposta foi ${novoStatus}.`;
+        if (novoStatus === 'negociacao') {
+            propostaFooterTextElement.textContent = 'Esta proposta foi enviada.';
+        } else if (novoStatus === 'cancelada') {
+            propostaFooterTextElement.textContent = 'Esta proposta foi cancelada pelo comprador.';
+        } else {
+            propostaFooterTextElement.textContent = `Esta proposta foi ${novoStatus}.`;
+        }
+    }
+    
+    // Adicionar classe ao card se for cancelada
+    const propostaCard = document.getElementById('proposta-card');
+    if (propostaCard) {
+        if (novoStatus === 'cancelada') {
+            propostaCard.classList.add('cancelada');
+        } else {
+            propostaCard.classList.remove('cancelada');
+        }
     }
 }
-
 // Atualizar botões de ação na UI
 function atualizarBotoesAcaoUI(status) {
     if (!propostaAcoesElement) return;
@@ -1698,8 +1741,16 @@ function atualizarBotoesAcaoUI(status) {
     // Não mostrar botões se a proposta já foi finalizada
     if (status !== 'negociacao') {
         const mensagemFinal = document.createElement('div');
-        mensagemFinal.className = 'proposta-finalizada';
-        mensagemFinal.textContent = status === 'aceita' ? '✅ Proposta aceita' : '❌ Proposta recusada';
+        mensagemFinal.className = `proposta-finalizada ${status}`;
+        
+        if (status === 'aceita') {
+            mensagemFinal.innerHTML = '✅ Proposta aceita';
+        } else if (status === 'recusada') {
+            mensagemFinal.innerHTML = '❌ Proposta recusada';
+        } else if (status === 'cancelada') {
+            mensagemFinal.innerHTML = '<i class="fas fa-ban"></i> Proposta cancelada pelo comprador';
+        }
+        
         propostaAcoesElement.appendChild(mensagemFinal);
     }
 }

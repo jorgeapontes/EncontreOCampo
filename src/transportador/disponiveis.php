@@ -227,6 +227,117 @@ if (isset($_SESSION['usuario_id'])) {
             .acordo-card {
                 padding: 10px 6px;
                 min-height: 160px;
+                width: 100%;
+                position: flex;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .acordo-card {
+                width: 100% !important; /* Largura total menos 10px (5px de cada lado) */
+                margin: 5px !important; /* Margem de 5px em todos os lados */
+                padding: 15px !important;
+                max-width: none !important;
+                border-radius: 8px !important;
+                box-sizing: border-box !important;
+            }
+
+            .acordos-lista {
+                grid-template-columns: 1fr;
+                gap: 0;
+                padding: 0;
+                margin: 0;
+            }
+
+            .acordo-card > div[style*="width:100%;height:160px"] {
+                height: 220px !important;
+                margin-bottom: 8px !important;
+            }
+            
+            /* Ajuste para a imagem dentro do card */
+            .acordo-card img {
+                height: 220px !important;
+                object-fit: cover !important;
+                border-radius: 6px !important;
+            }
+
+            /* Contêiner dos filtros */
+            .filters-inline {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            /* Cada dropdown deve ocupar 100% da largura */
+            .dropdown {
+                width: 100%;
+            }
+
+            /* Botões dos filtros */
+            .filtro-btn {
+                width: 100%;
+                justify-content: space-between;
+                padding: 12px 15px;
+                box-sizing: border-box;
+                border-radius: 8px;
+                font-size: 1rem;
+            }
+
+            /* Conteúdo do dropdown (lista de estados) */
+            .dropdown-content {
+                width: 100% !important;
+                left: 10px !important;
+                right: 10px !important;
+                position: fixed !important;
+                top: auto !important;
+                /* bottom: 0 !important; */
+                justify-content: center !important;
+                text-align: center !important;
+                border-radius: 16px 16px 0 0 !important;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.15) !important;
+                max-height: 70vh !important;
+                max-width: 410px;
+                overflow-y: auto !important;
+            }
+
+            /* Ajuste para a grade de estados dentro do dropdown */
+            .estados-grid {
+                max-width: 100%;
+                display: grid !important;
+                grid-template-columns: repeat(5, 1fr) !important;
+                gap: 8px !important;
+                justify-content: center !important;
+            }
+
+            /* Opções de estado */
+            .estado-option {
+                padding: 8px 8px !important;
+                justify-content: center !important;
+                text-align: center !important;
+                border: 1px solid #e0e0e0 !important;
+                border-radius: 6px !important;
+                font-size: 0.9rem !important;
+            }
+
+            /* Formulário dentro do dropdown */
+            .filtro-form {
+                padding: 15px !important;
+                gap: 15px !important;
+            }
+
+            /* Cabeçalho do filtro */
+            .filtro-header {
+                flex-direction: column !important;
+                gap: 10px !important;
+                margin-bottom: 15px !important;
+                justify-content: center !important;
+            }
+
+            /* Indicador de filtro ativo */
+            .filtro-ativo-indicator {
+                width: 10px !important;
+                height: 10px !important;
             }
         }
 

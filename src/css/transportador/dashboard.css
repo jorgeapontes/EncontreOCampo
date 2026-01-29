@@ -1417,4 +1417,8 @@ th:last-child {
     .cards-entregas-mobile {
         display: block;
     }
+
+    .card-action-btn{
+        width: 100%;
+    }
 }

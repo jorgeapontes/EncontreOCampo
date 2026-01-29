@@ -352,7 +352,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
         .miniatura.active { border-color: var(--primary-color); box-shadow: 0 3px 8px rgba(76, 175, 80, 0.3); }
         .miniatura img { width: 100%; height: 100%; object-fit: cover; }
         .single-image .carrossel-btn, .single-image .carrossel-indicators, .single-image .carrossel-counter { display: none; }
-        @media (max-width: 768px) { .carrossel-container { height: 300px; } .carrossel-btn { width: 40px; height: 40px; font-size: 16px; } }
+        @media (max-width: 768px) { .carrossel-container { height: 300px; } .carrossel-btn { width: 40px; height: 40px; font-size: 16px; } .social-links { align-items: center; gap: 10px; margin-bottom: 10px; padding-left: 25px; } }
     </style>
 </head>
 <body>

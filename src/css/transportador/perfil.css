@@ -441,7 +441,7 @@ body {
     .nav-menu {
         position: fixed;
         left: -100%;
-        top: 70px;
+        top: 90px;
         gap: 0;
         flex-direction: column;
         background-color: var(--white);
@@ -475,6 +475,11 @@ body {
         width: 100px;
         height: 100px;
     }
+    .nav-link.exit-button {
+        margin: 10px auto;
+        width: 80%;
+        max-width: 200px;
+    }
 }
 
 @media (max-width: 576px) {
@@ -488,5 +493,31 @@ body {
     
     .perfil-form h3 {
         font-size: 1.1rem;
+    }
+.input-group-cep {
+        flex-direction: column;
+        gap: 0 !important;
+        margin-bottom: 0;
+    }
+
+    .form-group-cep {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .btn-buscar-cep {
+        margin-top: 0 !important;
+        width: 100%;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        margin-bottom: 20px; /* Mantém espaço abaixo do botão */
+    }
+
+    .foto-overlay{
+        height: 100px;
+        width: 100px;
     }
 }

@@ -642,7 +642,7 @@ try {
                 <a href="dashboard.php" class="nav-link">Dashboard</a>
                 <a href="todos_usuarios.php" class="nav-link">Todos os Usuários</a>
                 <a href="chats_admin.php" class="nav-link active">Chats</a>
-                <a href="manage_comprovantes.php" class="nav-link">Comprovantes de Entrega</a>
+                <a href="manage_comprovantes.php" class="nav-link">Comprovantes</a>
                 <a href="../../index.php" class="nav-link">Home</a>
                 <a href="../logout.php" class="nav-link logout">Sair</a>
             </div>

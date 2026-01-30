@@ -10,11 +10,13 @@ $is_production = !in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1
 
 
 
-// Busca a chave do webhook do .env conforme ambiente
+// Chave do webhook hardcoded conforme ambiente
 if ($is_production) {
-    $endpoint_secret = getenv('STRIPE_WEBHOOK_SECRET_LIVE');
+    // Substitua pela sua chave de webhook de produção (live)
+    $endpoint_secret = 'whsec_Dr9wtGQ6ktoQYNFbQBkGVNqjOnfSfpeT';
 } else {
-    $endpoint_secret = getenv('STRIPE_WEBHOOK_SECRET_TEST');
+    // Substitua pela sua chave de webhook de teste (test)
+    $endpoint_secret = 'whsec_test_replace_me';
 }
 
 if (!$endpoint_secret) {

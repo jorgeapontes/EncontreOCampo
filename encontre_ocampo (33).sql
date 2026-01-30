@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 30-Jan-2026 às 01:22
+-- Tempo de geração: 30/01/2026 às 02:16
 -- Versão do servidor: 10.4.32-MariaDB
--- versão do PHP: 8.2.12
+-- Versão do PHP: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,7 +24,7 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `admin_acoes`
+-- Estrutura para tabela `admin_acoes`
 --
 
 CREATE TABLE `admin_acoes` (
@@ -37,7 +37,7 @@ CREATE TABLE `admin_acoes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `admin_acoes`
+-- Despejando dados para a tabela `admin_acoes`
 --
 
 INSERT INTO `admin_acoes` (`id`, `admin_id`, `acao`, `tabela_afetada`, `registro_id`, `data_acao`) VALUES
@@ -81,7 +81,7 @@ INSERT INTO `admin_acoes` (`id`, `admin_id`, `acao`, `tabela_afetada`, `registro
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `chat_auditoria`
+-- Estrutura para tabela `chat_auditoria`
 --
 
 CREATE TABLE `chat_auditoria` (
@@ -96,7 +96,7 @@ CREATE TABLE `chat_auditoria` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `chat_auditoria`
+-- Despejando dados para a tabela `chat_auditoria`
 --
 
 INSERT INTO `chat_auditoria` (`id`, `conversa_id`, `usuario_id`, `acao`, `detalhes`, `ip_address`, `user_agent`, `data_acao`) VALUES
@@ -126,7 +126,7 @@ INSERT INTO `chat_auditoria` (`id`, `conversa_id`, `usuario_id`, `acao`, `detalh
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `chat_conversas`
+-- Estrutura para tabela `chat_conversas`
 --
 
 CREATE TABLE `chat_conversas` (
@@ -157,7 +157,7 @@ CREATE TABLE `chat_conversas` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `chat_conversas`
+-- Despejando dados para a tabela `chat_conversas`
 --
 
 INSERT INTO `chat_conversas` (`id`, `produto_id`, `comprador_id`, `vendedor_id`, `transportador_id`, `ultima_mensagem`, `ultima_mensagem_data`, `comprador_lido`, `vendedor_lido`, `status`, `data_criacao`, `deletado`, `data_delecao`, `usuario_deletou`, `favorito_comprador`, `favorito_vendedor`, `comprador_excluiu`, `vendedor_excluiu`, `ultimo_ip_comprador`, `ultimo_ip_vendedor`, `ultimo_user_agent_comprador`, `ultimo_user_agent_vendedor`, `favorito_transportador`, `transportador_excluiu`) VALUES
@@ -170,7 +170,7 @@ INSERT INTO `chat_conversas` (`id`, `produto_id`, `comprador_id`, `vendedor_id`,
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `chat_mensagens`
+-- Estrutura para tabela `chat_mensagens`
 --
 
 CREATE TABLE `chat_mensagens` (
@@ -191,7 +191,7 @@ CREATE TABLE `chat_mensagens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `chat_mensagens`
+-- Despejando dados para a tabela `chat_mensagens`
 --
 
 INSERT INTO `chat_mensagens` (`id`, `conversa_id`, `remetente_id`, `mensagem`, `tipo`, `dados_json`, `lida`, `data_envio`, `deletado`, `data_delecao`, `usuario_deletou`, `tipo_mensagem`, `anexo_url`, `palavras_ofensivas`) VALUES
@@ -233,7 +233,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `compradores`
+-- Estrutura para tabela `compradores`
 --
 
 CREATE TABLE `compradores` (
@@ -256,7 +256,7 @@ CREATE TABLE `compradores` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `compradores`
+-- Despejando dados para a tabela `compradores`
 --
 
 INSERT INTO `compradores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, `foto_perfil_url`, `cpf_cnpj`, `cip`, `cep`, `rua`, `numero`, `complemento`, `estado`, `cidade`, `telefone1`, `telefone2`, `plano`) VALUES
@@ -266,7 +266,7 @@ INSERT INTO `compradores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `conversas`
+-- Estrutura para tabela `conversas`
 --
 
 CREATE TABLE `conversas` (
@@ -283,7 +283,7 @@ CREATE TABLE `conversas` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `entregas`
+-- Estrutura para tabela `entregas`
 --
 
 CREATE TABLE `entregas` (
@@ -307,7 +307,7 @@ CREATE TABLE `entregas` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `entregas`
+-- Despejando dados para a tabela `entregas`
 --
 
 INSERT INTO `entregas` (`id`, `produto_id`, `transportador_id`, `endereco_origem`, `endereco_destino`, `status`, `data_solicitacao`, `valor_frete`, `vendedor_id`, `comprador_id`, `data_aceitacao`, `data_inicio_transporte`, `data_entrega`, `observacoes`, `foto_comprovante`, `assinatura_comprovante`, `status_detalhado`) VALUES
@@ -317,7 +317,7 @@ INSERT INTO `entregas` (`id`, `produto_id`, `transportador_id`, `endereco_origem
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `favoritos`
+-- Estrutura para tabela `favoritos`
 --
 
 CREATE TABLE `favoritos` (
@@ -330,7 +330,7 @@ CREATE TABLE `favoritos` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `mensagens`
+-- Estrutura para tabela `mensagens`
 --
 
 CREATE TABLE `mensagens` (
@@ -347,7 +347,7 @@ CREATE TABLE `mensagens` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `notificacoes`
+-- Estrutura para tabela `notificacoes`
 --
 
 CREATE TABLE `notificacoes` (
@@ -361,7 +361,7 @@ CREATE TABLE `notificacoes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `notificacoes`
+-- Despejando dados para a tabela `notificacoes`
 --
 
 INSERT INTO `notificacoes` (`id`, `usuario_id`, `mensagem`, `tipo`, `lida`, `url`, `data_criacao`) VALUES
@@ -379,7 +379,7 @@ INSERT INTO `notificacoes` (`id`, `usuario_id`, `mensagem`, `tipo`, `lida`, `url
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `pagamentos`
+-- Estrutura para tabela `pagamentos`
 --
 
 CREATE TABLE `pagamentos` (
@@ -398,7 +398,7 @@ CREATE TABLE `pagamentos` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `planos`
+-- Estrutura para tabela `planos`
 --
 
 CREATE TABLE `planos` (
@@ -416,7 +416,7 @@ CREATE TABLE `planos` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `planos`
+-- Despejando dados para a tabela `planos`
 --
 
 INSERT INTO `planos` (`id`, `nome`, `descricao`, `preco_mensal`, `stripe_price_id`, `quantidade_anuncios_pagos`, `quantidade_anuncios_gratis`, `limite_total_anuncios`, `ativo`, `created_at`, `descricao_recursos`) VALUES
@@ -430,7 +430,7 @@ INSERT INTO `planos` (`id`, `nome`, `descricao`, `preco_mensal`, `stripe_price_i
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `produtos`
+-- Estrutura para tabela `produtos`
 --
 
 CREATE TABLE `produtos` (
@@ -459,7 +459,7 @@ CREATE TABLE `produtos` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `produtos`
+-- Despejando dados para a tabela `produtos`
 --
 
 INSERT INTO `produtos` (`id`, `vendedor_id`, `nome`, `descricao`, `preco`, `modo_precificacao`, `embalagem_peso_kg`, `embalagem_unidades`, `estoque_unidades`, `preco_desconto`, `desconto_percentual`, `desconto_ativo`, `desconto_data_inicio`, `desconto_data_fim`, `categoria`, `imagem_url`, `estoque`, `unidade_medida`, `paletizado`, `status`, `data_criacao`, `data_atualizacao`) VALUES
@@ -469,7 +469,7 @@ INSERT INTO `produtos` (`id`, `vendedor_id`, `nome`, `descricao`, `preco`, `modo
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `produto_imagens`
+-- Estrutura para tabela `produto_imagens`
 --
 
 CREATE TABLE `produto_imagens` (
@@ -481,7 +481,7 @@ CREATE TABLE `produto_imagens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `produto_imagens`
+-- Despejando dados para a tabela `produto_imagens`
 --
 
 INSERT INTO `produto_imagens` (`id`, `produto_id`, `imagem_url`, `ordem`, `data_criacao`) VALUES
@@ -491,7 +491,7 @@ INSERT INTO `produto_imagens` (`id`, `produto_id`, `imagem_url`, `ordem`, `data_
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `propostas`
+-- Estrutura para tabela `propostas`
 --
 
 CREATE TABLE `propostas` (
@@ -516,24 +516,25 @@ CREATE TABLE `propostas` (
   `endereco_comprador` text DEFAULT NULL,
   `valor_frete_final` decimal(10,2) DEFAULT NULL,
   `confirmado` tinyint(1) DEFAULT 0,
-  `arquivado` tinyint(1) DEFAULT 0
+  `arquivado` tinyint(1) DEFAULT 0,
+  `frete_resolvido` tinyint(1) DEFAULT 0 CHECK (`frete_resolvido` in (0,1))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `propostas`
+-- Despejando dados para a tabela `propostas`
 --
 
-INSERT INTO `propostas` (`ID`, `comprador_id`, `vendedor_id`, `produto_id`, `data_inicio`, `data_atualizacao`, `preco_proposto`, `quantidade_proposta`, `forma_pagamento`, `opcao_frete`, `valor_frete`, `valor_total`, `status`, `tipo_frete`, `status_entrega`, `data_entrega_estimada`, `transportador_id`, `endereco_vendedor`, `endereco_comprador`, `valor_frete_final`, `confirmado`, `arquivado`) VALUES
-(67, 30, 32, 32, '2026-01-28 14:03:40', '2026-01-28 14:05:34', 10.00, 2, 'à vista', 'entregador', 0.00, 20.00, 'aceita', 'vendedor', 'pendente', NULL, NULL, NULL, NULL, NULL, 0, 0),
-(68, 30, 33, 33, '2026-01-28 14:04:49', '2026-01-28 14:06:26', 5.00, 1, 'à vista', 'entregador', 0.00, 5.00, 'aceita', 'vendedor', 'pendente', NULL, NULL, NULL, NULL, NULL, 0, 0),
-(69, 30, 33, 33, '2026-01-28 14:46:36', '2026-01-28 14:46:43', 5.00, 1, 'à vista', 'entregador', 100.00, 100.00, 'aceita', 'vendedor', 'pendente', '2026-01-30', 4, NULL, NULL, NULL, 0, 0),
-(70, 30, 32, 32, '2026-01-28 14:53:32', '2026-01-28 14:53:37', 10.00, 1, 'à vista', 'entregador', 111.00, 111.00, 'aceita', 'vendedor', 'pendente', '2026-01-29', 5, NULL, NULL, NULL, 0, 0),
-(71, 30, 32, 32, '2026-01-28 15:06:15', '2026-01-28 15:06:15', 10.00, 1, 'à vista', 'entregador', 0.00, 10.00, 'negociacao', 'vendedor', 'pendente', NULL, NULL, NULL, NULL, NULL, 0, 0);
+INSERT INTO `propostas` (`ID`, `comprador_id`, `vendedor_id`, `produto_id`, `data_inicio`, `data_atualizacao`, `preco_proposto`, `quantidade_proposta`, `forma_pagamento`, `opcao_frete`, `valor_frete`, `valor_total`, `status`, `tipo_frete`, `status_entrega`, `data_entrega_estimada`, `transportador_id`, `endereco_vendedor`, `endereco_comprador`, `valor_frete_final`, `confirmado`, `arquivado`, `frete_resolvido`) VALUES
+(67, 30, 32, 32, '2026-01-28 14:03:40', '2026-01-28 14:05:34', 10.00, 2, 'à vista', 'entregador', 0.00, 20.00, 'aceita', 'vendedor', 'pendente', NULL, NULL, NULL, NULL, NULL, 0, 0, 0),
+(68, 30, 33, 33, '2026-01-28 14:04:49', '2026-01-28 14:06:26', 5.00, 1, 'à vista', 'entregador', 0.00, 5.00, 'aceita', 'vendedor', 'pendente', NULL, NULL, NULL, NULL, NULL, 0, 0, 0),
+(69, 30, 33, 33, '2026-01-28 14:46:36', '2026-01-28 14:46:43', 5.00, 1, 'à vista', 'entregador', 100.00, 100.00, 'aceita', 'vendedor', 'pendente', '2026-01-30', 4, NULL, NULL, NULL, 0, 0, 0),
+(70, 30, 32, 32, '2026-01-28 14:53:32', '2026-01-28 14:53:37', 10.00, 1, 'à vista', 'entregador', 111.00, 111.00, 'aceita', 'vendedor', 'pendente', '2026-01-29', 5, NULL, NULL, NULL, 0, 0, 0),
+(71, 30, 32, 32, '2026-01-28 15:06:15', '2026-01-28 15:06:15', 10.00, 1, 'à vista', 'entregador', 0.00, 10.00, 'negociacao', 'vendedor', 'pendente', NULL, NULL, NULL, NULL, NULL, 0, 0, 0);
 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `propostas_assinaturas`
+-- Estrutura para tabela `propostas_assinaturas`
 --
 
 CREATE TABLE `propostas_assinaturas` (
@@ -550,7 +551,7 @@ CREATE TABLE `propostas_assinaturas` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `propostas_transportadores`
+-- Estrutura para tabela `propostas_transportadores`
 --
 
 CREATE TABLE `propostas_transportadores` (
@@ -566,7 +567,7 @@ CREATE TABLE `propostas_transportadores` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `propostas_transportadores`
+-- Despejando dados para a tabela `propostas_transportadores`
 --
 
 INSERT INTO `propostas_transportadores` (`id`, `proposta_id`, `transportador_id`, `valor_frete`, `prazo_entrega`, `observacoes`, `status`, `data_criacao`, `data_resposta`) VALUES
@@ -576,7 +577,7 @@ INSERT INTO `propostas_transportadores` (`id`, `proposta_id`, `transportador_id`
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `solicitacoes_cadastro`
+-- Estrutura para tabela `solicitacoes_cadastro`
 --
 
 CREATE TABLE `solicitacoes_cadastro` (
@@ -596,7 +597,7 @@ CREATE TABLE `solicitacoes_cadastro` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `solicitacoes_cadastro`
+-- Despejando dados para a tabela `solicitacoes_cadastro`
 --
 
 INSERT INTO `solicitacoes_cadastro` (`id`, `usuario_id`, `nome`, `email`, `telefone`, `endereco`, `tipo_solicitacao`, `dados_json`, `status`, `data_solicitacao`, `data_analise`, `admin_responsavel`, `observacoes`) VALUES
@@ -610,7 +611,7 @@ INSERT INTO `solicitacoes_cadastro` (`id`, `usuario_id`, `nome`, `email`, `telef
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `transportadores`
+-- Estrutura para tabela `transportadores`
 --
 
 CREATE TABLE `transportadores` (
@@ -634,7 +635,7 @@ CREATE TABLE `transportadores` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `transportadores`
+-- Despejando dados para a tabela `transportadores`
 --
 
 INSERT INTO `transportadores` (`id`, `usuario_id`, `nome_comercial`, `telefone`, `antt`, `numero_antt`, `placa_veiculo`, `modelo_veiculo`, `descricao_veiculo`, `cep`, `rua`, `numero`, `complemento`, `estado`, `cidade`, `plano`, `foto_perfil_url`) VALUES
@@ -644,7 +645,7 @@ INSERT INTO `transportadores` (`id`, `usuario_id`, `nome_comercial`, `telefone`,
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `transportador_favoritos`
+-- Estrutura para tabela `transportador_favoritos`
 --
 
 CREATE TABLE `transportador_favoritos` (
@@ -657,7 +658,7 @@ CREATE TABLE `transportador_favoritos` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `usuarios`
+-- Estrutura para tabela `usuarios`
 --
 
 CREATE TABLE `usuarios` (
@@ -674,7 +675,7 @@ CREATE TABLE `usuarios` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `usuarios`
+-- Despejando dados para a tabela `usuarios`
 --
 
 INSERT INTO `usuarios` (`id`, `email`, `senha`, `tipo`, `nome`, `status`, `data_criacao`, `data_aprovacao`, `reset_token`, `reset_token_expira`) VALUES
@@ -689,7 +690,7 @@ INSERT INTO `usuarios` (`id`, `email`, `senha`, `tipo`, `nome`, `status`, `data_
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `usuario_avisos_preferencias`
+-- Estrutura para tabela `usuario_avisos_preferencias`
 --
 
 CREATE TABLE `usuario_avisos_preferencias` (
@@ -703,7 +704,7 @@ CREATE TABLE `usuario_avisos_preferencias` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `vendedores`
+-- Estrutura para tabela `vendedores`
 --
 
 CREATE TABLE `vendedores` (
@@ -739,7 +740,7 @@ CREATE TABLE `vendedores` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `vendedores`
+-- Despejando dados para a tabela `vendedores`
 --
 
 INSERT INTO `vendedores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, `cpf_cnpj`, `razao_social`, `foto_perfil_url`, `cip`, `cep`, `rua`, `numero`, `complemento`, `estado`, `cidade`, `telefone1`, `telefone2`, `plano`, `estados_atendidos`, `cidades_atendidas`, `plano_id`, `status_assinatura`, `data_assinatura`, `data_inicio_assinatura`, `data_vencimento_assinatura`, `anuncios_ativos`, `anuncios_pagos_utilizados`, `anuncios_gratis_utilizados`, `stripe_customer_id`, `stripe_subscription_id`) VALUES
@@ -749,7 +750,7 @@ INSERT INTO `vendedores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, `
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `vendedor_anuncios_controle`
+-- Estrutura para tabela `vendedor_anuncios_controle`
 --
 
 CREATE TABLE `vendedor_anuncios_controle` (
@@ -765,7 +766,7 @@ CREATE TABLE `vendedor_anuncios_controle` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `vendedor_assinaturas`
+-- Estrutura para tabela `vendedor_assinaturas`
 --
 
 CREATE TABLE `vendedor_assinaturas` (
@@ -791,7 +792,7 @@ CREATE TABLE `vendedor_assinaturas` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `webhook_logs`
+-- Estrutura para tabela `webhook_logs`
 --
 
 CREATE TABLE `webhook_logs` (
@@ -809,14 +810,14 @@ CREATE TABLE `webhook_logs` (
 --
 
 --
--- Índices para tabela `admin_acoes`
+-- Índices de tabela `admin_acoes`
 --
 ALTER TABLE `admin_acoes`
   ADD PRIMARY KEY (`id`),
   ADD KEY `admin_id` (`admin_id`);
 
 --
--- Índices para tabela `chat_auditoria`
+-- Índices de tabela `chat_auditoria`
 --
 ALTER TABLE `chat_auditoria`
   ADD PRIMARY KEY (`id`),
@@ -825,7 +826,7 @@ ALTER TABLE `chat_auditoria`
   ADD KEY `idx_data` (`data_acao`);
 
 --
--- Índices para tabela `chat_conversas`
+-- Índices de tabela `chat_conversas`
 --
 ALTER TABLE `chat_conversas`
   ADD PRIMARY KEY (`id`),
@@ -835,7 +836,7 @@ ALTER TABLE `chat_conversas`
   ADD KEY `idx_chat_conversas_deletado` (`deletado`);
 
 --
--- Índices para tabela `chat_mensagens`
+-- Índices de tabela `chat_mensagens`
 --
 ALTER TABLE `chat_mensagens`
   ADD PRIMARY KEY (`id`),
@@ -845,14 +846,14 @@ ALTER TABLE `chat_mensagens`
   ADD KEY `idx_chat_mensagens_deletado` (`deletado`);
 
 --
--- Índices para tabela `compradores`
+-- Índices de tabela `compradores`
 --
 ALTER TABLE `compradores`
   ADD PRIMARY KEY (`id`),
   ADD KEY `usuario_id` (`usuario_id`);
 
 --
--- Índices para tabela `conversas`
+-- Índices de tabela `conversas`
 --
 ALTER TABLE `conversas`
   ADD PRIMARY KEY (`id`),
@@ -862,7 +863,7 @@ ALTER TABLE `conversas`
   ADD KEY `produto_id` (`produto_id`);
 
 --
--- Índices para tabela `entregas`
+-- Índices de tabela `entregas`
 --
 ALTER TABLE `entregas`
   ADD PRIMARY KEY (`id`),
@@ -873,7 +874,7 @@ ALTER TABLE `entregas`
   ADD KEY `idx_entrega_unique` (`produto_id`,`transportador_id`,`comprador_id`,`vendedor_id`);
 
 --
--- Índices para tabela `favoritos`
+-- Índices de tabela `favoritos`
 --
 ALTER TABLE `favoritos`
   ADD PRIMARY KEY (`id`),
@@ -881,7 +882,7 @@ ALTER TABLE `favoritos`
   ADD KEY `produto_id` (`produto_id`);
 
 --
--- Índices para tabela `mensagens`
+-- Índices de tabela `mensagens`
 --
 ALTER TABLE `mensagens`
   ADD PRIMARY KEY (`id`),
@@ -890,14 +891,14 @@ ALTER TABLE `mensagens`
   ADD KEY `data_envio` (`data_envio`);
 
 --
--- Índices para tabela `notificacoes`
+-- Índices de tabela `notificacoes`
 --
 ALTER TABLE `notificacoes`
   ADD PRIMARY KEY (`id`),
   ADD KEY `usuario_id` (`usuario_id`);
 
 --
--- Índices para tabela `pagamentos`
+-- Índices de tabela `pagamentos`
 --
 ALTER TABLE `pagamentos`
   ADD PRIMARY KEY (`id`),
@@ -905,27 +906,27 @@ ALTER TABLE `pagamentos`
   ADD KEY `assinatura_id` (`assinatura_id`);
 
 --
--- Índices para tabela `planos`
+-- Índices de tabela `planos`
 --
 ALTER TABLE `planos`
   ADD PRIMARY KEY (`id`);
 
 --
--- Índices para tabela `produtos`
+-- Índices de tabela `produtos`
 --
 ALTER TABLE `produtos`
   ADD PRIMARY KEY (`id`),
   ADD KEY `vendedor_id` (`vendedor_id`);
 
 --
--- Índices para tabela `produto_imagens`
+-- Índices de tabela `produto_imagens`
 --
 ALTER TABLE `produto_imagens`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_produto_id` (`produto_id`);
 
 --
--- Índices para tabela `propostas`
+-- Índices de tabela `propostas`
 --
 ALTER TABLE `propostas`
   ADD PRIMARY KEY (`ID`),
@@ -935,7 +936,7 @@ ALTER TABLE `propostas`
   ADD KEY `transportador_id` (`transportador_id`);
 
 --
--- Índices para tabela `propostas_assinaturas`
+-- Índices de tabela `propostas_assinaturas`
 --
 ALTER TABLE `propostas_assinaturas`
   ADD PRIMARY KEY (`id`),
@@ -944,7 +945,7 @@ ALTER TABLE `propostas_assinaturas`
   ADD KEY `usuario_id` (`usuario_id`);
 
 --
--- Índices para tabela `propostas_transportadores`
+-- Índices de tabela `propostas_transportadores`
 --
 ALTER TABLE `propostas_transportadores`
   ADD PRIMARY KEY (`id`),
@@ -953,28 +954,28 @@ ALTER TABLE `propostas_transportadores`
   ADD KEY `idx_proposta_status` (`proposta_id`,`status`);
 
 --
--- Índices para tabela `solicitacoes_cadastro`
+-- Índices de tabela `solicitacoes_cadastro`
 --
 ALTER TABLE `solicitacoes_cadastro`
   ADD PRIMARY KEY (`id`),
   ADD KEY `usuario_id` (`usuario_id`);
 
 --
--- Índices para tabela `transportadores`
+-- Índices de tabela `transportadores`
 --
 ALTER TABLE `transportadores`
   ADD PRIMARY KEY (`id`),
   ADD KEY `usuario_id` (`usuario_id`);
 
 --
--- Índices para tabela `transportador_favoritos`
+-- Índices de tabela `transportador_favoritos`
 --
 ALTER TABLE `transportador_favoritos`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `ux_transportador_proposta` (`transportador_id`,`proposta_id`);
 
 --
--- Índices para tabela `usuarios`
+-- Índices de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
   ADD PRIMARY KEY (`id`),
@@ -982,14 +983,14 @@ ALTER TABLE `usuarios`
   ADD KEY `reset_token` (`reset_token`);
 
 --
--- Índices para tabela `usuario_avisos_preferencias`
+-- Índices de tabela `usuario_avisos_preferencias`
 --
 ALTER TABLE `usuario_avisos_preferencias`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `usuario_id` (`usuario_id`);
 
 --
--- Índices para tabela `vendedores`
+-- Índices de tabela `vendedores`
 --
 ALTER TABLE `vendedores`
   ADD PRIMARY KEY (`id`),
@@ -997,14 +998,14 @@ ALTER TABLE `vendedores`
   ADD KEY `plano_id` (`plano_id`);
 
 --
--- Índices para tabela `vendedor_anuncios_controle`
+-- Índices de tabela `vendedor_anuncios_controle`
 --
 ALTER TABLE `vendedor_anuncios_controle`
   ADD PRIMARY KEY (`id`),
   ADD KEY `vendedor_id` (`vendedor_id`);
 
 --
--- Índices para tabela `vendedor_assinaturas`
+-- Índices de tabela `vendedor_assinaturas`
 --
 ALTER TABLE `vendedor_assinaturas`
   ADD PRIMARY KEY (`id`),
@@ -1012,13 +1013,13 @@ ALTER TABLE `vendedor_assinaturas`
   ADD KEY `plano_id` (`plano_id`);
 
 --
--- Índices para tabela `webhook_logs`
+-- Índices de tabela `webhook_logs`
 --
 ALTER TABLE `webhook_logs`
   ADD PRIMARY KEY (`id`);
 
 --
--- AUTO_INCREMENT de tabelas despejadas
+-- AUTO_INCREMENT para tabelas despejadas
 --
 
 --
@@ -1178,17 +1179,17 @@ ALTER TABLE `webhook_logs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- Restrições para despejos de tabelas
+-- Restrições para tabelas despejadas
 --
 
 --
--- Limitadores para a tabela `admin_acoes`
+-- Restrições para tabelas `admin_acoes`
 --
 ALTER TABLE `admin_acoes`
   ADD CONSTRAINT `admin_acoes_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `chat_conversas`
+-- Restrições para tabelas `chat_conversas`
 --
 ALTER TABLE `chat_conversas`
   ADD CONSTRAINT `chat_conversas_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE,
@@ -1196,20 +1197,20 @@ ALTER TABLE `chat_conversas`
   ADD CONSTRAINT `chat_conversas_ibfk_3` FOREIGN KEY (`vendedor_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `chat_mensagens`
+-- Restrições para tabelas `chat_mensagens`
 --
 ALTER TABLE `chat_mensagens`
   ADD CONSTRAINT `chat_mensagens_ibfk_1` FOREIGN KEY (`conversa_id`) REFERENCES `chat_conversas` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `chat_mensagens_ibfk_2` FOREIGN KEY (`remetente_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `compradores`
+-- Restrições para tabelas `compradores`
 --
 ALTER TABLE `compradores`
   ADD CONSTRAINT `compradores_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `conversas`
+-- Restrições para tabelas `conversas`
 --
 ALTER TABLE `conversas`
   ADD CONSTRAINT `conversas_ibfk_1` FOREIGN KEY (`comprador_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
@@ -1217,7 +1218,7 @@ ALTER TABLE `conversas`
   ADD CONSTRAINT `conversas_ibfk_3` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE SET NULL;
 
 --
--- Limitadores para a tabela `entregas`
+-- Restrições para tabelas `entregas`
 --
 ALTER TABLE `entregas`
   ADD CONSTRAINT `entregas_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE,
@@ -1226,46 +1227,46 @@ ALTER TABLE `entregas`
   ADD CONSTRAINT `entregas_ibfk_4` FOREIGN KEY (`comprador_id`) REFERENCES `compradores` (`usuario_id`) ON DELETE SET NULL;
 
 --
--- Limitadores para a tabela `favoritos`
+-- Restrições para tabelas `favoritos`
 --
 ALTER TABLE `favoritos`
   ADD CONSTRAINT `favoritos_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `favoritos_ibfk_2` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `mensagens`
+-- Restrições para tabelas `mensagens`
 --
 ALTER TABLE `mensagens`
   ADD CONSTRAINT `mensagens_ibfk_1` FOREIGN KEY (`conversa_id`) REFERENCES `conversas` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `mensagens_ibfk_2` FOREIGN KEY (`remetente_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `notificacoes`
+-- Restrições para tabelas `notificacoes`
 --
 ALTER TABLE `notificacoes`
   ADD CONSTRAINT `notificacoes_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `pagamentos`
+-- Restrições para tabelas `pagamentos`
 --
 ALTER TABLE `pagamentos`
   ADD CONSTRAINT `pagamentos_ibfk_1` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`id`),
   ADD CONSTRAINT `pagamentos_ibfk_2` FOREIGN KEY (`assinatura_id`) REFERENCES `vendedor_assinaturas` (`id`);
 
 --
--- Limitadores para a tabela `produtos`
+-- Restrições para tabelas `produtos`
 --
 ALTER TABLE `produtos`
   ADD CONSTRAINT `produtos_ibfk_1` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `produto_imagens`
+-- Restrições para tabelas `produto_imagens`
 --
 ALTER TABLE `produto_imagens`
   ADD CONSTRAINT `produto_imagens_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `propostas`
+-- Restrições para tabelas `propostas`
 --
 ALTER TABLE `propostas`
   ADD CONSTRAINT `propostas_ibfk_1` FOREIGN KEY (`comprador_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
@@ -1275,52 +1276,52 @@ ALTER TABLE `propostas`
   ADD CONSTRAINT `propostas_ibfk_5` FOREIGN KEY (`transportador_id`) REFERENCES `transportadores` (`id`);
 
 --
--- Limitadores para a tabela `propostas_assinaturas`
+-- Restrições para tabelas `propostas_assinaturas`
 --
 ALTER TABLE `propostas_assinaturas`
   ADD CONSTRAINT `propostas_assinaturas_ibfk_1` FOREIGN KEY (`proposta_id`) REFERENCES `propostas` (`ID`) ON DELETE CASCADE,
   ADD CONSTRAINT `propostas_assinaturas_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `propostas_transportadores`
+-- Restrições para tabelas `propostas_transportadores`
 --
 ALTER TABLE `propostas_transportadores`
   ADD CONSTRAINT `propostas_transportadores_ibfk_1` FOREIGN KEY (`proposta_id`) REFERENCES `propostas` (`ID`) ON DELETE CASCADE,
   ADD CONSTRAINT `propostas_transportadores_ibfk_2` FOREIGN KEY (`transportador_id`) REFERENCES `transportadores` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `solicitacoes_cadastro`
+-- Restrições para tabelas `solicitacoes_cadastro`
 --
 ALTER TABLE `solicitacoes_cadastro`
   ADD CONSTRAINT `solicitacoes_cadastro_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL;
 
 --
--- Limitadores para a tabela `transportadores`
+-- Restrições para tabelas `transportadores`
 --
 ALTER TABLE `transportadores`
   ADD CONSTRAINT `transportadores_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `usuario_avisos_preferencias`
+-- Restrições para tabelas `usuario_avisos_preferencias`
 --
 ALTER TABLE `usuario_avisos_preferencias`
   ADD CONSTRAINT `usuario_avisos_preferencias_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Limitadores para a tabela `vendedores`
+-- Restrições para tabelas `vendedores`
 --
 ALTER TABLE `vendedores`
   ADD CONSTRAINT `vendedores_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `vendedores_ibfk_2` FOREIGN KEY (`plano_id`) REFERENCES `planos` (`id`);
 
 --
--- Limitadores para a tabela `vendedor_anuncios_controle`
+-- Restrições para tabelas `vendedor_anuncios_controle`
 --
 ALTER TABLE `vendedor_anuncios_controle`
   ADD CONSTRAINT `vendedor_anuncios_controle_ibfk_1` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`id`);
 
 --
--- Limitadores para a tabela `vendedor_assinaturas`
+-- Restrições para tabelas `vendedor_assinaturas`
 --
 ALTER TABLE `vendedor_assinaturas`
   ADD CONSTRAINT `vendedor_assinaturas_ibfk_1` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`id`),

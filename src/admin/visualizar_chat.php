@@ -947,16 +947,6 @@ try {
                                                         <div class="assinatura-info-row">
                                                             <strong>Data:</strong> <?php echo date('d/m/Y H:i', strtotime($assinatura['data_assinatura'])); ?>
                                                         </div>
-                                                        <?php if (!empty($assinatura['ip_address'])): ?>
-                                                            <div class="assinatura-info-row">
-                                                                <strong>IP:</strong> <?php echo htmlspecialchars($assinatura['ip_address']); ?>
-                                                            </div>
-                                                        <?php endif; ?>
-                                                        <?php if (!empty($assinatura['assinatura_hash'])): ?>
-                                                            <div class="assinatura-info-row" title="<?php echo htmlspecialchars($assinatura['assinatura_hash']); ?>">
-                                                                <strong>Hash:</strong> <?php echo substr($assinatura['assinatura_hash'], 0, 20) . '...'; ?>
-                                                            </div>
-                                                        <?php endif; ?>
                                                     </div>
                                                 </div>
                                             <?php endforeach; ?>

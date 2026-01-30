@@ -76,7 +76,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
                     </li>
                     <li class="nav-item">
                         <a href="manage_comprovantes.php" class="nav-link">
-                            Comprovantes de entrega
+                            Comprovantes
                         </a>
                     </li>
                     <li class="nav-item">

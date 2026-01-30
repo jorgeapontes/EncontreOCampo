@@ -47,6 +47,23 @@ if (!$produto) {
 $vendedor_usuario_id = $produto['vendedor_usuario_id'];
 $eh_vendedor_produto = ($vendedor_usuario_id == $usuario_id);
 
+// Ajustar campos de exibição conforme modo de precificação
+$modo = $produto['modo_precificacao'] ?? 'por_quilo';
+if (in_array($modo, ['por_unidade', 'caixa_unidades', 'saco_unidades'])) {
+    $quantidade_disponivel = $produto['estoque_unidades'] ?? 0;
+} else {
+    $quantidade_disponivel = $produto['estoque_kg'] ?? 0;
+}
+switch ($modo) {
+    case 'por_unidade': $unidade_medida = 'unidade'; break;
+    case 'por_quilo': $unidade_medida = 'kg'; break;
+    case 'caixa_unidades': $unidade_medida = 'caixa' . (!empty($produto['embalagem_unidades']) ? " ({$produto['embalagem_unidades']} unid)" : ''); break;
+    case 'caixa_quilos': $unidade_medida = 'caixa' . (!empty($produto['embalagem_peso_kg']) ? " ({$produto['embalagem_peso_kg']} kg)" : ''); break;
+    case 'saco_unidades': $unidade_medida = 'saco' . (!empty($produto['embalagem_unidades']) ? " ({$produto['embalagem_unidades']} unid)" : ''); break;
+    case 'saco_quilos': $unidade_medida = 'saco' . (!empty($produto['embalagem_peso_kg']) ? " ({$produto['embalagem_peso_kg']} kg)" : ''); break;
+    default: $unidade_medida = 'unidade';
+}
+
 // Lógica para VENDEDOR
 if ($eh_vendedor_produto) {
     if ($conversa_id_get > 0) {
@@ -392,7 +409,7 @@ if ($conversa_id) {
     <div class="proposta-info" id="proposta-info">
         <div class="proposta-item" id="proposta-quantidade">
             <span><i class="fas fa-box"></i> Quantidade:</span>
-            <strong><?php echo htmlspecialchars($ultima_proposta['quantidade_proposta']); ?> unidades</strong>
+            <strong><?php echo htmlspecialchars($ultima_proposta['quantidade_proposta']); ?> <?php echo htmlspecialchars($unidade_medida); ?></strong>
         </div>
         
         <div class="proposta-item" id="proposta-valor-unitario">
@@ -612,7 +629,7 @@ if ($conversa_id) {
                                 </small>
                             <?php endif; ?>
                         </div>
-                        <small>Estoque: <?php echo $produto['estoque']; ?> unidades</small>
+                        <small>Estoque: <?php echo $produto['estoque']; ?> <?php echo htmlspecialchars($unidade_medida); ?></small>
                     </div>
                 </div>
                 
@@ -635,7 +652,7 @@ if ($conversa_id) {
                                    max="<?php echo $produto['estoque']; ?>"
                                    value="1"
                                    required>
-                            <small>Máximo: <?php echo $produto['estoque']; ?> unidades disponíveis</small>
+                            <small>Máximo: <?php echo $produto['estoque']; ?> <?php echo htmlspecialchars($unidade_medida); ?> disponíveis</small>
                         </div>
                         
                         <div class="form-group">
@@ -763,7 +780,7 @@ if ($conversa_id) {
                             <h5><i class="fas fa-receipt"></i> Resumo da Negociação</h5>
                             <div class="resumo-item">
                                 <span>Quantidade:</span>
-                                <span id="resumo-quantidade">1</span>
+                                <span id="resumo-quantidade">1</span> <span id="resumo-unidade">unidade</span>
                             </div>
                             <div class="resumo-item">
                                 <span>Valor Unitário:</span>
@@ -856,6 +873,7 @@ if ($conversa_id) {
     <script>
         const conversaId = <?php echo $conversa_id; ?>;
         const usuarioId = <?php echo $usuario_id; ?>;
+        const unidadeMedida = <?php echo json_encode($unidade_medida); ?>;
         let ultimaMensagemId = 0;
         let carregandoMensagens = false;
 
@@ -1088,6 +1106,7 @@ if ($conversa_id) {
         
         // Elementos do resumo
         const resumoQuantidade = document.getElementById('resumo-quantidade');
+        const resumoUnidade = document.getElementById('resumo-unidade');
         const resumoValorUnitario = document.getElementById('resumo-valor-unitario');
         const resumoSubtotal = document.getElementById('resumo-subtotal');
         const resumoFrete = document.getElementById('resumo-frete');
@@ -1097,9 +1116,42 @@ if ($conversa_id) {
         // Abrir modal
         btnAbrirNegociacao.addEventListener('click', () => {
             modalNegociacao.classList.add('active');
+            atualizarLabelsComUnidade();
             atualizarResumo();
         });
         
+        // Função para atualizar labels com a unidade de medida
+        function atualizarLabelsComUnidade() {
+            const labelQuantidade = document.querySelector('label[for="quantidade"]');
+            const labelValor = document.querySelector('label[for="valor_unitario"]');
+            
+            if (labelQuantidade) {
+                // Extrair a unidade base (sem parênteses com dados adicionais)
+                let unidadeBase = unidadeMedida;
+                if (unidadeMedida.includes('(')) {
+                    unidadeBase = unidadeMedida.split('(')[0].trim();
+                }
+                if (unidadeBase === 'kg') {
+                    labelQuantidade.textContent = `Quantidade (em ${unidadeBase}) *`;
+                } else {
+                    labelQuantidade.textContent = `Quantidade (em ${unidadeBase}s) *`;
+                }
+            }
+            
+            if (labelValor) {
+                // Extrair a unidade base
+                let unidadeBase = unidadeMedida;
+                if (unidadeMedida.includes('(')) {
+                    unidadeBase = unidadeMedida.split('(')[0].trim();
+                }
+                labelValor.textContent = `Valor por ${unidadeBase} (R$)`;
+            }
+            
+            // Atualizar também o resumo com a unidade
+            if (resumoUnidade) {
+                resumoUnidade.textContent = unidadeMedida;
+            }
+        }
         // Fechar modal
         btnFecharModal.addEventListener('click', () => {
             modalNegociacao.classList.remove('active');
@@ -1400,7 +1452,7 @@ function enviarNegociacao(dados) {
             // Enviar mensagem automática no chat com os detalhes da negociação
             const mensagemNegociacao = `*NOVA PROPOSTA DE COMPRA*\n\n` +
                 `**Produto:** ${document.querySelector('.produto-info-modal h4').textContent}\n` +
-                `**Quantidade:** ${dados.quantidade} unidades\n` +
+                `**Quantidade:** ${dados.quantidade} ${unidadeMedida}\n` +
                 `**Valor unitário:** R$ ${parseFloat(dados.valor_unitario).toFixed(2).replace('.', ',')}\n` +
                 `**Forma de pagamento:** ${dados.forma_pagamento === 'pagamento_ato' ? 'Pagamento no Ato' : 'Pagamento na Entrega'}\n` +
                 `**Opção de frete:** ${obterDescricaoFrete(dados.opcao_frete)}\n` +
@@ -1597,7 +1649,7 @@ function atualizarProposta(proposta) {
     }
     
     // 2. Atualizar apenas valores numéricos e texto
-    updateElementText(propostaQuantidadeElement, 'strong', `${proposta.quantidade_proposta} unidades`);
+    updateElementText(propostaQuantidadeElement, 'strong', `${proposta.quantidade_proposta} ${unidadeMedida}`);
     updateElementText(propostaValorUnitarioElement, 'strong', `R$ ${valorUnitario}`);
     
     // Atualizar frete

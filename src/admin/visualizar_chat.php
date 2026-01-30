@@ -23,6 +23,7 @@ $conn = $database->getConnection();
 try {
     $sql_conversa = "SELECT
                 cc.*,
+                p.id as produto_id,
                 p.nome AS produto_nome,
                 p.imagem_url AS produto_imagem,
                 p.preco AS produto_preco,
@@ -61,6 +62,48 @@ try {
         header("Location: chats_admin.php");
         exit();
     }
+    
+    // Buscar acordos de compra relacionados a esta conversa (produto + comprador + vendedor)
+    $sql_acordos = "SELECT 
+                    pr.ID as proposta_id,
+                    pr.preco_proposto,
+                    pr.quantidade_proposta,
+                    pr.forma_pagamento,
+                    pr.opcao_frete,
+                    pr.valor_total,
+                    pr.status,
+                    pr.data_inicio,
+                    pr.data_atualizacao,
+                    -- Contar assinaturas
+                    (SELECT COUNT(*) FROM propostas_assinaturas pa WHERE pa.proposta_id = pr.ID) as total_assinaturas
+                FROM propostas pr
+                WHERE pr.produto_id = :produto_id
+                AND pr.comprador_id = :comprador_id
+                AND pr.vendedor_id = :vendedor_id
+                ORDER BY pr.data_inicio DESC";
+    
+    $stmt_acordos = $conn->prepare($sql_acordos);
+    $stmt_acordos->bindParam(':produto_id', $conversa['produto_id'], PDO::PARAM_INT);
+    $stmt_acordos->bindParam(':comprador_id', $conversa['comprador_id'], PDO::PARAM_INT);
+    $stmt_acordos->bindParam(':vendedor_id', $conversa['vendedor_id'], PDO::PARAM_INT);
+    $stmt_acordos->execute();
+    $acordos = $stmt_acordos->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Para cada acordo, buscar as assinaturas correspondentes
+    foreach ($acordos as &$acordo) {
+        $sql_assinaturas = "SELECT pa.*, u.nome as nome_assinante, u.tipo as tipo_assinante
+                           FROM propostas_assinaturas pa
+                           INNER JOIN usuarios u ON pa.usuario_id = u.id
+                           WHERE pa.proposta_id = :proposta_id
+                           ORDER BY pa.data_assinatura";
+        
+        $stmt_assinaturas = $conn->prepare($sql_assinaturas);
+        $stmt_assinaturas->bindParam(':proposta_id', $acordo['proposta_id'], PDO::PARAM_INT);
+        $stmt_assinaturas->execute();
+        $acordo['assinaturas'] = $stmt_assinaturas->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    unset($acordo); // Quebrar referência
     
     // Calcular preço final com desconto se aplicável
     $preco_final = $conversa['produto_preco'];
@@ -138,6 +181,8 @@ try {
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .btn-back {
@@ -161,7 +206,7 @@ try {
             align-items: center;
             gap: 8px;
             padding: 10px 20px;
-            background: #dc3545; /* Cor de PDF padrão */
+            background: #dc3545;
             color: white;
             text-decoration: none;
             border-radius: 5px;
@@ -171,6 +216,34 @@ try {
 
         .btn-export:hover {
             background: #b02a37;
+        }
+
+        .btn-acordos {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: background 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-acordos:hover {
+            background: #45a049;
+        }
+        
+        .btn-acordos .badge {
+            background: white;
+            color: #4CAF50;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
         }
         
         .header {
@@ -263,6 +336,7 @@ try {
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             max-height: 600px;
             overflow-y: auto;
+            margin-bottom: 30px;
         }
         
         .message {
@@ -312,7 +386,6 @@ try {
             word-wrap: break-word;
         }
         
-        /* Estilos para Imagem */
         .message-imagem {
             max-width: 100%;
             height: auto;
@@ -354,18 +427,312 @@ try {
             margin-bottom: 20px;
             opacity: 0.3;
         }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .modal-close:hover {
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            color: #2E7D32;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+        
+        .modal-count {
+            background: #4CAF50;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        /* Accordion Styles */
+        .acordos-container {
+            margin-top: 20px;
+        }
+        
+        .acordo-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #e9ecef;
+            overflow: hidden;
+        }
+        
+        .acordo-header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background: white;
+            transition: background 0.3s;
+        }
+        
+        .acordo-header:hover {
+            background: #f5f5f5;
+        }
+        
+        .acordo-header.active {
+            background: #e8f5e9;
+            border-bottom: 1px solid #4CAF50;
+        }
+        
+        .acordo-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .acordo-id {
+            font-weight: 700;
+            color: #2E7D32;
+            font-size: 16px;
+        }
+        
+        .acordo-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-aceita { background: #d4edda; color: #155724; }
+        .status-negociacao { background: #fff3cd; color: #856404; }
+        .status-recusada { background: #f8d7da; color: #721c24; }
+        
+        .acordo-details {
+            background: white;
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .acordo-details.active {
+            padding: 20px;
+            max-height: 2000px;
+        }
+        
+        .acordo-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #4CAF50;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .assinaturas-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .assinaturas-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .assinaturas-count {
+            background: #e3f2fd;
+            color: #2196f3;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        
+        .assinaturas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+        
+        .assinatura-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .assinatura-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .assinatura-nome {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .assinatura-tipo {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            background: #e3f2fd;
+            color: #2196f3;
+            font-weight: 600;
+        }
+        
+        .assinatura-img-container {
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .assinatura-img {
+            max-width: 100%;
+            max-height: 120px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 0 auto;
+            display: block;
+        }
+        
+        .assinatura-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .assinatura-info-row {
+            margin-bottom: 4px;
+        }
+        
+        .no-assinatura {
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            text-align: center;
+            color: #999;
+        }
+        
+        .no-acordos-modal {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+        
+        .no-acordos-modal i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+        
+        .acordo-header .toggle-icon {
+            transition: transform 0.3s;
+            color: #666;
+        }
+        
+        .acordo-header.active .toggle-icon {
+            transform: rotate(180deg);
+            color: #4CAF50;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="top-controls">
-            <a href="chats_admin.php" class="btn-back">
-                <i class="fas fa-arrow-left"></i> Voltar para Lista
-            </a>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <a href="chats_admin.php" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Voltar para Lista
+                </a>
+                
+                <?php if (count($acordos) > 0): ?>
+                    <button id="btnOpenModal" class="btn-acordos">
+                        <i class="fas fa-file-signature"></i> Ver Acordos de Compra
+                        <span class="badge"><?php echo count($acordos); ?></span>
+                    </button>
+                <?php else: ?>
+                    <button id="btnOpenModal" class="btn-acordos" style="opacity: 0.7; cursor: not-allowed;" disabled>
+                        <i class="fas fa-file-signature"></i> Nenhum Acordo
+                    </button>
+                <?php endif; ?>
+            </div>
             
-            <a href="exportar_pdf.php?conversa_id=<?php echo $conversa_id; ?>" target="_blank" class="btn-export">
-                <i class="fas fa-file-pdf"></i> Exportar PDF
-            </a>
+            <div style="display: flex; gap: 10px;">
+                <a href="exportar_pdf.php?conversa_id=<?php echo $conversa_id; ?>" target="_blank" class="btn-export">
+                    <i class="fas fa-file-pdf"></i> Exportar PDF
+                </a>
+            </div>
         </div>
         
         <div class="header">
@@ -463,5 +830,207 @@ try {
             <?php endif; ?>
         </div>
     </div>
+    
+    <!-- Modal de Acordos -->
+    <div id="modalAcordos" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="fecharModal()">&times;</button>
+            
+            <div class="modal-header">
+                <h2>
+                    <i class="fas fa-file-contract"></i>
+                    Acordos de Compra
+                    <span class="modal-count"><?php echo count($acordos); ?></span>
+                </h2>
+            </div>
+            
+            <div class="acordos-container">
+                <?php if (count($acordos) > 0): ?>
+                    <?php foreach ($acordos as $index => $acordo): ?>
+                        <div class="acordo-item" data-id="<?php echo $acordo['proposta_id']; ?>">
+                            <div class="acordo-header" onclick="toggleAcordo(<?php echo $index; ?>)">
+                                <div class="acordo-title">
+                                    <div class="acordo-id">Proposta #<?php echo $acordo['proposta_id']; ?></div>
+                                    <?php 
+                                        $status_class = '';
+                                        $status_text = $acordo['status'] ?? 'pendente';
+                                        switch($status_text) {
+                                            case 'aceita': $status_class = 'status-aceita'; break;
+                                            case 'negociacao': $status_class = 'status-negociacao'; break;
+                                            case 'recusada': $status_class = 'status-recusada'; break;
+                                            default: $status_class = ''; break;
+                                        }
+                                    ?>
+                                    <span class="acordo-status <?php echo $status_class; ?>">
+                                        <?php echo ucfirst($status_text); ?>
+                                    </span>
+                                </div>
+                                <div class="toggle-icon">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="acordo-details" id="acordoDetails<?php echo $index; ?>">
+                                <div class="acordo-info-grid">
+                                    <div class="info-item">
+                                        <span class="info-label">Valor Total</span>
+                                        <span class="info-value">R$ <?php echo number_format($acordo['valor_total'] ?? 0, 2, ',', '.'); ?></span>
+                                    </div>
+                                    
+                                    <div class="info-item">
+                                        <span class="info-label">Quantidade</span>
+                                        <span class="info-value"><?php echo $acordo['quantidade_proposta']; ?> unidades</span>
+                                    </div>
+                                    
+                                    <div class="info-item">
+                                        <span class="info-label">Preço Unitário</span>
+                                        <span class="info-value">R$ <?php echo number_format($acordo['preco_proposto'] ?? 0, 2, ',', '.'); ?></span>
+                                    </div>
+                                    
+                                    <div class="info-item">
+                                        <span class="info-label">Forma de Pagamento</span>
+                                        <span class="info-value"><?php echo htmlspecialchars($acordo['forma_pagamento'] ?? 'Não informado'); ?></span>
+                                    </div>
+                                    
+                                    <div class="info-item">
+                                        <span class="info-label">Opção de Frete</span>
+                                        <span class="info-value"><?php echo htmlspecialchars($acordo['opcao_frete'] ?? 'Não informado'); ?></span>
+                                    </div>
+                                    
+                                    <div class="info-item">
+                                        <span class="info-label">Data da Proposta</span>
+                                        <span class="info-value"><?php echo date('d/m/Y H:i', strtotime($acordo['data_inicio'])); ?></span>
+                                    </div>
+                                    
+                                    <div class="info-item">
+                                        <span class="info-label">Última Atualização</span>
+                                        <span class="info-value"><?php echo date('d/m/Y H:i', strtotime($acordo['data_atualizacao'])); ?></span>
+                                    </div>
+                                </div>
+                                
+                                <?php if (!empty($acordo['assinaturas'])): ?>
+                                    <div class="assinaturas-section">
+                                        <div class="assinaturas-title">
+                                            <i class="fas fa-signature"></i>
+                                            Assinaturas Digitais
+                                            <span class="assinaturas-count"><?php echo $acordo['total_assinaturas']; ?></span>
+                                        </div>
+                                        
+                                        <div class="assinaturas-grid">
+                                            <?php foreach ($acordo['assinaturas'] as $assinatura): ?>
+                                                <div class="assinatura-card">
+                                                    <div class="assinatura-header">
+                                                        <div class="assinatura-nome"><?php echo htmlspecialchars($assinatura['nome_assinante'] ?? 'Não informado'); ?></div>
+                                                        <div class="assinatura-tipo"><?php echo ucfirst($assinatura['tipo_assinante'] ?? ''); ?></div>
+                                                    </div>
+                                                    
+                                                    <?php 
+                                                        $imagem_assinatura = $assinatura['assinatura_imagem'] ?? '';
+                                                        if (!empty($imagem_assinatura)) {
+                                                            // Corrigir formato se necessário
+                                                            if (strpos($imagem_assinatura, 'data:image') !== 0) {
+                                                                $imagem_assinatura = 'data:image/png;base64,' . $imagem_assinatura;
+                                                            }
+                                                    ?>
+                                                        <div class="assinatura-img-container">
+                                                            <img class="assinatura-img" src="<?php echo htmlspecialchars($imagem_assinatura); ?>" 
+                                                                 alt="Assinatura de <?php echo htmlspecialchars($assinatura['nome_assinante']); ?>">
+                                                        </div>
+                                                    <?php } else { ?>
+                                                        <div class="no-assinatura">
+                                                            <i class="fas fa-signature"></i><br>
+                                                            <span>Assinatura sem imagem</span>
+                                                        </div>
+                                                    <?php } ?>
+                                                    
+                                                    <div class="assinatura-info">
+                                                        <div class="assinatura-info-row">
+                                                            <strong>Data:</strong> <?php echo date('d/m/Y H:i', strtotime($assinatura['data_assinatura'])); ?>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="no-acordos-modal">
+                        <i class="fas fa-file-contract"></i>
+                        <h3>Nenhum acordo de compra encontrado</h3>
+                        <p>Esta conversa ainda não gerou nenhum acordo formal de compra.</p>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Modal functions
+        function abrirModal() {
+            document.getElementById('modalAcordos').style.display = 'flex';
+        }
+        
+        function fecharModal() {
+            document.getElementById('modalAcordos').style.display = 'none';
+            
+            // Fechar todos os acordos ao fechar o modal
+            const acordos = document.querySelectorAll('.acordo-details');
+            const headers = document.querySelectorAll('.acordo-header');
+            
+            acordos.forEach(detail => {
+                detail.classList.remove('active');
+            });
+            
+            headers.forEach(header => {
+                header.classList.remove('active');
+            });
+        }
+        
+        // Toggle accordion
+        function toggleAcordo(index) {
+            const details = document.getElementById('acordoDetails' + index);
+            const header = document.querySelector(`.acordo-item[data-id="${index}"] .acordo-header`);
+            
+            details.classList.toggle('active');
+            header.classList.toggle('active');
+        }
+        
+        // Fechar modal ao clicar fora
+        document.getElementById('modalAcordos').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharModal();
+            }
+        });
+        
+        // Fechar modal com ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('modalAcordos').style.display === 'flex') {
+                fecharModal();
+            }
+        });
+        
+        // Abrir modal ao clicar no botão (se houver acordos)
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnOpenModal = document.getElementById('btnOpenModal');
+            if (btnOpenModal && !btnOpenModal.disabled) {
+                btnOpenModal.addEventListener('click', abrirModal);
+            }
+            
+            // Se houver apenas 1 acordo, abrir automaticamente
+            const acordoCount = <?php echo count($acordos); ?>;
+            if (acordoCount === 1) {
+                // Abrir o primeiro acordo automaticamente
+                setTimeout(() => {
+                    const primeiroHeader = document.querySelector('.acordo-header');
+                    if (primeiroHeader) {
+                        primeiroHeader.click();
+                    }
+                }, 100);
+            }
+        });
+    </script>
 </body>
 </html>

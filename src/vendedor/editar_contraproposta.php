@@ -202,7 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 
                 <div class="contraproposta-form-group">
-                    <label for="quantidade">Quantidade ():</label>
+                    <label for="quantidade">Quantidade (<?php echo htmlspecialchars($contraproposta['unidade_medida']); ?>):</label>
                     <input type="number" id="quantidade" name="quantidade" 
                         value="<?php echo htmlspecialchars($contraproposta['quantidade_proposta']); ?>" 
                         min="1" 

@@ -189,12 +189,24 @@ try {
     }
     
     // 6. Enviar notificação para o vendedor
-    $sql_produto_info = "SELECT nome FROM produtos WHERE id = :produto_id";
+    $sql_produto_info = "SELECT nome, modo_precificacao, embalagem_unidades, embalagem_peso_kg FROM produtos WHERE id = :produto_id";
     $stmt_prod = $conn->prepare($sql_produto_info);
     $stmt_prod->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
     $stmt_prod->execute();
     $produto_info = $stmt_prod->fetch(PDO::FETCH_ASSOC);
     $produto_nome = $produto_info['nome'] ?? 'Produto';
+    
+    // Calcular unidade de medida baseado no modo_precificacao
+    $modo = $produto_info['modo_precificacao'] ?? 'por_quilo';
+    switch ($modo) {
+        case 'por_unidade': $unidade_medida_notif = 'unidade'; break;
+        case 'por_quilo': $unidade_medida_notif = 'kg'; break;
+        case 'caixa_unidades': $unidade_medida_notif = 'caixa' . (!empty($produto_info['embalagem_unidades']) ? " ({$produto_info['embalagem_unidades']} unid)" : ''); break;
+        case 'caixa_quilos': $unidade_medida_notif = 'caixa' . (!empty($produto_info['embalagem_peso_kg']) ? " ({$produto_info['embalagem_peso_kg']} kg)" : ''); break;
+        case 'saco_unidades': $unidade_medida_notif = 'saco' . (!empty($produto_info['embalagem_unidades']) ? " ({$produto_info['embalagem_unidades']} unid)" : ''); break;
+        case 'saco_quilos': $unidade_medida_notif = 'saco' . (!empty($produto_info['embalagem_peso_kg']) ? " ({$produto_info['embalagem_peso_kg']} kg)" : ''); break;
+        default: $unidade_medida_notif = 'unidade';
+    }
     
     $sql_notificacao = "INSERT INTO notificacoes 
         (usuario_id, mensagem, tipo, url) 
@@ -203,8 +215,8 @@ try {
     $stmt_not = $conn->prepare($sql_notificacao);
     
     $mensagem = $acao === 'enviada' 
-        ? "Nova proposta para '{$produto_nome}' - Quantidade: {$quantidade_proposta} unidades" 
-        : "Proposta atualizada para '{$produto_nome}' - Quantidade: {$quantidade_proposta} unidades";
+        ? "Nova proposta para '{$produto_nome}' - Quantidade: {$quantidade_proposta} {$unidade_medida_notif}" 
+        : "Proposta atualizada para '{$produto_nome}' - Quantidade: {$quantidade_proposta} {$unidade_medida_notif}";
     
     $url = "../../src/chat/chat.php?produto_id=" . $produto_id . "&conversa_id=" . $dados['conversa_id'];
     

@@ -14,8 +14,15 @@ $db = $database->getConnection();
 $aba_atual = $_GET['aba'] ?? 'entrega'; // entrega ou acordo
 
 try {
+    // Parâmetros de busca e filtro de data
+    $pesquisa = trim($_GET['pesquisa'] ?? '');
+    $data_inicio = $_GET['data_inicio'] ?? '';
+    $data_fim = $_GET['data_fim'] ?? '';
+
     if ($aba_atual == 'acordo') {
         // Buscar propostas que têm assinaturas, agrupadas por proposta
+        // Construir query dinâmica para acordos com filtros de pesquisa e data
+        $params = [];
         $sql = "SELECT pr.ID as proposta_id, pr.preco_proposto, pr.quantidade_proposta, 
                        pr.forma_pagamento, pr.opcao_frete, pr.valor_total, pr.status,
                        pr.data_inicio, pr.data_atualizacao,
@@ -25,18 +32,46 @@ try {
                        COALESCE(c.nome_comercial, u_comp.nome) as comprador_nome,
                        c.cidade as comprador_cidade, c.estado as comprador_estado,
                        c.telefone1 as comprador_telefone,
-                       -- Contar assinaturas
                        (SELECT COUNT(*) FROM propostas_assinaturas pa WHERE pa.proposta_id = pr.ID) as total_assinaturas
                 FROM propostas pr
                 INNER JOIN produtos p ON pr.produto_id = p.id
                 INNER JOIN vendedores v ON p.vendedor_id = v.id
                 LEFT JOIN compradores c ON c.usuario_id = pr.comprador_id
                 LEFT JOIN usuarios u_comp ON u_comp.id = pr.comprador_id
-                WHERE EXISTS (SELECT 1 FROM propostas_assinaturas pa WHERE pa.proposta_id = pr.ID)
-                ORDER BY pr.data_inicio DESC";
+                WHERE EXISTS (SELECT 1 FROM propostas_assinaturas pa WHERE pa.proposta_id = pr.ID)";
+
+        if (!empty($pesquisa)) {
+            $params[':pesquisa'] = '%' . $pesquisa . '%';
+            $apenas_numeros = preg_replace('/[^0-9]/', '', $pesquisa);
+
+            $search_clause = " AND (p.nome LIKE :pesquisa OR v.nome_comercial LIKE :pesquisa OR COALESCE(c.nome_comercial, u_comp.nome) LIKE :pesquisa";
+
+            if (!empty($apenas_numeros)) {
+                $cpf_like = '%' . $apenas_numeros . '%';
+                $search_clause .= " OR EXISTS (SELECT 1 FROM compradores c2 WHERE c2.usuario_id = pr.comprador_id AND REPLACE(REPLACE(REPLACE(c2.cpf_cnpj, '.', ''), '-', ''), '/', '') LIKE :cpf)";
+                $search_clause .= " OR REPLACE(REPLACE(REPLACE(v.cpf_cnpj, '.', ''), '-', ''), '/', '') LIKE :cpf_v";
+                $params[':cpf'] = $cpf_like;
+                $params[':cpf_v'] = $cpf_like;
+            }
+
+            $search_clause .= ")";
+            $sql .= $search_clause;
+        }
+
+        // Filtro por data de início da proposta
+        if (!empty($data_inicio)) {
+            $sql .= " AND pr.data_inicio >= :data_inicio";
+            $params[':data_inicio'] = $data_inicio . ' 00:00:00';
+        }
+        if (!empty($data_fim)) {
+            $sql .= " AND pr.data_inicio <= :data_fim";
+            $params[':data_fim'] = $data_fim . ' 23:59:59';
+        }
+
+        $sql .= " ORDER BY pr.data_inicio DESC";
 
         $stmt = $db->prepare($sql);
-        $stmt->execute();
+        $stmt->execute($params);
         $propostas = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Para cada proposta, buscar as assinaturas correspondentes
@@ -58,7 +93,8 @@ try {
         $titulo_aba = "Comprovantes de Acordo de Compra";
         $descricao_aba = "Visualização dos acordos de compra assinados digitalmente";
     } else {
-        // Buscar comprovantes de entrega (original)
+        // Buscar comprovantes de entrega (original) com filtros
+        $params = [];
         $sql = "SELECT e.id, e.endereco_origem, e.endereco_destino, e.valor_frete, e.data_entrega, e.foto_comprovante, e.assinatura_comprovante,
                 p.nome as produto_nome,
                 COALESCE(c.nome_comercial, u.nome) as comprador_nome,
@@ -68,11 +104,37 @@ try {
             LEFT JOIN compradores c ON c.usuario_id = e.comprador_id
             LEFT JOIN usuarios u ON u.id = e.comprador_id
             LEFT JOIN vendedores v ON v.id = COALESCE(e.vendedor_id, p.vendedor_id)
-            WHERE (e.foto_comprovante IS NOT NULL OR e.assinatura_comprovante IS NOT NULL)
-            ORDER BY e.data_entrega DESC";
+            WHERE (e.foto_comprovante IS NOT NULL OR e.assinatura_comprovante IS NOT NULL)";
+
+        if (!empty($pesquisa)) {
+            $params[':pesquisa'] = '%' . $pesquisa . '%';
+            $apenas_numeros = preg_replace('/[^0-9]/', '', $pesquisa);
+
+            $search_clause = " AND (COALESCE(c.nome_comercial, u.nome) LIKE :pesquisa OR v.nome_comercial LIKE :pesquisa OR p.nome LIKE :pesquisa";
+            if (!empty($apenas_numeros)) {
+                $cpf_like = '%' . $apenas_numeros . '%';
+                $search_clause .= " OR REPLACE(REPLACE(REPLACE(c.cpf_cnpj, '.', ''), '-', ''), '/', '') LIKE :cpf_c";
+                $search_clause .= " OR REPLACE(REPLACE(REPLACE(v.cpf_cnpj, '.', ''), '-', ''), '/', '') LIKE :cpf_v";
+                $params[':cpf_c'] = $cpf_like;
+                $params[':cpf_v'] = $cpf_like;
+            }
+            $search_clause .= ")";
+            $sql .= $search_clause;
+        }
+
+        if (!empty($data_inicio)) {
+            $sql .= " AND e.data_entrega >= :data_inicio";
+            $params[':data_inicio'] = $data_inicio . ' 00:00:00';
+        }
+        if (!empty($data_fim)) {
+            $sql .= " AND e.data_entrega <= :data_fim";
+            $params[':data_fim'] = $data_fim . ' 23:59:59';
+        }
+
+        $sql .= " ORDER BY e.data_entrega DESC";
 
         $stmt = $db->prepare($sql);
-        $stmt->execute();
+        $stmt->execute($params);
         $comprovantes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         $titulo_aba = "Comprovantes de Entrega";
@@ -314,6 +376,34 @@ try {
         <h1>Comprovantes</h1>
         <p><?php echo $descricao_aba; ?></p>
     </div>
+
+    <form method="GET" action="manage_comprovantes.php" class="admin-toolbar">
+        <input type="hidden" name="aba" value="<?php echo htmlspecialchars($aba_atual); ?>">
+
+        <div class="toolbar-search">
+            <input type="text"
+                   name="pesquisa"
+                   class="search-input-inline"
+                   placeholder="Pesquisar por nome, CPF ou CNPJ..."
+                   value="<?php echo htmlspecialchars($pesquisa ?? ''); ?>">
+
+            <?php if (!empty($pesquisa)): ?>
+                <a href="manage_comprovantes.php?aba=<?php echo urlencode($aba_atual); ?>" class="clear-search-inline" title="Limpar pesquisa">
+                    <i class="fas fa-times"></i>
+                </a>
+            <?php endif; ?>
+
+            <button type="submit" class="search-btn-inline">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+
+        <div class="toolbar-filters">
+            <input type="date" name="data_inicio" class="filter-select" value="<?php echo htmlspecialchars($data_inicio ?? ''); ?>">
+            <input type="date" name="data_fim" class="filter-select" value="<?php echo htmlspecialchars($data_fim ?? ''); ?>">
+            <button type="submit" class="filter-select" style="background:#4CAF50;color:#fff;border:none;">Aplicar</button>
+        </div>
+    </form>
 
     <!-- Navegação por abas -->
     <div class="abas-container">

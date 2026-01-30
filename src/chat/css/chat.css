@@ -2432,3 +2432,45 @@ html, body {
             cursor: not-allowed;
             transform: none;
         }
+
+        /* Estilos para o WhatsApp Card */
+
+.whatsapp-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #25D366;
+    color: white;
+    padding: 13.75px 15px;
+    border-radius: 100%;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+    margin-top: 8px;
+    border: #25D366;
+    cursor: pointer;
+}
+
+.whatsapp-button:hover {
+    background-color: #1da851;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
+}
+
+.whatsapp-button i {
+    font-size: 20px ;
+}
+
+/* Responsividade para o botão do WhatsApp */
+@media (max-width: 768px) {
+    .whatsapp-card {
+        margin: 10px;
+        padding: 12px;
+    }
+    
+    .whatsapp-button {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}

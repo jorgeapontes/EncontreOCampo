@@ -30,16 +30,26 @@ try {
                 p.desconto_data_fim AS produto_desconto_data_fim,
                 uc.nome AS comprador_nome,
                 uc.email AS comprador_email,
-                CASE WHEN cc.transportador_id IS NOT NULL THEN 'transportador' ELSE 'vendedor' END AS tipo_conversa,
-                COALESCE(uv.nome, ut.nome) AS outro_participante_nome,
-                COALESCE(uv.email, ut.email) AS outro_participante_email
+                CASE 
+                    WHEN cc.transportador_id IS NOT NULL THEN 'transportador' 
+                    ELSE 'vendedor' 
+                END AS tipo_conversa,
+                -- Informações do outro participante (transportador OU vendedor)
+                CASE 
+                    WHEN cc.transportador_id IS NOT NULL THEN ut.nome
+                    ELSE uv.nome
+                END AS outro_participante_nome,
+                CASE 
+                    WHEN cc.transportador_id IS NOT NULL THEN ut.email
+                    ELSE uv.email
+                END AS outro_participante_email
             FROM chat_conversas cc
             INNER JOIN produtos p ON cc.produto_id = p.id
             INNER JOIN usuarios uc ON cc.comprador_id = uc.id
             LEFT JOIN vendedores v ON p.vendedor_id = v.id
             LEFT JOIN usuarios uv ON v.usuario_id = uv.id
-            LEFT JOIN transportadores trans ON cc.transportador_id = trans.id
-            LEFT JOIN usuarios ut ON trans.usuario_id = ut.id
+            LEFT JOIN transportadores trans ON cc.transportador_id = trans.usuario_id
+            LEFT JOIN usuarios ut ON cc.transportador_id = ut.id
             WHERE cc.id = :conversa_id";
     
     $stmt = $conn->prepare($sql_conversa);
@@ -400,7 +410,15 @@ try {
                     <h4><?php if ($conversa['tipo_conversa'] === 'transportador'): ?><i class="fas fa-truck"></i> Transportador<?php else: ?><i class="fas fa-store"></i> Vendedor<?php endif; ?></h4>
                     <p><strong>Nome:</strong> <?php echo htmlspecialchars($conversa['outro_participante_nome']); ?></p>
                     <p><strong>Email:</strong> <?php echo htmlspecialchars($conversa['outro_participante_email']); ?></p>
-                    <p><strong>ID:</strong> <?php echo $conversa['transportador_id'] ?: $conversa['vendedor_id']; ?></p>
+                    <p><strong>ID:</strong> 
+                        <?php 
+                        if ($conversa['tipo_conversa'] === 'transportador') {
+                            echo $conversa['transportador_id'];
+                        } else {
+                            echo $conversa['vendedor_id'];
+                        }
+                        ?>
+                    </p>
                 </div>
             </div>
         </div>

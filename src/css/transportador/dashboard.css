@@ -805,8 +805,7 @@ th:last-child {
     .nav-link.login-button {
         margin-left: 0;
     }
-    
-    
+      
     .cta-button {
         float: none;
         width: 100%;
@@ -951,14 +950,28 @@ th:last-child {
     table {
         min-width: 600px;
         font-size: 14px;
+        display: table;
+        width: 100%;
     }
     
+    /* Container para scroll horizontal */
+    .historico-entregas {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -15px;
+        padding: 0 15px;
+        width: calc(100% + 30px);
+    }
+    
+    /* Ajusta tamanhos */
     th, td {
         padding: 8px 10px;
+        font-size: 12px;
     }
     
     th {
-        font-size: 12px;
+        font-size: 11px;
+        white-space: nowrap;
     }
     
     .status {
@@ -1149,9 +1162,9 @@ th:last-child {
     }
     
     /* Esconde a tabela tradicional em mobile */
-    table {
+    /* table {
         display: none;
-    }
+    } */
     
     /* Mostra a versão em cards */
     .cards-entregas-mobile {
@@ -1410,13 +1423,13 @@ th:last-child {
 
 /* Para garantir que a tabela não apareça em mobile */
 @media (max-width: 480px) {
-    table {
+    /* table {
         display: none;
     }
     
     .cards-entregas-mobile {
         display: block;
-    }
+    } */
 
     .card-action-btn{
         width: 100%;

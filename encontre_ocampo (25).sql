@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 30/01/2026 às 02:16
+-- Tempo de geração: 30/01/2026 às 21:20
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -121,7 +121,17 @@ INSERT INTO `chat_auditoria` (`id`, `conversa_id`, `usuario_id`, `acao`, `detalh
 (19, 47, 35, 'enviar_mensagem', 'Mensagem ID: 76 - Conteúdo: ✅ Proposta aceita. Informações de entrega repassadas ao transportador. Aguarde a coleta e entrega.', NULL, NULL, '2026-01-28 14:53:37'),
 (20, 47, 30, 'enviar_mensagem', 'Mensagem ID: 77 - Conteúdo: epa', NULL, NULL, '2026-01-28 15:06:05'),
 (21, 47, 30, 'enviar_mensagem', 'Mensagem ID: 78 - Conteúdo: quero comprar de novo', NULL, NULL, '2026-01-28 15:06:08'),
-(22, 47, 30, 'enviar_mensagem', 'Mensagem ID: 79 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** Banana\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10,', NULL, NULL, '2026-01-28 15:06:15');
+(22, 47, 30, 'enviar_mensagem', 'Mensagem ID: 79 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** Banana\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10,', NULL, NULL, '2026-01-28 15:06:15'),
+(23, 58, 30, 'enviar_mensagem', 'Mensagem ID: 1 - Conteúdo: quero', NULL, NULL, '2026-01-30 15:21:19'),
+(24, 58, 32, 'enviar_mensagem', 'Mensagem ID: 2 - Conteúdo: opa manda proposta', NULL, NULL, '2026-01-30 15:21:33'),
+(25, 58, 30, 'enviar_mensagem', 'Mensagem ID: 3 - Conteúdo: *NOVA PROPOSTA DE COMPRA*\n\n**Produto:** Banana\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10,', NULL, NULL, '2026-01-30 15:21:39'),
+(26, 58, 32, 'enviar_mensagem', 'Mensagem ID: 4 - Conteúdo: ✅ ACORDO CONCLUÍDO!\n\nAmbas as partes assinaram o acordo digitalmente.\nA proposta foi oficialmente ac', NULL, NULL, '2026-01-30 15:22:06'),
+(27, 59, 34, 'enviar_mensagem', 'Mensagem ID: 5 - Conteúdo: oba', NULL, NULL, '2026-01-30 15:22:35'),
+(28, 59, 30, 'enviar_mensagem', 'Mensagem ID: 6 - Conteúdo: *PROPOSTA DE ENTREGA*\nValor: R$ 100,00\nPrazo: 2026-01-31\nID: 16', NULL, NULL, '2026-01-30 15:23:00'),
+(29, 59, 34, 'enviar_mensagem', 'Mensagem ID: 7 - Conteúdo: ✅ Proposta aceita. Informações de entrega repassadas ao transportador. Aguarde a coleta e entrega.', NULL, NULL, '2026-01-30 15:23:03'),
+(30, 60, 34, 'enviar_mensagem', 'Mensagem ID: 8 - Conteúdo: eba', NULL, NULL, '2026-01-30 15:23:19'),
+(31, 60, 30, 'enviar_mensagem', 'Mensagem ID: 9 - Conteúdo: *PROPOSTA DE ENTREGA*\nValor: R$ 222,00\nPrazo: 2026-01-31\nID: 17', NULL, NULL, '2026-01-30 15:23:30'),
+(32, 60, 34, 'enviar_mensagem', 'Mensagem ID: 10 - Conteúdo: ✅ Proposta aceita. Informações de entrega repassadas ao transportador. Aguarde a coleta e entrega.', NULL, NULL, '2026-01-30 15:23:32');
 
 -- --------------------------------------------------------
 
@@ -161,11 +171,9 @@ CREATE TABLE `chat_conversas` (
 --
 
 INSERT INTO `chat_conversas` (`id`, `produto_id`, `comprador_id`, `vendedor_id`, `transportador_id`, `ultima_mensagem`, `ultima_mensagem_data`, `comprador_lido`, `vendedor_lido`, `status`, `data_criacao`, `deletado`, `data_delecao`, `usuario_deletou`, `favorito_comprador`, `favorito_vendedor`, `comprador_excluiu`, `vendedor_excluiu`, `ultimo_ip_comprador`, `ultimo_ip_vendedor`, `ultimo_user_agent_comprador`, `ultimo_user_agent_vendedor`, `favorito_transportador`, `transportador_excluiu`) VALUES
-(47, 32, 30, 32, 34, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** Banana\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Buscar transportador na plataforma\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 10,00\n\n**ID da proposta:** 71', '2026-01-28 15:06:15', 1, 0, 'ativo', '2026-01-28 14:03:30', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0),
-(48, 33, 30, 33, 34, '*PROPOSTA DE ENTREGA*\nValor: R$ 100,00\nPrazo: 2026-01-30\nID: 14', '2026-01-28 14:46:36', 0, 1, 'ativo', '2026-01-28 14:04:38', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0),
-(55, 32, 30, 32, 35, '*PROPOSTA DE ENTREGA*\nValor: R$ 111,00\nPrazo: 2026-01-29\nID: 15', '2026-01-28 14:53:32', 1, 0, 'ativo', '2026-01-28 14:53:09', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0),
-(56, 33, 34, 33, NULL, NULL, NULL, 1, 0, 'ativo', '2026-01-28 14:55:14', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0),
-(57, 32, 35, 32, NULL, NULL, NULL, 1, 0, 'ativo', '2026-01-28 14:55:52', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0);
+(58, 32, 30, 32, NULL, '✅ ACORDO CONCLUÍDO!\n\nAmbas as partes assinaram o acordo digitalmente.\nA proposta foi oficialmente aceita e a compra está confirmada.\n\n', '2026-01-30 15:22:06', 0, 1, 'ativo', '2026-01-30 15:21:12', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0),
+(59, 32, 30, 32, 34, '*PROPOSTA DE ENTREGA*\nValor: R$ 100,00\nPrazo: 2026-01-31\nID: 16', '2026-01-30 15:23:00', 1, 0, 'ativo', '2026-01-30 15:22:33', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0),
+(60, 33, 30, 33, 34, '*PROPOSTA DE ENTREGA*\nValor: R$ 222,00\nPrazo: 2026-01-31\nID: 17', '2026-01-30 15:23:30', 1, 0, 'ativo', '2026-01-30 15:23:17', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -195,28 +203,16 @@ CREATE TABLE `chat_mensagens` (
 --
 
 INSERT INTO `chat_mensagens` (`id`, `conversa_id`, `remetente_id`, `mensagem`, `tipo`, `dados_json`, `lida`, `data_envio`, `deletado`, `data_delecao`, `usuario_deletou`, `tipo_mensagem`, `anexo_url`, `palavras_ofensivas`) VALUES
-(58, 47, 30, 'quero', 'texto', NULL, 1, '2026-01-28 14:03:33', 0, NULL, NULL, 'texto', NULL, NULL),
-(59, 47, 30, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** Banana\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Buscar transportador na plataforma\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 10,00\n\n**ID da proposta:** 67', 'texto', NULL, 1, '2026-01-28 14:03:40', 0, NULL, NULL, 'texto', NULL, NULL),
-(60, 48, 30, 'qoero', 'texto', NULL, 1, '2026-01-28 14:04:40', 0, NULL, NULL, 'texto', NULL, NULL),
-(61, 48, 30, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** melancia\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 5,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Buscar transportador na plataforma\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 5,00\n\n**ID da proposta:** 68', 'texto', NULL, 1, '2026-01-28 14:04:49', 0, NULL, NULL, 'texto', NULL, NULL),
-(62, 47, 32, 'opa beleza?', 'texto', NULL, 1, '2026-01-28 14:04:59', 0, NULL, NULL, 'texto', NULL, NULL),
-(63, 47, 32, 'tem que comprar no minimo 2!', 'texto', NULL, 1, '2026-01-28 14:05:10', 0, NULL, NULL, 'texto', NULL, NULL),
-(64, 47, 30, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** Banana\n**Quantidade:** 2 unidades\n**Valor unitário:** R$ 10,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Buscar transportador na plataforma\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 20,00\n\n**ID da proposta:** 67', 'texto', NULL, 1, '2026-01-28 14:05:22', 0, NULL, NULL, 'texto', NULL, NULL),
-(65, 48, 34, 'opa', 'texto', NULL, 1, '2026-01-28 14:22:03', 0, NULL, NULL, 'texto', NULL, NULL),
-(66, 48, 34, 'cu', 'texto', NULL, 1, '2026-01-28 14:22:07', 0, NULL, NULL, 'texto', NULL, NULL),
-(67, 48, 33, 'teste', 'texto', NULL, 1, '2026-01-28 14:42:21', 0, NULL, NULL, 'texto', NULL, NULL),
-(68, 47, 30, 'pdp', 'texto', NULL, 1, '2026-01-28 14:42:39', 0, NULL, NULL, 'texto', NULL, NULL),
-(69, 48, 34, 'zuado', 'texto', NULL, 1, '2026-01-28 14:43:02', 0, NULL, NULL, 'texto', NULL, NULL),
-(70, 48, 34, 'porra', 'texto', NULL, 1, '2026-01-28 14:45:52', 0, NULL, NULL, 'texto', NULL, NULL),
-(71, 48, 30, '*PROPOSTA DE ENTREGA*\nValor: R$ 100,00\nPrazo: 2026-01-30\nID: 14', '', '{\"proposta_id\":69,\"propostas_transportador_id\":14,\"valor\":\"100\",\"prazo\":\"2026-01-30\"}', 1, '2026-01-28 14:46:36', 0, NULL, NULL, 'texto', NULL, NULL),
-(72, 48, 34, '✅ Proposta aceita. Informações de entrega repassadas ao transportador. Aguarde a coleta e entrega.', '', NULL, 1, '2026-01-28 14:46:43', 0, NULL, NULL, 'texto', NULL, NULL),
-(73, 47, 34, 'ei', 'texto', NULL, 1, '2026-01-28 14:47:06', 0, NULL, NULL, 'texto', NULL, NULL),
-(74, 55, 35, 'opa', 'texto', NULL, 1, '2026-01-28 14:53:11', 0, NULL, NULL, 'texto', NULL, NULL),
-(75, 55, 30, '*PROPOSTA DE ENTREGA*\nValor: R$ 111,00\nPrazo: 2026-01-29\nID: 15', '', '{\"proposta_id\":70,\"propostas_transportador_id\":15,\"valor\":\"111\",\"prazo\":\"2026-01-29\"}', 1, '2026-01-28 14:53:32', 0, NULL, NULL, 'texto', NULL, NULL),
-(76, 47, 35, '✅ Proposta aceita. Informações de entrega repassadas ao transportador. Aguarde a coleta e entrega.', '', NULL, 1, '2026-01-28 14:53:37', 0, NULL, NULL, 'texto', NULL, NULL),
-(77, 47, 30, 'epa', 'texto', NULL, 0, '2026-01-28 15:06:05', 0, NULL, NULL, 'texto', NULL, NULL),
-(78, 47, 30, 'quero comprar de novo', 'texto', NULL, 0, '2026-01-28 15:06:08', 0, NULL, NULL, 'texto', NULL, NULL),
-(79, 47, 30, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** Banana\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Buscar transportador na plataforma\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 10,00\n\n**ID da proposta:** 71', 'texto', NULL, 0, '2026-01-28 15:06:15', 0, NULL, NULL, 'texto', NULL, NULL);
+(1, 58, 30, 'quero', 'texto', NULL, 1, '2026-01-30 15:21:19', 0, NULL, NULL, 'texto', NULL, NULL),
+(2, 58, 32, 'opa manda proposta', 'texto', NULL, 1, '2026-01-30 15:21:33', 0, NULL, NULL, 'texto', NULL, NULL),
+(3, 58, 30, '*NOVA PROPOSTA DE COMPRA*\n\n**Produto:** Banana\n**Quantidade:** 1 unidades\n**Valor unitário:** R$ 10,00\n**Forma de pagamento:** Pagamento no Ato\n**Opção de frete:** Buscar transportador na plataforma\n**Valor do frete:** R$ 0,00\n**Valor total:** R$ 10,00\n\n**ID da proposta:** 72', 'texto', NULL, 1, '2026-01-30 15:21:39', 0, NULL, NULL, 'texto', NULL, NULL),
+(4, 58, 32, '✅ ACORDO CONCLUÍDO!\n\nAmbas as partes assinaram o acordo digitalmente.\nA proposta foi oficialmente aceita e a compra está confirmada.\n\n', 'texto', NULL, 1, '2026-01-30 15:22:06', 0, NULL, NULL, 'texto', NULL, NULL),
+(5, 59, 34, 'oba', 'texto', NULL, 1, '2026-01-30 15:22:35', 0, NULL, NULL, 'texto', NULL, NULL),
+(6, 59, 30, '*PROPOSTA DE ENTREGA*\nValor: R$ 100,00\nPrazo: 2026-01-31\nID: 16', '', '{\"proposta_id\":73,\"propostas_transportador_id\":16,\"valor\":\"100\",\"prazo\":\"2026-01-31\"}', 1, '2026-01-30 15:23:00', 0, NULL, NULL, 'texto', NULL, NULL),
+(7, 59, 34, '✅ Proposta aceita. Informações de entrega repassadas ao transportador. Aguarde a coleta e entrega.', '', NULL, 1, '2026-01-30 15:23:03', 0, NULL, NULL, 'texto', NULL, NULL),
+(8, 60, 34, 'eba', 'texto', NULL, 1, '2026-01-30 15:23:19', 0, NULL, NULL, 'texto', NULL, NULL),
+(9, 60, 30, '*PROPOSTA DE ENTREGA*\nValor: R$ 222,00\nPrazo: 2026-01-31\nID: 17', '', '{\"proposta_id\":74,\"propostas_transportador_id\":17,\"valor\":\"222\",\"prazo\":\"2026-01-31\"}', 1, '2026-01-30 15:23:30', 0, NULL, NULL, 'texto', NULL, NULL),
+(10, 60, 34, '✅ Proposta aceita. Informações de entrega repassadas ao transportador. Aguarde a coleta e entrega.', '', NULL, 1, '2026-01-30 15:23:32', 0, NULL, NULL, 'texto', NULL, NULL);
 
 --
 -- Acionadores `chat_mensagens`
@@ -266,23 +262,6 @@ INSERT INTO `compradores` (`id`, `usuario_id`, `tipo_pessoa`, `nome_comercial`, 
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `conversas`
---
-
-CREATE TABLE `conversas` (
-  `id` int(11) NOT NULL,
-  `comprador_id` int(11) NOT NULL,
-  `vendedor_id` int(11) NOT NULL,
-  `produto_id` int(11) DEFAULT NULL,
-  `titulo` varchar(255) DEFAULT NULL,
-  `status` enum('ativa','finalizada','arquivada') DEFAULT 'ativa',
-  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
-  `ultima_mensagem` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
 -- Estrutura para tabela `entregas`
 --
 
@@ -312,7 +291,9 @@ CREATE TABLE `entregas` (
 
 INSERT INTO `entregas` (`id`, `produto_id`, `transportador_id`, `endereco_origem`, `endereco_destino`, `status`, `data_solicitacao`, `valor_frete`, `vendedor_id`, `comprador_id`, `data_aceitacao`, `data_inicio_transporte`, `data_entrega`, `observacoes`, `foto_comprovante`, `assinatura_comprovante`, `status_detalhado`) VALUES
 (31, 33, 4, '', 'Rua Seis, 206 - Jundiaí/SP - CEP: 13211-873', 'entregue', '2026-01-28 14:46:43', 100.00, 12, 30, '2026-01-28 14:46:43', NULL, '2026-01-30 00:22:12', '', 'entrega_31_1769732532.png', 'assinatura_31_1769732532.png', 'finalizada'),
-(32, 32, 5, '', 'Rua Seis, 206 - Jundiaí/SP - CEP: 13211-873', 'pendente', '2026-01-28 14:53:37', 111.00, 11, 30, '2026-01-28 14:53:37', NULL, NULL, '', NULL, NULL, 'aguardando_entrega');
+(32, 32, 5, '', 'Rua Seis, 206 - Jundiaí/SP - CEP: 13211-873', 'pendente', '2026-01-28 14:53:37', 111.00, 11, 30, '2026-01-28 14:53:37', NULL, NULL, '', NULL, NULL, 'aguardando_entrega'),
+(33, 32, 4, '', 'Rua Seis, 206 - Jundiaí/SP - CEP: 13211-873', 'pendente', '2026-01-30 15:23:03', 100.00, 11, 30, '2026-01-30 15:23:03', NULL, NULL, '', NULL, NULL, 'aguardando_entrega'),
+(34, 33, 4, '', 'Rua Seis, 206 - Jundiaí/SP - CEP: 13211-873', 'entregue', '2026-01-30 15:23:32', 222.00, 12, 30, '2026-01-30 15:23:32', NULL, '2026-01-30 15:25:50', '', 'entrega_34_1769786750.jpg', 'assinatura_34_1769786750.png', 'finalizada');
 
 -- --------------------------------------------------------
 
@@ -325,23 +306,6 @@ CREATE TABLE `favoritos` (
   `usuario_id` int(11) NOT NULL,
   `produto_id` int(11) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estrutura para tabela `mensagens`
---
-
-CREATE TABLE `mensagens` (
-  `id` int(11) NOT NULL,
-  `conversa_id` int(11) NOT NULL,
-  `remetente_id` int(11) NOT NULL,
-  `mensagem` text NOT NULL,
-  `tipo` enum('texto','imagem','proposta','aceite','oferta') DEFAULT 'texto',
-  `dados_json` text DEFAULT NULL COMMENT 'JSON com dados extras (preço, quantidade, etc)',
-  `lida` tinyint(1) DEFAULT 0,
-  `data_envio` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -374,26 +338,9 @@ INSERT INTO `notificacoes` (`id`, `usuario_id`, `mensagem`, `tipo`, `lida`, `url
 (7, 32, 'Nova proposta para \'Banana\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=32&conversa_id=47', '2026-01-28 14:03:40'),
 (8, 33, 'Nova proposta para \'melancia\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=33&conversa_id=48', '2026-01-28 14:04:49'),
 (9, 32, 'Proposta atualizada para \'Banana\' - Quantidade: 2 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=32&conversa_id=47', '2026-01-28 14:05:22'),
-(10, 32, 'Nova proposta para \'Banana\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=32&conversa_id=47', '2026-01-28 15:06:15');
-
--- --------------------------------------------------------
-
---
--- Estrutura para tabela `pagamentos`
---
-
-CREATE TABLE `pagamentos` (
-  `id` int(11) NOT NULL,
-  `vendedor_id` int(11) NOT NULL,
-  `assinatura_id` int(11) DEFAULT NULL,
-  `valor` decimal(10,2) NOT NULL,
-  `status` varchar(50) DEFAULT NULL,
-  `metodo_pagamento` varchar(50) DEFAULT NULL,
-  `id_mercadopago` varchar(255) DEFAULT NULL,
-  `data_pagamento` timestamp NULL DEFAULT NULL,
-  `descricao` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+(10, 32, 'Nova proposta para \'Banana\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=32&conversa_id=47', '2026-01-28 15:06:15'),
+(11, 32, 'Nova proposta para \'Banana\' - Quantidade: 1 unidades', 'info', 0, '../../src/chat/chat.php?produto_id=32&conversa_id=58', '2026-01-30 15:21:39'),
+(12, 32, 'Acordo assinado por todas as partes! A proposta para \'\' foi concluída.', 'sucesso', 0, '../../src/chat/chat.php?produto_id=32&conversa_id=', '2026-01-30 15:22:06');
 
 -- --------------------------------------------------------
 
@@ -463,7 +410,7 @@ CREATE TABLE `produtos` (
 --
 
 INSERT INTO `produtos` (`id`, `vendedor_id`, `nome`, `descricao`, `preco`, `modo_precificacao`, `embalagem_peso_kg`, `embalagem_unidades`, `estoque_unidades`, `preco_desconto`, `desconto_percentual`, `desconto_ativo`, `desconto_data_inicio`, `desconto_data_fim`, `categoria`, `imagem_url`, `estoque`, `unidade_medida`, `paletizado`, `status`, `data_criacao`, `data_atualizacao`) VALUES
-(32, 11, 'Banana', 'bananas amarelas gostosas', 10.00, 'caixa_unidades', NULL, 10, 250, NULL, 0.00, 0, NULL, NULL, 'Frutas Tropicais', '../uploads/produtos/prod_697a16f35b3ee0.25475716.jpeg', 248, 'caixa', 1, 'ativo', '2026-01-28 14:02:27', '2026-01-28 14:05:34'),
+(32, 11, 'Banana', 'bananas amarelas gostosas', 10.00, 'caixa_unidades', NULL, 10, 250, NULL, 0.00, 0, NULL, NULL, 'Frutas Tropicais', '../uploads/produtos/prod_697a16f35b3ee0.25475716.jpeg', 247, 'caixa', 1, 'ativo', '2026-01-28 14:02:27', '2026-01-30 15:22:06'),
 (33, 12, 'melancia', 'melancias redondas', 5.00, 'por_unidade', NULL, NULL, 110, NULL, 0.00, 0, NULL, NULL, 'Frutas Vermelhas', '../uploads/produtos/prod_697a1720a5ee03.43633754.jpg', 109, 'unidade', 0, 'ativo', '2026-01-28 14:03:12', '2026-01-28 14:06:26');
 
 -- --------------------------------------------------------
@@ -525,11 +472,14 @@ CREATE TABLE `propostas` (
 --
 
 INSERT INTO `propostas` (`ID`, `comprador_id`, `vendedor_id`, `produto_id`, `data_inicio`, `data_atualizacao`, `preco_proposto`, `quantidade_proposta`, `forma_pagamento`, `opcao_frete`, `valor_frete`, `valor_total`, `status`, `tipo_frete`, `status_entrega`, `data_entrega_estimada`, `transportador_id`, `endereco_vendedor`, `endereco_comprador`, `valor_frete_final`, `confirmado`, `arquivado`, `frete_resolvido`) VALUES
-(67, 30, 32, 32, '2026-01-28 14:03:40', '2026-01-28 14:05:34', 10.00, 2, 'à vista', 'entregador', 0.00, 20.00, 'aceita', 'vendedor', 'pendente', NULL, NULL, NULL, NULL, NULL, 0, 0, 0),
-(68, 30, 33, 33, '2026-01-28 14:04:49', '2026-01-28 14:06:26', 5.00, 1, 'à vista', 'entregador', 0.00, 5.00, 'aceita', 'vendedor', 'pendente', NULL, NULL, NULL, NULL, NULL, 0, 0, 0),
+(67, 30, 32, 32, '2026-01-28 14:03:40', '2026-01-30 15:23:03', 10.00, 2, 'à vista', 'entregador', 0.00, 20.00, 'aceita', 'vendedor', 'pendente', NULL, 4, NULL, NULL, 100.00, 0, 0, 1),
+(68, 30, 33, 33, '2026-01-28 14:04:49', '2026-01-30 15:23:32', 5.00, 1, 'à vista', 'entregador', 0.00, 5.00, 'aceita', 'vendedor', 'pendente', NULL, 4, NULL, NULL, 222.00, 0, 0, 1),
 (69, 30, 33, 33, '2026-01-28 14:46:36', '2026-01-28 14:46:43', 5.00, 1, 'à vista', 'entregador', 100.00, 100.00, 'aceita', 'vendedor', 'pendente', '2026-01-30', 4, NULL, NULL, NULL, 0, 0, 0),
 (70, 30, 32, 32, '2026-01-28 14:53:32', '2026-01-28 14:53:37', 10.00, 1, 'à vista', 'entregador', 111.00, 111.00, 'aceita', 'vendedor', 'pendente', '2026-01-29', 5, NULL, NULL, NULL, 0, 0, 0),
-(71, 30, 32, 32, '2026-01-28 15:06:15', '2026-01-28 15:06:15', 10.00, 1, 'à vista', 'entregador', 0.00, 10.00, 'negociacao', 'vendedor', 'pendente', NULL, NULL, NULL, NULL, NULL, 0, 0, 0);
+(71, 30, 32, 32, '2026-01-28 15:06:15', '2026-01-30 15:21:15', 10.00, 1, 'à vista', 'entregador', 0.00, 10.00, 'cancelada', 'vendedor', 'pendente', NULL, NULL, NULL, NULL, NULL, 0, 0, 0),
+(72, 30, 32, 32, '2026-01-30 15:21:39', '2026-01-30 15:22:06', 10.00, 1, 'à vista', 'entregador', 0.00, 10.00, 'aceita', 'vendedor', 'pendente', NULL, NULL, NULL, NULL, NULL, 0, 0, 0),
+(73, 30, 32, 32, '2026-01-30 15:23:00', '2026-01-30 15:23:00', 10.00, 1, 'à vista', 'entregador', 100.00, 100.00, 'negociacao', 'vendedor', 'pendente', '2026-01-31', 4, NULL, NULL, NULL, 0, 0, 0),
+(74, 30, 33, 33, '2026-01-30 15:23:30', '2026-01-30 15:23:30', 5.00, 1, 'à vista', 'entregador', 222.00, 222.00, 'negociacao', 'vendedor', 'pendente', '2026-01-31', 4, NULL, NULL, NULL, 0, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -547,6 +497,14 @@ CREATE TABLE `propostas_assinaturas` (
   `user_agent` text DEFAULT NULL,
   `data_assinatura` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `propostas_assinaturas`
+--
+
+INSERT INTO `propostas_assinaturas` (`id`, `proposta_id`, `usuario_id`, `assinatura_hash`, `assinatura_imagem`, `ip_address`, `user_agent`, `data_assinatura`) VALUES
+(1, 72, 32, 'd842b84db0511dca08146e89fe3f2b27c578f8acb05ab0ca811c6e332452cfef', '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', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0', '2026-01-30 15:22:00'),
+(2, 72, 30, '58e6e5c479e4ca12946f9ba5a3794491677c5c0a78dd076fd2dfbe9983d88331', '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', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-30 15:22:06');
 
 -- --------------------------------------------------------
 
@@ -572,7 +530,9 @@ CREATE TABLE `propostas_transportadores` (
 
 INSERT INTO `propostas_transportadores` (`id`, `proposta_id`, `transportador_id`, `valor_frete`, `prazo_entrega`, `observacoes`, `status`, `data_criacao`, `data_resposta`) VALUES
 (14, 69, 4, 100.00, 2, '', 'aceita', '2026-01-28 11:46:36', '2026-01-28 11:46:43'),
-(15, 70, 5, 111.00, 1, '', 'aceita', '2026-01-28 11:53:32', '2026-01-28 11:53:37');
+(15, 70, 5, 111.00, 1, '', 'aceita', '2026-01-28 11:53:32', '2026-01-28 11:53:37'),
+(16, 73, 4, 100.00, 1, '', 'aceita', '2026-01-30 12:23:00', '2026-01-30 12:23:03'),
+(17, 74, 4, 222.00, 1, '', 'aceita', '2026-01-30 12:23:30', '2026-01-30 12:23:32');
 
 -- --------------------------------------------------------
 
@@ -789,22 +749,6 @@ CREATE TABLE `vendedor_assinaturas` (
   `external_reference` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
-
---
--- Estrutura para tabela `webhook_logs`
---
-
-CREATE TABLE `webhook_logs` (
-  `id` int(11) NOT NULL,
-  `event_type` varchar(100) DEFAULT NULL,
-  `resource_id` varchar(100) DEFAULT NULL,
-  `payload` text DEFAULT NULL,
-  `processed` tinyint(1) DEFAULT 0,
-  `error_message` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 --
 -- Índices para tabelas despejadas
 --
@@ -853,16 +797,6 @@ ALTER TABLE `compradores`
   ADD KEY `usuario_id` (`usuario_id`);
 
 --
--- Índices de tabela `conversas`
---
-ALTER TABLE `conversas`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `conversa_unica` (`comprador_id`,`vendedor_id`,`produto_id`),
-  ADD KEY `comprador_id` (`comprador_id`),
-  ADD KEY `vendedor_id` (`vendedor_id`),
-  ADD KEY `produto_id` (`produto_id`);
-
---
 -- Índices de tabela `entregas`
 --
 ALTER TABLE `entregas`
@@ -882,28 +816,11 @@ ALTER TABLE `favoritos`
   ADD KEY `produto_id` (`produto_id`);
 
 --
--- Índices de tabela `mensagens`
---
-ALTER TABLE `mensagens`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `conversa_id` (`conversa_id`),
-  ADD KEY `remetente_id` (`remetente_id`),
-  ADD KEY `data_envio` (`data_envio`);
-
---
 -- Índices de tabela `notificacoes`
 --
 ALTER TABLE `notificacoes`
   ADD PRIMARY KEY (`id`),
   ADD KEY `usuario_id` (`usuario_id`);
-
---
--- Índices de tabela `pagamentos`
---
-ALTER TABLE `pagamentos`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `vendedor_id` (`vendedor_id`),
-  ADD KEY `assinatura_id` (`assinatura_id`);
 
 --
 -- Índices de tabela `planos`
@@ -1013,12 +930,6 @@ ALTER TABLE `vendedor_assinaturas`
   ADD KEY `plano_id` (`plano_id`);
 
 --
--- Índices de tabela `webhook_logs`
---
-ALTER TABLE `webhook_logs`
-  ADD PRIMARY KEY (`id`);
-
---
 -- AUTO_INCREMENT para tabelas despejadas
 --
 
@@ -1032,19 +943,19 @@ ALTER TABLE `admin_acoes`
 -- AUTO_INCREMENT de tabela `chat_auditoria`
 --
 ALTER TABLE `chat_auditoria`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT de tabela `chat_conversas`
 --
 ALTER TABLE `chat_conversas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- AUTO_INCREMENT de tabela `chat_mensagens`
 --
 ALTER TABLE `chat_mensagens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=80;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de tabela `compradores`
@@ -1053,16 +964,10 @@ ALTER TABLE `compradores`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
--- AUTO_INCREMENT de tabela `conversas`
---
-ALTER TABLE `conversas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT de tabela `entregas`
 --
 ALTER TABLE `entregas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT de tabela `favoritos`
@@ -1071,22 +976,10 @@ ALTER TABLE `favoritos`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
--- AUTO_INCREMENT de tabela `mensagens`
---
-ALTER TABLE `mensagens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT de tabela `notificacoes`
 --
 ALTER TABLE `notificacoes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
-
---
--- AUTO_INCREMENT de tabela `pagamentos`
---
-ALTER TABLE `pagamentos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT de tabela `planos`
@@ -1110,19 +1003,19 @@ ALTER TABLE `produto_imagens`
 -- AUTO_INCREMENT de tabela `propostas`
 --
 ALTER TABLE `propostas`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
 
 --
 -- AUTO_INCREMENT de tabela `propostas_assinaturas`
 --
 ALTER TABLE `propostas_assinaturas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de tabela `propostas_transportadores`
 --
 ALTER TABLE `propostas_transportadores`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT de tabela `solicitacoes_cadastro`
@@ -1173,12 +1066,6 @@ ALTER TABLE `vendedor_assinaturas`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT de tabela `webhook_logs`
---
-ALTER TABLE `webhook_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- Restrições para tabelas despejadas
 --
 
@@ -1210,14 +1097,6 @@ ALTER TABLE `compradores`
   ADD CONSTRAINT `compradores_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Restrições para tabelas `conversas`
---
-ALTER TABLE `conversas`
-  ADD CONSTRAINT `conversas_ibfk_1` FOREIGN KEY (`comprador_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `conversas_ibfk_2` FOREIGN KEY (`vendedor_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `conversas_ibfk_3` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE SET NULL;
-
---
 -- Restrições para tabelas `entregas`
 --
 ALTER TABLE `entregas`
@@ -1234,24 +1113,10 @@ ALTER TABLE `favoritos`
   ADD CONSTRAINT `favoritos_ibfk_2` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE;
 
 --
--- Restrições para tabelas `mensagens`
---
-ALTER TABLE `mensagens`
-  ADD CONSTRAINT `mensagens_ibfk_1` FOREIGN KEY (`conversa_id`) REFERENCES `conversas` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `mensagens_ibfk_2` FOREIGN KEY (`remetente_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
-
---
 -- Restrições para tabelas `notificacoes`
 --
 ALTER TABLE `notificacoes`
   ADD CONSTRAINT `notificacoes_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
-
---
--- Restrições para tabelas `pagamentos`
---
-ALTER TABLE `pagamentos`
-  ADD CONSTRAINT `pagamentos_ibfk_1` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores` (`id`),
-  ADD CONSTRAINT `pagamentos_ibfk_2` FOREIGN KEY (`assinatura_id`) REFERENCES `vendedor_assinaturas` (`id`);
 
 --
 -- Restrições para tabelas `produtos`

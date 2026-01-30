@@ -1423,13 +1423,13 @@ th:last-child {
 
 /* Para garantir que a tabela não apareça em mobile */
 @media (max-width: 480px) {
-    /* table {
+    table {
         display: none;
     }
     
     .cards-entregas-mobile {
         display: block;
-    } */
+    }
 
     .card-action-btn{
         width: 100%;

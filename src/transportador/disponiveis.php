@@ -539,32 +539,40 @@ if (isset($_SESSION['usuario_id'])) {
             <?php
             // Buscar acordos de compra com tipo_frete = 'plataforma' e status = 'aceita' e sem transportador definido
             // E que NÃO TENHAM uma proposta de transporte ACEITA
-            $sql_acordos = "SELECT p.ID as proposta_id, p.*, 
-                (SELECT nome_comercial FROM compradores WHERE id = p.comprador_id) as comprador_nome,
-                (SELECT cep FROM compradores WHERE id = p.comprador_id) as comprador_cep,
-                (SELECT rua FROM compradores WHERE id = p.comprador_id) as comprador_rua,
-                (SELECT numero FROM compradores WHERE id = p.comprador_id) as comprador_numero,
-                (SELECT cidade FROM compradores WHERE id = p.comprador_id) as comprador_cidade,
-                (SELECT estado FROM compradores WHERE id = p.comprador_id) as comprador_estado,
-                (SELECT nome_comercial FROM vendedores WHERE id = p.vendedor_id) as vendedor_nome,
-                (SELECT cep FROM vendedores WHERE id = p.vendedor_id) as vendedor_cep,
-                (SELECT rua FROM vendedores WHERE id = p.vendedor_id) as vendedor_rua,
-                (SELECT numero FROM vendedores WHERE id = p.vendedor_id) as vendedor_numero,
-                (SELECT cidade FROM vendedores WHERE id = p.vendedor_id) as vendedor_cidade,
-                (SELECT estado FROM vendedores WHERE id = p.vendedor_id) as vendedor_estado,
-                pr.nome as produto_nome, pr.imagem_url as produto_imagem, p.quantidade_proposta as quantidade
-                FROM propostas p
-                INNER JOIN produtos pr ON p.produto_id = pr.id
-                WHERE p.opcao_frete = 'entregador' 
+                $sql_acordos = "SELECT p.ID as proposta_id, p.*, 
+                comp.nome_comercial as comprador_nome,
+                comp.cep as comprador_cep,
+                comp.rua as comprador_rua,
+                comp.numero as comprador_numero,
+                comp.cidade as comprador_cidade,
+                comp.estado as comprador_estado,
+                vend.nome_comercial as vendedor_nome,
+                vend.cep as vendedor_cep,
+                vend.rua as vendedor_rua,
+                vend.numero as vendedor_numero,
+                vend.cidade as vendedor_cidade,
+                vend.estado as vendedor_estado,
+                pr.nome as produto_nome, 
+                pr.imagem_url as produto_imagem, 
+                p.quantidade_proposta as quantidade
+            FROM propostas p
+            INNER JOIN produtos pr ON p.produto_id = pr.id
+            LEFT JOIN compradores comp ON comp.usuario_id = p.comprador_id
+            LEFT JOIN vendedores vend ON vend.usuario_id = p.vendedor_id
+            WHERE p.opcao_frete = 'entregador' 
                 AND p.status = 'aceita' 
-                AND p.frete_resolvido = 0";
+                AND p.transportador_id IS NULL
+                AND NOT EXISTS (
+                    SELECT 1 FROM propostas_transportadores pt 
+                    WHERE pt.proposta_id = p.ID AND pt.status = 'aceita'
+                )";
 
-            // aplicar filtros de estado (origem = vendedor, destino = comprador)
+            // Aplicar filtros de estado
             if (!empty($filtro_estado_origem)) {
-                $sql_acordos .= " AND (SELECT estado FROM vendedores WHERE id = p.vendedor_id) = :estado_origem";
+                $sql_acordos .= " AND vend.estado = :estado_origem";
             }
             if (!empty($filtro_estado_destino)) {
-                $sql_acordos .= " AND (SELECT estado FROM compradores WHERE id = p.comprador_id) = :estado_destino";
+                $sql_acordos .= " AND comp.estado = :estado_destino";
             }
 
             $sql_acordos .= " ORDER BY p.data_inicio DESC";
@@ -589,17 +597,23 @@ if (isset($_SESSION['usuario_id'])) {
                     if (!empty($acordo['endereco_vendedor'])) {
                         $origem = $acordo['endereco_vendedor'];
                     } else {
-                            $origem = ($acordo['vendedor_rua'] ?? '') . ', ' . ($acordo['vendedor_numero'] ?? '') . ' - ' . ($acordo['vendedor_cidade'] ?? '') . '/' . ($acordo['vendedor_estado'] ?? '') . ' - CEP: ' . ($acordo['vendedor_cep'] ?? '');
+                        $origem = ($acordo['vendedor_rua'] ?? '') . 
+                                ', ' . ($acordo['vendedor_numero'] ?? '') . 
+                                ' - ' . ($acordo['vendedor_cidade'] ?? '') . 
+                                '/' . ($acordo['vendedor_estado'] ?? '') . 
+                                ' - CEP: ' . ($acordo['vendedor_cep'] ?? '');
                     }
 
                     if (!empty($acordo['endereco_comprador'])) {
                         $destino = $acordo['endereco_comprador'];
                     } else {
-                            $destino = ($acordo['comprador_rua'] ?? '') . ', ' . ($acordo['comprador_numero'] ?? '') . ' - ' . ($acordo['comprador_cidade'] ?? '') . '/' . ($acordo['comprador_estado'] ?? '') . ' - CEP: ' . ($acordo['comprador_cep'] ?? '');
+                        $destino = ($acordo['comprador_rua'] ?? '') . 
+                                ', ' . ($acordo['comprador_numero'] ?? '') . 
+                                ' - ' . ($acordo['comprador_cidade'] ?? '') . 
+                                '/' . ($acordo['comprador_estado'] ?? '') . 
+                                ' - CEP: ' . ($acordo['comprador_cep'] ?? '');
                     }
-                        // Montar endereço sempre a partir dos dados atuais de vendedores/compradores
-                        $origem = ($acordo['vendedor_rua'] ?? '') . ', ' . ($acordo['vendedor_numero'] ?? '') . ' - ' . ($acordo['vendedor_cidade'] ?? '') . '/' . ($acordo['vendedor_estado'] ?? '') . ' - CEP: ' . ($acordo['vendedor_cep'] ?? '');
-                        $destino = ($acordo['comprador_rua'] ?? '') . ', ' . ($acordo['comprador_numero'] ?? '') . ' - ' . ($acordo['comprador_cidade'] ?? '') . '/' . ($acordo['comprador_estado'] ?? '') . ' - CEP: ' . ($acordo['comprador_cep'] ?? '');
+                        
                     $google_maps_url = 'https://www.google.com/maps/dir/?api=1&origin=' . urlencode($origem) . '&destination=' . urlencode($destino) . '&travelmode=driving';
             ?>
                     <div class="acordo-card">

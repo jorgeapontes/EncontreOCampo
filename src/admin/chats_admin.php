@@ -82,11 +82,28 @@ try {
                 uc.nome AS comprador_nome,
                 uc.email AS comprador_email,
                 comp.cpf_cnpj AS comprador_cpf_cnpj,
-                CASE WHEN cc.transportador_id IS NOT NULL THEN 'transportador' ELSE 'vendedor' END AS tipo_conversa,
-                COALESCE(uv.id, ut.id) AS outro_participante_id,
-                COALESCE(uv.nome, ut.nome) AS outro_participante_nome,
-                COALESCE(uv.email, ut.email) AS outro_participante_email,
-                COALESCE(vend.cpf_cnpj, NULL) AS outro_participante_cpf_cnpj,
+                CASE 
+                    WHEN cc.transportador_id IS NOT NULL THEN 'transportador' 
+                    ELSE 'vendedor' 
+                END AS tipo_conversa,
+                -- Informações do outro participante (transportador OU vendedor)
+                CASE 
+                    WHEN cc.transportador_id IS NOT NULL THEN ut.id
+                    ELSE uv.id
+                END AS outro_participante_id,
+                CASE 
+                    WHEN cc.transportador_id IS NOT NULL THEN ut.nome
+                    ELSE uv.nome
+                END AS outro_participante_nome,
+                CASE 
+                    WHEN cc.transportador_id IS NOT NULL THEN ut.email
+                    ELSE uv.email
+                END AS outro_participante_email,
+                -- CPF/CNPJ apenas para vendedor, transportador não tem
+                CASE 
+                    WHEN cc.transportador_id IS NOT NULL THEN NULL
+                    ELSE vend.cpf_cnpj
+                END AS outro_participante_cpf_cnpj,
                 (SELECT COUNT(*) FROM chat_mensagens 
                  WHERE conversa_id = cc.id) AS total_mensagens
             FROM chat_conversas cc
@@ -95,8 +112,8 @@ try {
             LEFT JOIN compradores comp ON comp.usuario_id = uc.id
             LEFT JOIN vendedores vend ON p.vendedor_id = vend.id
             LEFT JOIN usuarios uv ON vend.usuario_id = uv.id
-            LEFT JOIN transportadores trans ON cc.transportador_id = trans.id
-            LEFT JOIN usuarios ut ON trans.usuario_id = ut.id
+            LEFT JOIN transportadores trans ON cc.transportador_id = trans.usuario_id
+            LEFT JOIN usuarios ut ON cc.transportador_id = ut.id
             WHERE 1=1";
     
     // Filtro de busca

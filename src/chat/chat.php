@@ -114,7 +114,7 @@ if ($eh_vendedor_produto) {
     }
 }
 
-// BUSCAR ENDEREÇO DO OUTRO USUÁRIO PARA EXIBIR NA SIDEBAR
+// BUSCAR ENDEREÇO E TELEFONE DO OUTRO USUÁRIO PARA EXIBIR NA SIDEBAR
 $outro_usuario_endereco = null;
 $outro_usuario_endereco_maps = null;
 $outro_usuario_telefone = null;
@@ -148,6 +148,21 @@ if ($outro_usuario_id) {
         $outro_usuario_endereco = $endereco_completo;
         $outro_usuario_endereco_maps = urlencode($endereco_completo);
         $outro_usuario_telefone = $outro_usuario_info['telefone1'];
+
+        // Formatar telefone para WhatsApp (remover caracteres não numéricos)
+        if ($outro_usuario_telefone) {
+            $telefone_whatsapp = preg_replace('/[^0-9]/', '', $outro_usuario_telefone);
+            // Remover o zero inicial se houver e adicionar código do Brasil (55)
+            if (strlen($telefone_whatsapp) > 0) {
+                if (substr($telefone_whatsapp, 0, 1) == '0') {
+                    $telefone_whatsapp = substr($telefone_whatsapp, 1);
+                }
+                // Adicionar código do Brasil se não tiver
+                if (strlen($telefone_whatsapp) <= 11) {
+                    $telefone_whatsapp = '55' . $telefone_whatsapp;
+                }
+            }
+        }
     }
 }
 
@@ -258,14 +273,16 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                                     <i class="fas fa-user" style="margin-right: 8px;"></i>
                                     <?php echo htmlspecialchars($outro_usuario_nome); ?>
                                 </div>
-                                <div class="ultima-msg">Conversa ativa</div>
+                                <div class="ultima-msg">Conversa com o comprador</div>
                             </div>
-                        </div>
-                    <?php else: ?>
-                        <!-- Quando não há conversa selecionada -->
-                        <div style="padding: 40px 20px; text-align: center; color: #65676b;">
-                            <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 12px; opacity: 0.3;"></i>
-                            <p style="font-size: 14px;">Nenhuma conversa selecionada</p>
+                            <?php if ($conversa_id && $outro_usuario_id && !empty($telefone_whatsapp)): ?>
+                                <a href="https://wa.me/<?php echo $telefone_whatsapp; ?>?text=Olá%20<?php echo urlencode($outro_usuario_nome); ?>%2C%20estamos%20conversando%20sobre%20o%20produto%20<?php echo urlencode($produto['nome']); ?>%20no%20Encontre%20o%20Campo."
+                                target="_blank" 
+                                class="whatsapp-button"
+                                title="Converse no Whatsapp com <?php echo htmlspecialchars($outro_usuario_nome); ?>">
+                                    <i class="fab fa-whatsapp" style="color: #ffffff;"></i>
+                                </a>
+                            <?php endif; ?>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -279,6 +296,14 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                             </div>
                             <div class="ultima-msg">Conversa com o vendedor</div>
                         </div>
+                        <?php if ($conversa_id && $outro_usuario_id && !empty($telefone_whatsapp)): ?>
+                            <a href="https://wa.me/<?php echo $telefone_whatsapp; ?>?text=Olá%20<?php echo urlencode($outro_usuario_nome); ?>%2C%20estamos%20conversando%20sobre%20o%20produto%20<?php echo urlencode($produto['nome']); ?>%20no%20Encontre%20o%20Campo."
+                            target="_blank" 
+                            class="whatsapp-button"
+                            title="Converse no Whatsapp com <?php echo htmlspecialchars($outro_usuario_nome); ?>">
+                                <i class="fab fa-whatsapp" style="color: #ffffff;"></i>
+                            </a>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endif; ?>

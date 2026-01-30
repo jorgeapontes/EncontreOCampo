@@ -135,6 +135,48 @@ try {
         
         $ambas_assinadas = true;
         
+        $sql_conversa = "SELECT id FROM chat_conversas 
+                    WHERE produto_id = :produto_id 
+                    AND comprador_id = :comprador_id 
+                    AND vendedor_id = :vendedor_id";
+    
+    $stmt_conv = $conn->prepare($sql_conversa);
+    $stmt_conv->bindParam(':produto_id', $proposta['produto_id'], PDO::PARAM_INT);
+    $stmt_conv->bindParam(':comprador_id', $proposta['comprador_id'], PDO::PARAM_INT);
+    $stmt_conv->bindParam(':vendedor_id', $proposta['vendedor_id'], PDO::PARAM_INT);
+    $stmt_conv->execute();
+    $conversa = $stmt_conv->fetch(PDO::FETCH_ASSOC);
+    
+    if ($conversa) {
+        // Mensagem de confirmação
+        $mensagem_confirmacao = "✅ ACORDO CONCLUÍDO!\n\n";
+        $mensagem_confirmacao .= "Ambas as partes assinaram o acordo digitalmente.\n";
+        $mensagem_confirmacao .= "A proposta foi oficialmente aceita e a compra está confirmada.\n\n";
+        
+        // Inserir mensagem no chat (sistema envia como vendedor)
+        $sql_mensagem = "INSERT INTO chat_mensagens (conversa_id, remetente_id, mensagem, tipo) 
+                        VALUES (:conversa_id, :remetente_id, :mensagem, 'texto')";
+        
+        $stmt_msg = $conn->prepare($sql_mensagem);
+        $stmt_msg->bindParam(':conversa_id', $conversa['id'], PDO::PARAM_INT);
+        $stmt_msg->bindParam(':remetente_id', $proposta['vendedor_id'], PDO::PARAM_INT); // Vendedor como remetente
+        $stmt_msg->bindParam(':mensagem', $mensagem_confirmacao);
+        $stmt_msg->execute();
+        
+        // Atualizar última mensagem na conversa
+        $sql_update_conv = "UPDATE chat_conversas 
+                           SET ultima_mensagem = :ultima_mensagem,
+                               ultima_mensagem_data = NOW(),
+                               comprador_lido = 0,
+                               vendedor_lido = 1
+                           WHERE id = :conversa_id";
+        
+        $stmt_update_conv = $conn->prepare($sql_update_conv);
+        $stmt_update_conv->bindParam(':ultima_mensagem', $mensagem_confirmacao);
+        $stmt_update_conv->bindParam(':conversa_id', $conversa['id'], PDO::PARAM_INT);
+        $stmt_update_conv->execute();
+    }
+
         // Enviar notificação para o outro usuário
         $outro_usuario_id = ($usuario_id == $proposta['comprador_id']) ? 
                            $proposta['vendedor_id'] : $proposta['comprador_id'];

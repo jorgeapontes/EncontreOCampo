@@ -1,38 +1,39 @@
 <?php
-// src/chat_transportador/get_proposta_status.php
 session_start();
 require_once __DIR__ . '/../conexao.php';
 
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['usuario_id'])) {
-    echo json_encode(['status' => 'pendente']);
+    echo json_encode(['error' => 'Não autenticado']);
     exit();
 }
 
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-
-if ($id <= 0) {
-    echo json_encode(['status' => 'pendente']);
+if (!isset($_GET['id'])) {
+    echo json_encode(['error' => 'ID não fornecido']);
     exit();
 }
+
+$proposta_id = (int)$_GET['id'];
 
 $database = new Database();
 $conn = $database->getConnection();
 
 try {
-    $sql = "SELECT status FROM propostas_transportadores WHERE id = :id";
+    // Buscar status da proposta
+    $sql = "SELECT status FROM propostas_transportadores WHERE id = :id LIMIT 1";
     $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+    $stmt->bindParam(':id', $proposta_id, PDO::PARAM_INT);
     $stmt->execute();
     
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    if ($result) {
-        echo json_encode(['status' => $result['status']]);
+    if ($row) {
+        echo json_encode(['status' => $row['status']]);
     } else {
-        echo json_encode(['status' => 'pendente']);
+        echo json_encode(['status' => 'nao_encontrada']);
     }
-} catch (PDOException $e) {
-    echo json_encode(['status' => 'pendente']);
+} catch (Exception $e) {
+    echo json_encode(['error' => $e->getMessage()]);
 }
+?>

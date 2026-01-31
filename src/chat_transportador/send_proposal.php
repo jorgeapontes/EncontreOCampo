@@ -4,11 +4,9 @@ require_once __DIR__ . '/../conexao.php';
 
 header('Content-Type: application/json');
 
-// Permitir envio de proposta quando o usuário estiver logado.
-// A verificação de permissão mais específica (ser o `comprador_id` da conversa)
-// é feita após buscar a conversa abaixo.
-if (!isset($_SESSION['usuario_id'])) {
-    echo json_encode(['success' => false, 'error' => 'Acesso restrito']);
+// Permitir envio de proposta apenas quando o usuário for transportador
+if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'transportador') {
+    echo json_encode(['success' => false, 'error' => 'Acesso restrito - Apenas transportadores podem enviar propostas']);
     exit();
 }
 
@@ -38,8 +36,10 @@ try {
     $stmt->bindParam(':cid', $conversa_id, PDO::PARAM_INT);
     $stmt->execute();
     $conv = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$conv || $conv['comprador_id'] != $_SESSION['usuario_id']) {
-        throw new Exception('Conversa inválida ou sem permissão');
+    
+    // Verificar se o usuário logado é o transportador da conversa
+    if (!$conv || $conv['transportador_id'] != $_SESSION['usuario_id']) {
+        throw new Exception('Apenas o transportador desta conversa pode enviar propostas');
     }
 
     $produto_id = (int)$conv['produto_id'];
@@ -84,7 +84,7 @@ try {
 
     $proposta_id = (int)$conn->lastInsertId();
 
-    // Inserir na tabela propostas_transportadores
+    // Inserir na tabela propostas_transportadores (proposta DO transportador)
     // calcular prazo (dias) a partir de data_entrega
     $prazo = 0;
     $ts = strtotime($data_entrega);

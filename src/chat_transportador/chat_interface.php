@@ -39,9 +39,7 @@ try {
 
     $uid = (int)$_SESSION['usuario_id'];
     $is_transportador = ($_SESSION['usuario_tipo'] === 'transportador');
-    // Considerar `is_comprador` sempre que o usuário for o participante comprador
-    // (permite que vendedores que fizeram a compra atuem como comprador na conversa)
-    $is_comprador = ($conv['comprador_id'] == $uid);
+    $is_comprador = ($_SESSION['usuario_tipo'] === 'comprador');
 
     // Verificar se o usuário pertence à conversa
     $belongs = false;
@@ -99,33 +97,11 @@ try {
         }
     }
 
-    // Buscar proposta de compra associada (para transportador enviar proposta)
-    $proposta_id = null;
-    if ($is_transportador) {
-        $sql_proposta = "SELECT p.ID 
-                         FROM propostas p
-                         WHERE p.produto_id = :produto_id 
-                         AND p.comprador_id = :comprador_id 
-                         AND p.vendedor_id = :vendedor_id 
-                         AND p.opcao_frete = 'entregador' 
-                         AND p.status = 'aceita' 
-                         AND p.transportador_id IS NULL
-                         LIMIT 1";
-        $stmt_proposta = $conn->prepare($sql_proposta);
-        $stmt_proposta->bindParam(':produto_id', $conv['produto_id'], PDO::PARAM_INT);
-        $stmt_proposta->bindParam(':comprador_id', $conv['comprador_id'], PDO::PARAM_INT);
-        $stmt_proposta->bindParam(':vendedor_id', $conv['vendedor_id'], PDO::PARAM_INT);
-        $stmt_proposta->execute();
-        $proposta = $stmt_proposta->fetch(PDO::FETCH_ASSOC);
-        if ($proposta) {
-            $proposta_id = $proposta['ID'];
-        }
-    }
-
 } catch (PDOException $e) {
     echo 'Erro ao carregar conversa.';
     exit();
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -331,15 +307,14 @@ try {
         </div>
     </div>
 
-    <!-- Modal de proposta para transportador (apenas comprador) -->
-    <!-- Modal de proposta para transportador -->
+    <!-- Modal de proposta para transportador (apenas transportador) -->
+    <?php if ($is_transportador): ?>
     <div id="modal-proposta-transportador" style="display:none; position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:13000;align-items:center;justify-content:center;padding:20px;">
         <div style="background:#fff;padding:20px;border-radius:8px;max-width:520px;width:100%;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                 <h3 style="margin:0;font-size:18px;"><i class="fas fa-handshake"></i> Propor Entrega</h3>
                 <button id="fechar-modal-proposta" style="background:transparent;border:none;font-size:22px;">&times;</button>
             </div>
-            <input type="hidden" id="proposta_id" value="<?php echo $proposta_id; ?>">
             <div>
                 <label>Valor do frete (R$)</label>
                 <input type="number" id="proposta-valor" step="0.01" min="0" style="width:100%;padding:8px;margin:6px 0;border:1px solid #ddd;border-radius:6px;" />
@@ -354,8 +329,10 @@ try {
             </div>
         </div>
     </div>
+    <?php endif; ?>
 
     <!-- Modal de sucesso ao aceitar proposta -->
+    <?php if ($is_comprador): ?>
     <div id="modal-sucesso-aceite" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -364,20 +341,21 @@ try {
                 </div>
                 <div>
                     <h3 style="margin:0 0 5px 0;">Proposta Aceita!</h3>
-                    <p style="margin:0;color:#666;">Entrega criada com sucesso.</p>
+                    <p style="margin:0;color:#666;">Você aceitou a proposta de entrega.</p>
                 </div>
             </div>
             <div style="margin:15px 0;">
-                <p>✅ A entrega foi criada e já está disponível para acompanhamento.</p>
-                <p>📦 Informações de entrega foram repassadas ao transportador.</p>
+                <p>✅ Você aceitou a proposta de entrega.</p>
+                <p>📦 O transportador foi notificado e irá proceder com a coleta e entrega.</p>
                 <p>⏳ Aguarde a coleta e entrega do produto.</p>
             </div>
             <div class="modal-buttons">
                 <button id="btn-fechar-modal" class="btn-modal-secondary">Continuar no Chat</button>
-                <button id="btn-ver-entregas" class="btn-modal-primary">Ver Minhas Compras</button>
+                <button id="btn-ver-compras" class="btn-modal-primary">Ver Minhas Compras</button>
             </div>
         </div>
     </div>
+    <?php endif; ?>
 
     <script>
         // Avatar modal
@@ -420,6 +398,7 @@ try {
         
         const conversaId = <?php echo (int)$conversa_id; ?>;
         const usuarioId = <?php echo (int)$_SESSION['usuario_id']; ?>;
+        const usuarioTipo = '<?php echo $_SESSION['usuario_tipo']; ?>';
         let ultimaMensagemId = 0;
 
         // Cache para status das propostas já processadas
@@ -486,9 +465,6 @@ try {
         }
 
         async function renderizarPropostaCard(msg, content) {
-            console.log("=== renderizarPropostaCard ===");
-            console.log("Mensagem recebida:", msg);
-            
             // Extrair dados da proposta
             let dados = null;
             let propostaId = null;
@@ -497,10 +473,8 @@ try {
             if (msg.dados_json) {
                 try {
                     dados = JSON.parse(msg.dados_json);
-                    console.log("Dados JSON parseados:", dados);
                     if (dados && dados.propostas_transportador_id) {
                         propostaId = dados.propostas_transportador_id;
-                        console.log("ID do dados_json:", propostaId);
                     }
                 } catch(e) {
                     console.error('Erro ao parsear dados_json:', e);
@@ -509,16 +483,11 @@ try {
             
             // Se não tem dados_json, tentar extrair do texto
             if (!dados && msg.mensagem) {
-                console.log("Extraindo dados do texto:", msg.mensagem);
                 dados = extrairDadosDoTexto(msg.mensagem);
-                console.log("Dados extraídos do texto:", dados);
                 if (dados && dados.propostas_transportador_id) {
                     propostaId = dados.propostas_transportador_id;
-                    console.log("ID do texto:", propostaId);
                 }
             }
-            
-            console.log("ID final da proposta:", propostaId);
             
             // Criar o card da proposta
             const card = document.createElement('div');
@@ -561,7 +530,7 @@ try {
             
             card.appendChild(detail);
             
-            // Se for comprador, verificar status e mostrar ações apropriadas
+            // Invertendo a lógica: comprador vê ações, transportador vê status
             <?php if ($is_comprador): ?>
             if (propostaId) {
                 // Verificar status da proposta
@@ -570,7 +539,7 @@ try {
                 if (!status) {
                     // Buscar status do servidor
                     try {
-                        const res = await fetch('<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/chat/get_proposta_status.php?id=' + propostaId);
+                        const res = await fetch('get_proposta_status.php?id=' + propostaId);
                         const data = await res.json();
                         status = data.status || 'pendente';
                         propostasProcessadas.set(propostaId, status);
@@ -585,7 +554,7 @@ try {
                 actionsContainer.className = 'proposta-actions';
                 
                 if (status === 'pendente') {
-                    // Mostrar botões Aceitar/Recusar para o COMPRADOR
+                    // Mostrar botões Aceitar/Recusar para comprador
                     const btnAceitar = document.createElement('button');
                     btnAceitar.className = 'btn-aceitar';
                     btnAceitar.textContent = 'Aceitar';
@@ -606,24 +575,25 @@ try {
                     actionsContainer.appendChild(btnRecusar);
                     actionsContainer.appendChild(btnAceitar);
                 } else {
-                    // Mostrar status
+                    // Mostrar status para comprador
                     const statusDiv = document.createElement('div');
                     statusDiv.className = `proposta-status proposta-${status}`;
                     statusDiv.textContent = status === 'aceita' ? '✓ Proposta aceita' : 
-                                        status === 'recusada' ? '✗ Proposta recusada' : 
-                                        '⏳ Pendente';
+                                           status === 'recusada' ? '✗ Proposta recusada' : 
+                                           '⏳ Pendente';
                     actionsContainer.appendChild(statusDiv);
                 }
+                
                 card.appendChild(actionsContainer);
             }
-            <?php else: ?>
-            // Para transportadores ou outros usuários, mostrar apenas o status
+            <?php elseif ($is_transportador): ?>
+            // Para transportadores, mostrar apenas o status da proposta que enviaram
             if (propostaId) {
                 let status = propostasProcessadas.get(propostaId);
-                // Buscar status do servidor se não estiver em cache
+                
                 if (!status) {
                     try {
-                        const res = await fetch('<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/chat/get_proposta_status.php?id=' + propostaId);
+                        const res = await fetch('get_proposta_status.php?id=' + propostaId);
                         const data = await res.json();
                         status = data.status || 'pendente';
                         propostasProcessadas.set(propostaId, status);
@@ -632,18 +602,13 @@ try {
                     }
                 }
                 
-                const actionsContainer = document.createElement('div');
-                actionsContainer.className = 'proposta-actions';
-                
                 const statusDiv = document.createElement('div');
                 statusDiv.className = `proposta-status proposta-${status}`;
                 statusDiv.innerHTML = status === 'aceita' ? 
-                    '<i class="fas fa-check-circle" style="margin-right:5px;"></i> Proposta aceita pelo comprador.' : 
-                    status === 'recusada' ? 
-                    '<i class="fas fa-times-circle" style="margin-right:5px;"></i> Proposta recusada pelo comprador.' : 
-                    '⏳ Pendente de resposta do comprador';
-                actionsContainer.appendChild(statusDiv);
-                card.appendChild(actionsContainer);
+                    '<i class="fas fa-check-circle" style="margin-right:5px;"></i> Proposta aceita pelo comprador. Aguarde a coleta e entrega.' : 
+                    status === 'recusada' ? '<i class="fas fa-times-circle" style="margin-right:5px;"></i> Proposta recusada pelo comprador.' : 
+                    '⏳ Aguardando resposta do comprador';
+                card.appendChild(statusDiv);
             }
             <?php endif; ?>
             
@@ -696,19 +661,7 @@ try {
             return text.replace(/[&<>"']/g, function(m) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m]; });
         }
 
-       async function performPropostaAction(action, ptId, primaryBtn, secondaryBtn, actionsContainer) {
-            console.log("=== INICIANDO performPropostaAction ===");
-            console.log("Ação:", action);
-            console.log("ID da proposta:", ptId);
-            console.log("Tipo de ID:", typeof ptId);
-            
-            // Verificar se o ID é válido
-            if (!ptId || ptId <= 0) {
-                console.error("ID inválido:", ptId);
-                alert('ID da proposta inválido');
-                return;
-            }
-            
+        async function performPropostaAction(action, ptId, primaryBtn, secondaryBtn, actionsContainer) {
             // Desabilitar botões durante processamento
             if (primaryBtn) primaryBtn.disabled = true;
             if (secondaryBtn) secondaryBtn.disabled = true;
@@ -720,19 +673,14 @@ try {
             if (secondaryBtn) secondaryBtn.textContent = 'Processando...';
             
             try {
-                console.log("Enviando requisição para responder_proposta.php");
                 const res = await fetch('responder_proposta.php', {
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'}, 
                     body: JSON.stringify({acao: action, id: ptId})
                 });
-                
-                console.log("Resposta recebida, status:", res.status);
                 const j = await res.json();
-                console.log("Resposta JSON:", j);
                 
                 if (j.success) {
-                    console.log("Sucesso! Novo status:", action === 'aceitar' ? 'aceita' : 'recusada');
                     const finalStatus = (action === 'aceitar') ? 'aceita' : 'recusada';
                     
                     // Atualizar cache
@@ -747,19 +695,18 @@ try {
                         actionsContainer.appendChild(statusDiv);
                     }
                     
-                    // Se aceitou, mostrar modal de sucesso
-                    if (action === 'aceitar') {
+                    // Se aceitou, mostrar modal de sucesso (apenas para comprador)
+                    if (action === 'aceitar' && usuarioTipo === 'comprador') {
                         setTimeout(() => {
                             document.getElementById('modal-sucesso-aceite').style.display = 'flex';
                         }, 300);
                     } else {
-                        alert('Proposta recusada com sucesso');
+                        alert('Proposta ' + (action === 'aceitar' ? 'aceita' : 'recusada') + ' com sucesso');
                     }
                     
                     // Recarregar mensagens para garantir consistência
                     setTimeout(carregarMensagens, 500);
                 } else {
-                    console.error("Erro na resposta:", j.error || j.erro);
                     alert(j.erro || j.error || 'Erro ao processar');
                     // Reabilitar botões
                     if (primaryBtn) {
@@ -772,8 +719,8 @@ try {
                     }
                 }
             } catch (e) {
-                console.error("Erro de conexão:", e);
-                alert('Erro de conexão: ' + e.message);
+                console.error(e);
+                alert('Erro de conexão');
                 // Reabilitar botões
                 if (primaryBtn) {
                     primaryBtn.disabled = false;
@@ -786,12 +733,13 @@ try {
             }
         }
 
-        // Modal de sucesso
-        document.getElementById('btn-fechar-modal').addEventListener('click', function() {
+        // Modal de sucesso (apenas para comprador)
+        <?php if ($is_comprador): ?>
+        document.getElementById('btn-fechar-modal')?.addEventListener('click', function() {
             document.getElementById('modal-sucesso-aceite').style.display = 'none';
         });
 
-        document.getElementById('btn-ver-entregas').addEventListener('click', function() {
+        document.getElementById('btn-ver-compras')?.addEventListener('click', function() {
             window.location.href = '../comprador/negociacoes.php';
         });
 
@@ -801,6 +749,7 @@ try {
                 document.getElementById('modal-sucesso-aceite').style.display = 'none';
             }
         });
+        <?php endif; ?>
 
         document.getElementById('send-btn').addEventListener('click', async () => {
             const input = document.getElementById('message-input');
@@ -854,7 +803,8 @@ try {
         carregarMensagens();
         setInterval(carregarMensagens, 2000);
 
-        // Modal de proposta - apenas transportador (NOVO)
+        // Modal de proposta - apenas transportador
+        <?php if ($is_transportador): ?>
         const btnNegociar = document.getElementById('btn-negociar');
         const modalProposta = document.getElementById('modal-proposta-transportador');
         const fecharModalProposta = document.getElementById('fechar-modal-proposta');
@@ -862,35 +812,22 @@ try {
         const enviarProposta = document.getElementById('enviar-proposta');
 
         if (btnNegociar && modalProposta) {
-            btnNegociar.addEventListener('click', () => { 
-                modalProposta.style.display = 'flex'; 
-            });
+            btnNegociar.addEventListener('click', () => { modalProposta.style.display = 'flex'; });
             fecharModalProposta.addEventListener('click', () => modalProposta.style.display = 'none');
             cancelarProposta.addEventListener('click', () => modalProposta.style.display = 'none');
 
             enviarProposta.addEventListener('click', async () => {
                 const valor = document.getElementById('proposta-valor').value;
                 const data_entrega = document.getElementById('proposta-data').value;
-                const proposta_id = document.getElementById('proposta_id').value; // NOVO CAMPO
-                
-                if (!valor || !data_entrega || !proposta_id) {
-                    return alert('Preencha valor, data e verifique a proposta.');
-                }
-                
+                if (!valor || !data_entrega) return alert('Preencha valor e data');
                 enviarProposta.disabled = true;
                 enviarProposta.textContent = 'Enviando...';
                 try {
                     const form = new FormData();
-                    form.append('proposta_id', proposta_id); // ALTERADO: não usa mais conversa_id
+                    form.append('conversa_id', conversaId);
                     form.append('valor', valor);
                     form.append('data_entrega', data_entrega);
-                    
-                    // ✅ CHAMA O NOVO ENDPOINT PARA TRANSPORTADOR
-                    const res = await fetch('send_proposal_transportador.php', { 
-                        method: 'POST', 
-                        body: form 
-                    });
-                    
+                    const res = await fetch('send_proposal.php', { method: 'POST', body: form });
                     const j = await res.json();
                     if (j.success) {
                         alert('Proposta enviada');
@@ -899,16 +836,14 @@ try {
                         document.getElementById('proposta-data').value = '';
                         carregarMensagens();
                     } else {
-                        alert(j.erro || j.error || 'Erro ao enviar proposta');
+                        alert(j.error || j.erro || 'Erro ao enviar proposta');
                     }
-                } catch (e) { 
-                    console.error(e); 
-                    alert('Erro de conexão'); 
-                }
+                } catch (e) { console.error(e); alert('Erro de conexão'); }
                 enviarProposta.disabled = false;
                 enviarProposta.textContent = 'Enviar Proposta';
             });
         }
+        <?php endif; ?>
     </script>
 </body>
 </html>

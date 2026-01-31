@@ -631,7 +631,10 @@ CREATE TABLE `usuarios` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   `data_aprovacao` timestamp NULL DEFAULT NULL,
   `reset_token` varchar(100) DEFAULT NULL,
-  `reset_token_expira` timestamp NULL DEFAULT NULL
+  `reset_token_expira` timestamp NULL DEFAULT NULL,
+  `foto_rosto` varchar(500) DEFAULT NULL COMMENT 'Caminho da foto do rosto do usuário',
+  `foto_documento_frente` varchar(500) DEFAULT NULL COMMENT 'Caminho da foto do documento (frente)',
+  `foto_documento_verso` varchar(500) DEFAULT NULL COMMENT 'Caminho da foto do documento (verso)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

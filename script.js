@@ -854,13 +854,6 @@ async function submitForm(e) {
         
         const formData = new FormData(mainForm);
         
-        if (subject === 'comprador') {
-            const tipoPessoa = document.querySelector('input[name="tipoPessoaComprador"]:checked');
-            if (tipoPessoa) {
-                formData.append('tipo_pessoa_comprador', tipoPessoa.value);
-            }
-        }
-        
         console.log('Dados a serem enviados:');
         for (let [key, value] of formData.entries()) {
             console.log(`${key}: ${value}`);

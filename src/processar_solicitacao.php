@@ -1,6 +1,9 @@
 <?php
 // src/processar_solicitacao.php
 
+// Iniciar output buffering para capturar qualquer output antes do JSON
+ob_start();
+
 require_once 'conexao.php';
 
 // Iniciar sessão de forma segura
@@ -8,11 +11,77 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
+// Limpar qualquer output anterior
+ob_end_clean();
+
 // Configurar cabeçalhos para AJAX/JSON
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
+
+// Configurar tratamento de erros
+error_reporting(E_ALL);
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+
+// Função para fazer upload de arquivo
+function uploadFoto($file, $tipo_usuario, $tipo_foto) {
+    // Validar se arquivo foi enviado
+    if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) {
+        $erro_code = $file['error'] ?? 'arquivo não encontrado';
+        $mensagens_erro = [
+            0 => 'Sem erro',
+            1 => 'Arquivo excede upload_max_filesize',
+            2 => 'Arquivo excede MAX_FILE_SIZE',
+            3 => 'Arquivo foi parcialmente enviado',
+            4 => 'Nenhum arquivo foi enviado',
+            6 => 'Falta pasta temporária',
+            7 => 'Erro ao escrever arquivo',
+            8 => 'Extensão PHP bloqueou upload',
+        ];
+        $msg_erro = isset($mensagens_erro[$erro_code]) ? $mensagens_erro[$erro_code] : 'Erro desconhecido';
+        throw new Exception("Erro ao fazer upload do arquivo {$tipo_foto}: {$msg_erro}");
+    }
+    
+    // Validar tipo de arquivo
+    $tipos_permitidos = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!in_array($file['type'], $tipos_permitidos)) {
+        throw new Exception("Tipo de arquivo não permitido para {$tipo_foto}. Use JPG, PNG ou WebP. Tipo recebido: {$file['type']}");
+    }
+    
+    // Validar tamanho (máximo 10MB)
+    $tamanho_maximo = 10 * 1024 * 1024; // 10MB
+    if ($file['size'] > $tamanho_maximo) {
+        throw new Exception("Arquivo {$tipo_foto} muito grande. Máximo permitido: 10MB. Tamanho: " . round($file['size'] / 1024 / 1024, 2) . "MB");
+    }
+    
+    // Criar diretório se não existir
+    $diretorio_base = __DIR__ . '/../uploads/documentos/';
+    if (!is_dir($diretorio_base)) {
+        if (!mkdir($diretorio_base, 0755, true)) {
+            throw new Exception("Não foi possível criar o diretório de uploads");
+        }
+    }
+    
+    // Validar permissões de escrita
+    if (!is_writable($diretorio_base)) {
+        throw new Exception("Sem permissão de escrita no diretório de uploads");
+    }
+    
+    // Gerar nome único para o arquivo
+    $extensao = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $nome_arquivo = time() . '_' . uniqid() . '_' . $tipo_usuario . '_' . $tipo_foto . '.' . $extensao;
+    $caminho_arquivo = $diretorio_base . $nome_arquivo;
+    
+    // Mover arquivo enviado para o diretório de destino
+    if (!move_uploaded_file($file['tmp_name'], $caminho_arquivo)) {
+        throw new Exception("Erro ao salvar arquivo {$tipo_foto} no servidor. Arquivo temporário: {$file['tmp_name']}");
+    }
+    
+    // Retornar caminho relativo para salvar no BD
+    return 'uploads/documentos/' . $nome_arquivo;
+}
 
 function validarCPF($cpf) {
     // Remove caracteres não numéricos
@@ -183,11 +252,11 @@ $tipoUsuario = $dados['subject'];
 // Validações específicas por tipo
 if ($tipoUsuario === 'comprador') {
     // Verificar tipo de pessoa
-    if (empty($dados['tipo_pessoa_comprador'])) {
+    if (empty($dados['tipoPessoaComprador'])) {
         sendJsonResponse(false, 'Selecione o tipo de pessoa (CPF ou CNPJ).');
     }
     
-    $tipoPessoa = $dados['tipo_pessoa_comprador'];
+    $tipoPessoa = $dados['tipoPessoaComprador'];
     $cpfCnpj = preg_replace('/[^0-9]/', '', $dados['cpfCnpjComprador']);
     
     // Validar CPF/CNPJ
@@ -263,18 +332,90 @@ if ($tipoUsuario === 'comprador') {
     }
 }
 
+// Validar e fazer upload das fotos
+$fotos = [];
+try {
+    // Mapear nomes de campos de fotos por tipo de usuário
+    $campos_fotos = [
+        'comprador' => [
+            'fotoRostoComprador' => 'rosto',
+            'fotoDocumentoFrenteComprador' => 'documento_frente',
+            'fotoDocumentoVersoComprador' => 'documento_verso'
+        ],
+        'vendedor' => [
+            'fotoRostoVendedor' => 'rosto',
+            'fotoDocumentoFrenteVendedor' => 'documento_frente',
+            'fotoDocumentoVersoVendedor' => 'documento_verso'
+        ],
+        'transportador' => [
+            'fotoRostoTransportador' => 'rosto',
+            'fotoDocumentoFrenteTransportador' => 'documento_frente',
+            'fotoDocumentoVersoTransportador' => 'documento_verso'
+        ]
+    ];
+    
+    if (isset($campos_fotos[$tipoUsuario])) {
+        foreach ($campos_fotos[$tipoUsuario] as $campo_form => $tipo_foto) {
+            if (!isset($_FILES[$campo_form]) || $_FILES[$campo_form]['error'] === UPLOAD_ERR_NO_FILE) {
+                sendJsonResponse(false, "Arquivo de {$tipo_foto} é obrigatório.");
+            }
+            
+            if ($_FILES[$campo_form]['error'] !== UPLOAD_ERR_OK) {
+                $erro = $_FILES[$campo_form]['error'];
+                sendJsonResponse(false, "Erro ao enviar arquivo de {$tipo_foto}: código {$erro}");
+            }
+            
+            $arquivo = $_FILES[$campo_form];
+            try {
+                $fotos[$tipo_foto] = uploadFoto($arquivo, $tipoUsuario, $tipo_foto);
+            } catch (Exception $e) {
+                sendJsonResponse(false, $e->getMessage());
+            }
+        }
+    }
+} catch (Exception $e) {
+    sendJsonResponse(false, 'Erro ao processar fotos: ' . $e->getMessage());
+}
+
 // Iniciar transação
 try {
     $conn->beginTransaction();
     
+    // Verificar e criar as colunas de foto se não existirem
+    try {
+        $checkColumns = $conn->query("DESCRIBE usuarios");
+        $columns = $checkColumns->fetchAll(PDO::FETCH_COLUMN, 0);
+        
+        if (!in_array('foto_rosto', $columns)) {
+            $conn->exec("ALTER TABLE usuarios ADD COLUMN foto_rosto varchar(500) DEFAULT NULL COMMENT 'Caminho da foto do rosto do usuário'");
+        }
+        if (!in_array('foto_documento_frente', $columns)) {
+            $conn->exec("ALTER TABLE usuarios ADD COLUMN foto_documento_frente varchar(500) DEFAULT NULL COMMENT 'Caminho da foto do documento (frente)'");
+        }
+        if (!in_array('foto_documento_verso', $columns)) {
+            $conn->exec("ALTER TABLE usuarios ADD COLUMN foto_documento_verso varchar(500) DEFAULT NULL COMMENT 'Caminho da foto do documento (verso)'");
+        }
+    } catch (Exception $e) {
+        // Ignorar erros ao verificar/criar colunas, continuar mesmo assim
+        error_log("Erro ao verificar/criar colunas de foto: " . $e->getMessage());
+    }
+    
+    // Preparar variáveis de foto para bindParam (que requer referências)
+    $foto_rosto = $fotos['rosto'] ?? null;
+    $foto_documento_frente = $fotos['documento_frente'] ?? null;
+    $foto_documento_verso = $fotos['documento_verso'] ?? null;
+    
     // 1. Inserir na tabela usuarios
-    $sqlUsuario = "INSERT INTO usuarios (email, senha, tipo, nome, status) 
-                   VALUES (:email, :senha, :tipo, :nome, 'pendente')";
+    $sqlUsuario = "INSERT INTO usuarios (email, senha, tipo, nome, status, foto_rosto, foto_documento_frente, foto_documento_verso) 
+                   VALUES (:email, :senha, :tipo, :nome, 'pendente', :foto_rosto, :foto_documento_frente, :foto_documento_verso)";
     $stmtUsuario = $conn->prepare($sqlUsuario);
     $stmtUsuario->bindParam(':email', $email);
     $stmtUsuario->bindParam(':senha', $senhaHash);
     $stmtUsuario->bindParam(':tipo', $tipoUsuario);
     $stmtUsuario->bindParam(':nome', $nome);
+    $stmtUsuario->bindParam(':foto_rosto', $foto_rosto);
+    $stmtUsuario->bindParam(':foto_documento_frente', $foto_documento_frente);
+    $stmtUsuario->bindParam(':foto_documento_verso', $foto_documento_verso);
     $stmtUsuario->execute();
     
     $usuarioId = $conn->lastInsertId();
@@ -296,7 +437,7 @@ try {
         $cpfCnpjNumerico = preg_replace('/[^0-9]/', '', $cpfCnpjFormatado);
         
         // Aplicar máscara baseada no tipo
-        if ($dados['tipo_pessoa_comprador'] === 'cpf') {
+        if ($dados['tipoPessoaComprador'] === 'cpf') {
             $cpfCnpjFormatado = preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $cpfCnpjNumerico);
         } else {
             $cpfCnpjFormatado = preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $cpfCnpjNumerico);
@@ -306,7 +447,7 @@ try {
         
         $stmtComprador->execute([
             ':usuario_id' => $usuarioId,
-            ':tipo_pessoa' => $dados['tipo_pessoa_comprador'],
+            ':tipo_pessoa' => $dados['tipoPessoaComprador'],
             ':nome_comercial' => $dados['nomeComercialComprador'],
             ':cpf_cnpj' => $cpfCnpjFormatado,
             ':cip' => $dados['cipComprador'] ?? null,

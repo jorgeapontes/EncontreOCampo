@@ -2512,3 +2512,94 @@ html, body {
         font-size: 13px;
     }
 }
+
+/* Estilos para a sidebar fixa de proposta */
+.proposta-sidebar-container {
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e1e4e8;
+    padding: 12px;
+    margin-top: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.proposta-sidebar-card {
+    color: #1c1e21;
+}
+
+.proposta-sidebar-card .proposta-status {
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 14px;
+    width: 100%;
+    text-align: center;
+}
+
+.proposta-acoes-sidebar {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+/* REGRAS DE VISIBILIDADE POR DISPOSITIVO */
+
+/* DESKTOP (min-width: 769px) - Botões apenas na sidebar */
+@media (min-width: 769px) {
+    /* Esconder botões no chat */
+    .chat-messages .btn-acoes-proposta {
+        display: none !important;
+    }
+    
+    /* Mostrar botões na sidebar */
+    .proposta-sidebar-container .btn-acoes-proposta {
+        display: flex !important;
+    }
+}
+
+/* MOBILE (max-width: 768px) - Botões apenas no chat */
+@media (max-width: 768px) {
+    /* Esconder sidebar fixa */
+    #proposta-sidebar-fixed {
+        display: none !important;
+    }
+    
+    /* Mostrar botões no chat */
+    .chat-messages .btn-acoes-proposta {
+        display: flex !important;
+    }
+    
+    /* Esconder botões na sidebar (se ainda visível) */
+    .proposta-sidebar-container .btn-acoes-proposta {
+        display: none !important;
+    }
+}
+
+/* Estilos base para botões de ação */
+.btn-acoes-proposta {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-aceitar {
+    background: #42b72a;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-recusar {
+    background: #ff4444;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}

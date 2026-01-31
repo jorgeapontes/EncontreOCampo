@@ -1794,7 +1794,7 @@ html, body {
     background: #ffffff;
     border-radius: 12px;
     border: 1px solid #e0e0e0;
-    margin: 20px 15px;
+    margin: 0px 10px 10px 10px;
     padding: 16px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     transition: all 0.3s ease;
@@ -1998,6 +1998,28 @@ html, body {
 .btn-counter-proposal:hover {
     background-color: #e0a800;
 }
+
+.btn-edit-proposal {
+    background-color: #42b72a;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 4px;
+    margin-top: 10px;
+}
+
+.btn-edit-proposal:hover {
+        background-color: #349221;
+        transform: translateY(-1px);
+    }
 
 .btn-reject-proposal,
 .btn-cancel-proposal {
@@ -2602,4 +2624,52 @@ html, body {
     border: none;
     cursor: pointer;
     font-size: 14px;
+}
+
+/* Estilo para o botão de negociação na sidebar */
+.sidebar-negociacao-btn {
+    padding: 15px;
+}
+
+.btn-negociar-sidebar {
+    width: 100%;
+    padding: 12px 20px;
+    background-color: #42b72a;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(24, 119, 242, 0.2);
+}
+
+.btn-negociar-sidebar:hover {
+    background-color: #349221;
+    transform: translateY(-1px);
+}
+
+.btn-negociar-sidebar:active {
+    transform: translateY(0);
+}
+
+.btn-negociar-sidebar i {
+    font-size: 18px;
+}
+
+/* Estilo responsivo */
+@media (max-width: 768px) {
+    .sidebar-negociacao-btn {
+        display: block;
+    }
+    
+    .btn-negociar-sidebar {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
 }

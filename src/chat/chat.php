@@ -351,6 +351,15 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                 </div>
             <?php endif; ?>
 
+            <?php if (!$eh_vendedor_produto && !isset($ultima_proposta)): ?>
+                <div class="sidebar-negociacao-btn">
+                    <button type="button" class="btn-negociar-sidebar" id="btn-negociar-sidebar">
+                        <i class="fas fa-handshake"></i>
+                        Fazer Proposta
+                    </button>
+                </div>
+            <?php endif; ?>
+
             <?php
             if ($conversa_id) {
                 // Buscar a última proposta desta conversa
@@ -491,6 +500,9 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                             </button>
                         <?php } else { ?>
                             <!-- Botões para comprador -->
+                             <button type="button" class="btn-edit-proposal" id="btn-edit" title="Editar Proposta">
+                                <i class="fa-solid fa-pen-to-square"></i> Editar Proposta
+                            </button>
                             <button type="button" class="btn-cancel-proposal" 
                                     onclick="cancelarProposta(<?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
                                 <i class="fas fa-times"></i> Cancelar
@@ -512,25 +524,6 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                             <i class="fas fa-ban"></i> Proposta cancelada pelo comprador
                         </div>
                     <?php } ?>
-                </div>
-                
-                <div class="proposta-footer" id="proposta-footer">
-                    <small>
-                        <i class="fas fa-info-circle"></i>
-                        <span id="proposta-footer-text">
-                            <?php 
-                            if ($ultima_proposta['status'] === 'negociacao') {
-                                echo 'Esta proposta foi enviada.';
-                            } elseif ($ultima_proposta['status'] === 'assinando') {
-                                echo 'Aguardando assinaturas para concluir o acordo.';
-                            } elseif ($ultima_proposta['status'] === 'cancelada') {
-                                echo 'Esta proposta foi cancelada pelo comprador.';
-                            } else {
-                                echo "Esta proposta foi {$ultima_proposta['status']}.";
-                            }
-                            ?>
-                        </span>
-                    </small>
                 </div>
             </div>
 
@@ -607,7 +600,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                         </button>
                         
                         <?php if (!$eh_vendedor_produto): ?>
-                            <button type="button" class="btn-negociar-chat" id="btn-negociar" title="Acordo de Compra">
+                            <button type="button" class="btn-negociar-chat" id="btn-negociar" title="Fazer Proposta">
                                 <i class="fas fa-handshake"></i>
                             </button>
                         <?php endif; ?>
@@ -1590,7 +1583,6 @@ let propostaPagamentoElement;
 let propostaTotalElement;
 let propostaDataElement;
 let propostaAcoesElement;
-let propostaFooterTextElement;
 
 // Mapeamentos
 const statusTextMap = {
@@ -1622,7 +1614,6 @@ function inicializarElementosProposta() {
     propostaTotalElement = document.getElementById('proposta-total');
     propostaDataElement = document.getElementById('proposta-data');
     propostaAcoesElement = document.getElementById('proposta-acoes');
-    propostaFooterTextElement = document.getElementById('proposta-footer-text');
     
     // Capturar dados do elemento hidden
     const indicador = document.getElementById('proposta-indicador');
@@ -1730,17 +1721,6 @@ function atualizarProposta(proposta) {
         }
     }
     
-    // 4. Atualizar footer
-    if (propostaFooterTextElement) {
-        if (proposta.status === 'negociacao') {
-            propostaFooterTextElement.textContent = 'Esta proposta foi enviada.';
-        } else if (proposta.status === 'cancelada') {
-            propostaFooterTextElement.textContent = 'Esta proposta foi cancelada pelo comprador.';
-        } else {
-            propostaFooterTextElement.textContent = `Esta proposta foi ${proposta.status}.`;
-        }
-    }
-    
     // 5. Apenas atualizar botões se o status mudou PARA FORA DE 'negociacao'
     if (statusMudou && (proposta.status === 'aceita' || proposta.status === 'recusada' || proposta.status === 'cancelada')) {
         // Quando proposta é finalizada, substituir botões por mensagem
@@ -1783,6 +1763,8 @@ function atualizarProposta(proposta) {
             if (child) child.textContent = text;
         }
     }
+
+    verificarExibicaoBotaoSidebar();
 }
 
 function responderProposta(acao, propostaId) {
@@ -1911,17 +1893,6 @@ function atualizarStatusProposta(novoStatus) {
     
     // Atualizar botões de ação
     atualizarBotoesAcaoUI(novoStatus);
-    
-    // Atualizar texto do footer
-    if (propostaFooterTextElement) {
-        if (novoStatus === 'negociacao') {
-            propostaFooterTextElement.textContent = 'Esta proposta foi enviada.';
-        } else if (novoStatus === 'cancelada') {
-            propostaFooterTextElement.textContent = 'Esta proposta foi cancelada pelo comprador.';
-        } else {
-            propostaFooterTextElement.textContent = `Esta proposta foi ${novoStatus}.`;
-        }
-    }
     
     // Adicionar classe ao card se for cancelada
     const propostaCard = document.getElementById('proposta-card');
@@ -2138,20 +2109,11 @@ buttonStyles.textContent = `
 `;
 document.head.appendChild(buttonStyles);
 
-function atualizarFooterProposta(proposta) {
-    if (!propostaFooterTextElement) return;
-    
-    if (proposta.status === 'negociacao') {
-        propostaFooterTextElement.textContent = 'Esta proposta foi enviada.';
-    } else {
-        propostaFooterTextElement.textContent = `Esta proposta foi ${proposta.status}.`;
-    }
-}
-
 // Inicializar quando o DOM estiver carregado
 document.addEventListener('DOMContentLoaded', function() {
     inicializarElementosProposta();
-    
+    verificarExibicaoBotaoSidebar();
+
     // Iniciar verificação periódica se houver conversa
     if (conversaId) {
         verificarPropostaInterval = setInterval(verificarNovaProposta, 3000);
@@ -2652,6 +2614,71 @@ function aceitarPropostaParaAssinatura(propostaId) {
         botao.innerHTML = textoOriginal;
         botao.disabled = false;
     });
+}
+
+const btnEditarProposta = document.getElementById('btn-edit');
+
+// Conectar o botão da sidebar ao mesmo modal
+if (btnEditarProposta) {
+    btnEditarProposta.addEventListener('click', () => {
+        // Verificar se o modal de negociação já está inicializado
+        if (typeof modalNegociacao !== 'undefined' && modalNegociacao) {
+            // Abrir o modal
+            modalNegociacao.classList.add('active');
+            
+            // Garantir que os labels estão atualizados
+            if (typeof atualizarLabelsComUnidade === 'function') {
+                atualizarLabelsComUnidade();
+            }
+            
+            // Garantir que o resumo está atualizado
+            if (typeof atualizarResumo === 'function') {
+                atualizarResumo();
+            }
+        } else {
+            // Se o modal não foi carregado ainda (usuário vendedor ou erro)
+            alert('Funcionalidade de negociação disponível apenas para compradores.');
+        }
+    });
+}
+
+const btnNegociarSidebar = document.getElementById('btn-negociar-sidebar');
+
+// Conectar o botão da sidebar ao mesmo modal
+if (btnNegociarSidebar) {
+    btnNegociarSidebar.addEventListener('click', () => {
+        // Verificar se o modal de negociação já está inicializado
+        if (typeof modalNegociacao !== 'undefined' && modalNegociacao) {
+            // Abrir o modal
+            modalNegociacao.classList.add('active');
+            
+            // Garantir que os labels estão atualizados
+            if (typeof atualizarLabelsComUnidade === 'function') {
+                atualizarLabelsComUnidade();
+            }
+            
+            // Garantir que o resumo está atualizado
+            if (typeof atualizarResumo === 'function') {
+                atualizarResumo();
+            }
+        } else {
+            // Se o modal não foi carregado ainda (usuário vendedor ou erro)
+            alert('Funcionalidade de negociação disponível apenas para compradores.');
+        }
+    });
+}
+
+// Atualizar a lógica de exibição do botão da sidebar
+function verificarExibicaoBotaoSidebar() {
+    const sidebarNegociacaoBtn = document.querySelector('.sidebar-negociacao-btn');
+    const propostaCard = document.getElementById('proposta-card');
+    
+    // Se houver proposta card, esconder botão da sidebar
+    if (propostaCard && sidebarNegociacaoBtn) {
+        sidebarNegociacaoBtn.style.display = 'none';
+    } else if (sidebarNegociacaoBtn) {
+        sidebarNegociacaoBtn.style.display = 'block';
+    }
 }
     </script>
     <?php endif; ?>

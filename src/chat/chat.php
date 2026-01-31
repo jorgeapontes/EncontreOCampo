@@ -308,7 +308,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                 </div>
             <?php endif; ?>
             
-            <!-- CARD DE ENDEREÇO DO OUTRO USUÁRIO -->
+            <!-- CARD DE ENDEREÇO - VERSÃO SIMPLES -->
             <?php if ($conversa_id && $outro_usuario_id && $outro_usuario_endereco): ?>
                 <div class="endereco-card">
                     <div class="endereco-header">
@@ -316,16 +316,30 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                         <h4>Endereço do <?php echo $eh_vendedor_produto ? 'Comprador' : 'Vendedor'; ?></h4>
                     </div>
                     <div class="endereco-info">
-                        <div class="endereco-texto">
+                        <div class="endereco-conteudo">
                             <a href="https://www.google.com/maps/search/?api=1&query=<?php echo $outro_usuario_endereco_maps; ?>" 
-                               target="_blank" 
-                               class="endereco-link">
-                                <p>
-                                    <i class="fas fa-map-marked-alt" style="padding: 5px;"></i>
-                                    <?php echo htmlspecialchars($outro_usuario_endereco);?>,
-                                    <?php echo htmlspecialchars($outro_usuario_info['cep'] ?? ''); ?>
-                                </p>
-                                </a>
+                            target="_blank" 
+                            class="endereco-link"
+                            title="<?php echo htmlspecialchars($outro_usuario_endereco); ?>">
+                                <div class="endereco-texto-compacto">
+                                    <i class="fas fa-map-marked-alt"></i>
+                                    <span>
+                                        <?php 
+                                        $endereco_display = $outro_usuario_endereco;
+                                        if (strlen($endereco_display) > 50) {
+                                            echo htmlspecialchars(substr($endereco_display, 0, 47)) . '...';
+                                        } else {
+                                            echo htmlspecialchars($endereco_display);
+                                        }
+                                        ?>
+                                    </span>
+                                </div>
+                                <?php if (!empty($outro_usuario_info['cep'])): ?>
+                                    <div class="endereco-cep">
+                                        CEP: <?php echo htmlspecialchars($outro_usuario_info['cep']); ?>
+                                    </div>
+                                <?php endif; ?>
+                            </a>
                         </div>
                     </div>
                     <div class="endereco-usuario-footer">

@@ -218,7 +218,7 @@ require_once 'src/conexao.php';
                 </div>
             </div>
             <div class="contact-form">
-                <form id="mainForm" action="src/processar_solicitacao.php" method="POST">
+                <form id="mainForm" action="src/processar_solicitacao.php" method="POST" enctype="multipart/form-data">
                     <div class="form-group">
                         <label for="name" class="required">Nome </label>
                         <input type="text" id="name" name="name" required placeholder="Seu nome completo">
@@ -389,7 +389,27 @@ require_once 'src/conexao.php';
                                         <input type="text" id="telefone2Comprador" name="telefone2Comprador" maxlength="15" placeholder="(11) 99999-9999">
                                     </div>
                                 </div>
+
+                                <h4 style="margin-top: 30px; margin-bottom: 20px; color: var(--dark-color);">Documentação</h4>
+                                <p style="color: #666; margin-bottom: 15px;">Para validar sua identidade, envie as fotos abaixo:</p>
                                 
+                                <div class="form-group">
+                                    <label for="fotoRostoComprador" class="required">Foto do Rosto </label>
+                                    <input type="file" id="fotoRostoComprador" name="fotoRostoComprador" accept="image/*" required>
+                                    <small class="form-help">Envie uma foto clara do seu rosto. Formatos: JPG, PNG</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="fotoDocumentoFrenteComprador" class="required">Documento - Frente </label>
+                                    <input type="file" id="fotoDocumentoFrenteComprador" name="fotoDocumentoFrenteComprador" accept="image/*" required>
+                                    <small class="form-help">Envie uma foto clara da frente do seu documento (RG, CNH ou Passaporte)</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="fotoDocumentoVersoComprador" class="required">Documento - Verso </label>
+                                    <input type="file" id="fotoDocumentoVersoComprador" name="fotoDocumentoVersoComprador" accept="image/*" required>
+                                    <small class="form-help">Envie uma foto clara do verso do seu documento</small>
+                                </div>
                                 
                                 <div class="step-navigation">
                                     <button type="button" class="step-btn btn-prev" onclick="prevStep('comprador')">
@@ -543,6 +563,32 @@ require_once 'src/conexao.php';
                                         * Todos começam com plano gratuito. Você poderá alterar o plano posteriormente em seu painel.
                                     </small>
                                 </div>
+
+                                <h4 style="margin-top: 30px; margin-bottom: 20px; color: var(--dark-color);">Documentação</h4>
+                                <p style="color: #666; margin-bottom: 15px;">Para validar sua identidade, envie as fotos abaixo:</p>
+                                
+                                <div class="form-group">
+                                    <label for="fotoRostoVendedor" class="required">Foto do Rosto </label>
+                                    <input type="file" id="fotoRostoVendedor" name="fotoRostoVendedor" accept="image/*" required>
+                                    <small class="form-help">Envie uma foto clara do seu rosto. Formatos: JPG, PNG</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="fotoDocumentoFrenteVendedor" class="required">Documento - Frente </label>
+                                    <input type="file" id="fotoDocumentoFrenteVendedor" name="fotoDocumentoFrenteVendedor" accept="image/*" required>
+                                    <small class="form-help">Envie uma foto clara da frente do seu documento (RG, CNH ou Passaporte)</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="fotoDocumentoVersoVendedor" class="required">Documento - Verso </label>
+                                    <input type="file" id="fotoDocumentoVersoVendedor" name="fotoDocumentoVersoVendedor" accept="image/*" required>
+                                    <small class="form-help">Envie uma foto clara do verso do seu documento</small>
+                                </div>
+                                    </select>
+                                    <small class="form-help" style="color: #666; font-style: italic; display: block; margin-top: 5px;">
+                                        * Todos começam com plano gratuito. Você poderá alterar o plano posteriormente em seu painel.
+                                    </small>
+                                </div>
                                 
                                 <div class="step-navigation">
                                     <button type="button" class="step-btn btn-prev" onclick="prevStep('vendedor')">
@@ -662,6 +708,27 @@ require_once 'src/conexao.php';
                                         <label for="cidadeTransportador" class="required">Cidade </label>
                                         <input type="text" id="cidadeTransportador" name="cidadeTransportador" required placeholder="Nome da cidade">
                                     </div>
+                                </div>
+
+                                <h4 style="margin-top: 30px; margin-bottom: 20px; color: var(--dark-color);">Documentação</h4>
+                                <p style="color: #666; margin-bottom: 15px;">Para validar sua identidade, envie as fotos abaixo:</p>
+                                
+                                <div class="form-group">
+                                    <label for="fotoRostoTransportador" class="required">Foto do Rosto </label>
+                                    <input type="file" id="fotoRostoTransportador" name="fotoRostoTransportador" accept="image/*" required>
+                                    <small class="form-help">Envie uma foto clara do seu rosto. Formatos: JPG, PNG</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="fotoDocumentoFrenteTransportador" class="required">Documento - Frente </label>
+                                    <input type="file" id="fotoDocumentoFrenteTransportador" name="fotoDocumentoFrenteTransportador" accept="image/*" required>
+                                    <small class="form-help">Envie uma foto clara da frente do seu documento (RG, CNH ou Passaporte)</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="fotoDocumentoVersoTransportador" class="required">Documento - Verso </label>
+                                    <input type="file" id="fotoDocumentoVersoTransportador" name="fotoDocumentoVersoTransportador" accept="image/*" required>
+                                    <small class="form-help">Envie uma foto clara do verso do seu documento</small>
                                 </div>
                                 
                                 <div class="step-navigation">

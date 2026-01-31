@@ -602,6 +602,44 @@ document.addEventListener("DOMContentLoaded", function () {
                         </div>
                     `;
                     
+                    // ============ CONTAINER 1.5: FOTOS DE DOCUMENTAÇÃO ============
+                    if (usuario.foto_rosto || usuario.foto_documento_frente || usuario.foto_documento_verso) {
+                        html += `
+                            <div class="data-container pessoal">
+                                <div class="container-header">
+                                    <span class="container-header-icon">📸</span>
+                                    <h4>Fotos de Documentação</h4>
+                                </div>
+                                <div class="data-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                                    ${usuario.foto_rosto ? `
+                                        <div class="data-field" style="text-align: center; padding: 15px; background: white; border: 2px solid #e0e0e0; border-radius: 8px;">
+                                            <div class="field-label" style="margin-bottom: 12px; color: #555; font-weight: 600;">Foto do Rosto</div>
+                                            <div style="display: flex; justify-content: center; background: #f5f5f5; padding: 10px; border-radius: 6px;">
+                                                <img src="../../${usuario.foto_rosto}" alt="Foto do Rosto" style="max-width: 100%; height: auto; max-height: 300px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;" onclick="abrirImagemGrande('../../${usuario.foto_rosto}', 'Foto do Rosto')">
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                    ${usuario.foto_documento_frente ? `
+                                        <div class="data-field" style="text-align: center; padding: 15px; background: white; border: 2px solid #e0e0e0; border-radius: 8px;">
+                                            <div class="field-label" style="margin-bottom: 12px; color: #555; font-weight: 600;">Documento - Frente</div>
+                                            <div style="display: flex; justify-content: center; background: #f5f5f5; padding: 10px; border-radius: 6px;">
+                                                <img src="../../${usuario.foto_documento_frente}" alt="Documento Frente" style="max-width: 100%; height: auto; max-height: 300px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;" onclick="abrirImagemGrande('../../${usuario.foto_documento_frente}', 'Documento - Frente')">
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                    ${usuario.foto_documento_verso ? `
+                                        <div class="data-field" style="text-align: center; padding: 15px; background: white; border: 2px solid #e0e0e0; border-radius: 8px;">
+                                            <div class="field-label" style="margin-bottom: 12px; color: #555; font-weight: 600;">Documento - Verso</div>
+                                            <div style="display: flex; justify-content: center; background: #f5f5f5; padding: 10px; border-radius: 6px;">
+                                                <img src="../../${usuario.foto_documento_verso}" alt="Documento Verso" style="max-width: 100%; height: auto; max-height: 300px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;" onclick="abrirImagemGrande('../../${usuario.foto_documento_verso}', 'Documento - Verso')">
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
                     // ============ CONTAINER 2: DADOS ESPECÍFICOS POR TIPO ============
                     let dadosEspecificos = '';
                     
@@ -773,6 +811,27 @@ document.addEventListener("DOMContentLoaded", function () {
     window.addEventListener("click", e => { if (e.target === modal) modal.style.display = "none"; });
     document.addEventListener("keydown", e => { if (e.key === "Escape" && modal.style.display === "block") modal.style.display = "none"; });
 });
+
+// Função para abrir imagem em tamanho grande
+function abrirImagemGrande(src, titulo) {
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 9999; cursor: pointer;';
+    
+    const img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'max-width: 90%; max-height: 90%; border-radius: 8px;';
+    img.title = 'Clique para fechar';
+    
+    const titulo_div = document.createElement('div');
+    titulo_div.textContent = titulo;
+    titulo_div.style.cssText = 'position: absolute; top: 20px; left: 50%; transform: translateX(-50%); color: white; font-size: 1.2rem; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 4px;';
+    
+    modal.appendChild(img);
+    modal.appendChild(titulo_div);
+    
+    modal.addEventListener('click', () => modal.remove());
+    document.body.appendChild(modal);
+}
 </script>
 
 </body>

@@ -243,9 +243,11 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
             <p id="confirmModalMessage">Você tem certeza que deseja realizar esta ação?</p>
         </div>
         <div class="confirm-modal-footer">
-            <button id="confirmYes" class="btn-confirm btn-confirm-yes">Sim</button>
-            <button id="confirmNo" class="btn-confirm btn-confirm-no">Não</button>
-            <button id="confirmCancel" class="btn-confirm btn-cancel">Cancelar</button>
+            <div class="modal-flex">
+                <button id="confirmYes" class="btn-confirm btn-confirm-yes">Sim</button>
+                <button id="confirmNo" class="btn-confirm btn-confirm-no">Não</button>
+                <button id="confirmCancel" class="btn-confirm btn-cancel">Cancelar</button>
+            </div>
         </div>
     </div>
 </div>

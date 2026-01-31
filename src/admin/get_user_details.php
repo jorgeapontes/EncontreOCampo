@@ -63,7 +63,10 @@ try {
             'email' => $usuario['email'],
             'tipo' => $usuario['tipo'],
             'status' => $usuario['status'],
-            'data_criacao' => $usuario['data_criacao']
+            'data_criacao' => $usuario['data_criacao'],
+            'foto_rosto' => $usuario['foto_rosto'] ?? null,
+            'foto_documento_frente' => $usuario['foto_documento_frente'] ?? null,
+            'foto_documento_verso' => $usuario['foto_documento_verso'] ?? null
         ],
         'detalhes' => $detalhes
     ];

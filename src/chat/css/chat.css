@@ -2485,7 +2485,6 @@ html, body {
     font-weight: 600;
     font-size: 14px;
     transition: all 0.2s;
-    margin-top: 8px;
     border: #25D366;
     cursor: pointer;
 }

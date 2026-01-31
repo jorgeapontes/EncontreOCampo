@@ -1488,15 +1488,15 @@ function enviarNegociacao(dados) {
     .then(data => {
         if (data.success) {
             // Enviar mensagem automática no chat com os detalhes da negociação
-            const mensagemNegociacao = `*NOVA PROPOSTA DE COMPRA*\n\n` +
-                `**Produto:** ${document.querySelector('.produto-info-modal h4').textContent}\n` +
-                `**Quantidade:** ${dados.quantidade} ${unidadeMedida}\n` +
-                `**Valor unitário:** R$ ${parseFloat(dados.valor_unitario).toFixed(2).replace('.', ',')}\n` +
-                `**Forma de pagamento:** ${dados.forma_pagamento === 'pagamento_ato' ? 'Pagamento no Ato' : 'Pagamento na Entrega'}\n` +
-                `**Opção de frete:** ${obterDescricaoFrete(dados.opcao_frete)}\n` +
-                `**Valor do frete:** R$ ${parseFloat(dados.valor_frete).toFixed(2).replace('.', ',')}\n` +
-                `**Valor total:** R$ ${parseFloat(dados.total).toFixed(2).replace('.', ',')}\n\n` +
-                `**ID da proposta:** ${data.proposta_id}`;
+            const mensagemNegociacao = `NOVA PROPOSTA DE COMPRA\n\n` +
+                `Produto: ${document.querySelector('.produto-info-modal h4').textContent}\n` +
+                `Quantidade: ${dados.quantidade} ${unidadeMedida}\n` +
+                `Valor unitário: R$ ${parseFloat(dados.valor_unitario).toFixed(2).replace('.', ',')}\n` +
+                `Forma de pagamento: ${dados.forma_pagamento === 'pagamento_ato' ? 'Pagamento à Vista' : 'Pagamento na Entrega'}\n` +
+                `Opção de frete: ${obterDescricaoFrete(dados.opcao_frete)}\n` +
+                `Valor do frete: R$ ${parseFloat(dados.valor_frete).toFixed(2).replace('.', ',')}\n` +
+                `Valor total: R$ ${parseFloat(dados.total).toFixed(2).replace('.', ',')}\n\n` +
+                `ID da proposta: ${data.proposta_id}`;
             
             // Enviar como mensagem no chat
             return fetch('send_message.php', {

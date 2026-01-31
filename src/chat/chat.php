@@ -352,198 +352,197 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
             <?php endif; ?>
 
             <?php
-if ($conversa_id) {
-    // Buscar a última proposta desta conversa
-    $sql_ultima_proposta = "SELECT * FROM propostas 
-                           WHERE produto_id = :produto_id 
-                           AND comprador_id = :comprador_id 
-                           AND vendedor_id = :vendedor_id 
-                           ORDER BY data_inicio DESC LIMIT 1";
-    
-    $comprador_id_param = $eh_vendedor_produto ? $outro_usuario_id : $usuario_id;
-    $vendedor_id_param = $eh_vendedor_produto ? $usuario_id : $outro_usuario_id;
-    
-    $stmt_proposta = $conn->prepare($sql_ultima_proposta);
-    $stmt_proposta->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
-    $stmt_proposta->bindParam(':comprador_id', $comprador_id_param, PDO::PARAM_INT);
-    $stmt_proposta->bindParam(':vendedor_id', $vendedor_id_param, PDO::PARAM_INT);
-    $stmt_proposta->execute();
-    $ultima_proposta = $stmt_proposta->fetch(PDO::FETCH_ASSOC);
-    
-    if ($ultima_proposta) {
-        // Formatando os valores
-        $valor_unitario = number_format($ultima_proposta['preco_proposto'], 2, ',', '.');
-        $valor_total = $ultima_proposta['valor_total'] ? number_format($ultima_proposta['valor_total'], 2, ',', '.') : '0,00';
-        $valor_frete = number_format($ultima_proposta['valor_frete'], 2, ',', '.');
-        
-        // Mapeamento de status
-        $status_texto = [
-            'assinando' => '📝 Assinando',
-            'aceita' => '✅ Aceita',
-            'negociacao' => '🔄 Em Negociação',
-            'recusada' => '❌ Recusada',
-            'cancelada' => '⏹️ Cancelada'
-        ];
-        
-        $status_exibir = isset($status_texto[$ultima_proposta['status']]) ? 
-                        $status_texto[$ultima_proposta['status']] : 
-                        $ultima_proposta['status'];
-        $status_class = $ultima_proposta['status'];
-        
-        // Mapeamento de forma de pagamento
-        $forma_pagamento_texto = [
-            'à vista' => 'À Vista',
-            'entrega' => 'Na Entrega'
-        ];
-        
-        $forma_pagamento_exibir = isset($forma_pagamento_texto[$ultima_proposta['forma_pagamento']]) ?
-                                 $forma_pagamento_texto[$ultima_proposta['forma_pagamento']] :
-                                 $ultima_proposta['forma_pagamento'];
-        
-        // Mapeamento de opção de frete
-        $opcao_frete_texto = [
-            'vendedor' => 'Vendedor',
-            'comprador' => 'Comprador',
-            'entregador' => 'Transportador'
-        ];
-        
-        $opcao_frete_exibir = isset($opcao_frete_texto[$ultima_proposta['opcao_frete']]) ?
-                             $opcao_frete_texto[$ultima_proposta['opcao_frete']] :
-                             $ultima_proposta['opcao_frete'];
-        
-        // Data formatada
-        $data_formatada = date('d/m/Y H:i', strtotime($ultima_proposta['data_inicio'])); 
-        
-        $assinaturas_info = '';
-            if ($ultima_proposta['status'] === 'assinando') {
-                $sql_assinaturas = "SELECT u.nome, u.tipo, pa.data_assinatura 
-                                   FROM propostas_assinaturas pa
-                                   JOIN usuarios u ON pa.usuario_id = u.id
-                                   WHERE pa.proposta_id = :proposta_id";
-                $stmt_assinaturas = $conn->prepare($sql_assinaturas);
-                $stmt_assinaturas->bindParam(':proposta_id', $ultima_proposta['ID'], PDO::PARAM_INT);
-                $stmt_assinaturas->execute();
-                $assinaturas = $stmt_assinaturas->fetchAll(PDO::FETCH_ASSOC);
+            if ($conversa_id) {
+                // Buscar a última proposta desta conversa
+                $sql_ultima_proposta = "SELECT * FROM propostas 
+                                    WHERE produto_id = :produto_id 
+                                    AND comprador_id = :comprador_id 
+                                    AND vendedor_id = :vendedor_id 
+                                    ORDER BY data_inicio DESC LIMIT 1";
                 
-                $assinaturas_info = '<div class="assinaturas-info">';
-                foreach ($assinaturas as $assinatura) {
-                    $data = date('d/m/Y H:i', strtotime($assinatura['data_assinatura']));
-                    $assinaturas_info .= '<small><i class="fas fa-check-circle" style="color: #28a745;"></i> ' .
-                                       htmlspecialchars($assinatura['nome']) . 
-                                       ' (' . $assinatura['tipo'] . ') assinou em ' . $data . '</small><br>';
-                }
-                $assinaturas_info .= '</div>';
-            }
-?>
-<div class="proposta-card" id="proposta-card">
-    <div class="proposta-header">
-        <i class="fas fa-handshake"></i>
-        <h4>Acordo de Compra</h4>
-        <div class="proposta-status <?php echo htmlspecialchars($status_class); ?>" 
-             id="proposta-status">
-            <?php echo htmlspecialchars($status_exibir); ?>
-        </div>
-    </div>
-    
-    <div class="proposta-info" id="proposta-info">
-        <div class="proposta-item" id="proposta-quantidade">
-            <span><i class="fas fa-box"></i> Quantidade:</span>
-            <strong><?php echo htmlspecialchars($ultima_proposta['quantidade_proposta']); ?> <?php echo htmlspecialchars($unidade_medida); ?></strong>
-        </div>
-        
-        <div class="proposta-item" id="proposta-valor-unitario">
-            <span><i class="fas fa-tag"></i> Valor Unitário:</span>
-            <strong>R$ <?php echo htmlspecialchars($valor_unitario); ?></strong>
-        </div>
-        
-        <div class="proposta-item" id="proposta-frete">
-            <span><i class="fas fa-truck"></i> Frete:</span>
-            <strong><?php echo htmlspecialchars($opcao_frete_exibir); ?> (R$ <?php echo htmlspecialchars($valor_frete); ?>)</strong>
-        </div>
-        
-        <div class="proposta-item" id="proposta-pagamento">
-            <span><i class="fas fa-credit-card"></i> Pagamento:</span>
-            <strong><?php echo htmlspecialchars($forma_pagamento_exibir); ?></strong>
-        </div>
-        
-        <div class="proposta-item total" id="proposta-total">
-            <span><i class="fas fa-calculator"></i> Valor Total:</span>
-            <strong>R$ <?php echo htmlspecialchars($valor_total); ?></strong>
-        </div>
-        
-        <div class="proposta-item" id="proposta-data">
-            <span><i class="fas fa-calendar"></i> Data:</span>
-            <small><?php echo htmlspecialchars($data_formatada); ?></small>
-        </div>
-    </div>
-    
-    <div class="proposta-acoes" id="proposta-acoes">
-        <?php if ($ultima_proposta['status'] === 'negociacao') { ?>
-            <?php if ($eh_vendedor_produto) { ?>
-                <!-- Botões para vendedor -->
-                <button type="button" class="btn-accept-proposal" 
-                        onclick="aceitarPropostaParaAssinatura(<?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
-                    <i class="fas fa-check"></i> Aceitar
-                </button>
-                <button type="button" class="btn-reject-proposal" 
-                        onclick="responderProposta('recusar', <?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
-                    <i class="fas fa-times"></i> Recusar
-                </button>
-            <?php } else { ?>
-                <!-- Botões para comprador -->
-                <button type="button" class="btn-cancel-proposal" 
-                        onclick="cancelarProposta(<?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
-                    <i class="fas fa-times"></i> Cancelar
-                </button>
-            <?php } ?>
-        <?php } elseif ($ultima_proposta['status'] === 'assinando') { ?>
-            <?php if (!$usuario_assinou): ?>
-                <button type="button" class="btn-assinar-acordo" 
-                        onclick="abrirModalAssinatura(<?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
-                    <i class="fas fa-signature"></i> Assinar Acordo
-                </button>
-            <?php else: ?>
-                <div class="proposta-finalizada assinado">
-                    <i class="fas fa-check-circle" style="color: #28a745;"></i> Você já assinou este acordo
+                $comprador_id_param = $eh_vendedor_produto ? $outro_usuario_id : $usuario_id;
+                $vendedor_id_param = $eh_vendedor_produto ? $usuario_id : $outro_usuario_id;
+                
+                $stmt_proposta = $conn->prepare($sql_ultima_proposta);
+                $stmt_proposta->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+                $stmt_proposta->bindParam(':comprador_id', $comprador_id_param, PDO::PARAM_INT);
+                $stmt_proposta->bindParam(':vendedor_id', $vendedor_id_param, PDO::PARAM_INT);
+                $stmt_proposta->execute();
+                $ultima_proposta = $stmt_proposta->fetch(PDO::FETCH_ASSOC);
+                
+                if ($ultima_proposta) {
+                    // Formatando os valores
+                    $valor_unitario = number_format($ultima_proposta['preco_proposto'], 2, ',', '.');
+                    $valor_total = $ultima_proposta['valor_total'] ? number_format($ultima_proposta['valor_total'], 2, ',', '.') : '0,00';
+                    $valor_frete = number_format($ultima_proposta['valor_frete'], 2, ',', '.');
+                    
+                    // Mapeamento de status
+                    $status_texto = [
+                        'assinando' => '📝 Assinando',
+                        'aceita' => '✅ Aceita',
+                        'negociacao' => '🔄 Em Negociação',
+                        'recusada' => '❌ Recusada',
+                        'cancelada' => '⏹️ Cancelada'
+                    ];
+                    
+                    $status_exibir = isset($status_texto[$ultima_proposta['status']]) ? 
+                                    $status_texto[$ultima_proposta['status']] : 
+                                    $ultima_proposta['status'];
+                    $status_class = $ultima_proposta['status'];
+                    
+                    // Mapeamento de forma de pagamento
+                    $forma_pagamento_texto = [
+                        'à vista' => 'À Vista',
+                        'entrega' => 'Na Entrega'
+                    ];
+                    
+                    $forma_pagamento_exibir = isset($forma_pagamento_texto[$ultima_proposta['forma_pagamento']]) ?
+                                            $forma_pagamento_texto[$ultima_proposta['forma_pagamento']] :
+                                            $ultima_proposta['forma_pagamento'];
+                    
+                    // Mapeamento de opção de frete
+                    $opcao_frete_texto = [
+                        'vendedor' => 'Vendedor',
+                        'comprador' => 'Comprador',
+                        'entregador' => 'Transportador'
+                    ];
+                    
+                    $opcao_frete_exibir = isset($opcao_frete_texto[$ultima_proposta['opcao_frete']]) ?
+                                        $opcao_frete_texto[$ultima_proposta['opcao_frete']] :
+                                        $ultima_proposta['opcao_frete'];
+                    
+                    // Data formatada
+                    $data_formatada = date('d/m/Y H:i', strtotime($ultima_proposta['data_inicio'])); 
+                    
+                    $assinaturas_info = '';
+                        if ($ultima_proposta['status'] === 'assinando') {
+                            $sql_assinaturas = "SELECT u.nome, u.tipo, pa.data_assinatura 
+                                            FROM propostas_assinaturas pa
+                                            JOIN usuarios u ON pa.usuario_id = u.id
+                                            WHERE pa.proposta_id = :proposta_id";
+                            $stmt_assinaturas = $conn->prepare($sql_assinaturas);
+                            $stmt_assinaturas->bindParam(':proposta_id', $ultima_proposta['ID'], PDO::PARAM_INT);
+                            $stmt_assinaturas->execute();
+                            $assinaturas = $stmt_assinaturas->fetchAll(PDO::FETCH_ASSOC);
+                            
+                            $assinaturas_info = '<div class="assinaturas-info">';
+                            foreach ($assinaturas as $assinatura) {
+                                $data = date('d/m/Y H:i', strtotime($assinatura['data_assinatura']));
+                                $assinaturas_info .= '<small><i class="fas fa-check-circle" style="color: #28a745;"></i> ' .
+                                                htmlspecialchars($assinatura['nome']) . 
+                                                ' (' . $assinatura['tipo'] . ') assinou em ' . $data . '</small><br>';
+                            }
+                            $assinaturas_info .= '</div>';
+                        }
+            ?>
+            <div class="proposta-card" id="proposta-card">
+                <div class="proposta-header">
+                    <i class="fas fa-handshake"></i>
+                    <h4>Acordo de Compra</h4>
+                    <div class="proposta-status <?php echo htmlspecialchars($status_class); ?>" 
+                        id="proposta-status">
+                        <?php echo htmlspecialchars($status_exibir); ?>
+                    </div>
                 </div>
-            <?php endif; ?>
-        <?php } elseif ($ultima_proposta['status'] === 'cancelada') { ?>
-            <div class="proposta-finalizada cancelada">
-                <i class="fas fa-ban"></i> Proposta cancelada pelo comprador
+                
+                <div class="proposta-info" id="proposta-info">
+                    <div class="proposta-item" id="proposta-quantidade">
+                        <span><i class="fas fa-box"></i> Quantidade:</span>
+                        <strong><?php echo htmlspecialchars($ultima_proposta['quantidade_proposta']); ?> <?php echo htmlspecialchars($unidade_medida); ?></strong>
+                    </div>
+                    
+                    <div class="proposta-item" id="proposta-valor-unitario">
+                        <span><i class="fas fa-tag"></i> Valor Unitário:</span>
+                        <strong>R$ <?php echo htmlspecialchars($valor_unitario); ?></strong>
+                    </div>
+                    
+                    <div class="proposta-item" id="proposta-frete">
+                        <span><i class="fas fa-truck"></i> Frete:</span>
+                        <strong><?php echo htmlspecialchars($opcao_frete_exibir); ?> (R$ <?php echo htmlspecialchars($valor_frete); ?>)</strong>
+                    </div>
+                    
+                    <div class="proposta-item" id="proposta-pagamento">
+                        <span><i class="fas fa-credit-card"></i> Pagamento:</span>
+                        <strong><?php echo htmlspecialchars($forma_pagamento_exibir); ?></strong>
+                    </div>
+                    
+                    <div class="proposta-item total" id="proposta-total">
+                        <span><i class="fas fa-calculator"></i> Valor Total:</span>
+                        <strong>R$ <?php echo htmlspecialchars($valor_total); ?></strong>
+                    </div>
+                    
+                    <div class="proposta-item" id="proposta-data">
+                        <span><i class="fas fa-calendar"></i> Data:</span>
+                        <small><?php echo htmlspecialchars($data_formatada); ?></small>
+                    </div>
+                </div>
+                
+                <div class="proposta-acoes" id="proposta-acoes">
+                    <?php if ($ultima_proposta['status'] === 'negociacao') { ?>
+                        <?php if ($eh_vendedor_produto) { ?>
+                            <!-- Botões para vendedor -->
+                            <button type="button" class="btn-accept-proposal" 
+                                    onclick="aceitarPropostaParaAssinatura(<?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
+                                <i class="fas fa-check"></i> Aceitar
+                            </button>
+                            <button type="button" class="btn-reject-proposal" 
+                                    onclick="responderProposta('recusar', <?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
+                                <i class="fas fa-times"></i> Recusar
+                            </button>
+                        <?php } else { ?>
+                            <!-- Botões para comprador -->
+                            <button type="button" class="btn-cancel-proposal" 
+                                    onclick="cancelarProposta(<?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                        <?php } ?>
+                    <?php } elseif ($ultima_proposta['status'] === 'assinando') { ?>
+                        <?php if (!$usuario_assinou): ?>
+                            <button type="button" class="btn-assinar-acordo" 
+                                    onclick="abrirModalAssinatura(<?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
+                                <i class="fas fa-signature"></i> Assinar Acordo
+                            </button>
+                        <?php else: ?>
+                            <div class="proposta-finalizada assinado">
+                                <i class="fas fa-check-circle" style="color: #28a745;"></i> Você já assinou este acordo
+                            </div>
+                        <?php endif; ?>
+                    <?php } elseif ($ultima_proposta['status'] === 'cancelada') { ?>
+                        <div class="proposta-finalizada cancelada">
+                            <i class="fas fa-ban"></i> Proposta cancelada pelo comprador
+                        </div>
+                    <?php } ?>
+                </div>
+                
+                <div class="proposta-footer" id="proposta-footer">
+                    <small>
+                        <i class="fas fa-info-circle"></i>
+                        <span id="proposta-footer-text">
+                            <?php 
+                            if ($ultima_proposta['status'] === 'negociacao') {
+                                echo 'Esta proposta foi enviada.';
+                            } elseif ($ultima_proposta['status'] === 'assinando') {
+                                echo 'Aguardando assinaturas para concluir o acordo.';
+                            } elseif ($ultima_proposta['status'] === 'cancelada') {
+                                echo 'Esta proposta foi cancelada pelo comprador.';
+                            } else {
+                                echo "Esta proposta foi {$ultima_proposta['status']}.";
+                            }
+                            ?>
+                        </span>
+                    </small>
+                </div>
             </div>
-        <?php } ?>
-    </div>
-    
-    <div class="proposta-footer" id="proposta-footer">
-        <small>
-            <i class="fas fa-info-circle"></i>
-            <span id="proposta-footer-text">
-                <?php 
-                if ($ultima_proposta['status'] === 'negociacao') {
-                    echo 'Esta proposta foi enviada.';
-                } elseif ($ultima_proposta['status'] === 'assinando') {
-                    echo 'Aguardando assinaturas para concluir o acordo.';
-                } elseif ($ultima_proposta['status'] === 'cancelada') {
-                    echo 'Esta proposta foi cancelada pelo comprador.';
-                } else {
-                    echo "Esta proposta foi {$ultima_proposta['status']}.";
+
+            <!-- Indicador de atualização (hidden) -->
+            <div id="proposta-indicador" 
+                data-proposta-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>"
+                data-status="<?php echo htmlspecialchars($ultima_proposta['status']); ?>"
+                style="display: none;"></div>
+            <?php 
                 }
-                ?>
-            </span>
-        </small>
-    </div>
-</div>
-
-<!-- Indicador de atualização (hidden) -->
-<div id="proposta-indicador" 
-     data-proposta-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>"
-     data-status="<?php echo htmlspecialchars($ultima_proposta['status']); ?>"
-     style="display: none;"></div>
-<?php 
-    }
-}
-?>
-
+            }
+            ?>
         </div>
         
         <div class="chat-area">

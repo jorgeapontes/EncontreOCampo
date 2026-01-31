@@ -99,11 +99,33 @@ try {
         }
     }
 
+    // Buscar proposta de compra associada (para transportador enviar proposta)
+    $proposta_id = null;
+    if ($is_transportador) {
+        $sql_proposta = "SELECT p.ID 
+                         FROM propostas p
+                         WHERE p.produto_id = :produto_id 
+                         AND p.comprador_id = :comprador_id 
+                         AND p.vendedor_id = :vendedor_id 
+                         AND p.opcao_frete = 'entregador' 
+                         AND p.status = 'aceita' 
+                         AND p.transportador_id IS NULL
+                         LIMIT 1";
+        $stmt_proposta = $conn->prepare($sql_proposta);
+        $stmt_proposta->bindParam(':produto_id', $conv['produto_id'], PDO::PARAM_INT);
+        $stmt_proposta->bindParam(':comprador_id', $conv['comprador_id'], PDO::PARAM_INT);
+        $stmt_proposta->bindParam(':vendedor_id', $conv['vendedor_id'], PDO::PARAM_INT);
+        $stmt_proposta->execute();
+        $proposta = $stmt_proposta->fetch(PDO::FETCH_ASSOC);
+        if ($proposta) {
+            $proposta_id = $proposta['ID'];
+        }
+    }
+
 } catch (PDOException $e) {
     echo 'Erro ao carregar conversa.';
     exit();
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -298,7 +320,7 @@ try {
             <div class="chat-input">
                 <div class="chat-input-buttons">
                     <button type="button" class="btn-attach" id="btn-attach-image" title="Enviar Imagem"><i class="fas fa-camera"></i></button>
-                    <?php if ($is_comprador): ?>
+                    <?php if ($is_transportador): ?>
                         <button type="button" class="btn-negociar" id="btn-negociar" title="Propor Entrega"><i class="fas fa-handshake"></i></button>
                     <?php endif; ?>
                 </div>
@@ -310,12 +332,14 @@ try {
     </div>
 
     <!-- Modal de proposta para transportador (apenas comprador) -->
+    <!-- Modal de proposta para transportador -->
     <div id="modal-proposta-transportador" style="display:none; position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:13000;align-items:center;justify-content:center;padding:20px;">
         <div style="background:#fff;padding:20px;border-radius:8px;max-width:520px;width:100%;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                 <h3 style="margin:0;font-size:18px;"><i class="fas fa-handshake"></i> Propor Entrega</h3>
                 <button id="fechar-modal-proposta" style="background:transparent;border:none;font-size:22px;">&times;</button>
             </div>
+            <input type="hidden" id="proposta_id" value="<?php echo $proposta_id; ?>">
             <div>
                 <label>Valor do frete (R$)</label>
                 <input type="number" id="proposta-valor" step="0.01" min="0" style="width:100%;padding:8px;margin:6px 0;border:1px solid #ddd;border-radius:6px;" />
@@ -350,7 +374,7 @@ try {
             </div>
             <div class="modal-buttons">
                 <button id="btn-fechar-modal" class="btn-modal-secondary">Continuar no Chat</button>
-                <button id="btn-ver-entregas" class="btn-modal-primary">Ver Minhas Entregas</button>
+                <button id="btn-ver-entregas" class="btn-modal-primary">Ver Minhas Compras</button>
             </div>
         </div>
     </div>
@@ -462,6 +486,9 @@ try {
         }
 
         async function renderizarPropostaCard(msg, content) {
+            console.log("=== renderizarPropostaCard ===");
+            console.log("Mensagem recebida:", msg);
+            
             // Extrair dados da proposta
             let dados = null;
             let propostaId = null;
@@ -470,8 +497,10 @@ try {
             if (msg.dados_json) {
                 try {
                     dados = JSON.parse(msg.dados_json);
+                    console.log("Dados JSON parseados:", dados);
                     if (dados && dados.propostas_transportador_id) {
                         propostaId = dados.propostas_transportador_id;
+                        console.log("ID do dados_json:", propostaId);
                     }
                 } catch(e) {
                     console.error('Erro ao parsear dados_json:', e);
@@ -480,11 +509,16 @@ try {
             
             // Se não tem dados_json, tentar extrair do texto
             if (!dados && msg.mensagem) {
+                console.log("Extraindo dados do texto:", msg.mensagem);
                 dados = extrairDadosDoTexto(msg.mensagem);
+                console.log("Dados extraídos do texto:", dados);
                 if (dados && dados.propostas_transportador_id) {
                     propostaId = dados.propostas_transportador_id;
+                    console.log("ID do texto:", propostaId);
                 }
             }
+            
+            console.log("ID final da proposta:", propostaId);
             
             // Criar o card da proposta
             const card = document.createElement('div');
@@ -527,8 +561,8 @@ try {
             
             card.appendChild(detail);
             
-            // Se for transportador, verificar status e mostrar ações apropriadas
-            <?php if ($is_transportador): ?>
+            // Se for comprador, verificar status e mostrar ações apropriadas
+            <?php if ($is_comprador): ?>
             if (propostaId) {
                 // Verificar status da proposta
                 let status = propostasProcessadas.get(propostaId);
@@ -536,7 +570,7 @@ try {
                 if (!status) {
                     // Buscar status do servidor
                     try {
-                        const res = await fetch('get_proposta_status.php?id=' + propostaId);
+                        const res = await fetch('<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/chat/get_proposta_status.php?id=' + propostaId);
                         const data = await res.json();
                         status = data.status || 'pendente';
                         propostasProcessadas.set(propostaId, status);
@@ -551,7 +585,7 @@ try {
                 actionsContainer.className = 'proposta-actions';
                 
                 if (status === 'pendente') {
-                    // Mostrar botões Aceitar/Recusar
+                    // Mostrar botões Aceitar/Recusar para o COMPRADOR
                     const btnAceitar = document.createElement('button');
                     btnAceitar.className = 'btn-aceitar';
                     btnAceitar.textContent = 'Aceitar';
@@ -576,21 +610,20 @@ try {
                     const statusDiv = document.createElement('div');
                     statusDiv.className = `proposta-status proposta-${status}`;
                     statusDiv.textContent = status === 'aceita' ? '✓ Proposta aceita' : 
-                                           status === 'recusada' ? '✗ Proposta recusada' : 
-                                           '⏳ Pendente';
+                                        status === 'recusada' ? '✗ Proposta recusada' : 
+                                        '⏳ Pendente';
                     actionsContainer.appendChild(statusDiv);
                 }
-                
                 card.appendChild(actionsContainer);
             }
             <?php else: ?>
-            // Para compradores, mostrar apenas o status se disponível
+            // Para transportadores ou outros usuários, mostrar apenas o status
             if (propostaId) {
                 let status = propostasProcessadas.get(propostaId);
-                
+                // Buscar status do servidor se não estiver em cache
                 if (!status) {
                     try {
-                        const res = await fetch('get_proposta_status.php?id=' + propostaId);
+                        const res = await fetch('<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/chat/get_proposta_status.php?id=' + propostaId);
                         const data = await res.json();
                         status = data.status || 'pendente';
                         propostasProcessadas.set(propostaId, status);
@@ -599,14 +632,18 @@ try {
                     }
                 }
                 
-                if (status !== 'pendente') {
-                    const statusDiv = document.createElement('div');
-                    statusDiv.className = `proposta-status proposta-${status}`;
-                    statusDiv.innerHTML = status === 'aceita' ? 
-                        '<i class="fas fa-check-circle" style="margin-right:5px;"></i> Proposta aceita pelo transportador. Informações de entrega repassadas. Aguarde a entrega.' : 
-                        '<i class="fas fa-times-circle" style="margin-right:5px;"></i> Proposta recusada pelo transportador.';
-                    card.appendChild(statusDiv);
-                }
+                const actionsContainer = document.createElement('div');
+                actionsContainer.className = 'proposta-actions';
+                
+                const statusDiv = document.createElement('div');
+                statusDiv.className = `proposta-status proposta-${status}`;
+                statusDiv.innerHTML = status === 'aceita' ? 
+                    '<i class="fas fa-check-circle" style="margin-right:5px;"></i> Proposta aceita pelo comprador.' : 
+                    status === 'recusada' ? 
+                    '<i class="fas fa-times-circle" style="margin-right:5px;"></i> Proposta recusada pelo comprador.' : 
+                    '⏳ Pendente de resposta do comprador';
+                actionsContainer.appendChild(statusDiv);
+                card.appendChild(actionsContainer);
             }
             <?php endif; ?>
             
@@ -659,7 +696,19 @@ try {
             return text.replace(/[&<>"']/g, function(m) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m]; });
         }
 
-        async function performPropostaAction(action, ptId, primaryBtn, secondaryBtn, actionsContainer) {
+       async function performPropostaAction(action, ptId, primaryBtn, secondaryBtn, actionsContainer) {
+            console.log("=== INICIANDO performPropostaAction ===");
+            console.log("Ação:", action);
+            console.log("ID da proposta:", ptId);
+            console.log("Tipo de ID:", typeof ptId);
+            
+            // Verificar se o ID é válido
+            if (!ptId || ptId <= 0) {
+                console.error("ID inválido:", ptId);
+                alert('ID da proposta inválido');
+                return;
+            }
+            
             // Desabilitar botões durante processamento
             if (primaryBtn) primaryBtn.disabled = true;
             if (secondaryBtn) secondaryBtn.disabled = true;
@@ -671,14 +720,19 @@ try {
             if (secondaryBtn) secondaryBtn.textContent = 'Processando...';
             
             try {
+                console.log("Enviando requisição para responder_proposta.php");
                 const res = await fetch('responder_proposta.php', {
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'}, 
                     body: JSON.stringify({acao: action, id: ptId})
                 });
+                
+                console.log("Resposta recebida, status:", res.status);
                 const j = await res.json();
+                console.log("Resposta JSON:", j);
                 
                 if (j.success) {
+                    console.log("Sucesso! Novo status:", action === 'aceitar' ? 'aceita' : 'recusada');
                     const finalStatus = (action === 'aceitar') ? 'aceita' : 'recusada';
                     
                     // Atualizar cache
@@ -705,6 +759,7 @@ try {
                     // Recarregar mensagens para garantir consistência
                     setTimeout(carregarMensagens, 500);
                 } else {
+                    console.error("Erro na resposta:", j.error || j.erro);
                     alert(j.erro || j.error || 'Erro ao processar');
                     // Reabilitar botões
                     if (primaryBtn) {
@@ -717,8 +772,8 @@ try {
                     }
                 }
             } catch (e) {
-                console.error(e);
-                alert('Erro de conexão');
+                console.error("Erro de conexão:", e);
+                alert('Erro de conexão: ' + e.message);
                 // Reabilitar botões
                 if (primaryBtn) {
                     primaryBtn.disabled = false;
@@ -737,7 +792,7 @@ try {
         });
 
         document.getElementById('btn-ver-entregas').addEventListener('click', function() {
-            window.location.href = '../transportador/entregas.php';
+            window.location.href = '../comprador/negociacoes.php';
         });
 
         // Fechar modal com ESC
@@ -799,7 +854,7 @@ try {
         carregarMensagens();
         setInterval(carregarMensagens, 2000);
 
-        // Modal de proposta - apenas comprador
+        // Modal de proposta - apenas transportador (NOVO)
         const btnNegociar = document.getElementById('btn-negociar');
         const modalProposta = document.getElementById('modal-proposta-transportador');
         const fecharModalProposta = document.getElementById('fechar-modal-proposta');
@@ -807,22 +862,35 @@ try {
         const enviarProposta = document.getElementById('enviar-proposta');
 
         if (btnNegociar && modalProposta) {
-            btnNegociar.addEventListener('click', () => { modalProposta.style.display = 'flex'; });
+            btnNegociar.addEventListener('click', () => { 
+                modalProposta.style.display = 'flex'; 
+            });
             fecharModalProposta.addEventListener('click', () => modalProposta.style.display = 'none');
             cancelarProposta.addEventListener('click', () => modalProposta.style.display = 'none');
 
             enviarProposta.addEventListener('click', async () => {
                 const valor = document.getElementById('proposta-valor').value;
                 const data_entrega = document.getElementById('proposta-data').value;
-                if (!valor || !data_entrega) return alert('Preencha valor e data');
+                const proposta_id = document.getElementById('proposta_id').value; // NOVO CAMPO
+                
+                if (!valor || !data_entrega || !proposta_id) {
+                    return alert('Preencha valor, data e verifique a proposta.');
+                }
+                
                 enviarProposta.disabled = true;
                 enviarProposta.textContent = 'Enviando...';
                 try {
                     const form = new FormData();
-                    form.append('conversa_id', conversaId);
+                    form.append('proposta_id', proposta_id); // ALTERADO: não usa mais conversa_id
                     form.append('valor', valor);
                     form.append('data_entrega', data_entrega);
-                    const res = await fetch('send_proposal.php', { method: 'POST', body: form });
+                    
+                    // ✅ CHAMA O NOVO ENDPOINT PARA TRANSPORTADOR
+                    const res = await fetch('send_proposal_transportador.php', { 
+                        method: 'POST', 
+                        body: form 
+                    });
+                    
                     const j = await res.json();
                     if (j.success) {
                         alert('Proposta enviada');
@@ -831,9 +899,12 @@ try {
                         document.getElementById('proposta-data').value = '';
                         carregarMensagens();
                     } else {
-                        alert(j.error || j.erro || 'Erro ao enviar proposta');
+                        alert(j.erro || j.error || 'Erro ao enviar proposta');
                     }
-                } catch (e) { console.error(e); alert('Erro de conexão'); }
+                } catch (e) { 
+                    console.error(e); 
+                    alert('Erro de conexão'); 
+                }
                 enviarProposta.disabled = false;
                 enviarProposta.textContent = 'Enviar Proposta';
             });

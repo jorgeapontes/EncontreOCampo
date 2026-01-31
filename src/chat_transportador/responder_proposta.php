@@ -1,345 +1,213 @@
 <?php
+// src/chat_transportador/responder_proposta.php
 session_start();
 require_once __DIR__ . '/../conexao.php';
 
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'transportador') {
-    echo json_encode(['success' => false, 'erro' => 'Acesso restrito']);
+// Log para depuração
+error_log("=== INICIANDO responder_proposta.php ===");
+$input = file_get_contents('php://input');
+error_log("Input recebido: " . $input);
+
+if (!isset($_SESSION['usuario_id'])) {
+    error_log("Usuário não logado");
+    echo json_encode(['success' => false, 'error' => 'Acesso restrito']);
     exit();
 }
 
-$json = file_get_contents('php://input');
-$dados = json_decode($json, true);
-if (!$dados || !isset($dados['acao']) || !isset($dados['id'])) {
-    echo json_encode(['success' => false, 'erro' => 'Dados inválidos']);
+$data = json_decode($input, true);
+
+if (json_last_error() !== JSON_ERROR_NONE) {
+    error_log("Erro no JSON: " . json_last_error_msg());
+    echo json_encode(['success' => false, 'error' => 'JSON inválido']);
     exit();
 }
 
-$acao = $dados['acao'];
-$pt_id = (int)$dados['id']; // ID da proposta_transportador
-$usuario_id = $_SESSION['usuario_id'];
+$acao = isset($data['acao']) ? $data['acao'] : '';
+$id = isset($data['id']) ? (int)$data['id'] : 0;
+
+error_log("Ação: $acao, ID: $id");
+
+if ($id <= 0 || !in_array($acao, ['aceitar', 'recusar'])) {
+    error_log("Dados inválidos: ID=$id, Ação=$acao");
+    echo json_encode(['success' => false, 'error' => 'Dados inválidos']);
+    exit();
+}
 
 $database = new Database();
 $conn = $database->getConnection();
 
 try {
     $conn->beginTransaction();
-
-    // Buscar proposta_transportador E a proposta original
-    $sql = "SELECT pt.*, p.ID as proposta_id, p.produto_id, p.comprador_id, p.vendedor_id, 
-                   t.id as transportador_id_sistema, t.usuario_id as transportador_usuario_id,
-                   p.frete_resolvido, p.status as proposta_status, p.valor_frete as valor_frete_proposta,
-                   p.opcao_frete
+    
+    // 1. Verificar se a proposta existe e obter dados
+    $sql = "SELECT pt.*, p.comprador_id, p.vendedor_id, p.produto_id 
             FROM propostas_transportadores pt
-            JOIN propostas p ON pt.proposta_id = p.ID
-            LEFT JOIN transportadores t ON pt.transportador_id = t.id
-            WHERE pt.id = :id LIMIT 1";
+            INNER JOIN propostas p ON pt.proposta_id = p.ID
+            WHERE pt.id = :id AND pt.status = 'pendente'";
     $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':id', $pt_id, PDO::PARAM_INT);
+    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
     $stmt->execute();
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$row) throw new Exception('Proposta não encontrada');
-
-    // Verificar se o transportador logado é o destinatário
-    if ((int)$row['transportador_usuario_id'] !== $usuario_id) {
-        throw new Exception('Ação não permitida');
+    
+    $proposta = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$proposta) {
+        error_log("Proposta não encontrada ou já respondida. ID: $id");
+        throw new Exception('Proposta não encontrada ou já respondida');
     }
-
-    // VERIFICAÇÃO CRÍTICA: Verificar se a proposta já foi respondida
-    if (!empty($row['status']) && $row['status'] !== 'pendente') {
-        throw new Exception('Esta proposta já foi ' . $row['status']);
+    
+    error_log("Proposta encontrada: " . print_r($proposta, true));
+    
+    // 2. Verificar se o usuário atual é o comprador
+    if ($_SESSION['usuario_id'] != $proposta['comprador_id']) {
+        error_log("Usuário não é o comprador. Sessão: {$_SESSION['usuario_id']}, Comprador: {$proposta['comprador_id']}");
+        throw new Exception('Somente o comprador pode responder a esta proposta');
     }
-
-    if ($acao === 'aceitar') {
-        // DEBUG: Log para verificar dados
-        error_log("DEBUG: Proposta transportador ID: " . $pt_id);
-        error_log("DEBUG: Proposta ID associada: " . $row['proposta_id']);
-        error_log("DEBUG: Opção frete: " . $row['opcao_frete']);
-        error_log("DEBUG: Transportador sistema ID: " . ($row['transportador_id_sistema'] ?? 'null'));
-
-        // Resolver id do transportador na tabela `transportadores`
-        $transportador_sistema_id = null;
-        if (!empty($row['transportador_id_sistema'])) {
-            $transportador_sistema_id = (int)$row['transportador_id_sistema'];
-        } elseif (!empty($row['transportador_id'])) {
-            $st_lookup = $conn->prepare("SELECT id FROM transportadores WHERE usuario_id = :uid LIMIT 1");
-            $st_lookup->bindParam(':uid', $row['transportador_id'], PDO::PARAM_INT);
-            $st_lookup->execute();
-            $lk = $st_lookup->fetch(PDO::FETCH_ASSOC);
-            if ($lk) $transportador_sistema_id = (int)$lk['id'];
-        }
-        if ($transportador_sistema_id === null) {
-            $st_lookup2 = $conn->prepare("SELECT id FROM transportadores WHERE usuario_id = :uid LIMIT 1");
-            $st_lookup2->bindParam(':uid', $usuario_id, PDO::PARAM_INT);
-            $st_lookup2->execute();
-            $lk2 = $st_lookup2->fetch(PDO::FETCH_ASSOC);
-            if ($lk2) $transportador_sistema_id = (int)$lk2['id'];
-        }
-
-        // Atualizar status da proposta transportador
-        $sql_up = "UPDATE propostas_transportadores SET status = 'aceita', data_resposta = NOW() WHERE id = :id";
-        $stmt_up = $conn->prepare($sql_up);
-        $stmt_up->bindParam(':id', $pt_id, PDO::PARAM_INT);
-        $stmt_up->execute();
-
-        // BUSCAR A PROPOSTA ORIGINAL COMPRADOR-VENDEDOR
-        // A proposta que tem opcao_frete = 'entregador' e status = 'aceita'
-        $sql_original = "SELECT ID FROM propostas 
-                        WHERE produto_id = :produto_id 
-                        AND comprador_id = :comprador_id 
-                        AND vendedor_id = :vendedor_id 
-                        AND opcao_frete = 'entregador' 
-                        AND status = 'aceita'
-                        ORDER BY ID ASC LIMIT 1";
-        
-        $stmt_original = $conn->prepare($sql_original);
-        $stmt_original->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
-        $stmt_original->bindParam(':comprador_id', $row['comprador_id'], PDO::PARAM_INT);
-        $stmt_original->bindParam(':vendedor_id', $row['vendedor_id'], PDO::PARAM_INT);
-        $stmt_original->execute();
-        $original_row = $stmt_original->fetch(PDO::FETCH_ASSOC);
-        
-        if (!$original_row) {
-            throw new Exception('Não foi possível encontrar a proposta original entre comprador e vendedor');
-        }
-        
-        $proposta_original_id = (int)$original_row['ID'];
-        error_log("DEBUG: Proposta original ID encontrada: " . $proposta_original_id);
-
-        // Buscar o ID correto do transportador na tabela transportadores
-        $sql_get_transp_id = "SELECT t.id FROM transportadores t WHERE t.usuario_id = :usuario_id";
-        $stmt_get_transp_id = $conn->prepare($sql_get_transp_id);
-        $stmt_get_transp_id->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
-        $stmt_get_transp_id->execute();
-        $transp_row = $stmt_get_transp_id->fetch(PDO::FETCH_ASSOC);
-
-        if ($transp_row) {
-            $transportador_id_final = $transp_row['id'];
-            
-            // ATUALIZAR A PROPOSTA ORIGINAL COMPRADOR-VENDEDOR
-            $sql_update_proposta = "UPDATE propostas SET 
-                transportador_id = :transportador_id, 
-                frete_resolvido = 1,
-                data_atualizacao = NOW(),
-                valor_frete_final = :valor_frete
-                WHERE ID = :proposta_id";
-            
-            $stmt_update_proposta = $conn->prepare($sql_update_proposta);
-            $stmt_update_proposta->bindParam(':transportador_id', $transportador_id_final, PDO::PARAM_INT);
-            $stmt_update_proposta->bindParam(':valor_frete', $row['valor_frete']);
-            $stmt_update_proposta->bindParam(':proposta_id', $proposta_original_id, PDO::PARAM_INT);
-            $stmt_update_proposta->execute();
-            
-            // Verificar se atualizou
-            if ($stmt_update_proposta->rowCount() == 0) {
-                error_log("ERRO: Não atualizou proposta original ID: " . $proposta_original_id);
-                throw new Exception('Não foi possível atualizar a proposta original');
-            } else {
-                error_log("SUCESSO: Atualizou proposta original ID: " . $proposta_original_id . 
-                         " com transportador_id: " . $transportador_id_final . 
-                         " e frete_resolvido = 1");
-            }
-        } else {
-            throw new Exception('Transportador não encontrado no sistema');
-        }
-
-        // Preparar endereços vendedor/comprador DA PROPOSTA ORIGINAL
-        $end_origem = '';
-        $end_destino = '';
-        
-        // vendedor - buscar da proposta original
-        if (!empty($row['vendedor_id'])) {
-            $sql_v = "SELECT rua, numero, complemento, cidade, estado, cep, nome_comercial 
-                     FROM vendedores WHERE id = :vid LIMIT 1";
-            $st_v = $conn->prepare($sql_v);
-            $st_v->bindParam(':vid', $row['vendedor_id'], PDO::PARAM_INT);
-            $st_v->execute();
-            $v = $st_v->fetch(PDO::FETCH_ASSOC);
-            if ($v) {
-                $end_origem = trim(($v['rua'] ?? '') . ', ' . ($v['numero'] ?? '') . 
-                                 ' - ' . ($v['cidade'] ?? '') . '/' . ($v['estado'] ?? '') . 
-                                 ' - CEP: ' . ($v['cep'] ?? ''));
-            }
-        }
-        
-        // comprador - buscar da proposta original
-        if (!empty($row['comprador_id'])) {
-            // Primeiro tentar pelo usuario_id
-            $sql_c = "SELECT rua, numero, complemento, cidade, estado, cep 
-                     FROM compradores WHERE usuario_id = :cid LIMIT 1";
-            $st_c = $conn->prepare($sql_c);
-            $st_c->bindParam(':cid', $row['comprador_id'], PDO::PARAM_INT);
-            $st_c->execute();
-            $c = $st_c->fetch(PDO::FETCH_ASSOC);
-            if (!$c) {
-                // Se não encontrar, tentar pelo id direto
-                $sql_c2 = "SELECT rua, numero, complemento, cidade, estado, cep 
-                          FROM compradores WHERE id = :cid LIMIT 1";
-                $st_c2 = $conn->prepare($sql_c2);
-                $st_c2->bindParam(':cid', $row['comprador_id'], PDO::PARAM_INT);
-                $st_c2->execute();
-                $c = $st_c2->fetch(PDO::FETCH_ASSOC);
-            }
-            if ($c) {
-                $end_destino = trim(($c['rua'] ?? '') . ', ' . ($c['numero'] ?? '') . 
-                                   ' - ' . ($c['cidade'] ?? '') . '/' . ($c['estado'] ?? '') . 
-                                   ' - CEP: ' . ($c['cep'] ?? ''));
-            }
-        }
-
-        // Resolver vendedor_id para inserir em entregas
-        $vendedor_para_entrega = null;
-        if (!empty($row['vendedor_id'])) {
-            // Tentar como id da tabela vendedores
-            $st_vchk = $conn->prepare("SELECT id FROM vendedores WHERE id = :vid LIMIT 1");
-            $st_vchk->bindParam(':vid', $row['vendedor_id'], PDO::PARAM_INT);
-            $st_vchk->execute();
-            $vchk = $st_vchk->fetch(PDO::FETCH_ASSOC);
-            if ($vchk) {
-                $vendedor_para_entrega = $vchk['id'];
-            } else {
-                // Tentar como usuario_id
-                $st_vchk2 = $conn->prepare("SELECT id FROM vendedores WHERE usuario_id = :uid LIMIT 1");
-                $st_vchk2->bindParam(':uid', $row['vendedor_id'], PDO::PARAM_INT);
-                $st_vchk2->execute();
-                $vchk2 = $st_vchk2->fetch(PDO::FETCH_ASSOC);
-                if ($vchk2) $vendedor_para_entrega = $vchk2['id'];
-            }
-        }
-
-        // Criar entrega baseada na PROPOSTA ORIGINAL
-        $sql_ent = "INSERT INTO entregas (produto_id, transportador_id, endereco_origem, 
-                    endereco_destino, status, data_solicitacao, valor_frete, vendedor_id, 
-                    comprador_id, data_aceitacao, observacoes, status_detalhado) 
-                    VALUES (:produto_id, :transportador_id, :end_origem, :end_destino, 
-                    'pendente', NOW(), :valor_frete, :vendedor_id, :comprador_id, NOW(), 
-                    :observacoes, 'aguardando_entrega')";
-        
-        $st_ent = $conn->prepare($sql_ent);
-        $st_ent->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
-        
-        // Usar o id da tabela transportadores para a entrega
-        if ($transportador_sistema_id !== null) {
-            $st_ent->bindValue(':transportador_id', $transportador_sistema_id, PDO::PARAM_INT);
-        } else {
-            $st_ent->bindValue(':transportador_id', $row['transportador_id'] ?? null, PDO::PARAM_INT);
-        }
-        
-        $st_ent->bindParam(':end_origem', $end_origem);
-        $st_ent->bindParam(':end_destino', $end_destino);
-        $st_ent->bindParam(':valor_frete', $row['valor_frete']);
-        
-        if ($vendedor_para_entrega !== null) {
-            $st_ent->bindValue(':vendedor_id', $vendedor_para_entrega, PDO::PARAM_INT);
-        } else {
-            $st_ent->bindValue(':vendedor_id', null, PDO::PARAM_NULL);
-        }
-        
-        $st_ent->bindParam(':comprador_id', $row['comprador_id'], PDO::PARAM_INT);
-        $st_ent->bindParam(':observacoes', $row['observacoes']);
-        
-        if (!$st_ent->execute()) {
-            $error = $st_ent->errorInfo();
-            throw new Exception("Erro ao criar entrega: " . ($error[2] ?? 'Erro desconhecido'));
-        }
-
-        // Inserir mensagem no chat notificando aceitação
-        $convRow = null;
-        if ($transportador_sistema_id !== null) {
-            $sql_conv = "SELECT id FROM chat_conversas 
-                        WHERE produto_id = :produto_id 
-                        AND comprador_id = :comprador_id 
-                        AND transportador_id = :tid LIMIT 1";
-            $st_conv = $conn->prepare($sql_conv);
-            $st_conv->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
-            $st_conv->bindParam(':comprador_id', $row['comprador_id'], PDO::PARAM_INT);
-            $st_conv->bindParam(':tid', $transportador_sistema_id, PDO::PARAM_INT);
-            $st_conv->execute();
-            $convRow = $st_conv->fetch(PDO::FETCH_ASSOC);
-        }
-        
-        if (!$convRow) {
-            // fallback: qualquer conversa existente para esse produto/comprador com transportador
-            $sql_conv2 = "SELECT id FROM chat_conversas 
-                         WHERE produto_id = :produto_id 
-                         AND comprador_id = :comprador_id 
-                         AND transportador_id IS NOT NULL LIMIT 1";
-            $st_conv2 = $conn->prepare($sql_conv2);
-            $st_conv2->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
-            $st_conv2->bindParam(':comprador_id', $row['comprador_id'], PDO::PARAM_INT);
-            $st_conv2->execute();
-            $convRow = $st_conv2->fetch(PDO::FETCH_ASSOC);
-        }
-        
-        if ($convRow) {
-            $conversa_id = (int)$convRow['id'];
-            $msg = "✅ Proposta aceita. Informações de entrega repassadas ao transportador. Aguarde a coleta e entrega.";
-            $sql_msg = "INSERT INTO chat_mensagens (conversa_id, remetente_id, mensagem, tipo) 
-                       VALUES (:conversa_id, :remetente_id, :mensagem, 'aceite')";
-            $st_msg = $conn->prepare($sql_msg);
-            $st_msg->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);
-            $st_msg->bindParam(':remetente_id', $usuario_id, PDO::PARAM_INT);
-            $st_msg->bindParam(':mensagem', $msg);
-            $st_msg->execute();
-        }
-
-        $conn->commit();
-        echo json_encode([
-            'success' => true, 
-            'message' => 'Proposta aceita com sucesso',
-            'proposta_original_id' => $proposta_original_id,
-            'frete_resolvido' => 1
-        ]);
-        exit();
-
-    } elseif ($acao === 'recusar') {
-        // Verificar se já foi respondida
-        if (!empty($row['status']) && $row['status'] !== 'pendente') {
-            throw new Exception('Esta proposta já foi ' . $row['status']);
-        }
-        
-        $sql_up = "UPDATE propostas_transportadores SET status = 'recusada', data_resposta = NOW() WHERE id = :id";
-        $stmt_up = $conn->prepare($sql_up);
-        $stmt_up->bindParam(':id', $pt_id, PDO::PARAM_INT);
-        $stmt_up->execute();
-        
-        // Opcional: enviar mensagem no chat informando a recusa
-        $sql_conv = "SELECT id FROM chat_conversas 
-                    WHERE produto_id = :produto_id 
-                    AND comprador_id = :comprador_id 
-                    AND transportador_id = :tid LIMIT 1";
-        $st_conv = $conn->prepare($sql_conv);
-        $st_conv->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
-        $st_conv->bindParam(':comprador_id', $row['comprador_id'], PDO::PARAM_INT);
-        $transportador_sistema_id = $row['transportador_id_sistema'] ?? null;
-        $st_conv->bindParam(':tid', $transportador_sistema_id, PDO::PARAM_INT);
-        $st_conv->execute();
-        $convRow = $st_conv->fetch(PDO::FETCH_ASSOC);
-        
-        if ($convRow) {
-            $conversa_id = (int)$convRow['id'];
-            $msg = "❌ Proposta recusada pelo transportador.";
-            $sql_msg = "INSERT INTO chat_mensagens (conversa_id, remetente_id, mensagem, tipo) 
-                       VALUES (:conversa_id, :remetente_id, :mensagem, 'texto')";
-            $st_msg = $conn->prepare($sql_msg);
-            $st_msg->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);
-            $st_msg->bindParam(':remetente_id', $usuario_id, PDO::PARAM_INT);
-            $st_msg->bindParam(':mensagem', $msg);
-            $st_msg->execute();
-        }
-        
-        $conn->commit();
-        echo json_encode(['success' => true, 'message' => 'Proposta recusada']);
-        exit();
+    
+    $novo_status = ($acao == 'aceitar') ? 'aceita' : 'recusada';
+    error_log("Novo status: $novo_status");
+    
+    // 3. Atualizar status da proposta do transportador
+    $sql_update = "UPDATE propostas_transportadores 
+                   SET status = :status, data_resposta = NOW() 
+                   WHERE id = :id";
+    $stmt_update = $conn->prepare($sql_update);
+    $stmt_update->bindParam(':status', $novo_status);
+    $stmt_update->bindParam(':id', $id, PDO::PARAM_INT);
+    
+    if (!$stmt_update->execute()) {
+        throw new Exception('Erro ao atualizar proposta');
     }
+    
+    // 4. Se aceita, vincular transportador à proposta principal
+    if ($acao == 'aceitar') {
+        // Obter transportador_id da proposta
+        $sql_transp = "SELECT transportador_id FROM propostas_transportadores WHERE id = :id";
+        $stmt_transp = $conn->prepare($sql_transp);
+        $stmt_transp->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt_transp->execute();
+        $transp = $stmt_transp->fetch(PDO::FETCH_ASSOC);
+        
+        if ($transp) {
+            // Atualizar proposta principal com transportador
+            $sql_upd_proposta = "UPDATE propostas 
+                                 SET transportador_id = :transportador_id, 
+                                     status_entrega = 'aceita',
+                                     valor_frete_final = (SELECT valor_frete FROM propostas_transportadores WHERE id = :pt_id)
+                                 WHERE ID = :proposta_id";
+            $stmt_upd = $conn->prepare($sql_upd_proposta);
+            $stmt_upd->bindParam(':transportador_id', $transp['transportador_id'], PDO::PARAM_INT);
+            $stmt_upd->bindParam(':pt_id', $id, PDO::PARAM_INT);
+            $stmt_upd->bindParam(':proposta_id', $proposta['proposta_id'], PDO::PARAM_INT);
+            $stmt_upd->execute();
+            
+            // Criar registro de entrega
+            // Buscar endereço do comprador
+            $sql_comprador = "SELECT cep, rua, numero, complemento, estado, cidade 
+                              FROM compradores 
+                              WHERE usuario_id = :comprador_id";
+            $stmt_comprador = $conn->prepare($sql_comprador);
+            $stmt_comprador->bindParam(':comprador_id', $proposta['comprador_id'], PDO::PARAM_INT);
+            $stmt_comprador->execute();
+            $end_comprador = $stmt_comprador->fetch(PDO::FETCH_ASSOC);
+            
+            if ($end_comprador) {
+                $endereco_destino = $end_comprador['rua'] . ', ' . $end_comprador['numero'] . 
+                                   ' - ' . $end_comprador['cidade'] . '/' . $end_comprador['estado'] . 
+                                   ' - CEP: ' . $end_comprador['cep'];
+                
+                // Buscar endereço do vendedor
+                $sql_vendedor = "SELECT v.id, v.cep, v.rua, v.numero, v.complemento, v.estado, v.cidade 
+                    FROM vendedores v
+                    WHERE v.usuario_id = :vendedor_id";
+                    $stmt_vendedor = $conn->prepare($sql_vendedor);
+                    $stmt_vendedor->bindParam(':vendedor_id', $proposta['vendedor_id'], PDO::PARAM_INT);
+                    $stmt_vendedor->execute();
+                    $end_vendedor = $stmt_vendedor->fetch(PDO::FETCH_ASSOC);
 
-    throw new Exception('Ação inválida');
+                    $endereco_origem = '';
+                    $vendedor_id_para_entrega = null;
+                    if ($end_vendedor) {
+                        $endereco_origem = $end_vendedor['rua'] . ', ' . $end_vendedor['numero'] . 
+                                        ' - ' . $end_vendedor['cidade'] . '/' . $end_vendedor['estado'] . 
+                                        ' - CEP: ' . $end_vendedor['cep'];
+                        $vendedor_id_para_entrega = $end_vendedor['id']; // Usa o ID correto da tabela vendedores
+                    }
 
+                    // Depois, na inserção da entrega:
+                    $sql_entrega = "INSERT INTO entregas 
+                                (produto_id, transportador_id, endereco_origem, endereco_destino, 
+                                    status, valor_frete, vendedor_id, comprador_id, data_solicitacao, 
+                                    data_aceitacao, status_detalhado) 
+                                VALUES (:produto_id, :transportador_id, :endereco_origem, :endereco_destino, 
+                                        'pendente', (SELECT valor_frete FROM propostas_transportadores WHERE id = :pt_id), 
+                                        :vendedor_id, :comprador_id, NOW(), NOW(), 'aguardando_entrega')";
+                    $stmt_entrega = $conn->prepare($sql_entrega);
+                    $stmt_entrega->bindParam(':produto_id', $proposta['produto_id'], PDO::PARAM_INT);
+                    $stmt_entrega->bindParam(':transportador_id', $transp['transportador_id'], PDO::PARAM_INT);
+                    $stmt_entrega->bindParam(':endereco_origem', $endereco_origem);
+                    $stmt_entrega->bindParam(':endereco_destino', $endereco_destino);
+                    $stmt_entrega->bindParam(':pt_id', $id, PDO::PARAM_INT);
+                    $stmt_entrega->bindParam(':vendedor_id', $vendedor_id_para_entrega, PDO::PARAM_INT);
+                    $stmt_entrega->bindParam(':comprador_id', $proposta['comprador_id'], PDO::PARAM_INT);
+                    $stmt_entrega->execute();
+                
+                error_log("Entrega criada com sucesso");
+            }
+        }
+    }
+    
+    // 5. Enviar mensagem automática no chat
+    // Buscar conversa existente
+    $sql_conversa = "SELECT id FROM chat_conversas 
+                     WHERE produto_id = :produto_id 
+                     AND comprador_id = :comprador_id 
+                     AND transportador_id = (SELECT usuario_id FROM transportadores WHERE id = (SELECT transportador_id FROM propostas_transportadores WHERE id = :pt_id))";
+    $stmt_conversa = $conn->prepare($sql_conversa);
+    $stmt_conversa->bindParam(':produto_id', $proposta['produto_id'], PDO::PARAM_INT);
+    $stmt_conversa->bindParam(':comprador_id', $proposta['comprador_id'], PDO::PARAM_INT);
+    $stmt_conversa->bindParam(':pt_id', $id, PDO::PARAM_INT);
+    $stmt_conversa->execute();
+    $conversa = $stmt_conversa->fetch(PDO::FETCH_ASSOC);
+    
+    if ($conversa) {
+        $mensagem = '';
+        if ($acao == 'aceitar') {
+            $mensagem = '✅ Proposta aceita. Informações de entrega repassadas ao transportador. Aguarde a coleta e entrega.';
+        } else {
+            $mensagem = '❌ Proposta recusada.';
+        }
+        
+        // Inserir mensagem automática
+        $sql_msg = "INSERT INTO chat_mensagens (conversa_id, remetente_id, mensagem, tipo) 
+                   VALUES (:conversa_id, :remetente_id, :mensagem, 'aceite')";
+        $stmt_msg = $conn->prepare($sql_msg);
+        $stmt_msg->bindParam(':conversa_id', $conversa['id'], PDO::PARAM_INT);
+        $stmt_msg->bindParam(':remetente_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
+        $stmt_msg->bindParam(':mensagem', $mensagem);
+        $stmt_msg->execute();
+        
+        // Atualizar última mensagem na conversa
+        $sql_upd_conv = "UPDATE chat_conversas 
+                         SET ultima_mensagem = :mensagem, ultima_mensagem_data = NOW() 
+                         WHERE id = :conversa_id";
+        $stmt_upd_conv = $conn->prepare($sql_upd_conv);
+        $stmt_upd_conv->bindParam(':mensagem', $mensagem);
+        $stmt_upd_conv->bindParam(':conversa_id', $conversa['id'], PDO::PARAM_INT);
+        $stmt_upd_conv->execute();
+        
+        error_log("Mensagem de $acao inserida no chat");
+    }
+    
+    $conn->commit();
+    error_log("Transação concluída com sucesso");
+    echo json_encode(['success' => true]);
+    
 } catch (Exception $e) {
-    if ($conn && $conn->inTransaction()) $conn->rollBack();
-    error_log("ERRO responder_proposta: " . $e->getMessage());
-    echo json_encode(['success' => false, 'erro' => $e->getMessage()]);
-    exit();
+    if ($conn && $conn->inTransaction()) {
+        $conn->rollBack();
+    }
+    error_log("Erro: " . $e->getMessage());
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
-?>

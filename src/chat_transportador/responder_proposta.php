@@ -74,6 +74,28 @@ try {
         $stmt_pm->bindParam(':pid', $row['proposta_id'], PDO::PARAM_INT);
         $stmt_pm->execute();
 
+        // Marcar frete como resolvido na proposta principal para que não apareça em disponiveis.php
+        $sql_mark_resolvido = "UPDATE propostas SET frete_resolvido = 1 WHERE ID = :pid";
+        $stmt_mark = $conn->prepare($sql_mark_resolvido);
+        $stmt_mark->bindParam(':pid', $row['proposta_id'], PDO::PARAM_INT);
+        $stmt_mark->execute();
+
+        // Além da proposta transportador (p.ID), também marcar a proposta original (acordo comprador-vendedor)
+        // A proposta original normalmente tem mesmo produto_id/comprador_id/vendedor_id e transportador_id IS NULL
+        $sql_find_orig = "SELECT ID FROM propostas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND vendedor_id = :vendedor_id AND (transportador_id IS NULL OR transportador_id = 0) ORDER BY data_inicio DESC LIMIT 1";
+        $st_find = $conn->prepare($sql_find_orig);
+        $st_find->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
+        $st_find->bindParam(':comprador_id', $row['comprador_id'], PDO::PARAM_INT);
+        $st_find->bindParam(':vendedor_id', $row['vendedor_id'], PDO::PARAM_INT);
+        $st_find->execute();
+        $orig = $st_find->fetch(PDO::FETCH_ASSOC);
+        if ($orig && (int)$orig['ID'] !== (int)$row['proposta_id']) {
+            $sql_up_orig = "UPDATE propostas SET frete_resolvido = 1 WHERE ID = :orig_id";
+            $st_up_orig = $conn->prepare($sql_up_orig);
+            $st_up_orig->bindParam(':orig_id', $orig['ID'], PDO::PARAM_INT);
+            $st_up_orig->execute();
+        }
+
         // Preparar endereços vendedor/comprador
         $end_origem = '';
         $end_destino = '';

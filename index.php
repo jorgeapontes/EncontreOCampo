@@ -394,7 +394,7 @@ require_once 'src/conexao.php';
                                 <p style="color: #666; margin-bottom: 15px;">Para validar sua identidade, envie as fotos abaixo:</p>
                                 
                                 <div class="form-group">
-                                    <label for="fotoRostoComprador" class="required">Foto do Rosto </label>
+                                    <label for="fotoRostoComprador" class="required">Foto Facial</label>
                                     <input type="file" id="fotoRostoComprador" name="fotoRostoComprador" accept="image/*" required>
                                     <small class="form-help">Envie uma foto clara do seu rosto. Formatos: JPG, PNG</small>
                                 </div>

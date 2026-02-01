@@ -16,10 +16,12 @@ if (!$conn) {
 }
 
 try {
-    $sql = "SELECT id, nome, email, tipo_solicitacao, data_solicitacao, dados_json 
-            FROM solicitacoes_cadastro 
-            WHERE status = 'pendente'
-            ORDER BY data_solicitacao DESC";
+        $sql = "SELECT s.id, s.usuario_id, s.nome, s.email, s.tipo_solicitacao, s.data_solicitacao, s.dados_json, 
+            u.foto_rosto, u.foto_documento_frente, u.foto_documento_verso
+            FROM solicitacoes_cadastro s
+            LEFT JOIN usuarios u ON s.usuario_id = u.id
+            WHERE s.status = 'pendente'
+            ORDER BY s.data_solicitacao DESC";
             
     $stmt = $conn->prepare($sql);
     $stmt->execute();
@@ -179,8 +181,12 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
                             </td>
                             <td class="td-center">
                                 <button class="btn btn-secondary btn-ver-detalhes"
+                                    data-usuario-id="<?= $s['usuario_id'] ?? '' ?>"
                                     data-nome="<?= htmlspecialchars($s['nome']) ?>"
                                     data-tipo="<?= ucfirst($s['tipo_solicitacao']) ?>"
+                                    data-foto_rosto="<?= htmlspecialchars($s['foto_rosto'] ?? '') ?>"
+                                    data-foto_frente="<?= htmlspecialchars($s['foto_documento_frente'] ?? '') ?>"
+                                    data-foto_verso="<?= htmlspecialchars($s['foto_documento_verso'] ?? '') ?>"
                                     data-json='<?= htmlspecialchars(json_encode(json_decode($s["dados_json"], true)), ENT_QUOTES) ?>'>
                                     Ver Detalhes
                                 </button>
@@ -313,6 +319,49 @@ document.addEventListener("DOMContentLoaded", function () {
             // Tenta parsear o JSON
             try {
                 const dados = JSON.parse(jsonData);
+                // Fotos (fornecidas via atributos data-... no botão)
+                const fotoRosto = this.getAttribute('data-foto_rosto');
+                const fotoFrente = this.getAttribute('data-foto_frente');
+                const fotoVerso = this.getAttribute('data-foto_verso');
+
+                let fotosHtml = '';
+                if (fotoRosto || fotoFrente || fotoVerso) {
+                    fotosHtml += `
+                        <div class="data-container fotos">
+                            <div class="container-header">
+                                <span class="container-header-icon">📸</span>
+                                <h4>Fotos de Documentação</h4>
+                            </div>
+                            <div class="data-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                                ${fotoRosto ? `
+                                    <div class="data-field" style="text-align: center; padding: 15px; background: white; border: 2px solid #e0e0e0; border-radius: 8px;">
+                                        <div class="field-label" style="margin-bottom: 12px; color: #555; font-weight: 600;">Foto do Rosto</div>
+                                        <div style="display: flex; justify-content: center; background: #f5f5f5; padding: 10px; border-radius: 6px;">
+                                            <img src="../../${fotoRosto}" alt="Foto do Rosto" style="max-width: 100%; height: auto; max-height: 300px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;" onclick="abrirImagemGrande('../../${fotoRosto}', 'Foto do Rosto')">
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                ${fotoFrente ? `
+                                    <div class="data-field" style="text-align: center; padding: 15px; background: white; border: 2px solid #e0e0e0; border-radius: 8px;">
+                                        <div class="field-label" style="margin-bottom: 12px; color: #555; font-weight: 600;">Documento - Frente</div>
+                                        <div style="display: flex; justify-content: center; background: #f5f5f5; padding: 10px; border-radius: 6px;">
+                                            <img src="../../${fotoFrente}" alt="Documento Frente" style="max-width: 100%; height: auto; max-height: 300px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;" onclick="abrirImagemGrande('../../${fotoFrente}', 'Documento - Frente')">
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                ${fotoVerso ? `
+                                    <div class="data-field" style="text-align: center; padding: 15px; background: white; border: 2px solid #e0e0e0; border-radius: 8px;">
+                                        <div class="field-label" style="margin-bottom: 12px; color: #555; font-weight: 600;">Documento - Verso</div>
+                                        <div style="display: flex; justify-content: center; background: #f5f5f5; padding: 10px; border-radius: 6px;">
+                                            <img src="../../${fotoVerso}" alt="Documento Verso" style="max-width: 100%; height: auto; max-height: 300px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;" onclick="abrirImagemGrande('../../${fotoVerso}', 'Documento - Verso')">
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+
                 let html = '';
                 
                 // ============ CONTAINER 1: DADOS PESSOAIS ============
@@ -528,7 +577,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     `;
                 }
                 
-                modalCorpo.innerHTML = html;
+                modalCorpo.innerHTML = fotosHtml + html;
             } catch (e) {
                 modalCorpo.innerHTML = `
                     <div class="error-message">
@@ -562,6 +611,23 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
+// Função para abrir imagem em tamanho grande (reusável)
+function abrirImagemGrande(src, titulo) {
+    const modalImg = document.createElement('div');
+    modalImg.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 9999; cursor: pointer;';
+    const img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'max-width: 90%; max-height: 90%; border-radius: 8px;';
+    img.title = 'Clique para fechar';
+    const titulo_div = document.createElement('div');
+    titulo_div.textContent = titulo;
+    titulo_div.style.cssText = 'position: absolute; top: 20px; left: 50%; transform: translateX(-50%); color: white; font-size: 1.2rem; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 4px;';
+    modalImg.appendChild(img);
+    modalImg.appendChild(titulo_div);
+    modalImg.addEventListener('click', () => modalImg.remove());
+    document.body.appendChild(modalImg);
+}
 
 // ==========================
 // CONFIRMAÇÃO DE AÇÃO (APROVAR/REJEITAR)

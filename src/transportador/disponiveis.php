@@ -559,9 +559,10 @@ if (isset($_SESSION['usuario_id'])) {
             INNER JOIN produtos pr ON p.produto_id = pr.id
             LEFT JOIN compradores comp ON comp.usuario_id = p.comprador_id
             LEFT JOIN vendedores vend ON vend.usuario_id = p.vendedor_id
-            WHERE p.opcao_frete = 'entregador' 
+                WHERE p.opcao_frete = 'entregador' 
                 AND p.status = 'aceita' 
                 AND p.transportador_id IS NULL
+                AND COALESCE(p.frete_resolvido,0) = 0
                 AND NOT EXISTS (
                     SELECT 1 FROM propostas_transportadores pt 
                     WHERE pt.proposta_id = p.ID AND pt.status = 'aceita'

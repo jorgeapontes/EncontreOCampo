@@ -95,6 +95,34 @@ try {
         }
     }
 
+    // Buscar endereço do comprador (para exibir na sidebar quando aplicável)
+    $comprador_endereco = null;
+    $comprador_endereco_maps = null;
+    $comprador_telefone = null;
+    if (!empty($conv['comprador_id'])) {
+        $sql_end = "SELECT rua, numero, complemento, cidade, estado, cep, telefone1
+                    FROM compradores WHERE usuario_id = :comprador_id LIMIT 1";
+        $stmt_end = $conn->prepare($sql_end);
+        $stmt_end->bindParam(':comprador_id', $conv['comprador_id'], PDO::PARAM_INT);
+        $stmt_end->execute();
+        $comprador_info = $stmt_end->fetch(PDO::FETCH_ASSOC);
+        if ($comprador_info) {
+            $end_completo = $comprador_info['rua'] . ', ' . $comprador_info['numero'];
+            if (!empty($comprador_info['complemento'])) $end_completo .= ' - ' . $comprador_info['complemento'];
+            $end_completo .= ', ' . $comprador_info['cidade'] . ' - ' . $comprador_info['estado'];
+            $comprador_endereco = $end_completo;
+            $comprador_endereco_maps = urlencode($end_completo);
+            $comprador_telefone = $comprador_info['telefone1'] ?? null;
+
+            if ($comprador_telefone) {
+                $tel = preg_replace('/[^0-9]/', '', $comprador_telefone);
+                if (substr($tel, 0, 1) == '0') $tel = substr($tel, 1);
+                if (strlen($tel) <= 11) $tel = '55' . $tel;
+                $comprador_telefone = $tel;
+            }
+        }
+    }
+
 } catch (PDOException $e) {
     echo 'Erro ao carregar conversa.';
     exit();
@@ -212,6 +240,37 @@ try {
         .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
         .btn-modal-primary { background: #42b72a; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
         .btn-modal-secondary { background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+
+        .whatsapp-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #25D366;
+    color: white;
+    padding: 13.75px 15px;
+    border-radius: 100%;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+    border: #25D366;
+    cursor: pointer;
+}
+
+.whatsapp-button:hover {
+    background-color: #1da851;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
+}
+
+.whatsapp-button i {
+    font-size: 20px ;
+}
+
+.sidebar-negociarcao-btn:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
     </style>
 </head>
 <body>
@@ -229,18 +288,59 @@ try {
                     <div class="preco"></div>
                 </div>
             </div>
-
-            <div id="sidebar-proposta-container" style="display:none;">
-                </div>
-
             <div class="conversas-lista">
                 <div class="conversa-item ativa">
                     <div style="flex:1;">
                         <div class="nome"><i class="fas fa-user" style="margin-right:8px;"></i><?php echo htmlspecialchars($outro_nome); ?></div>
                         <div class="ultima-msg">Conversa com <?php echo htmlspecialchars($outro_papel); ?></div>
                     </div>
+                    <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end;">
+                        <?php if (!empty($comprador_telefone)): ?>
+                            <a href="https://wa.me/<?php echo $comprador_telefone; ?>" target="_blank" class="whatsapp-button"><i class="fab fa-whatsapp" style="color: #ffffff;"></i></a>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
+
+            <!-- CARD DE ENDEREÇO DO COMPRADOR -->
+            <?php if (!empty($comprador_endereco) && $is_transportador): ?>
+                <div class="endereco-card" style="padding:12px;background:#fff;border-bottom:1px solid #e9ecef;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                        <i class="fas fa-map-marker-alt" style="font-size:18px;color:#d9534f;"></i>
+                        <div>
+                            <strong style="font-size:13px;">Endereço do Comprador</strong>
+                        </div>
+                    </div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=<?php echo $comprador_endereco_maps; ?>" target="_blank" style="color:#1877f2;text-decoration:underline;display:block;">
+                        <div style="font-size:13px;color:inherit;margin-bottom:6px;">
+                            <?php echo htmlspecialchars(strlen($comprador_endereco) > 60 ? substr($comprador_endereco,0,57).'...' : $comprador_endereco); ?>
+                        </div>
+                    </a>
+                    <?php if (!empty($comprador_info['cep'])): ?>
+                        <div style="font-size:12px;color:#777;">CEP: <?php echo htmlspecialchars($comprador_info['cep']); ?></div>
+                    <?php endif; ?>
+                    <div class="endereco-usuario-footer">
+                        <small>
+                            <i class="fas fa-info-circle"></i>
+                            Este endereço é fornecido para fins de negociação.
+                        </small>
+                    </div>
+                </div>
+            <?php endif; ?>
+            <!-- BOTÃO MAIOR NA SIDEBAR PARA ENVIAR PROPOSTA (mesma ação do btn-negociar) -->
+            <?php if ($is_transportador): ?>
+                <div class="sidebar-negociacao-btn" style="padding:12px;">
+                    <button type="button" id="btn-negociar-sidebar" style="width:100%;background:#42b72a;color:#fff;border:none;padding:10px 12px;border-radius:8px;font-size:15px;display:flex;gap:8px;align-items:center;justify-content:center;">
+                        <i class="fas fa-handshake"></i>
+                        Propor Entrega
+                    </button>
+                </div>
+            <?php endif; ?>
+
+            <div id="sidebar-proposta-container" style="display:none;">
+            </div>
+
+            
         </div>
 
         <div class="chat-area">
@@ -635,6 +735,8 @@ try {
         <?php if ($is_transportador): ?>
         const modalProp = document.getElementById('modal-proposta-transportador');
         document.getElementById('btn-negociar')?.addEventListener('click', () => modalProp.style.display = 'flex');
+        // Também abrir modal a partir do botão grande na sidebar
+        document.getElementById('btn-negociar-sidebar')?.addEventListener('click', () => modalProp.style.display = 'flex');
         document.getElementById('fechar-modal-proposta')?.addEventListener('click', () => modalProp.style.display = 'none');
         document.getElementById('cancelar-proposta')?.addEventListener('click', () => modalProp.style.display = 'none');
         

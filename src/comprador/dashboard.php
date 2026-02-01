@@ -122,10 +122,15 @@ try {
 // 5. BUSCAR TOTAL DE CHATS E MENSAGENS NÃO LIDAS
 try {
     // Total de chats do comprador
+    // Contar apenas conversas ativas que envolvam um vendedor (excluir apenas conversas com transportador)
+    // Contar apenas conversas ativas que envolvam um vendedor (excluir conversas com transportador)
     $sql_chats = "SELECT COUNT(DISTINCT cc.id) as total_chats
                   FROM chat_conversas cc
                   WHERE cc.comprador_id = :usuario_id
-                  AND cc.status = 'ativo'";
+                  AND cc.status = 'ativo'
+                  AND cc.vendedor_id IS NOT NULL
+                  AND cc.vendedor_id != 0
+                  AND (cc.transportador_id IS NULL OR cc.transportador_id = 0)";
     
     $stmt_chats = $conn->prepare($sql_chats);
     $stmt_chats->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);

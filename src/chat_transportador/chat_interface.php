@@ -231,6 +231,27 @@ try {
         
         .btn-aceitar { background: #42b72a; color: #fff; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; }
         .btn-recusar { background: #ff4444; color: #fff; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; }
+
+        /* Botão Propor Entrega (transportador) - estilo e hover */
+        .btn-negociar, #btn-negociar-sidebar {
+            background: #42b72a;
+            color: #fff;
+            border: none;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-negociar:hover, #btn-negociar-sidebar:hover {
+            background: #389e21;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(56, 158, 33, 0.18);
+        }
         
         /* Modal */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 14000; align-items: center; justify-content: center; padding: 20px; }

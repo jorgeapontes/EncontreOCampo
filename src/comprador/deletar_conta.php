@@ -2,6 +2,7 @@
 // src/comprador/deletar_conta.php
 session_start();
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/../../includes/send_notification.php';
 
 // Verificar se é comprador
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprador') {
@@ -26,6 +27,15 @@ $database = new Database();
 $conn = $database->getConnection();
 
 try {
+    // Buscar informações do comprador para notificação
+    $sqlInfo = "SELECT u.nome, u.email FROM usuarios u 
+                JOIN compradores c ON u.id = c.usuario_id 
+                WHERE c.id = :comprador_id";
+    $stmtInfo = $conn->prepare($sqlInfo);
+    $stmtInfo->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
+    $stmtInfo->execute();
+    $compradorInfo = $stmtInfo->fetch(PDO::FETCH_ASSOC);
+
     // Iniciar transação
     $conn->beginTransaction();
     
@@ -62,6 +72,16 @@ try {
     $stmtDeletePropostas->execute();
     
     $conn->commit();
+    
+    // Enviar notificação por email para o comprador
+    if ($compradorInfo && isset($compradorInfo['email'])) {
+        enviarEmailNotificacao(
+            $compradorInfo['email'],
+            $compradorInfo['nome'],
+            'Conta Desativada - Encontre o Campo',
+            'Sua conta foi desativada com sucesso. Seus chats permanecem disponíveis para futuras consultas.'
+        );
+    }
     
     // Encerrar sessão
     session_destroy();

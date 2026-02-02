@@ -3,6 +3,7 @@
 
 session_start();
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/../../includes/send_notification.php';
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor') {
     header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Vendedor."));
@@ -34,18 +35,29 @@ try {
 
     $vendedor_id = $vendedor['id'];
 
-        // Buscar a contraproposta atual com estoque do produto
-        $sql = "SELECT pv.*, pc.status AS status_comprador, pn.status AS negociacao_status, 
-                 p.estoque AS estoque_kg, p.estoque_unidades, p.modo_precificacao, p.embalagem_peso_kg, p.embalagem_unidades,
-                 p.unidade_medida, 
-                 p.nome AS produto_nome, p.preco AS preco_original
-             FROM propostas_vendedor pv
-            JOIN propostas_comprador pc ON pv.proposta_comprador_id = pc.id
-            JOIN propostas_negociacao pn ON pv.proposta_comprador_id = pn.proposta_comprador_id
-            JOIN produtos p ON pn.produto_id = p.id
-            WHERE pv.proposta_comprador_id = :proposta_comprador_id 
-            AND p.vendedor_id = :vendedor_id
-            ORDER BY pv.data_contra_proposta DESC LIMIT 1";
+    // Buscar a contraproposta atual com estoque do produto
+    $sql = "SELECT pv.*, pc.status AS status_comprador, pn.status AS negociacao_status, 
+             p.estoque AS estoque_kg, p.estoque_unidades, p.modo_precificacao, p.embalagem_peso_kg, p.embalagem_unidades,
+             p.unidade_medida, 
+             p.nome AS produto_nome, p.preco AS preco_original,
+             pc.comprador_id,
+             c.usuario_id AS comprador_usuario_id,
+             uc.email AS comprador_email,
+             uc.nome AS comprador_nome,
+             v.usuario_id AS vendedor_usuario_id,
+             uv.email AS vendedor_email,
+             uv.nome AS vendedor_nome
+         FROM propostas_vendedor pv
+        JOIN propostas_comprador pc ON pv.proposta_comprador_id = pc.id
+        JOIN propostas_negociacao pn ON pv.proposta_comprador_id = pn.proposta_comprador_id
+        JOIN produtos p ON pn.produto_id = p.id
+        JOIN compradores c ON pc.comprador_id = c.id
+        JOIN usuarios uc ON c.usuario_id = uc.id
+        JOIN vendedores v ON p.vendedor_id = v.id
+        JOIN usuarios uv ON v.usuario_id = uv.id
+        WHERE pv.proposta_comprador_id = :proposta_comprador_id 
+        AND p.vendedor_id = :vendedor_id
+        ORDER BY pv.data_contra_proposta DESC LIMIT 1";
     
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(':proposta_comprador_id', $proposta_comprador_id, PDO::PARAM_INT);
@@ -111,6 +123,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt_update->bindParam(':condicoes', $condicoes);
             $stmt_update->bindParam(':contraproposta_id', $contraproposta['id']);
             $stmt_update->execute();
+            
+            // NOTIFICAÇÃO POR EMAIL
+            // Notificar o comprador
+            if ($contraproposta['comprador_email']) {
+                $subject = "Contraproposta Atualizada - Encontre o Campo";
+                $message = "Olá " . htmlspecialchars($contraproposta['comprador_nome']) . ",\n\n";
+                $message .= "O vendedor atualizou a contraproposta para o produto '" . htmlspecialchars($contraproposta['produto_nome']) . "'.\n\n";
+                $message .= "Nova contraproposta:\n";
+                $message .= "- Preço: R$ " . number_format($preco_proposto, 2, ',', '.') . " / " . htmlspecialchars($contraproposta['unidade_medida']) . "\n";
+                $message .= "- Quantidade: " . $quantidade . " " . htmlspecialchars($contraproposta['unidade_medida']) . "\n";
+                if (!empty($condicoes)) {
+                    $message .= "- Condições: " . htmlspecialchars($condicoes) . "\n";
+                }
+                $message .= "- Vendedor: " . htmlspecialchars($contraproposta['vendedor_nome']) . "\n";
+                $message .= "- Data da atualização: " . date('d/m/Y H:i') . "\n\n";
+                $message .= "Acesse o sistema para analisar a nova contraproposta e tomar uma decisão.\n\n";
+                $message .= "Atenciosamente,\nEquipe Encontre o Campo";
+                
+                enviarEmailNotificacao($contraproposta['comprador_email'], $contraproposta['comprador_nome'], $subject, $message);
+            }
+            
+            // Notificar o vendedor
+            if ($contraproposta['vendedor_email']) {
+                $subject = "Contraproposta Editada com Sucesso - Encontre o Campo";
+                $message = "Olá " . htmlspecialchars($contraproposta['vendedor_nome']) . ",\n\n";
+                $message .= "Você atualizou sua contraproposta com sucesso.\n\n";
+                $message .= "Detalhes da atualização:\n";
+                $message .= "- Produto: " . htmlspecialchars($contraproposta['produto_nome']) . "\n";
+                $message .= "- Novo Preço: R$ " . number_format($preco_proposto, 2, ',', '.') . "\n";
+                $message .= "- Nova Quantidade: " . $quantidade . " " . htmlspecialchars($contraproposta['unidade_medida']) . "\n";
+                $message .= "- Comprador: " . htmlspecialchars($contraproposta['comprador_nome']) . "\n";
+                $message .= "- Data: " . date('d/m/Y H:i') . "\n\n";
+                $message .= "O comprador foi notificado sobre a atualização.\n";
+                $message .= "Aguarde a resposta dele.\n\n";
+                $message .= "Atenciosamente,\nEquipe Encontre o Campo";
+                
+                enviarEmailNotificacao($contraproposta['vendedor_email'], $contraproposta['vendedor_nome'], $subject, $message);
+            }
             
             header("Location: detalhes_proposta.php?id=" . $proposta_comprador_id . "&sucesso=" . urlencode("Contraproposta atualizada com sucesso!"));
             exit();

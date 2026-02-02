@@ -1,5 +1,6 @@
 <?php
-require_once '../vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
+
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
 
@@ -15,26 +16,45 @@ function enviarEmailNotificacao($destinatario, $nome, $assunto, $conteudo) {
     $mail = new PHPMailer(true);
 
     try {
-        $mail -> isSMTP();
-        $mail -> Host = $_ENV['SMTP_HOST'];
-        $mail -> SMTPAuth = true;
-        $mail -> Username = $_ENV['SMTP_USERNAME'];
-        $mail -> Password = $_ENV['SMTP_PASSWORD'];
-        $mail -> SMTPSecure = $_ENV['SMTP_ENCRYPTION'] === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
-        $mail -> Port = $_ENV['SMTP_PORT'];
+        // Configurações SMTP
+        $mail->isSMTP();
+        $mail->Host = $_ENV['SMTP_HOST'];
+        $mail->SMTPAuth = true;
+        $mail->Username = $_ENV['SMTP_USERNAME'];
+        $mail->Password = $_ENV['SMTP_PASSWORD'];
+        $mail->SMTPSecure = $_ENV['SMTP_ENCRYPTION'] === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port = (int)$_ENV['SMTP_PORT'];
 
-        $mail -> setFrom($_ENV['SMTP_USERNAME'], 'Encontre o Campo');
-        $mail -> addAddress($destinatario, $nome);
+        // Configurações de Debug e Encoding
+        $mail->SMTPDebug = SMTP::DEBUG_OFF; // SMTP::DEBUG_SERVER para debug completo
+        $mail->Debugoutput = 'error_log'; // Registra erros no error_log
+        $mail->CharSet = PHPMailer::CHARSET_UTF8;
 
-        $mail -> isHTML(true);
-        $mail -> Subject = $assunto;
+        // Configurações de Timeout
+        $mail->Timeout = 10;
+        $mail->SMTPKeepAlive = true;
 
-        $mail -> Body = gerarTemplateNotificacao($nome, $assunto, $conteudo);
-        $mail -> AltBody = "Notificação para $nome: $assunto. $conteudo";
+        // Remetente e Destinatário
+        $mail->setFrom($_ENV['SMTP_USERNAME'], 'Encontre o Campo');
+        $mail->addAddress($destinatario, $nome);
 
-        return $mail -> send();
+        // Conteúdo
+        $mail->isHTML(true);
+        $mail->Subject = $assunto;
+        $mail->Body = gerarTemplateNotificacao($nome, $assunto, $conteudo);
+        $mail->AltBody = "Notificação para $nome: $assunto. $conteudo";
+
+        // Enviar
+        $resultado = $mail->send();
+        
+        if ($resultado) {
+            error_log("Email enviado com sucesso para: $destinatario");
+        }
+        
+        return $resultado;
     } catch (Exception $e) {
-        error_log('Ocorreu um erro ao enviar a notificação.\n'. $mail -> ErrorInfo);
+        $erro = "Erro ao enviar email para $destinatario: " . $e->getMessage() . " | SMTP Error: " . $mail->ErrorInfo;
+        error_log($erro);
         return false;
     }
 }

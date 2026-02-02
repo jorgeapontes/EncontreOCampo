@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/permissions.php';
 require_once __DIR__ . '/conexao.php';
+require_once __DIR__ . '/funcoes_notificacoes.php';
+require_once __DIR__ . '/../includes/send_notification.php';
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprador') {
     header("Location: login.php?erro=" . urlencode("Acesso restrito."));
@@ -31,7 +33,7 @@ try {
                    t.nome_comercial as transportador_nome, t.usuario_id as transportador_usuario_id,
                    u.email as transportador_email, u.nome as transportador_nome_usuario,
                    uc.nome as comprador_nome, uc.email as comprador_email
-            FROM propostas_frete_transportador pf
+            FROM propostas_transportadores pf
             INNER JOIN propostas p ON pf.proposta_id = p.ID
             INNER JOIN produtos pr ON p.produto_id = pr.id
             INNER JOIN transportadores t ON pf.transportador_id = t.id
@@ -56,9 +58,8 @@ try {
         exit();
     }
     
-    function enviarNotificacaoEmail($proposta, $acao, $novo_valor = null) {
-        require_once __DIR__ . '/../includes/send_notification.php';
-        
+    // Função para enviar notificação por email
+    function enviarNotificacaoEmailDireto($proposta, $acao, $novo_valor = null) {
         $transportador_nome = $proposta['transportador_nome_usuario'] ?: $proposta['transportador_nome'];
         $comprador_nome = $proposta['comprador_nome'];
         
@@ -94,8 +95,9 @@ try {
                 "Acesse a plataforma para responder a esta contraproposta!"
         ];
         
+        // Usar o email real do transportador em vez do email fixo
         return enviarEmailNotificacao(
-            $proposta['transportador_email'],
+            $proposta['transportador_email'], // Email correto do transportador
             $transportador_nome,
             $assuntos[$acao] . ' - ' . $proposta['produto_nome'],
             $mensagens[$acao]
@@ -104,7 +106,7 @@ try {
     
     switch ($acao) {
         case 'aceitar':
-            $sql_update = "UPDATE propostas_frete_transportador 
+            $sql_update = "UPDATE propostas_transportadores 
                            SET status = 'aceita', data_resposta = NOW() 
                            WHERE id = :proposta_frete_id";
             $stmt_update = $db->prepare($sql_update);
@@ -120,7 +122,7 @@ try {
             $stmt_update_proposta->bindParam(':proposta_id', $proposta['proposta_id'], PDO::PARAM_INT);
             $stmt_update_proposta->execute();
             
-            $sql_recusar_outras = "UPDATE propostas_frete_transportador 
+            $sql_recusar_outras = "UPDATE propostas_transportadores 
                                    SET status = 'recusada', data_resposta = NOW() 
                                    WHERE proposta_id = :proposta_id 
                                    AND id != :proposta_frete_id 
@@ -130,43 +132,33 @@ try {
             $stmt_recusar_outras->bindParam(':proposta_frete_id', $proposta_frete_id, PDO::PARAM_INT);
             $stmt_recusar_outras->execute();
             
-            $sql_notif = "INSERT INTO notificacoes (usuario_id, mensagem, tipo, url) 
-                          SELECT t.usuario_id, :mensagem, 'sucesso', :url
-                          FROM transportadores t
-                          WHERE t.id = :transportador_id";
-            $stmt_notif = $db->prepare($sql_notif);
-            $mensagem_notif = "Sua proposta de frete foi aceita para '" . $proposta['produto_nome'] . "'!";
-            $url_notif = 'transportador/entregas.php';
-            $stmt_notif->bindParam(':mensagem', $mensagem_notif);
-            $stmt_notif->bindParam(':url', $url_notif);
-            $stmt_notif->bindParam(':transportador_id', $proposta['transportador_id'], PDO::PARAM_INT);
-            $stmt_notif->execute();
+            // Notificar transportador usando a nova função
+            notificarRespostaPropostaFrete(
+                $proposta['transportador_usuario_id'],
+                $proposta['produto_nome'],
+                'aceitar'
+            );
             
-            enviarNotificacaoEmail($proposta, 'aceitar');
+            enviarNotificacaoEmailDireto($proposta, 'aceitar');
             break;
             
         case 'recusar':
-            $sql_update = "UPDATE propostas_frete_transportador 
+            $sql_update = "UPDATE propostas_transportadores 
                            SET status = 'recusada', data_resposta = NOW() 
                            WHERE id = :proposta_frete_id";
             $stmt_update = $db->prepare($sql_update);
             $stmt_update->bindParam(':proposta_frete_id', $proposta_frete_id, PDO::PARAM_INT);
             $stmt_update->execute();
             
-            $sql_notif = "INSERT INTO notificacoes (usuario_id, mensagem, tipo, url) 
-                          SELECT t.usuario_id, :mensagem, 'info', :url
-                          FROM transportadores t
-                          WHERE t.id = :transportador_id";
-            $stmt_notif = $db->prepare($sql_notif);
-            $mensagem_notif = "Sua proposta de frete foi recusada para '" . $proposta['produto_nome'] . "'.";
-            $url_notif = 'transportador/dashboard.php';
-            $stmt_notif->bindParam(':mensagem', $mensagem_notif);
-            $stmt_notif->bindParam(':url', $url_notif);
-            $stmt_notif->bindParam(':transportador_id', $proposta['transportador_id'], PDO::PARAM_INT);
-            $stmt_notif->execute();
+            // Notificar transportador usando a nova função
+            notificarRespostaPropostaFrete(
+                $proposta['transportador_usuario_id'],
+                $proposta['produto_nome'],
+                'recusar'
+            );
             
             // Enviar email
-            enviarNotificacaoEmail($proposta, 'recusar');
+            enviarNotificacaoEmailDireto($proposta, 'recusar');
             break;
             
         case 'contraproposta':
@@ -176,7 +168,7 @@ try {
                 exit();
             }
             
-            $sql_update = "UPDATE propostas_frete_transportador 
+            $sql_update = "UPDATE propostas_transportadores 
                            SET status = 'contraproposta', 
                                valor_frete = :novo_valor, 
                                data_resposta = NOW(),
@@ -187,20 +179,15 @@ try {
             $stmt_update->bindParam(':proposta_frete_id', $proposta_frete_id, PDO::PARAM_INT);
             $stmt_update->execute();
             
-            // Notificação interna
-            $sql_notif = "INSERT INTO notificacoes (usuario_id, mensagem, tipo, url) 
-                          SELECT t.usuario_id, :mensagem, 'info', :url
-                          FROM transportadores t
-                          WHERE t.id = :transportador_id";
-            $stmt_notif = $db->prepare($sql_notif);
-            $mensagem_notif = "Você recebeu uma contraproposta de R$ " . number_format($novo_valor, 2, ',', '.') . " para '" . $proposta['produto_nome'] . "'";
-            $url_notif = 'transportador/entregas.php';
-            $stmt_notif->bindParam(':mensagem', $mensagem_notif);
-            $stmt_notif->bindParam(':url', $url_notif);
-            $stmt_notif->bindParam(':transportador_id', $proposta['transportador_id'], PDO::PARAM_INT);
-            $stmt_notif->execute();
+            // Notificar transportador usando a nova função
+            notificarRespostaPropostaFrete(
+                $proposta['transportador_usuario_id'],
+                $proposta['produto_nome'],
+                'contraproposta',
+                $novo_valor
+            );
             
-            enviarNotificacaoEmail($proposta, 'contraproposta', $novo_valor);
+            enviarNotificacaoEmailDireto($proposta, 'contraproposta', $novo_valor);
             break;
             
         default:

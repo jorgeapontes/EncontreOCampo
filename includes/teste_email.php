@@ -1,13 +1,9 @@
 <?php
-// test_email.php
 session_start();
 
-// Se o formulário foi enviado
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Incluir o arquivo de notificação
     require_once 'send_notification.php';
     
-    // Dados fixos para teste
     $destinatario = 'rafaeltonetti.cardoso@gmail.com';  // ALTERE PARA SEU EMAIL
     $nome = 'Usuário Teste';
     $assunto = 'Teste de Email - Encontre o Campo';

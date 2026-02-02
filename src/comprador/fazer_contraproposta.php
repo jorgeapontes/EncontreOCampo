@@ -3,6 +3,7 @@
 
 session_start();
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/../../includes/send_notification.php';
 
 // 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA
 if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['comprador', 'vendedor'])) {
@@ -39,7 +40,8 @@ try {
                 p.modo_precificacao,
                 p.embalagem_peso_kg,
                 p.embalagem_unidades,
-                p.unidade_medida 
+                p.unidade_medida,
+                pc.comprador_id
             FROM propostas_negociacao pn
             JOIN propostas_comprador pc ON pn.proposta_comprador_id = pc.id
             JOIN produtos p ON pn.produto_id = p.id
@@ -99,6 +101,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erro = "Quantidade deve ser maior que zero.";
     } else {
         try {
+            // Buscar informações para notificação
+            $sqlVendedorInfo = "SELECT u.nome, u.email FROM usuarios u 
+                               JOIN produtos p ON u.id = p.vendedor_id
+                               WHERE p.id = :produto_id";
+            $stmtVendedorInfo = $conn->prepare($sqlVendedorInfo);
+            $stmtVendedorInfo->bindParam(':produto_id', $negociacao['produto_id']);
+            $stmtVendedorInfo->execute();
+            $vendedorInfo = $stmtVendedorInfo->fetch(PDO::FETCH_ASSOC);
+            
+            // Buscar informações do comprador
+            $sqlCompradorInfo = "SELECT u.nome, u.email FROM usuarios u 
+                                JOIN compradores c ON u.id = c.usuario_id
+                                WHERE c.id = :comprador_id";
+            $stmtCompradorInfo = $conn->prepare($sqlCompradorInfo);
+            $stmtCompradorInfo->bindParam(':comprador_id', $negociacao['comprador_id']);
+            $stmtCompradorInfo->execute();
+            $compradorInfo = $stmtCompradorInfo->fetch(PDO::FETCH_ASSOC);
+            
             $conn->beginTransaction();
             
             // 1. Criar nova proposta do comprador (atualizar a existente)
@@ -127,6 +147,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt_update_neg->execute();
             
             $conn->commit();
+            
+            // Enviar notificação para o vendedor
+            if ($vendedorInfo && isset($vendedorInfo['email']) && $compradorInfo && isset($compradorInfo['email'])) {
+                enviarEmailNotificacao(
+                    $vendedorInfo['email'],
+                    $vendedorInfo['nome'],
+                    'Nova Contraproposta Recebida - ' . htmlspecialchars($negociacao['produto_nome']),
+                    'O comprador ' . $compradorInfo['nome'] . ' enviou uma nova contraproposta para o produto ' . 
+                    htmlspecialchars($negociacao['produto_nome']) . '. Novo preço: R$ ' . 
+                    number_format($preco_proposto, 2, ',', '.') . ', Quantidade: ' . $quantidade .
+                    ($condicoes ? "\n\nCondições adicionais:\n" . $condicoes : '')
+                );
+            }
             
             header("Location: minhas_propostas.php?sucesso=" . urlencode("Contraproposta enviada com sucesso! Aguarde a resposta do vendedor."));
             exit();

@@ -1,6 +1,7 @@
 <?php
 // src/vendedor/vendas.php
 require_once 'auth.php';
+require_once '../../includes/send_notification.php'; // NOVO: Adicionado para notificações
 
 // Garantir colunas auxiliares (confirmado, arquivado) em `propostas` quando ausentes.
 try {
@@ -30,14 +31,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $action = $_POST['action'];
     $proposta_id = isset($_POST['proposta_id']) ? intval($_POST['proposta_id']) : 0;
 
-            if ($proposta_id && in_array($action, ['confirm', 'archive'])) {
+    if ($proposta_id && in_array($action, ['confirm', 'archive'])) {
         try {
+            // Buscar informações da proposta para notificação
+            $sql_info = "SELECT p.*, pr.nome as produto_nome, u.nome as comprador_nome, u.email as comprador_email,
+                        uv.nome as vendedor_nome, uv.email as vendedor_email
+                        FROM propostas p
+                        LEFT JOIN produtos pr ON p.produto_id = pr.id
+                        LEFT JOIN usuarios u ON p.comprador_id = u.id
+                        LEFT JOIN vendedores v ON p.vendedor_id = v.id
+                        LEFT JOIN usuarios uv ON v.usuario_id = uv.id
+                        WHERE p.ID = :id AND p.vendedor_id = :vendedor_id";
+            
+            $stmt_info = $db->prepare($sql_info);
+            $stmt_info->bindParam(':id', $proposta_id, PDO::PARAM_INT);
+            $stmt_info->bindParam(':vendedor_id', $usuario_id, PDO::PARAM_INT);
+            $stmt_info->execute();
+            $proposta_info = $stmt_info->fetch(PDO::FETCH_ASSOC);
+
             if ($action === 'confirm') {
                 $sql = "UPDATE propostas SET confirmado = 1 WHERE ID = :id AND vendedor_id = :vendedor_id";
                 $stmt = $db->prepare($sql);
                 $stmt->bindParam(':id', $proposta_id, PDO::PARAM_INT);
                 $stmt->bindParam(':vendedor_id', $usuario_id, PDO::PARAM_INT);
                 $stmt->execute();
+                
+                // NOTIFICAÇÃO POR EMAIL - CORRIGIDO (Confirmar venda)
+                if ($proposta_info && !empty($proposta_info['comprador_email'])) {
+                    $subject = "Venda Confirmada - Encontre o Campo";
+                    $message = "Olá " . htmlspecialchars($proposta_info['comprador_nome']) . ",\n\n";
+                    $message .= "O vendedor confirmou o recebimento do pagamento da venda.\n\n";
+                    $message .= "Detalhes da venda confirmada:\n";
+                    $message .= "- Produto: " . htmlspecialchars($proposta_info['produto_nome']) . "\n";
+                    $message .= "- Quantidade: " . $proposta_info['quantidade_proposta'] . "\n";
+                    $message .= "- Valor Total: R$ " . number_format($proposta_info['valor_total'], 2, ',', '.') . "\n";
+                    $message .= "- Vendedor: " . htmlspecialchars($proposta_info['vendedor_nome']) . "\n";
+                    $message .= "- Data da Confirmação: " . date('d/m/Y H:i') . "\n\n";
+                    $message .= "A transação foi concluída com sucesso!\n";
+                    $message .= "Agradecemos por utilizar nossa plataforma.\n\n";
+                    $message .= "Atenciosamente,\nEquipe Encontre o Campo";
+                    
+                    enviarEmailNotificacao($proposta_info['comprador_email'], $proposta_info['comprador_nome'], $subject, $message);
+                }
+                
+                // Notificar o vendedor
+                if ($proposta_info && !empty($proposta_info['vendedor_email'])) {
+                    $subject = "Venda Confirmada - Encontre o Campo";
+                    $message = "Olá " . htmlspecialchars($proposta_info['vendedor_nome']) . ",\n\n";
+                    $message .= "Você confirmou o recebimento do pagamento da venda.\n\n";
+                    $message .= "Detalhes da venda confirmada:\n";
+                    $message .= "- Produto: " . htmlspecialchars($proposta_info['produto_nome']) . "\n";
+                    $message .= "- Quantidade: " . $proposta_info['quantidade_proposta'] . "\n";
+                    $message .= "- Valor Total: R$ " . number_format($proposta_info['valor_total'], 2, ',', '.') . "\n";
+                    $message .= "- Comprador: " . htmlspecialchars($proposta_info['comprador_nome']) . "\n";
+                    $message .= "- Data da Confirmação: " . date('d/m/Y H:i') . "\n\n";
+                    $message .= "A transação foi concluída com sucesso!\n";
+                    $message .= "Obrigado por utilizar nossa plataforma.\n\n";
+                    $message .= "Atenciosamente,\nEquipe Encontre o Campo";
+                    
+                    enviarEmailNotificacao($proposta_info['vendedor_email'], $proposta_info['vendedor_nome'], $subject, $message);
+                }
+                
             } else {
                 // toggle arquivado
                 $get = $db->prepare("SELECT arquivado FROM propostas WHERE ID = :id AND vendedor_id = :vendedor_id LIMIT 1");
@@ -51,6 +105,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $upd->bindParam(':id', $proposta_id, PDO::PARAM_INT);
                 $upd->bindParam(':vendedor_id', $usuario_id, PDO::PARAM_INT);
                 $upd->execute();
+                
+                // NOTIFICAÇÃO POR EMAIL - CORRIGIDO (Arquivar/Desarquivar)
+                if ($proposta_info && !empty($proposta_info['vendedor_email'])) {
+                    $acao_texto = $novo ? 'arquivada' : 'desarquivada';
+                    $subject = "Venda " . ucfirst($acao_texto) . " - Encontre o Campo";
+                    $message = "Olá " . htmlspecialchars($proposta_info['vendedor_nome']) . ",\n\n";
+                    $message .= "Uma venda foi " . $acao_texto . " em seu painel.\n\n";
+                    $message .= "Detalhes:\n";
+                    $message .= "- Produto: " . htmlspecialchars($proposta_info['produto_nome']) . "\n";
+                    $message .= "- Comprador: " . htmlspecialchars($proposta_info['comprador_nome']) . "\n";
+                    $message .= "- Valor: R$ " . number_format($proposta_info['valor_total'], 2, ',', '.') . "\n";
+                    $message .= "- Status: " . ($novo ? 'Arquivada' : 'Ativa') . "\n";
+                    $message .= "- Data: " . date('d/m/Y H:i') . "\n\n";
+                    
+                    if ($novo) {
+                        $message .= "A venda foi movida para a seção de arquivadas.\n";
+                        $message .= "Você pode visualizá-la novamente clicando em 'Exibir arquivadas'.\n";
+                    } else {
+                        $message .= "A venda foi restaurada para a lista ativa.\n";
+                    }
+                    
+                    $message .= "\nAtenciosamente,\nEquipe Encontre o Campo";
+                    
+                    enviarEmailNotificacao($proposta_info['vendedor_email'], $proposta_info['vendedor_nome'], $subject, $message);
+                }
             }
 
             // recalcula contadores (confirmadas) aplicando possível filtro de período enviado via POST
@@ -66,6 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $response['success'] = true;
             $response['total_confirmadas'] = intval($tot['total_confirmadas']);
             $response['soma_valor'] = number_format($tot['soma_valor'], 2, ',', '.');
+
         } catch (PDOException $e) {
             $response['error'] = $e->getMessage();
         }

@@ -3,6 +3,7 @@
 
 session_start();
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/../../includes/send_notification.php'; // NOVO: Adicionado para notificações
 
 function redirecionar($id, $tipo, $mensagem) {
     header("Location: detalhes_proposta.php?id=" . $id . "&" . $tipo . "=" . urlencode($mensagem));
@@ -51,17 +52,25 @@ try {
 
     $vendedor_id = $vendedor['id'];
 
-    // Buscar dados da proposta atual
+    // Buscar dados da proposta atual com informações para notificação
     $sql_proposta = "SELECT 
                         pc.*,
                         pn.id AS negociacao_id,
                         pn.produto_id,  -- ADICIONADO: produto_id da negociação
                         pn.status AS negociacao_status,
                         p.nome AS produto_nome,
-                        p.vendedor_id AS produto_vendedor_id
+                        p.vendedor_id AS produto_vendedor_id,
+                        u.nome AS comprador_nome,
+                        u.email AS comprador_email,
+                        uv.nome AS vendedor_nome,
+                        uv.email AS vendedor_email
                     FROM propostas_comprador pc
                     JOIN propostas_negociacao pn ON pc.id = pn.proposta_comprador_id
                     JOIN produtos p ON pn.produto_id = p.id  -- ADICIONADO: JOIN com produtos
+                    JOIN compradores c ON pc.comprador_id = c.id
+                    JOIN usuarios u ON c.usuario_id = u.id
+                    JOIN vendedores v ON p.vendedor_id = v.id
+                    JOIN usuarios uv ON v.usuario_id = uv.id
                     WHERE pc.id = :proposta_comprador_id AND p.vendedor_id = :vendedor_id";
     
     $stmt_proposta = $conn->prepare($sql_proposta);
@@ -144,6 +153,57 @@ try {
             
             $conn->commit();
             
+            // NOTIFICAÇÃO POR EMAIL - CORRIGIDO
+            // Notificar o comprador
+            if (!empty($proposta['comprador_email'])) {
+                $subject = "Proposta Aceita - Encontre o Campo";
+                $message = "Olá " . htmlspecialchars($proposta['comprador_nome']) . ",\n\n";
+                
+                if ($vendedor_proposal) {
+                    $message .= "Parabéns! O vendedor aceitou sua contraproposta para o produto '" . htmlspecialchars($proposta['produto_nome']) . "'.\n\n";
+                    $message .= "A negociação foi finalizada com sucesso!\n\n";
+                } else {
+                    $message .= "Parabéns! O vendedor aceitou sua proposta para o produto '" . htmlspecialchars($proposta['produto_nome']) . "'.\n\n";
+                    $message .= "A negociação foi concluída com sucesso!\n\n";
+                }
+                
+                $message .= "Detalhes da negociação:\n";
+                $message .= "- Produto: " . htmlspecialchars($proposta['produto_nome']) . "\n";
+                $message .= "- Preço Final: R$ " . number_format($proposta['preco_proposto'], 2, ',', '.') . "\n";
+                $message .= "- Quantidade: " . $proposta['quantidade_proposta'] . "\n";
+                $message .= "- Vendedor: " . htmlspecialchars($proposta['vendedor_nome']) . "\n";
+                $message .= "- Data da Aceitação: " . date('d/m/Y H:i') . "\n\n";
+                $message .= "Entre em contato com o vendedor para acertar os detalhes finais da transação.\n\n";
+                $message .= "Atenciosamente,\nEquipe Encontre o Campo";
+                
+                enviarEmailNotificacao($proposta['comprador_email'], $proposta['comprador_nome'], $subject, $message);
+            }
+            
+            // Notificar o vendedor
+            if (!empty($proposta['vendedor_email'])) {
+                $subject = "Proposta Aceita - Encontre o Campo";
+                $message = "Olá " . htmlspecialchars($proposta['vendedor_nome']) . ",\n\n";
+                
+                if ($vendedor_proposal) {
+                    $message .= "Você aceitou a contraproposta do comprador para o produto '" . htmlspecialchars($proposta['produto_nome']) . "'.\n\n";
+                    $message .= "A negociação foi finalizada com sucesso!\n\n";
+                } else {
+                    $message .= "Você aceitou a proposta do comprador para o produto '" . htmlspecialchars($proposta['produto_nome']) . "'.\n\n";
+                    $message .= "A negociação foi concluída com sucesso!\n\n";
+                }
+                
+                $message .= "Detalhes da negociação:\n";
+                $message .= "- Produto: " . htmlspecialchars($proposta['produto_nome']) . "\n";
+                $message .= "- Preço Final: R$ " . number_format($proposta['preco_proposto'], 2, ',', '.') . "\n";
+                $message .= "- Quantidade: " . $proposta['quantidade_proposta'] . "\n";
+                $message .= "- Comprador: " . htmlspecialchars($proposta['comprador_nome']) . "\n";
+                $message .= "- Data da Aceitação: " . date('d/m/Y H:i') . "\n\n";
+                $message .= "Entre em contato com o comprador para acertar os detalhes finais da transação.\n\n";
+                $message .= "Atenciosamente,\nEquipe Encontre o Campo";
+                
+                enviarEmailNotificacao($proposta['vendedor_email'], $proposta['vendedor_nome'], $subject, $message);
+            }
+            
             $msg = $vendedor_proposal ? 
                 "Contraproposta do comprador aceita com sucesso! Negociação finalizada." :
                 "Proposta do comprador aceita com sucesso! Negociação concluída.";
@@ -171,6 +231,39 @@ try {
             $stmt_update_negociacao->execute();
             
             $conn->commit();
+            
+            // NOTIFICAÇÃO POR EMAIL - CORRIGIDO
+            // Notificar o comprador
+            if (!empty($proposta['comprador_email'])) {
+                $subject = "Proposta Recusada - Encontre o Campo";
+                $message = "Olá " . htmlspecialchars($proposta['comprador_nome']) . ",\n\n";
+                $message .= "Infelizmente, o vendedor recusou sua proposta para o produto '" . htmlspecialchars($proposta['produto_nome']) . "'.\n\n";
+                $message .= "Detalhes:\n";
+                $message .= "- Produto: " . htmlspecialchars($proposta['produto_nome']) . "\n";
+                $message .= "- Vendedor: " . htmlspecialchars($proposta['vendedor_nome']) . "\n";
+                $message .= "- Data da Recusa: " . date('d/m/Y H:i') . "\n\n";
+                $message .= "Você pode buscar outros produtos similares ou tentar negociar com outros vendedores.\n";
+                $message .= "Acesse o sistema para explorar novas oportunidades.\n\n";
+                $message .= "Atenciosamente,\nEquipe Encontre o Campo";
+                
+                enviarEmailNotificacao($proposta['comprador_email'], $proposta['comprador_nome'], $subject, $message);
+            }
+            
+            // Notificar o vendedor
+            if (!empty($proposta['vendedor_email'])) {
+                $subject = "Proposta Recusada - Encontre o Campo";
+                $message = "Olá " . htmlspecialchars($proposta['vendedor_nome']) . ",\n\n";
+                $message .= "Você recusou a proposta do comprador para o produto '" . htmlspecialchars($proposta['produto_nome']) . "'.\n\n";
+                $message .= "Detalhes:\n";
+                $message .= "- Produto: " . htmlspecialchars($proposta['produto_nome']) . "\n";
+                $message .= "- Comprador: " . htmlspecialchars($proposta['comprador_nome']) . "\n";
+                $message .= "- Data da Recusa: " . date('d/m/Y H:i') . "\n\n";
+                $message .= "A negociação foi encerrada. Você pode continuar recebendo outras propostas para este produto.\n\n";
+                $message .= "Atenciosamente,\nEquipe Encontre o Campo";
+                
+                enviarEmailNotificacao($proposta['vendedor_email'], $proposta['vendedor_nome'], $subject, $message);
+            }
+            
             redirecionar($proposta_comprador_id, 'sucesso', "Proposta recusada. A negociação foi encerrada.");
             
         } elseif ($acao === 'contraproposta' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -218,6 +311,47 @@ try {
             $stmt_update_negociacao->execute();
             
             $conn->commit();
+            
+            // NOTIFICAÇÃO POR EMAIL - CORRIGIDO
+            // Notificar o comprador
+            if (!empty($proposta['comprador_email'])) {
+                $subject = "Nova Contraproposta Recebida - Encontre o Campo";
+                $message = "Olá " . htmlspecialchars($proposta['comprador_nome']) . ",\n\n";
+                $message .= "O vendedor fez uma contraproposta para o produto '" . htmlspecialchars($proposta['produto_nome']) . "'.\n\n";
+                $message .= "Detalhes da contraproposta:\n";
+                $message .= "- Preço: R$ " . number_format($novo_preco, 2, ',', '.') . "\n";
+                $message .= "- Quantidade: " . $nova_quantidade . "\n";
+                if (!empty($novas_condicoes)) {
+                    $message .= "- Condições: " . htmlspecialchars($novas_condicoes) . "\n";
+                }
+                $message .= "- Vendedor: " . htmlspecialchars($proposta['vendedor_nome']) . "\n";
+                $message .= "- Data: " . date('d/m/Y H:i') . "\n\n";
+                $message .= "Acesse o sistema para analisar a contraproposta e tomar uma decisão.\n";
+                $message .= "Você pode aceitar, recusar ou fazer uma nova contraproposta.\n\n";
+                $message .= "Atenciosamente,\nEquipe Encontre o Campo";
+                
+                enviarEmailNotificacao($proposta['comprador_email'], $proposta['comprador_nome'], $subject, $message);
+            }
+            
+            // Notificar o vendedor
+            if (!empty($proposta['vendedor_email'])) {
+                $subject = "Contraproposta Enviada - Encontre o Campo";
+                $message = "Olá " . htmlspecialchars($proposta['vendedor_nome']) . ",\n\n";
+                $message .= "Você enviou uma contraproposta para o comprador sobre o produto '" . htmlspecialchars($proposta['produto_nome']) . "'.\n\n";
+                $message .= "Detalhes da contraproposta:\n";
+                $message .= "- Preço: R$ " . number_format($novo_preco, 2, ',', '.') . "\n";
+                $message .= "- Quantidade: " . $nova_quantidade . "\n";
+                if (!empty($novas_condicoes)) {
+                    $message .= "- Condições: " . htmlspecialchars($novas_condicoes) . "\n";
+                }
+                $message .= "- Comprador: " . htmlspecialchars($proposta['comprador_nome']) . "\n";
+                $message .= "- Data: " . date('d/m/Y H:i') . "\n\n";
+                $message .= "Aguarde a resposta do comprador. Ele foi notificado sobre sua contraproposta.\n\n";
+                $message .= "Atenciosamente,\nEquipe Encontre o Campo";
+                
+                enviarEmailNotificacao($proposta['vendedor_email'], $proposta['vendedor_nome'], $subject, $message);
+            }
+            
             redirecionar($proposta_comprador_id, 'sucesso', "Contraproposta enviada com sucesso! Aguarde a resposta do comprador.");
         }
         

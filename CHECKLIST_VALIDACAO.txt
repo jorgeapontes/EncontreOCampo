@@ -1,0 +1,262 @@
+📋 CHECKLIST DE VALIDAÇÃO APÓS CORREÇÕES
+═════════════════════════════════════════════════════════════════════
+
+PROJETO: Encontre o Campo
+DATA: 02/02/2026
+VERSÃO: 1.0
+
+═════════════════════════════════════════════════════════════════════
+
+🔧 FASE 1: VERIFICAÇÃO DE CORREÇÕES (Antes de testar)
+
+[ ] 1. Verificar se os 5 arquivos foram corrigidos
+    Arquivos a verificar:
+    ☐ src/vendedor/processar_decisao.php (linha 6)
+    ☐ src/vendedor/webhook_stripe.php (linha 4)
+    ☐ src/vendedor/processar_assinatura.php (linha 8)
+    ☐ src/vendedor/desfazer_contraproposta.php (linha 6)
+    ☐ src/vendedor/editar_contraproposta.php (linha 6)
+    
+    Cada linha deve conter:
+    require_once __DIR__ . '/../../includes/send_notification.php';
+    
+[ ] 2. Confirmar que send_notification.php foi atualizado
+    Arquivo: includes/send_notification.php
+    Deve conter:
+    ☐ $mail->Port = (int)$_ENV['SMTP_PORT'];
+    ☐ $mail->CharSet = PHPMailer::CHARSET_UTF8;
+    ☐ $mail->SMTPDebug = SMTP::DEBUG_OFF;
+    ☐ $mail->Debugoutput = 'error_log';
+    ☐ $mail->Timeout = 10;
+
+[ ] 3. Verificar arquivo .env
+    ☐ SMTP_HOST=smtp.hostinger.com
+    ☐ SMTP_PORT=587
+    ☐ SMTP_USERNAME=contato@encontreocampo.com.br
+    ☐ SMTP_ENCRYPTION=tls
+    ☐ SMTP_PASSWORD=******* (preenchido)
+
+═════════════════════════════════════════════════════════════════════
+
+🧪 FASE 2: TESTES AUTOMATIZADOS
+
+[ ] 1. Teste de Diagnóstico Visual
+    1. Abra no navegador:
+       http://localhost/EncontreOCampo/includes/teste_diagnostico_email.php
+    
+    2. Verifique seção "Verificações do Sistema":
+       ☐ PHP Version ..................... ✓ Verde
+       ☐ OpenSSL ......................... ✓ Verde
+       ☐ mail() nativa ................... ✓ Verde
+       ☐ Composer Autoload ............... ✓ Verde
+       ☐ PHPMailer Files ................. ✓ Verde
+       ☐ .env File ....................... ✓ Verde
+    
+    3. Verifique seção "Configurações SMTP Carregadas":
+       ☐ Host: smtp.hostinger.com ........ ✓ Correto
+       ☐ Port: 587 ....................... ✓ Correto
+       ☐ Username: contato@encontreocampo.com.br ✓ Correto
+       ☐ Encryption: TLS ................ ✓ Correto
+       ☐ Password: [definida] ........... ✓ Correto
+
+[ ] 2. Teste de Email
+    1. Seção "Teste de Envio de Email":
+       ☐ Insira um email real (seu email ou teste)
+       ☐ Insira um nome qualquer
+       ☐ Clique em "🚀 Enviar Email de Teste"
+    
+    2. Resultado esperado:
+       ☐ Mensagem de sucesso aparece
+       ☐ Email chega na caixa de entrada
+       ☐ Aguarde até 5 minutos
+       ☐ Verifique também SPAM
+
+[ ] 3. Teste de Conectividade SMTP
+    1. Acesse:
+       http://localhost/EncontreOCampo/includes/teste_conectividade_rede.php
+    
+    2. Resultados esperados:
+       ☐ Resolução de DNS ............... ✅ Verde
+       ☐ Teste de Conexão na Porta ..... ✅ Verde
+       ☐ Funções PHP Necessárias ....... ✅ Verde
+       ☐ Configurações de Rede ......... ✅ Verde
+
+═════════════════════════════════════════════════════════════════════
+
+📧 FASE 3: TESTES FUNCIONAIS (Dentro do Sistema)
+
+[ ] 1. Teste: Comprador Edita Proposta
+    Caminho: Comprador → Minhas Propostas → Editar
+    1. Comprador edita uma proposta
+    2. Sistema envia email para o vendedor
+    
+    Validar:
+    ☐ Email chega no vendedor
+    ☐ Assunto correto
+    ☐ Conteúdo com dados corretos
+
+[ ] 2. Teste: Vendedor Responde Proposta
+    Caminho: Vendedor → Propostas → Responder
+    1. Vendedor aceita/recusa uma proposta
+    2. Sistema envia email para o comprador
+    
+    Validar:
+    ☐ Email chega no comprador
+    ☐ Status correto (aceita/recusa)
+    ☐ Dados da proposta presentes
+
+[ ] 3. Teste: Transportador Envia Proposta de Frete
+    Caminho: Transportador → Dashboard → Enviar Proposta
+    1. Transportador envia proposta de frete
+    2. Emails enviam para comprador e vendedor
+    
+    Validar:
+    ☐ Email chega no comprador
+    ☐ Email chega no vendedor
+    ☐ Valor do frete correto
+    ☐ Dados do transportador presentes
+
+[ ] 4. Teste: Vendedor Edita Contraproposta
+    Caminho: Vendedor → Contraproposta → Editar
+    1. Vendedor edita uma contraproposta
+    2. Email envia para o comprador
+    
+    Validar:
+    ☐ Email chega no comprador
+    ☐ Novo preço correto
+    ☐ Nova quantidade correta
+
+[ ] 5. Teste: Vendedor Desfaz Contraproposta
+    Caminho: Vendedor → Contraproposta → Desfazer
+    1. Vendedor desfaz uma contraproposta
+    2. Emails enviam para ambos
+    
+    Validar:
+    ☐ Email chega no comprador
+    ☐ Email chega no vendedor
+    ☐ Mensagem clara sobre cancelamento
+
+[ ] 6. Teste: Chat - Novo Usuário
+    Caminho: Chat → Enviar Mensagem
+    1. Envie mensagem para outro usuário
+    2. Email notifica o outro usuário
+    
+    Validar:
+    ☐ Email chega no outro usuário
+    ☐ Link para chat correto
+
+═════════════════════════════════════════════════════════════════════
+
+⚠️  FASE 4: VERIFICAÇÃO DE LOGS
+
+Se algum teste FALHAR:
+
+[ ] 1. Acesse o arquivo de log:
+    C:\xampp\apache\logs\error.log
+
+[ ] 2. Procure por mensagens de erro:
+    ☐ SMTP Connection refused
+    ☐ Authentication failed
+    ☐ Timeout
+    ☐ SSL/TLS error
+    ☐ Email sent successfully
+
+[ ] 3. Analise o erro:
+    Procure por linhas contendo:
+    ☐ "send_notification.php"
+    ☐ "SMTP"
+    ☐ "PHPMailer"
+    ☐ "Email"
+
+═════════════════════════════════════════════════════════════════════
+
+🛠️  FASE 5: TROUBLESHOOTING
+
+Se os emails ainda não chegarem:
+
+[ ] 1. Erro: "Class not found: PHPMailer"
+    Solução: Verify path in arquivo (linha de require_once)
+    Correto: /../../includes/send_notification.php
+
+[ ] 2. Erro: "Connection refused"
+    Solução: Firewall bloqueando porta 587
+    Tente: Teste de conectividade (teste_conectividade_rede.php)
+    Alternativa: Tentar porta 465
+
+[ ] 3. Erro: "Authentication failed"
+    Solução: Password incorreta
+    Verifique: .env file e credenciais Hostinger
+
+[ ] 4. Erro: "Timeout"
+    Solução: Servidor SMTP offline ou lento
+    Tente: Aguarde alguns minutos
+    Alternativa: Teste novamente
+
+[ ] 5. Sem erro, mas email não chega
+    Solução: Email em SPAM
+    Verifique: Pasta de SPAM/Lixo/Quarentena
+    Alternativa: Aguarde 5-10 minutos
+
+═════════════════════════════════════════════════════════════════════
+
+✅ FASE 6: VALIDAÇÃO FINAL
+
+Antes de considerar "PRONTO", marque TODOS:
+
+[ ] Fase 1: Correções aplicadas ........................ ✓
+[ ] Fase 2: Testes automatizados passaram ............ ✓
+[ ] Fase 3: Testes funcionais passaram .............. ✓
+[ ] Fase 4: Logs verificados (sem erros críticos) ... ✓
+[ ] Fase 5: Troubleshooting (se necessário) ........ ✓
+[ ] Todos os 5 arquivos corrigidos verificados ....... ✓
+[ ] Emails chegando em pelo menos 1 teste ........... ✓
+
+═════════════════════════════════════════════════════════════════════
+
+📊 RELATÓRIO FINAL
+
+Data do Teste: _____ / _____ / _______
+
+Testes Passados: _____
+Testes Falhados: _____
+Testes Pulados: _____
+
+Status Geral:
+☐ ✅ PRONTO - Todos os testes passaram
+☐ ⚠️  COM RESSALVAS - Alguns testes falharam mas conhecemos o motivo
+☐ ❌ NÃO PRONTO - Testes falharam e não sabemos o motivo
+
+Observações:
+_________________________________________________________________
+_________________________________________________________________
+_________________________________________________________________
+
+Responsável: ______________________
+Assinatura: ________________________
+Data: _____ / _____ / _______
+
+═════════════════════════════════════════════════════════════════════
+
+📞 SUPORTE
+
+Se após todos esses testes ainda houver problemas:
+
+1. Consulte: AUDITORIA_NOTIFICACOES_EMAILS.md
+2. Consulte: SOLUCAO_EMAILS.md
+3. Consulte: RELATORIO_CORRECAO_EMAILS.md
+
+Verifique logs em:
+  C:\xampp\apache\logs\error.log
+
+Contate Suporte Hostinger com:
+  • Screenshot dos erros
+  • Conteúdo do error.log
+  • Resultado de teste_conectividade_rede.php
+
+═════════════════════════════════════════════════════════════════════
+
+Versão: 1.0
+Data: 02/02/2026
+Status: ✅ PRONTO PARA TESTE
+
+═════════════════════════════════════════════════════════════════════

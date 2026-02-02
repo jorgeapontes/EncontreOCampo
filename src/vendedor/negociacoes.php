@@ -1,7 +1,7 @@
 <?php
 // src/vendedor/vendas.php
 require_once 'auth.php';
-require_once '../../includes/send_notification.php'; // NOVO: Adicionado para notificações
+require_once __DIR__ . '/../../includes/send_notification.php'; // NOVO: Adicionado para notificações
 
 // Garantir colunas auxiliares (confirmado, arquivado) em `propostas` quando ausentes.
 try {

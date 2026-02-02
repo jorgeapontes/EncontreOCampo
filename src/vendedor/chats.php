@@ -143,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $message .= "Acesse o sistema para ver mais detalhes.\n\n";
                         $message .= "Atenciosamente,\nEquipe Encontre o Campo";
 
-                        require_once '../../includes/send_notification.php';
+                        require_once __DIR__ . '/../../includes/send_notification.php';
                         
                         enviarEmailNotificacao($outro_usuario_email, $outro_usuario_nome, $subject, $message);
                     }

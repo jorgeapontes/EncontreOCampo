@@ -1791,12 +1791,13 @@ html, body {
 
         /* Estilos para o card de proposta */
 .proposta-card {
-    background: #ffffff;
+    background: white;
     border-radius: 12px;
+    padding: 20px;
+    margin: 0px 10px 0px 10px;
+    max-height: 315px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     border: 1px solid #e0e0e0;
-    margin: 0px 10px 10px 10px;
-    padding: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     transition: all 0.3s ease;
 }
 
@@ -1804,12 +1805,18 @@ html, body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
+.proposta-card.vazio {
+    opacity: 0.9;
+    background: #f8f9fa;
+}
+
 .proposta-header {
     display: flex;
     align-items: center;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #f0f0f0;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .proposta-header i {
@@ -1821,24 +1828,31 @@ html, body {
 .proposta-header h4 {
     margin: 0;
     font-size: 16px;
-    font-weight: 600;
-    color: #1c1e21;
-    flex: 1;
+    color: #333;
 }
 
 .proposta-status {
-    font-size: 12px;
-    font-weight: 500;
-    padding: 4px 8px;
-    border-radius: 4px;
-    white-space: nowrap;
-    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: #f0f2f5;
+    color: #65676b;
+}
+
+.proposta-status.vazio {
+    background: #e9ecef;
+    color: #6c757d;
+}
+
+.proposta-status.assinando {
+    background: #cce5ff;
+    color: #004085;
 }
 
 .proposta-status.aceita {
-    background-color: #d4edda;
+    background: #d4edda;
     color: #155724;
-    border: 1px solid #c3e6cb;
 }
 
 .proposta-status.negociacao {
@@ -1848,48 +1862,69 @@ html, body {
 }
 
 .proposta-status.recusada {
-    background-color: #f8d7da;
+    background: #f8d7da;
     color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-.proposta-status.assinando {
-            background-color: #cce5ff;
-            color: #004085;
-            border: 1px solid #b8daff;
-        }
-
-.proposta-card.assinando {
-            border: 2px solid #007bff;
-            background-color: #f0f8ff;
-        }
-
-.proposta-finalizada.assinado {
-    color: #28a745;
-    font-weight: 600;
-    padding: 10px;
-    text-align: center;
-    background-color: #d4edda;
-    border-radius: 6px;
-    margin-top: 10px;
 }
 
 .proposta-status.cancelada {
-            background-color: #e2e3e5;
-            color: #383d41;
-            border: 1px solid #d6d8db;
-        }
-        
-        .proposta-card.cancelada {
-            border: 2px solid #6c757d;
-            background-color: #f8f9fa;
-            opacity: 0.8;
-        }
-        
-        .proposta-finalizada.cancelada {
-            color: #6c757d;
-            font-weight: 600;
-        }
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.proposta-card.assinando {
+    border: 2px solid #007bff;
+    background-color: #f0f8ff;
+}
+
+.proposta-placeholder {
+    text-align: center;
+    padding: 30px 20px;
+    color: #6c757d;
+}
+
+.proposta-placeholder i {
+    font-size: 48px;
+    margin-bottom: 10px;
+    color: #adb5bd;
+}
+
+.proposta-placeholder p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.proposta-conteudo {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.proposta-finalizada {
+    text-align: center;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.proposta-finalizada.assinado {
+    background: #d4edda;
+    color: #155724;
+}
+
+.proposta-finalizada.aceita {
+    background: #d4edda;
+    color: #155724;
+}
+
+.proposta-finalizada.cancelada {
+    background: #f8d7da;
+    color: #721c24;
+}
+
 
 .proposta-info {
     margin-bottom: 16px;
@@ -1899,9 +1934,7 @@ html, body {
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
-    font-size: 13px;
-    align-items: center;
-    transition: all 0.3s ease;
+    font-size: 14px;
 }
 
 .proposta-item:last-child {
@@ -1910,8 +1943,6 @@ html, body {
 
 .proposta-item span {
     color: #65676b;
-    display: flex;
-    align-items: center;
 }
 
 .proposta-item span i {
@@ -1922,16 +1953,20 @@ html, body {
 }
 
 .proposta-item strong {
-    color: #1c1e21;
+    color: #333;
     font-weight: 600;
-    transition: all 0.3s ease;
 }
 
 .proposta-item.total {
-    border-top: 1px dashed #e0e0e0;
-    padding-top: 10px;
-    margin-top: 10px;
-    font-size: 14px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+    font-size: 15px;
+}
+
+.proposta-item.total span {
+    color: #333;
+    font-weight: 600;
 }
 
 .proposta-item.total strong {
@@ -1945,11 +1980,10 @@ html, body {
 }
 
 .proposta-acoes {
+    margin-top: 20px;
     display: flex;
-    gap: 8px;
-    margin-top: 16px;
-    flex-wrap: wrap;
-    transition: all 0.3s ease;
+    flex-direction: row;
+    gap: 10px;
 }
 
 .proposta-acoes button {
@@ -1966,6 +2000,7 @@ html, body {
     justify-content: center;
     gap: 6px;
     min-height: 36px;
+    max-width: 160px;
 }
 
 .proposta-acoes button i {
@@ -1979,6 +2014,261 @@ html, body {
 
 .proposta-acoes button:active {
     transform: translateY(0);
+}
+
+.btn-nova-proposta {
+    width: 100%;
+    padding: 12px;
+    background: #1877f2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-nova-proposta:hover {
+    background: #166fe5;
+}
+
+.btn-nova-proposta:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.btn-editar-proposta,
+.btn-cancelar-proposta,
+.btn-aceitar-proposta,
+.btn-recusar-proposta,
+.btn-assinar-acordo {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-editar-proposta {
+    background: #ffc107;
+    color: #212529;
+}
+
+.btn-editar-proposta:hover {
+    background: #e0a800;
+}
+
+.btn-cancelar-proposta {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-cancelar-proposta:hover {
+    background: #c82333;
+}
+
+.btn-aceitar-proposta {
+    background: #28a745;
+    color: white;
+}
+
+.btn-aceitar-proposta:hover {
+    background: #218838;
+}
+
+.btn-recusar-proposta {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-recusar-proposta:hover {
+    background: #c82333;
+}
+
+.btn-assinar-acordo {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-assinar-acordo:hover {
+    background: #138496;
+}
+
+/* Estilos para delegação de eventos */
+.proposta-acoes {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.botoes-especificos {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    min-width: 300px;
+}
+
+/* Evitar múltiplos cliques */
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Transições suaves */
+.proposta-card {
+    transition: all 0.3s ease;
+}
+
+.proposta-conteudo {
+    transition: opacity 0.3s ease;
+}
+
+/* Estados finais com botão */
+.proposta-finalizada {
+    padding: 10px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.proposta-finalizada + .btn-nova-proposta {
+    margin-top: 10px;
+}
+
+/* Feedback visual para ações */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.btn-nova-proposta:active,
+.btn-editar-proposta:active,
+.btn-cancelar-proposta:active,
+.btn-aceitar-proposta:active,
+.btn-recusar-proposta:active,
+.btn-assinar-acordo:active {
+    animation: pulse 0.2s ease;
+}
+
+/* Estados finais com dados visíveis */
+.proposta-card.finalizada {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+.proposta-card.finalizada .proposta-conteudo {
+    opacity: 0.8;
+}
+
+.proposta-card.finalizada .proposta-item {
+    color: #6c757d;
+}
+
+.proposta-card.finalizada .proposta-item strong {
+    color: #495057;
+    font-weight: 500;
+}
+
+.proposta-card.finalizada .proposta-item.total strong {
+    color: #28a745;
+}
+
+/* Mensagens de estado final */
+.proposta-finalizada {
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.proposta-finalizada.aceita {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.proposta-finalizada.recusada {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.proposta-finalizada.cancelada {
+    background: #e2e3e5;
+    color: #383d41;
+    border: 1px solid #d6d8db;
+}
+
+.proposta-finalizada.assinado {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* Layout responsivo para botões */
+@media (max-width: 768px) {
+    .botoes-especificos {
+        flex-direction: column;
+    }
+    
+    .btn-nova-proposta {
+        order: -1; /* Botão fazer proposta primeiro no mobile */
+    }
+}
+
+/* Estilos para processamento */
+button.processando {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+button.processando::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Prevenir seleção durante processamento */
+.proposta-acoes * {
+    user-select: none;
+}
+
+/* Melhorar notificações */
+.notificacao-chat {
+    z-index: 99999;
+    animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeOut {
+    to { opacity: 0; }
 }
 
 .btn-accept-proposal {

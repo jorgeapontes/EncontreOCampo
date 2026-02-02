@@ -351,14 +351,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                 </div>
             <?php endif; ?>
 
-            <?php if (!$eh_vendedor_produto && !isset($ultima_proposta)): ?>
-                <div class="sidebar-negociacao-btn">
-                    <button type="button" class="btn-negociar-sidebar" id="btn-negociar-sidebar">
-                        <i class="fas fa-handshake"></i>
-                        Fazer Proposta
-                    </button>
-                </div>
-            <?php endif; ?>
+            
 
             <?php
             if ($conversa_id) {
@@ -434,7 +427,6 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                             $stmt_assinaturas->execute();
                             $assinaturas = $stmt_assinaturas->fetchAll(PDO::FETCH_ASSOC);
                             
-                            $assinaturas_info = '<div class="assinaturas-info">';
                             foreach ($assinaturas as $assinatura) {
                                 $data = date('d/m/Y H:i', strtotime($assinatura['data_assinatura']));
                                 $assinaturas_info .= '<small><i class="fas fa-check-circle" style="color: #28a745;"></i> ' .
@@ -444,88 +436,6 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                             $assinaturas_info .= '</div>';
                         }
             ?>
-            <div class="proposta-card" id="proposta-card">
-                <div class="proposta-header">
-                    <i class="fas fa-handshake"></i>
-                    <h4>Acordo de Compra</h4>
-                    <div class="proposta-status <?php echo htmlspecialchars($status_class); ?>" 
-                        id="proposta-status">
-                        <?php echo htmlspecialchars($status_exibir); ?>
-                    </div>
-                </div>
-                
-                <div class="proposta-info" id="proposta-info">
-                    <div class="proposta-item" id="proposta-quantidade">
-                        <span><i class="fas fa-box"></i> Quantidade:</span>
-                        <strong><?php echo htmlspecialchars($ultima_proposta['quantidade_proposta']); ?> <?php echo htmlspecialchars($unidade_medida); ?></strong>
-                    </div>
-                    
-                    <div class="proposta-item" id="proposta-valor-unitario">
-                        <span><i class="fas fa-tag"></i> Valor Unitário:</span>
-                        <strong>R$ <?php echo htmlspecialchars($valor_unitario); ?></strong>
-                    </div>
-                    
-                    <div class="proposta-item" id="proposta-frete">
-                        <span><i class="fas fa-truck"></i> Frete:</span>
-                        <strong><?php echo htmlspecialchars($opcao_frete_exibir); ?> (R$ <?php echo htmlspecialchars($valor_frete); ?>)</strong>
-                    </div>
-                    
-                    <div class="proposta-item" id="proposta-pagamento">
-                        <span><i class="fas fa-credit-card"></i> Pagamento:</span>
-                        <strong><?php echo htmlspecialchars($forma_pagamento_exibir); ?></strong>
-                    </div>
-                    
-                    <div class="proposta-item total" id="proposta-total">
-                        <span><i class="fas fa-calculator"></i> Valor Total:</span>
-                        <strong>R$ <?php echo htmlspecialchars($valor_total); ?></strong>
-                    </div>
-                    
-                    <div class="proposta-item" id="proposta-data">
-                        <span><i class="fas fa-calendar"></i> Data:</span>
-                        <small><?php echo htmlspecialchars($data_formatada); ?></small>
-                    </div>
-                </div>
-                
-                <div class="proposta-acoes" id="proposta-acoes">
-                    <?php if ($ultima_proposta['status'] === 'negociacao') { ?>
-                        <?php if ($eh_vendedor_produto) { ?>
-                            <!-- Botões para vendedor -->
-                            <button type="button" class="btn-accept-proposal" 
-                                    onclick="aceitarPropostaParaAssinatura(<?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
-                                <i class="fas fa-check"></i> Aceitar
-                            </button>
-                            <button type="button" class="btn-reject-proposal" 
-                                    onclick="responderProposta('recusar', <?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
-                                <i class="fas fa-times"></i> Recusar
-                            </button>
-                        <?php } else { ?>
-                            <!-- Botões para comprador -->
-                             <button type="button" class="btn-edit-proposal" id="btn-edit" title="Editar Proposta">
-                                <i class="fa-solid fa-pen-to-square"></i> Editar Proposta
-                            </button>
-                            <button type="button" class="btn-cancel-proposal" 
-                                    onclick="cancelarProposta(<?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
-                                <i class="fas fa-times"></i> Cancelar
-                            </button>
-                        <?php } ?>
-                    <?php } elseif ($ultima_proposta['status'] === 'assinando') { ?>
-                        <?php if (!$usuario_assinou): ?>
-                            <button type="button" class="btn-assinar-acordo" 
-                                    onclick="abrirModalAssinatura(<?php echo htmlspecialchars($ultima_proposta['ID']); ?>)">
-                                <i class="fas fa-signature"></i> Assinar Acordo
-                            </button>
-                        <?php else: ?>
-                            <div class="proposta-finalizada assinado">
-                                <i class="fas fa-check-circle" style="color: #28a745;"></i> Você já assinou este acordo
-                            </div>
-                        <?php endif; ?>
-                    <?php } elseif ($ultima_proposta['status'] === 'cancelada') { ?>
-                        <div class="proposta-finalizada cancelada">
-                            <i class="fas fa-ban"></i> Proposta cancelada pelo comprador
-                        </div>
-                    <?php } ?>
-                </div>
-            </div>
 
             <!-- Indicador de atualização (hidden) -->
             <div id="proposta-indicador" 
@@ -536,6 +446,67 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                 }
             }
             ?>
+
+            <!-- CARD SEMPRE VISÍVEL -->
+            <div class="proposta-card" id="proposta-card">
+                <div class="proposta-header">
+                    <i class="fas fa-handshake"></i>
+                    <h4>Acordo de Compra</h4>
+                    <div class="proposta-status vazio" id="proposta-status">
+                        <!-- Carregado via AJAX -->
+                    </div>
+                </div>
+                
+                <!-- ÁREA DE INFORMAÇÕES (inicialmente vazia) -->
+                <div class="proposta-info" id="proposta-info">
+                    <div class="proposta-placeholder" id="proposta-placeholder">
+                        <i class="fas fa-comments"></i>
+                        <p>Nenhuma proposta ativa no momento</p>
+                    </div>
+                    
+                    <!-- Template para quando houver proposta -->
+                    <div class="proposta-conteudo" id="proposta-conteudo" style="display: none;">
+                        <div class="proposta-item" id="proposta-quantidade">
+                            <span><i class="fas fa-box"></i> Quantidade:</span>
+                            <strong id="quantidade-valor">-</strong>
+                        </div>
+                        
+                        <div class="proposta-item" id="proposta-valor-unitario">
+                            <span><i class="fas fa-tag"></i> Valor Unitário:</span>
+                            <strong id="valor-unitario-valor">-</strong>
+                        </div>
+                        
+                        <div class="proposta-item" id="proposta-frete">
+                            <span><i class="fas fa-truck"></i> Frete:</span>
+                            <strong id="frete-valor">-</strong>
+                        </div>
+                        
+                        <div class="proposta-item" id="proposta-pagamento">
+                            <span><i class="fas fa-credit-card"></i> Pagamento:</span>
+                            <strong id="pagamento-valor">-</strong>
+                        </div>
+                        
+                        <div class="proposta-item total" id="proposta-total">
+                            <span><i class="fas fa-calculator"></i> Valor Total:</span>
+                            <strong id="total-valor">-</strong>
+                        </div>
+                        
+                        <div class="proposta-item" id="proposta-data">
+                            <span><i class="fas fa-calendar"></i> Data:</span>
+                            <small id="data-valor">-</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ÁREA DE AÇÕES (sempre com botão inicial) -->
+                <div class="proposta-acoes" id="proposta-acoes">
+                    <?php if (!$eh_vendedor_produto): ?>
+                    <button type="button" class="btn-nova-proposta" id="btn-nova-proposta">
+                        <i class="fas fa-handshake"></i> Fazer Proposta
+                    </button>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
         
         <div class="chat-area">
@@ -1459,66 +1430,63 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
             return (quantidade * valorUnitario) + valorFrete;
         }
         
-        // No arquivo chat.php, dentro do script, atualize a função enviarNegociacao:
 function enviarNegociacao(dados) {
+    // Verificar se é edição ou nova proposta
+    const isEdicao = propostaAtualId > 0;
+    
     // Mostrar loading
-    btnFinalizarNegociacao.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
-    btnFinalizarNegociacao.disabled = true;
+    const btnFinalizar = document.getElementById('btn-finalizar-negociacao');
+    let originalText = '';
     
-    // Adicionar dados adicionais necessários
-    dados.total = calcularTotal();
-    dados.valor_frete = valorFreteInput.value || '0';
-    
-    // Enviar para o servidor
-    fetch('salvar_negociacao.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dados)
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            // Enviar mensagem automática no chat com os detalhes da negociação
-            const mensagemNegociacao = `NOVA PROPOSTA DE COMPRA\n\n` +
-                `Produto: ${document.querySelector('.produto-info-modal h4').textContent}\n` +
-                `Quantidade: ${dados.quantidade} ${unidadeMedida}\n` +
-                `Valor unitário: R$ ${parseFloat(dados.valor_unitario).toFixed(2).replace('.', ',')}\n` +
-                `Forma de pagamento: ${dados.forma_pagamento === 'pagamento_ato' ? 'Pagamento à Vista' : 'Pagamento na Entrega'}\n` +
-                `Opção de frete: ${obterDescricaoFrete(dados.opcao_frete)}\n` +
-                `Valor do frete: R$ ${parseFloat(dados.valor_frete).toFixed(2).replace('.', ',')}\n` +
-                `Valor total: R$ ${parseFloat(dados.total).toFixed(2).replace('.', ',')}\n\n` +
-                `ID da proposta: ${data.proposta_id}`;
-            
-            // Enviar como mensagem no chat
-            return fetch('send_message.php', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: `conversa_id=${conversaId}&mensagem=${encodeURIComponent(mensagemNegociacao)}`
-            }).then(() => {
-                alert('✅ Proposta enviada com sucesso!');
-                modalNegociacao.classList.remove('active');
-                resetarFormulario();
-                
-                // Recarregar mensagens para mostrar a nova proposta
-                setTimeout(() => carregarMensagens(), 1000);
-            });
-            
-        } else {
-            alert('❌ Erro ao enviar proposta: ' + (data.error || 'Erro desconhecido'));
-        }
-    })
-    .catch(err => {
-        console.error('Erro:', err);
-        alert('❌ Erro de conexão ao enviar proposta.');
-    })
-    .finally(() => {
-        btnFinalizarNegociacao.innerHTML = '<i class="fas fa-check"></i> Finalizar Negociação';
-        btnFinalizarNegociacao.disabled = false;
-    });
-}
+    if (btnFinalizar) {
+        originalText = btnFinalizar.innerHTML;
+        btnFinalizar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+        btnFinalizar.disabled = true;
+        btnFinalizar.classList.add('processando');
         
+        // Adicionar ID da proposta se for edição
+        if (isEdicao) {
+            dados.proposta_id = propostaAtualId;
+        }
+        
+        fetchJSON('salvar_negociacao.php', {
+            method: 'POST',
+            body: JSON.stringify(dados)
+        })
+        .then(data => {
+            if (data.success) {
+                // Fechar modal
+                if (typeof modalNegociacao !== 'undefined') {
+                    modalNegociacao.classList.remove('active');
+                }
+                
+                // Mostrar mensagem de sucesso
+                mostrarNotificacao(
+                    isEdicao ? '✅ Proposta atualizada com sucesso!' : '✅ Proposta enviada com sucesso!', 
+                    'success'
+                );
+                
+                // Recarregar proposta via AJAX
+                carregarProposta(true);
+                
+            } else {
+                throw new Error(data.error || 'Erro desconhecido');
+            }
+        })
+        .catch(err => {
+            console.error('Erro:', err);
+            mostrarNotificacao('❌ Erro: ' + err.message, 'error');
+        })
+        .finally(() => {
+            if (btnFinalizar) {
+                btnFinalizar.innerHTML = originalText;
+                btnFinalizar.disabled = false;
+                btnFinalizar.classList.remove('processando');
+            }
+        });
+    }
+}
+
         function obterDescricaoFrete(opcao) {
             switch(opcao) {
                 case 'frete_vendedor': return 'Frete por conta do vendedor';
@@ -1561,48 +1529,632 @@ function enviarNegociacao(dados) {
         <?php endif; // Fim da verificação se é comprador ?>
 
         // ==================== ATUALIZAÇÃO AUTOMÁTICA DA PROPOSTA ====================
-<?php
-// Buscar a última data de atualização da proposta
-$ultima_data_atualizacao = null;
-if (isset($ultima_proposta['data_atualizacao'])) {
-    $ultima_data_atualizacao = strtotime($ultima_proposta['data_atualizacao']);
-}
-?>
 
-let propostaAtualId = <?php echo $ultima_proposta['ID'] ?? 0; ?>;
-let propostaAtualDataAtualizacao = '<?php echo $ultima_proposta['data_atualizacao'] ?? ''; ?>';
-let propostaAtualStatus = '<?php echo $ultima_proposta['status'] ?? ''; ?>';
 let verificarPropostaInterval;
 
-// Elementos DOM que serão atualizados
-let propostaStatusElement;
-let propostaQuantidadeElement;
-let propostaValorUnitarioElement;
-let propostaFreteElement;
-let propostaPagamentoElement;
-let propostaTotalElement;
-let propostaDataElement;
-let propostaAcoesElement;
+let propostaAtualId = 0;
+let propostaAtualStatus = '';
+let propostaAtualDataAtualizacao = '';
+let carregamentoPropostaEmAndamento = false;
+let ultimaDataAtualizacaoServidor = '';
 
-// Mapeamentos
-const statusTextMap = {
-    'assinando': '📝 Assinando',
-    'aceita': '✅ Aceita',
-    'negociacao': '🔄 Em Negociação',
-    'recusada': '❌ Recusada',
-    'cancelada': '⏹️ Cancelada'
-};
+function carregarProposta(force = false) {
+    if (carregamentoPropostaEmAndamento && !force) return;
+    
+    carregamentoPropostaEmAndamento = true;
+    
+    fetchJSON(`carregar_proposta.php?produto_id=<?php echo $produto_id; ?>`)
+        .then(data => {
+            if (!data.success) {
+                console.error('Erro ao carregar proposta:', data.error);
+                mostrarNotificacao('Erro ao carregar proposta: ' + (data.error || 'Erro desconhecido'), 'error');
+                return;
+            }
+            
+            atualizarCardProposta(data);
+            
+            // Atualizar timestamp da última atualização do servidor
+            if (data.tem_proposta && data.dados?.data_atualizacao) {
+                ultimaDataAtualizacaoServidor = data.dados.data_atualizacao;
+            }
+        })
+        .catch(err => {
+            console.error('Erro na requisição:', err);
+            mostrarNotificacao('Erro de conexão ao carregar proposta', 'error');
+        })
+        .finally(() => {
+            carregamentoPropostaEmAndamento = false;
+        });
+}
 
-const pagamentoTextMap = {
-    'à vista': 'À Vista',
-    'entrega': 'Na Entrega'
-};
+function atualizarCardProposta(data) {
+    const cardStatus = document.getElementById('proposta-status');
+    const cardInfo = document.getElementById('proposta-info');
+    const cardConteudo = document.getElementById('proposta-conteudo');
+    const cardPlaceholder = document.getElementById('proposta-placeholder');
+    const cardAcoes = document.getElementById('proposta-acoes');
+    
+    // Sempre atualizar status
+    if (cardStatus) {
+        cardStatus.innerHTML = data.html_status || '<span class="status-text vazio">📄 Sem proposta</span>';
+        
+        // Adicionar classe baseada no estado
+        if (data.proposta_finalizada) {
+            cardStatus.className = 'proposta-status finalizada ' + (data.dados?.status || '');
+            if (cardInfo) cardInfo.className = 'proposta-info finalizada';
+        } else {
+            cardStatus.className = 'proposta-status ' + (data.dados?.status || 'vazio');
+            if (cardInfo) cardInfo.className = 'proposta-info';
+        }
+    }
+    
+    // Sempre esconder placeholder quando há dados
+    if (cardPlaceholder) {
+        cardPlaceholder.style.display = 'none';
+    }
+    
+    if (!data.tem_proposta) {
+        // SEM PROPOSTA ALGUMA - mostrar placeholder
+        if (cardConteudo) {
+            cardConteudo.style.display = 'none';
+            cardConteudo.innerHTML = '';
+        }
+        if (cardPlaceholder) {
+            cardPlaceholder.style.display = 'block';
+            cardPlaceholder.innerHTML = '<i class="fas fa-comments"></i><p>Nenhuma proposta ativa no momento</p>';
+        }
+        
+    } else {
+        // TEM PROPOSTA (ativa ou finalizada) - SEMPRE mostrar dados
+        const dados = data.dados;
+        
+        // Mostrar conteúdo
+        if (cardConteudo) {
+            cardConteudo.style.display = 'block';
+            cardConteudo.innerHTML = data.html_dados || gerarHTMLDadosProposta(dados);
+            
+            // Adicionar classe para estados finais
+            if (data.proposta_finalizada) {
+                cardConteudo.classList.add('dados-historicos');
+            } else {
+                cardConteudo.classList.remove('dados-historicos');
+            }
+        }
+        
+        // Atualizar variáveis globais
+        propostaAtualId = dados.id;
+        propostaAtualStatus = dados.status;
+        propostaAtualDataAtualizacao = new Date().toISOString();
+        
+        // Armazenar dados da proposta finalizada
+        if (data.proposta_finalizada) {
+            window.propostaFinalizadaDados = dados;
+        }
+    }
+    
+    // Atualizar ações (pode ser vazio se não houver ações disponíveis)
+    if (cardAcoes) {
+        cardAcoes.innerHTML = data.html_acoes || '';
+    }
+    
+    resetarDelegacaoEventos();
 
-const freteTextMap = {
-    'vendedor': 'Vendedor',
-    'comprador': 'Comprador',
-    'entregador': 'Transportador'
-};
+    // Reconfigurar delegação de eventos
+    setTimeout(configurarDelegacaoEventos, 100);
+}
+
+function gerarHTMLDadosProposta(dados) {
+    const classeHistorico = window.propostaFinalizadaDados ? ' dados-historicos' : '';
+    
+    return `
+        <div class="proposta-conteudo${classeHistorico}">
+            <div class="proposta-item" id="proposta-quantidade">
+                <span><i class="fas fa-box"></i> Quantidade:</span>
+                <strong id="quantidade-valor">${dados.quantidade || '-'}</strong>
+            </div>
+            
+            <div class="proposta-item" id="proposta-valor-unitario">
+                <span><i class="fas fa-tag"></i> Valor Unitário:</span>
+                <strong id="valor-unitario-valor">${dados.valor_unitario || '-'}</strong>
+            </div>
+            
+            <div class="proposta-item" id="proposta-frete">
+                <span><i class="fas fa-truck"></i> Frete:</span>
+                <strong id="frete-valor">${dados.frete || '-'}</strong>
+            </div>
+            
+            <div class="proposta-item" id="proposta-pagamento">
+                <span><i class="fas fa-credit-card"></i> Pagamento:</span>
+                <strong id="pagamento-valor">${dados.pagamento || '-'}</strong>
+            </div>
+            
+            <div class="proposta-item total" id="proposta-total">
+                <span><i class="fas fa-calculator"></i> Valor Total:</span>
+                <strong id="total-valor">${dados.total || '-'}</strong>
+            </div>
+            
+            <div class="proposta-item" id="proposta-data">
+                <span><i class="fas fa-calendar"></i> Data:</span>
+                <small id="data-valor">${dados.data || '-'}</small>
+            </div>
+            
+           
+        </div>
+    `;
+}
+
+function reatacharEventosBotoes() {
+    // Botão Editar Proposta
+    const btnEditar = document.querySelector('.btn-editar-proposta');
+    if (btnEditar) {
+        btnEditar.addEventListener('click', function() {
+            const propostaId = this.getAttribute('onclick').match(/\((\d+)\)/)[1];
+            abrirModalEdicao(propostaId);
+        });
+    }
+    
+    // Botão Cancelar Proposta
+    const btnCancelar = document.querySelector('.btn-cancelar-proposta');
+    if (btnCancelar) {
+        btnCancelar.addEventListener('click', function() {
+            const propostaId = this.getAttribute('onclick').match(/\((\d+)\)/)[1];
+            cancelarProposta(propostaId);
+        });
+    }
+    
+    // Botão Aceitar Proposta
+    const btnAceitar = document.querySelector('.btn-aceitar-proposta');
+    if (btnAceitar) {
+        btnAceitar.addEventListener('click', function() {
+            const propostaId = this.getAttribute('onclick').match(/\((\d+)\)/)[1];
+            aceitarPropostaParaAssinatura(propostaId);
+        });
+    }
+    
+    // Botão Recusar Proposta
+    const btnRecusar = document.querySelector('.btn-recusar-proposta');
+    if (btnRecusar) {
+        btnRecusar.addEventListener('click', function() {
+            const propostaId = this.getAttribute('onclick').match(/\((\d+)\)/)[1];
+            responderProposta('recusar', propostaId);
+        });
+    }
+    
+    // Botão Assinar Acordo
+    const btnAssinar = document.querySelector('.btn-assinar-acordo');
+    if (btnAssinar) {
+        btnAssinar.addEventListener('click', function() {
+            const propostaId = this.getAttribute('onclick').match(/\((\d+)\)/)[1];
+            abrirModalAssinatura(propostaId);
+        });
+    }
+}
+
+let delegacaoConfigurada = false;
+
+function configurarDelegacaoEventos() {
+    const cardAcoes = document.getElementById('proposta-acoes');
+    
+    if (!cardAcoes || delegacaoConfigurada) {
+        return;
+    }
+    
+    // Remover event listeners antigos se existirem
+    const novoCardAcoes = cardAcoes.cloneNode(true);
+    cardAcoes.parentNode.replaceChild(novoCardAcoes, cardAcoes);
+    
+    // Obter nova referência
+    const cardAcoesAtual = document.getElementById('proposta-acoes');
+    
+    // Adicionar único event listener com prevenção de múltiplos cliques
+    cardAcoesAtual.addEventListener('click', function(event) {
+        const botao = event.target.closest('button');
+        if (!botao) return;
+        
+        // Prevenir múltiplos cliques rápidos
+        if (botao.classList.contains('processando')) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return;
+        }
+        
+        const propostaId = botao.getAttribute('data-proposta-id');
+        const classeBtn = botao.className;
+        
+        // Determinar ação baseada na classe do botão
+        if (classeBtn.includes('btn-nova-proposta')) {
+            event.preventDefault();
+            event.stopPropagation();
+            abrirModalNegociacao();
+            
+        } else if (classeBtn.includes('btn-editar-proposta')) {
+            event.preventDefault();
+            event.stopPropagation();
+            abrirModalEdicao(propostaId);
+            
+        } else if (classeBtn.includes('btn-cancelar-proposta')) {
+            event.preventDefault();
+            event.stopPropagation();
+            cancelarPropostaConfirmacao(propostaId, event);
+            
+        } else if (classeBtn.includes('btn-aceitar-proposta')) {
+            event.preventDefault();
+            event.stopPropagation();
+            aceitarPropostaConfirmacao(propostaId, event);
+            
+        } else if (classeBtn.includes('btn-recusar-proposta')) {
+            event.preventDefault();
+            event.stopPropagation();
+            recusarPropostaConfirmacao(propostaId, event);
+            
+        } else if (classeBtn.includes('btn-assinar-acordo')) {
+            event.preventDefault();
+            event.stopPropagation();
+            abrirModalAssinatura(propostaId);
+        }
+    });
+    
+    delegacaoConfigurada = true;
+}
+
+function cancelarPropostaConfirmacao(propostaId, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    // Usar SweetAlert2 para confirmações mais robustas
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Cancelar Proposta',
+            text: 'Tem certeza que deseja cancelar esta proposta?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sim, cancelar!',
+            cancelButtonText: 'Não, manter'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                cancelarProposta(propostaId);
+            }
+        });
+    } else {
+        // Fallback para confirm nativo
+        if (confirm('Tem certeza que deseja cancelar esta proposta?')) {
+            cancelarProposta(propostaId);
+        }
+    }
+}
+
+function aceitarPropostaConfirmacao(propostaId, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    const mensagem = 'Ao aceitar esta proposta, ela será enviada para assinatura digital de ambas as partes. Deseja continuar?';
+    
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Aceitar Proposta',
+            text: mensagem,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sim, aceitar!',
+            cancelButtonText: 'Não'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                aceitarPropostaParaAssinatura(propostaId);
+            }
+        });
+    } else {
+        if (confirm(mensagem)) {
+            aceitarPropostaParaAssinatura(propostaId);
+        }
+    }
+}
+
+function recusarPropostaConfirmacao(propostaId, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Recusar Proposta',
+            text: 'Tem certeza que deseja recusar esta proposta?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sim, recusar!',
+            cancelButtonText: 'Não'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                responderProposta('recusar', propostaId);
+            }
+        });
+    } else {
+        if (confirm('Tem certeza que deseja recusar esta proposta?')) {
+            responderProposta('recusar', propostaId);
+        }
+    }
+}
+
+function resetarDelegacaoEventos() {
+    delegacaoConfigurada = false;
+}
+
+function verificarAtualizacoesProposta() {
+    if (!propostaAtualId) return;
+    
+    fetch(`verificar_proposta_v2.php?produto_id=<?php echo $produto_id; ?>&ultima_data=${encodeURIComponent(propostaAtualDataAtualizacao)}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.atualizacao && data.proposta) {
+                // Se é a mesma proposta, apenas recarrega
+                if (data.proposta.ID == propostaAtualId) {
+                    // Forçar recarregamento completo
+                    carregarProposta(true);
+                    
+                    // Atualizar timestamp
+                    propostaAtualDataAtualizacao = new Date().toISOString();
+                } else {
+                    // É uma proposta diferente, recarregar
+                    carregarProposta(true);
+                }
+            }
+        })
+        .catch(err => console.error('Erro ao verificar atualizações:', err));
+}
+
+function cancelarPropostaConfirmacao(propostaId) {
+    if (confirm('Tem certeza que deseja cancelar esta proposta?')) {
+        cancelarProposta(propostaId);
+    }
+}
+
+function aceitarPropostaConfirmacao(propostaId) {
+    if (confirm('Ao aceitar esta proposta, ela será enviada para assinatura digital de ambas as partes. Deseja continuar?')) {
+        aceitarPropostaParaAssinatura(propostaId);
+    }
+}
+
+function recusarPropostaConfirmacao(propostaId) {
+    if (confirm('Tem certeza que deseja recusar esta proposta?')) {
+        responderProposta('recusar', propostaId);
+    }
+}
+
+function verificarAtualizacoesPropostaEficiente() {
+    if (carregamentoPropostaEmAndamento) return;
+    
+    // Usar timestamp do servidor ou data atual
+    const ultimaData = ultimaDataAtualizacaoServidor || propostaAtualDataAtualizacao;
+    
+    fetchJSON(`verificar_atualizacoes_proposta.php?produto_id=<?php echo $produto_id; ?>&ultima_data=${encodeURIComponent(ultimaData)}`)
+        .then(data => {
+            if (data.atualizacao) {
+                // Houve atualização, recarregar proposta
+                carregarProposta(true);
+                
+                // Atualizar timestamp se fornecido pelo servidor
+                if (data.nova_data_atualizacao) {
+                    ultimaDataAtualizacaoServidor = data.nova_data_atualizacao;
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Erro ao verificar atualizações:', err);
+            // Não mostrar notificação para erros de polling
+        });
+}
+
+function abrirModalNegociacao(produtoId, propostaIdExistente = null) {
+    // Resetar modal
+    if (typeof resetarFormulario === 'function') {
+        resetarFormulario();
+    }
+    
+    // Se há proposta existente, podemos pré-carregar dados
+    if (propostaIdExistente && window.propostaFinalizadaDados) {
+        // Aqui você pode implementar lógica para pré-carregar dados
+        // da proposta finalizada se desejar reutilizar
+        console.log('Reutilizando proposta finalizada:', propostaIdExistente);
+    }
+    
+    // Abrir modal
+    if (typeof modalNegociacao !== 'undefined') {
+        modalNegociacao.classList.add('active');
+    }
+}
+
+function buscarDadosPropostaParaEdicao(propostaId) {
+    return fetchJSON(`buscar_dados_proposta.php?id=${propostaId}`)
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.error || 'Erro ao buscar dados da proposta');
+            }
+            return data.dados;
+        });
+}
+
+function buscarInformacoesAssinaturas(propostaId) {
+    return fetchJSON(`buscar_assinaturas.php?proposta_id=${propostaId}`)
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.error || 'Erro ao buscar assinaturas');
+            }
+            return data;
+        });
+}
+
+function abrirModalEdicao(propostaId) {
+    // Primeiro, buscar dados da proposta para preencher o modal
+    fetch(`buscar_dados_proposta.php?id=${propostaId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Preencher modal com dados existentes
+                preencherModalComDados(data.dados);
+                
+                // Abrir modal
+                if (typeof modalNegociacao !== 'undefined') {
+                    modalNegociacao.classList.add('active');
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Erro ao buscar dados da proposta:', err);
+            // Abrir modal vazio
+            if (typeof modalNegociacao !== 'undefined') {
+                modalNegociacao.classList.add('active');
+            }
+        });
+}
+
+function preencherModalComDados(dados) {
+    if (!dados) return;
+    
+    // Preencher campos do modal
+    if (document.getElementById('quantidade')) {
+        document.getElementById('quantidade').value = dados.quantidade_proposta;
+    }
+    
+    if (document.getElementById('valor_unitario')) {
+        document.getElementById('valor_unitario').value = dados.preco_proposto;
+    }
+    
+    // Forma de pagamento
+    const formaPagamentoMap = {
+        'à vista': 'pagamento_ato',
+        'entrega': 'pagamento_entrega'
+    };
+    
+    const formaPagamentoInput = document.querySelector(`input[name="forma_pagamento"][value="${formaPagamentoMap[dados.forma_pagamento] || 'pagamento_ato'}"]`);
+    if (formaPagamentoInput) formaPagamentoInput.checked = true;
+    
+    // Opção de frete
+    const opcaoFreteMap = {
+        'vendedor': 'frete_vendedor',
+        'comprador': 'retirada_comprador',
+        'entregador': 'buscar_transportador'
+    };
+    
+    const opcaoFreteInput = document.querySelector(`input[name="opcao_frete"][value="${opcaoFreteMap[dados.opcao_frete] || 'frete_vendedor'}"]`);
+    if (opcaoFreteInput) opcaoFreteInput.checked = true;
+    
+    // Valor do frete
+    if (document.getElementById('valor_frete')) {
+        document.getElementById('valor_frete').value = dados.valor_frete;
+    }
+    
+    // Atualizar conteúdo dinâmico e resumo
+    if (typeof atualizarConteudoFrete === 'function') atualizarConteudoFrete();
+    if (typeof atualizarResumo === 'function') atualizarResumo();
+}
+
+// Função wrapper para fetch com tratamento robusto de erros
+function fetchJSON(url, options = {}) {
+    // Configurar timeout padrão
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos timeout
+    
+    // Configurar opções padrão
+    const defaultOptions = {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        signal: controller.signal
+    };
+    
+    // Mesclar opções
+    const fetchOptions = {
+        ...defaultOptions,
+        ...options,
+        headers: {
+            ...defaultOptions.headers,
+            ...(options.headers || {})
+        }
+    };
+    
+    return fetch(url, fetchOptions)
+        .then(response => {
+            clearTimeout(timeoutId);
+            
+            // Verificar status HTTP
+            if (!response.ok) {
+                const statusText = response.statusText || 'Erro desconhecido';
+                throw new Error(`HTTP ${response.status}: ${statusText}`);
+            }
+            
+            // Verificar content-type
+            const contentType = response.headers.get('content-type');
+            const isJSON = contentType && contentType.includes('application/json');
+            
+            if (!isJSON) {
+                // Tentar ler como texto para debug
+                return response.text().then(text => {
+                    console.warn('⚠️ Resposta não é JSON, conteúdo recebido:', {
+                        url,
+                        contentType,
+                        preview: text.substring(0, 200),
+                        length: text.length
+                    });
+                    
+                    // Tentar parsear mesmo assim (alguns servidores não enviam header correto)
+                    try {
+                        const parsed = JSON.parse(text);
+                        return parsed;
+                    } catch (parseError) {
+                        console.error('❌ Falha ao parsear resposta como JSON:', parseError);
+                        throw new Error('Resposta do servidor não é JSON válido');
+                    }
+                });
+            }
+            
+            return response.json();
+        })
+        .then(data => {
+            // Verificar se a resposta tem estrutura esperada
+            if (data === null || typeof data !== 'object') {
+                throw new Error('Resposta JSON inválida ou vazia');
+            }
+            
+            return data;
+        })
+        .catch(error => {
+            clearTimeout(timeoutId);
+            
+            // Classificar tipos de erro
+            let errorMessage = 'Erro desconhecido';
+            
+            if (error.name === 'AbortError') {
+                errorMessage = 'Timeout: A requisição demorou muito';
+            } else if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                errorMessage = 'Erro de conexão: Verifique sua internet';
+            } else if (error.name === 'SyntaxError') {
+                errorMessage = 'Erro ao processar resposta do servidor';
+            } else {
+                errorMessage = error.message || 'Erro desconhecido';
+            }
+            
+            console.error('❌ Erro no fetchJSON:', {
+                url,
+                error: errorMessage,
+                originalError: error
+            });
+            
+            // Re-lançar erro com mensagem amigável
+            throw new Error(errorMessage);
+        });
+}
 
 // Inicializar elementos DOM após o carregamento
 function inicializarElementosProposta() {
@@ -1768,53 +2320,44 @@ function atualizarProposta(proposta) {
 }
 
 function responderProposta(acao, propostaId) {
-    if (acao === 'aceitar') {
-        // Usar a nova função para assinatura
-        aceitarPropostaParaAssinatura(propostaId);
-        return;
+    const botao = event ? event.target.closest('button') : null;
+    let textoOriginal = '';
+    
+    if (botao) {
+        botao.classList.add('processando');
+        botao.disabled = true;
+        textoOriginal = botao.innerHTML;
+        botao.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
     }
     
-    if (!confirm(`Tem certeza que deseja ${acao === 'recusar' ? 'recusar' : 'aceitar'} esta proposta?`)) {
-        return;
-    }
-
-    // Encontrar o botão clicado
-    const botao = event.target.closest('button');
-    const textoOriginal = botao.innerHTML;
-    botao.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
-    botao.disabled = true;
-
-    // Enviar requisição
-    fetch('responder_proposta.php', {
+    const acaoMapeada = acao === 'aceitar' ? 'aceitar_para_assinatura' : acao;
+    
+    fetchJSON('responder_proposta.php', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
-            acao: acao,
+            acao: acaoMapeada,
             proposta_id: propostaId
         })
     })
-    .then(res => res.json())
     .then(data => {
         if (data.success) {
             mostrarNotificacao(data.message, 'success');
-            
-            // Buscar os dados atualizados da proposta
-            return buscarPropostaAtualizada(propostaId);
+            // Recarregar proposta via AJAX
+            carregarProposta(true);
         } else {
             throw new Error(data.error || 'Erro desconhecido');
         }
     })
-    .then(propostaAtualizada => {
-        // Atualizar a UI com os novos dados
-        atualizarProposta(propostaAtualizada);
-    })
     .catch(err => {
         console.error('Erro:', err);
-        alert('Erro: ' + err.message);
-        botao.innerHTML = textoOriginal;
-        botao.disabled = false;
+        mostrarNotificacao('❌ Erro: ' + err.message, 'error');
+    })
+    .finally(() => {
+        if (botao) {
+            botao.classList.remove('processando');
+            botao.disabled = false;
+            botao.innerHTML = textoOriginal;
+        }
     });
 }
 
@@ -1826,51 +2369,42 @@ function buscarPropostaAtualizada(propostaId) {
 
 // Função para cancelar proposta (apenas comprador)
 function cancelarProposta(propostaId) {
-    if (!confirm('Tem certeza que deseja cancelar esta proposta?')) {
-        return;
+    const botao = event ? event.target.closest('button') : null;
+    let textoOriginal = '';
+    
+    if (botao) {
+        botao.classList.add('processando');
+        botao.disabled = true;
+        textoOriginal = botao.innerHTML;
+        botao.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelando...';
     }
-
-    const botao = event.target.closest('button');
-    const textoOriginal = botao.innerHTML;
-    botao.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelando...';
-    botao.disabled = true;
-
-    // Enviar requisição para cancelar
-    fetch('responder_proposta.php', {
+    
+    fetchJSON('responder_proposta.php', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
             acao: 'cancelar',
             proposta_id: propostaId
         })
     })
-    .then(res => res.json())
     .then(data => {
         if (data.success) {
-            // Mostrar mensagem de sucesso
             mostrarNotificacao('Proposta cancelada com sucesso!', 'success');
-            
-            // Atualizar o status da proposta para "cancelada"
-            // Em vez de remover o card, apenas atualizar o status
-            if (propostaAtualId === propostaId) {
-                // Atualizar o status localmente
-                propostaAtualStatus = 'cancelada';
-                // Chamar função para atualizar a UI
-                atualizarStatusProposta('cancelada');
-            }
+            // Recarregar proposta via AJAX
+            carregarProposta(true);
         } else {
-            alert('Erro: ' + data.error);
-            botao.innerHTML = textoOriginal;
-            botao.disabled = false;
+            throw new Error(data.error || 'Erro desconhecido');
         }
     })
     .catch(err => {
         console.error('Erro:', err);
-        alert('Erro de conexão. Tente novamente.');
-        botao.innerHTML = textoOriginal;
-        botao.disabled = false;
+        mostrarNotificacao('❌ Erro: ' + err.message, 'error');
+    })
+    .finally(() => {
+        if (botao) {
+            botao.classList.remove('processando');
+            botao.disabled = false;
+            botao.innerHTML = textoOriginal;
+        }
     });
 }
 
@@ -2111,13 +2645,14 @@ document.head.appendChild(buttonStyles);
 
 // Inicializar quando o DOM estiver carregado
 document.addEventListener('DOMContentLoaded', function() {
-    inicializarElementosProposta();
-    verificarExibicaoBotaoSidebar();
-
-    // Iniciar verificação periódica se houver conversa
-    if (conversaId) {
-        verificarPropostaInterval = setInterval(verificarNovaProposta, 3000);
-    }
+    // Carregar proposta inicial
+    carregarProposta();
+    
+    // Configurar delegação de eventos uma vez
+    configurarDelegacaoEventos();
+    
+    // Verificar atualizações a cada 2 segundos
+    setInterval(verificarAtualizacoesPropostaEficiente, 2000);
 });
 
 // Parar verificação quando a página for fechada
@@ -2468,19 +3003,16 @@ function atualizarStatusAssinaturas(assinaturas, outroUsuarioNome) {
 
 function confirmarAssinatura() {
     if (!propostaParaAssinar) {
-        alert('Erro: Proposta não encontrada.');
+        mostrarNotificacao('Erro: Proposta não encontrada.', 'error');
         return;
     }
     
-    // Verificação simples: verificar se houve algum desenho
-    // Pegando uma amostra de pixels
+    // Verificação de assinatura...
     const ctx = canvas.getContext('2d');
     const imageData = ctx.getImageData(canvas.width/2 - 50, canvas.height/2 - 25, 100, 50).data;
     
     let hasSignature = false;
     for (let i = 0; i < imageData.length; i += 4) {
-        // Se encontrar algum pixel não branco (R, G, ou B diferente de 255)
-        // ou não totalmente transparente (A diferente de 0)
         if (imageData[i] < 250 || imageData[i + 1] < 250 || imageData[i + 2] < 250 || imageData[i + 3] > 10) {
             hasSignature = true;
             break;
@@ -2488,131 +3020,105 @@ function confirmarAssinatura() {
     }
     
     if (!hasSignature) {
-        alert('Por favor, desenhe sua assinatura no quadro antes de confirmar.');
+        mostrarNotificacao('Por favor, desenhe sua assinatura no quadro antes de confirmar.', 'warning');
         return;
     }
     
     // Mostrar loading
-    const btn = event.target;
+    const btn = document.getElementById('confirmar-assinatura');
     const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
     btn.disabled = true;
+    btn.classList.add('processando');
     
     // Converter para base64
     const signatureData = canvas.toDataURL('image/png');
     const base64Image = signatureData.split(',')[1];
     
-    // Enviar para o servidor
-    fetch('salvar_assinatura.php', {
+    // Enviar para o servidor usando fetchJSON
+    fetchJSON('salvar_assinatura.php', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
             proposta_id: propostaParaAssinar,
             assinatura_imagem: base64Image
         })
     })
-    .then(async response => {
-        const text = await response.text();
-        console.log('Resposta:', text);
-        
-        try {
-            const data = JSON.parse(text);
+    .then(data => {
+        if (data.success) {
+            if (data.ambas_assinadas) {
+                mostrarNotificacao('🎉 Acordo assinado por todas as partes!', 'success');
+            } else {
+                mostrarNotificacao('✅ Sua assinatura foi registrada! Aguarde a outra parte.', 'success');
+            }
             
-            if (data.success) {
-                // Sucesso
-                if (data.ambas_assinadas) {
-                    mostrarNotificacao('🎉 Acordo assinado por ambas as partes! Proposta aceita.', 'success');
-                } else {
-                    mostrarNotificacao('✅ Sua assinatura foi registrada! Aguarde a outra parte.', 'success');
-                }
-                
-                fecharModalAssinatura();
-                
-                // Pequeno delay para o usuário ver a mensagem
-                setTimeout(() => {
-                    location.reload();
-                }, 1500);
-                
-            } else {
-                // Erro do servidor
-                throw new Error(data.error || 'Erro desconhecido');
-            }
-        } catch (e) {
-            if (text.includes('success') || text.includes('assinatura')) {
-                // Se parece ser um JSON mas não foi parseado corretamente
-                mostrarNotificacao('Assinatura salva!', 'success');
-                fecharModalAssinatura();
-                setTimeout(() => location.reload(), 1500);
-            } else {
-                throw new Error('Resposta inválida do servidor: ' + text.substring(0, 50));
-            }
+            fecharModalAssinatura();
+            
+            // Recarregar proposta via AJAX
+            setTimeout(() => {
+                carregarProposta(true);
+            }, 1000);
+            
+        } else {
+            throw new Error(data.error || 'Erro desconhecido');
         }
     })
-    .catch(error => {
-        console.error('Erro:', error);
+    .catch(err => {
+        console.error('Erro na assinatura:', err);
         
         // Verificar se foi um erro de rede ou de servidor
-        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-            alert('Erro de conexão. Verifique sua internet e tente novamente.');
+        if (err.message.includes('Timeout') || err.message.includes('conexão')) {
+            mostrarNotificacao('Erro de conexão. Verifique sua internet e tente novamente.', 'error');
         } else {
-            alert('Erro: ' + error.message);
+            mostrarNotificacao('Erro: ' + err.message, 'error');
         }
-        
-        // Restaurar botão
-        const btn = document.getElementById('confirmar-assinatura');
+    })
+    .finally(() => {
         if (btn) {
             btn.innerHTML = originalText;
             btn.disabled = false;
+            btn.classList.remove('processando');
         }
     });
 }
 
 // Nova função para aceitar proposta e enviar para assinatura
 function aceitarPropostaParaAssinatura(propostaId) {
-    if (!confirm('Ao aceitar esta proposta, ela será enviada para assinatura digital de ambas as partes. Deseja continuar?')) {
-        return;
+    const botao = event ? event.target.closest('button') : null;
+    let textoOriginal = '';
+    
+    if (botao) {
+        botao.classList.add('processando');
+        botao.disabled = true;
+        textoOriginal = botao.innerHTML;
+        botao.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
     }
-
-    // Encontrar o botão clicado
-    const botao = event.target.closest('button');
-    const textoOriginal = botao.innerHTML;
-    botao.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
-    botao.disabled = true;
-
-    // Enviar requisição para mudar status para 'assinando'
-    fetch('responder_proposta.php', {
+    
+    fetchJSON('responder_proposta.php', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
             acao: 'aceitar_para_assinatura',
             proposta_id: propostaId
         })
     })
-    .then(res => res.json())
     .then(data => {
         if (data.success) {
-            mostrarNotificacao('Proposta aceita! Aguarde as assinaturas para concluir.', 'success');
-            
-            // Recarregar a página para atualizar interface
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-            
+            mostrarNotificacao(data.message, 'success');
+            // Recarregar proposta via AJAX
+            carregarProposta(true);
         } else {
-            alert('Erro: ' + data.error);
-            botao.innerHTML = textoOriginal;
-            botao.disabled = false;
+            throw new Error(data.error || 'Erro desconhecido');
         }
     })
     .catch(err => {
         console.error('Erro:', err);
-        alert('Erro de conexão. Tente novamente.');
-        botao.innerHTML = textoOriginal;
-        botao.disabled = false;
+        mostrarNotificacao('❌ Erro: ' + err.message, 'error');
+    })
+    .finally(() => {
+        if (botao) {
+            botao.classList.remove('processando');
+            botao.disabled = false;
+            botao.innerHTML = textoOriginal;
+        }
     });
 }
 

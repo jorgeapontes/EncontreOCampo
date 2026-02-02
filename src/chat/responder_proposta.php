@@ -1,11 +1,20 @@
 <?php
 // src/chat/responder_proposta.php
+error_reporting(0);
+ini_set('display_errors', 0);
+
 session_start();
 require_once __DIR__ . '/../conexao.php';
+require_once 'enviar_mensagem_automatica.php';
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
-// Verificar se está logado
+ob_start();
+
+
+try {
+
+    // Verificar se está logado
 if (!isset($_SESSION['usuario_id']) || !isset($_SESSION['usuario_tipo'])) {
     echo json_encode(['success' => false, 'error' => 'Não autenticado']);
     exit();
@@ -13,7 +22,16 @@ if (!isset($_SESSION['usuario_id']) || !isset($_SESSION['usuario_tipo'])) {
 
 // Ler dados JSON
 $json = file_get_contents('php://input');
+
+if (empty($json)) {
+        throw new Exception('Nenhum dado recebido');
+    }
+
 $dados = json_decode($json, true);
+
+if (!$dados || json_last_error() !== JSON_ERROR_NONE) {
+        throw new Exception('JSON inválido: ' . json_last_error_msg());
+    }
 
 if (!$dados || !isset($dados['acao']) || !isset($dados['proposta_id'])) {
     echo json_encode(['success' => false, 'error' => 'Dados inválidos']);
@@ -28,7 +46,7 @@ $proposta_id = (int)$dados['proposta_id'];
 $database = new Database();
 $conn = $database->getConnection();
 
-try {
+
     $conn->beginTransaction();
     
     // Buscar informações da proposta
@@ -127,8 +145,76 @@ try {
         $stmt_restaurar->execute();
     }
     
+    $sql_update_timestamp = "UPDATE propostas SET data_atualizacao = NOW() WHERE ID = :proposta_id";
+    $stmt_timestamp = $conn->prepare($sql_update_timestamp);
+    $stmt_timestamp->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
+    $stmt_timestamp->execute();
+
+    // Buscar dados atualizados
+    $sql_novos_dados = "SELECT data_atualizacao FROM propostas WHERE ID = :proposta_id";
+    $stmt_novos = $conn->prepare($sql_novos_dados);
+    $stmt_novos->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
+    $stmt_novos->execute();
+    $dados_atualizados = $stmt_novos->fetch(PDO::FETCH_ASSOC);
+
+    // Buscar mais informações da proposta para a mensagem
+    $sql_proposta_detalhes = "SELECT p.*, prod.nome as produto_nome,
+                            u_comp.nome as comprador_nome,
+                            u_vend.nome as vendedor_nome
+                            FROM propostas p
+                            JOIN produtos prod ON p.produto_id = prod.id
+                            JOIN usuarios u_comp ON p.comprador_id = u_comp.id
+                            JOIN usuarios u_vend ON p.vendedor_id = u_vend.id
+                            WHERE p.ID = :proposta_id";
+
+    $stmt_detalhes = $conn->prepare($sql_proposta_detalhes);
+    $stmt_detalhes->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
+    $stmt_detalhes->execute();
+    $proposta_detalhes = $stmt_detalhes->fetch(PDO::FETCH_ASSOC);
+
+    // Determinar unidade de medida
+    $modo = 'por_unidade'; // Você precisa buscar do produto
+    $unidade_medida = 'unidade';
+
+    if ($acao === 'cancelar') {
+        $detalhes_mensagem = [
+            'usuario_nome' => $_SESSION['usuario_nome'] ?? 'Usuário'
+        ];
+        
+        enviarNotificacaoAcao(
+            $proposta_detalhes['produto_id'],
+            $proposta_detalhes['comprador_id'],
+            $proposta_detalhes['vendedor_id'],
+            'proposta_cancelada',
+            $detalhes_mensagem,
+            $usuario_id
+        );
+        
+    } elseif ($acao === 'aceitar_para_assinatura') {
+        enviarNotificacaoAcao(
+            $proposta_detalhes['produto_id'],
+            $proposta_detalhes['comprador_id'],
+            $proposta_detalhes['vendedor_id'],
+            'proposta_aceita_assinatura',
+            [],
+            $usuario_id
+        );
+        
+    } elseif ($acao === 'recusar') {
+        enviarNotificacaoAcao(
+            $proposta_detalhes['produto_id'],
+            $proposta_detalhes['comprador_id'],
+            $proposta_detalhes['vendedor_id'],
+            'proposta_recusada',
+            [],
+            $usuario_id
+        );
+    }
+
     $conn->commit();
     
+    ob_clean();
+
     echo json_encode([
         'success' => true,
         'message' => "Proposta {$mensagem_acao} com sucesso",
@@ -136,10 +222,20 @@ try {
     ]);
     
 } catch (Exception $e) {
-    $conn->rollBack();
+    // Reverter se houver transação
+    if (isset($conn) && $conn->inTransaction()) {
+        $conn->rollBack();
+    }
+    
+    // Limpar buffer
+    ob_clean();
+    
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage()
     ]);
 }
+
+ob_end_flush();
+exit();
 ?>

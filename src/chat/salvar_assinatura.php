@@ -1,33 +1,40 @@
 <?php
 // src/chat/salvar_assinatura.php
+
+error_reporting(0);
+ini_set('display_errors', 0);
+
 session_start();
 require_once __DIR__ . '/../conexao.php';
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
-// Verificar se está logado
-if (!isset($_SESSION['usuario_id'])) {
-    echo json_encode(['success' => false, 'error' => 'Não autenticado']);
-    exit();
-}
-
-// Ler dados JSON
-$json = file_get_contents('php://input');
-$dados = json_decode($json, true);
-
-if (!$dados || !isset($dados['proposta_id']) || !isset($dados['assinatura_imagem'])) {
-    echo json_encode(['success' => false, 'error' => 'Dados inválidos']);
-    exit();
-}
-
-$usuario_id = $_SESSION['usuario_id'];
-$proposta_id = (int)$dados['proposta_id'];
-$assinatura_imagem = $dados['assinatura_imagem'];
-
-$database = new Database();
-$conn = $database->getConnection();
+ob_start();
 
 try {
+
+    // Verificar se está logado
+    if (!isset($_SESSION['usuario_id'])) {
+        echo json_encode(['success' => false, 'error' => 'Não autenticado']);
+        exit();
+    }
+
+    // Ler dados JSON
+    $json = file_get_contents('php://input');
+    $dados = json_decode($json, true);
+
+    if (!$dados || !isset($dados['proposta_id']) || !isset($dados['assinatura_imagem'])) {
+        echo json_encode(['success' => false, 'error' => 'Dados inválidos']);
+        exit();
+    }
+
+    $usuario_id = $_SESSION['usuario_id'];
+    $proposta_id = (int)$dados['proposta_id'];
+    $assinatura_imagem = $dados['assinatura_imagem'];
+
+    $database = new Database();
+    $conn = $database->getConnection();
+
     $conn->beginTransaction();
     
     // 1. Verificar se a proposta existe e está no status 'assinando'
@@ -196,6 +203,8 @@ try {
     }
     
     $conn->commit();
+
+    ob_clean();
     
     echo json_encode([
         'success' => true,
@@ -207,10 +216,18 @@ try {
     ]);
     
 } catch (Exception $e) {
-    $conn->rollBack();
+    if (isset($conn) && $conn->inTransaction()) {
+        $conn->rollBack();
+    }
+    
+    ob_clean();
+    
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage()
     ]);
 }
+
+ob_end_flush();
+exit();
 ?>

@@ -1,8 +1,13 @@
 <?php
+
+error_reporting(0);
+ini_set('display_errors', 0);
+
 session_start();
 require_once __DIR__ . '/../conexao.php';
+require_once 'enviar_mensagem_automatica.php';
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
 // Verificar se está logado
 if (!isset($_SESSION['usuario_id'])) {
@@ -16,6 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
+ob_start();
+
 // Ler dados JSON
 $json = file_get_contents('php://input');
 $dados = json_decode($json, true);
@@ -25,20 +32,34 @@ if (!$dados) {
     exit();
 }
 
-// Validar dados obrigatórios
-$camposObrigatorios = ['produto_id', 'conversa_id', 'quantidade', 'valor_unitario', 'forma_pagamento', 'opcao_frete'];
-foreach ($camposObrigatorios as $campo) {
-    if (!isset($dados[$campo]) || empty($dados[$campo])) {
-        echo json_encode(['success' => false, 'error' => "Campo obrigatório faltando: {$campo}"]);
-        exit();
-    }
-}
-
-$usuario_id = $_SESSION['usuario_id'];
-$database = new Database();
-$conn = $database->getConnection();
-
 try {
+
+    $json = file_get_contents('php://input');
+    
+    if (empty($json)) {
+        throw new Exception('Nenhum dado recebido');
+    }
+    
+    $dados = json_decode($json, true);
+    
+    if (!$dados || json_last_error() !== JSON_ERROR_NONE) {
+        throw new Exception('JSON inválido: ' . json_last_error_msg());
+    }
+
+    // Validar dados obrigatórios
+    $camposObrigatorios = ['produto_id', 'conversa_id', 'quantidade', 'valor_unitario', 'forma_pagamento', 'opcao_frete'];
+    foreach ($camposObrigatorios as $campo) {
+        if (!isset($dados[$campo]) || empty($dados[$campo])) {
+            echo json_encode(['success' => false, 'error' => "Campo obrigatório faltando: {$campo}"]);
+            exit();
+        }
+    }
+
+    $usuario_id = $_SESSION['usuario_id'];
+    $database = new Database();
+    $conn = $database->getConnection();
+
+
     $conn->beginTransaction();
     
     // 1. Verificar se o usuário NÃO é o vendedor do produto
@@ -224,9 +245,46 @@ try {
     $stmt_not->bindParam(':mensagem', $mensagem);
     $stmt_not->bindParam(':url', $url);
     $stmt_not->execute();
-    
+
+    $sql_update_data = "UPDATE propostas SET data_atualizacao = NOW() WHERE ID = :proposta_id";
+    $stmt_update = $conn->prepare($sql_update_data);
+    $stmt_update->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
+    $stmt_update->execute();
+
+    $detalhes_mensagem = [
+        'produto_nome' => $produto_info['nome'] ?? 'Produto',
+        'quantidade' => $quantidade_proposta,
+        'unidade_medida' => $unidade_medida_notif,
+        'valor_unitario' => number_format($preco_proposto, 2, ',', '.'),
+        'forma_pagamento' => $forma_pagamento == 'à vista' ? 'À Vista' : 'Na Entrega',
+        'opcao_frete' => $opcao_frete == 'vendedor' ? 'Frete por conta do vendedor' : 
+                        ($opcao_frete == 'comprador' ? 'Retirada pelo comprador' : 'Buscar transportador'),
+        'valor_frete' => number_format($valor_frete, 2, ',', '.'),
+        'valor_total' => number_format($valor_total, 2, ',', '.')
+    ];
+
+    $acao_mensagem = $acao === 'enviada' ? 'proposta_enviada' : 'proposta_editada';
+
+    enviarNotificacaoAcao(
+        $produto_id,
+        $comprador_id,
+        $vendedor_id,
+        $acao_mensagem,
+        $detalhes_mensagem,
+        $comprador_id // Remetente é o comprador
+    );
+
+    // Retornar dados atualizados
+    $sql_dados_atualizados = "SELECT * FROM propostas WHERE ID = :proposta_id";
+    $stmt_dados = $conn->prepare($sql_dados_atualizados);
+    $stmt_dados->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
+    $stmt_dados->execute();
+    $proposta_atualizada = $stmt_dados->fetch(PDO::FETCH_ASSOC);
+
     $conn->commit();
     
+    ob_clean();
+
     echo json_encode([
         'success' => true,
         'message' => 'Proposta ' . $acao . ' com sucesso',
@@ -235,10 +293,21 @@ try {
     ]);
     
 } catch (Exception $e) {
-    $conn->rollBack();
+    // Reverter transação se houver
+    if (isset($conn) && $conn->inTransaction()) {
+        $conn->rollBack();
+    }
+    
+    // Limpar buffer
+    ob_clean();
+    
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage()
     ]);
 }
+
+// Limpar buffer final
+ob_end_flush();
+exit();
 ?>

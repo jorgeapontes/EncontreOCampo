@@ -2,6 +2,7 @@
 // src/transportador/enviar_proposta_frete.php
 require_once __DIR__ . '/../permissions.php';
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/../../includes/send_notification.php';
 
 // Verificar se é transportador
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'transportador') {
@@ -28,7 +29,10 @@ $db = $database->getConnection();
 
 try {
     // Buscar transportador_id
-    $sql_transportador = "SELECT id FROM transportadores WHERE usuario_id = :usuario_id";
+    $sql_transportador = "SELECT t.id, t.nome_comercial, u.email as transportador_email 
+                          FROM transportadores t 
+                          INNER JOIN usuarios u ON t.usuario_id = u.id 
+                          WHERE t.usuario_id = :usuario_id";
     $stmt_transportador = $db->prepare($sql_transportador);
     $stmt_transportador->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
     $stmt_transportador->execute();
@@ -40,11 +44,20 @@ try {
     }
     
     $transportador_id = $transportador['id'];
+    $transportador_nome = $transportador['nome_comercial'];
     
     // Verificar se a proposta existe e precisa de transportador
-    $sql_verifica = "SELECT p.*, pr.nome as produto_nome 
+    $sql_verifica = "SELECT p.*, 
+                            pr.nome as produto_nome, 
+                            uc.email as comprador_email, 
+                            uc.nome as comprador_nome,
+                            uv.email as vendedor_email,
+                            uv.nome as vendedor_nome
                      FROM propostas p 
                      INNER JOIN produtos pr ON p.produto_id = pr.id
+                     INNER JOIN usuarios uc ON p.comprador_id = uc.id
+                     INNER JOIN vendedores v ON pr.vendedor_id = v.id
+                     INNER JOIN usuarios uv ON v.usuario_id = uv.id
                      WHERE p.ID = :proposta_id 
                      AND p.opcao_frete = 'entregador' 
                      AND p.status = 'aceita'";
@@ -59,7 +72,7 @@ try {
     }
     
     // Verificar se já enviou proposta para este pedido
-    $sql_check = "SELECT id FROM propostas_frete_transportador 
+    $sql_check = "SELECT id FROM propostas_transportadores 
                   WHERE proposta_id = :proposta_id 
                   AND transportador_id = :transportador_id";
     $stmt_check = $db->prepare($sql_check);
@@ -73,8 +86,8 @@ try {
     }
     
     // Inserir proposta de frete
-    $sql_insert = "INSERT INTO propostas_frete_transportador 
-                   (proposta_id, transportador_id, valor_frete, status, data_envio) 
+    $sql_insert = "INSERT INTO propostas_transportadores 
+                   (proposta_id, transportador_id, valor_frete, status, data_criacao) 
                    VALUES (:proposta_id, :transportador_id, :valor_frete, 'pendente', NOW())";
     $stmt_insert = $db->prepare($sql_insert);
     $stmt_insert->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
@@ -92,6 +105,32 @@ try {
     $stmt_notif->bindParam(':mensagem', $mensagem);
     $stmt_notif->bindParam(':url', $url);
     $stmt_notif->execute();
+    
+    // NOTIFICAÇÃO POR EMAIL para o COMPRADOR
+    if (!empty($proposta['comprador_email'])) {
+        $assunto = "🚚 Nova Proposta de Frete Recebida";
+        $conteudo = "O transportador <strong>{$transportador_nome}</strong> enviou uma proposta de frete para seu pedido do produto '{$proposta['produto_nome']}' no valor de <strong>R$ " . number_format($valor_frete, 2, ',', '.') . "</strong>. Acesse a plataforma para avaliar a proposta.";
+        
+        enviarEmailNotificacao(
+            $proposta['comprador_email'],
+            $proposta['comprador_nome'],
+            $assunto,
+            $conteudo
+        );
+    }
+    
+    // NOTIFICAÇÃO POR EMAIL para o VENDEDOR
+    if (!empty($proposta['vendedor_email'])) {
+        $assunto_vendedor = "📦 Nova Proposta de Frete para seu Produto";
+        $conteudo_vendedor = "O transportador <strong>{$transportador_nome}</strong> enviou uma proposta de frete para o produto '{$proposta['produto_nome']}' que você vendeu, no valor de <strong>R$ " . number_format($valor_frete, 2, ',', '.') . "</strong>. O comprador será notificado para avaliar a proposta.";
+        
+        enviarEmailNotificacao(
+            $proposta['vendedor_email'],
+            $proposta['vendedor_nome'],
+            $assunto_vendedor,
+            $conteudo_vendedor
+        );
+    }
     
     header("Location: dashboard.php?sucesso=1");
     exit();

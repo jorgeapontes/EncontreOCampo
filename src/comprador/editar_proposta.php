@@ -2,6 +2,7 @@
 // src/comprador/editar_proposta.php
 
 session_start();
+require_once __DIR__ . '/../../includes/send_notification.php';
 require_once __DIR__ . '/../conexao.php';
 
 // 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA
@@ -37,7 +38,8 @@ try {
                 p.embalagem_peso_kg,
                 p.embalagem_unidades,
                 p.unidade_medida,
-                pv.condicoes_venda
+                pv.condicoes_venda,
+                c.id AS comprador_id
             FROM propostas_negociacao pn
             JOIN propostas_comprador pc ON pn.proposta_comprador_id = pc.id
             LEFT JOIN propostas_vendedor pv ON pn.proposta_vendedor_id = pv.id
@@ -100,6 +102,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erro = "Quantidade deve ser maior que zero.";
     } else {
         try {
+            // Buscar informações do vendedor para notificação
+            $sqlVendedorInfo = "SELECT u.nome, u.email FROM usuarios u 
+                               JOIN produtos p ON u.id = p.vendedor_id
+                               WHERE p.id = :produto_id";
+            $stmtVendedorInfo = $conn->prepare($sqlVendedorInfo);
+            $stmtVendedorInfo->bindParam(':produto_id', $proposta['produto_id']);
+            $stmtVendedorInfo->execute();
+            $vendedorInfo = $stmtVendedorInfo->fetch(PDO::FETCH_ASSOC);
+            
+            // Buscar informações do comprador
+            $sqlCompradorInfo = "SELECT u.nome, u.email FROM usuarios u 
+                                JOIN compradores c ON u.id = c.usuario_id
+                                WHERE c.id = :comprador_id";
+            $stmtCompradorInfo = $conn->prepare($sqlCompradorInfo);
+            $stmtCompradorInfo->bindParam(':comprador_id', $proposta['comprador_id']);
+            $stmtCompradorInfo->execute();
+            $compradorInfo = $stmtCompradorInfo->fetch(PDO::FETCH_ASSOC);
+            
             // Atualizar a proposta do comprador
             $sql_update = "UPDATE propostas_comprador 
                           SET preco_proposto = :preco, 
@@ -113,6 +133,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt_update->bindParam(':condicoes', $condicoes);
             $stmt_update->bindParam(':proposta_comprador_id', $proposta['id']);
             $stmt_update->execute();
+            
+            // Enviar notificação para o vendedor
+            if ($vendedorInfo && isset($vendedorInfo['email']) && $compradorInfo && isset($compradorInfo['email'])) {
+                enviarEmailNotificacao(
+                    $vendedorInfo['email'],
+                    $vendedorInfo['nome'],
+                    'Proposta Editada - ' . htmlspecialchars($proposta['produto_nome']),
+                    'O comprador ' . $compradorInfo['nome'] . ' editou sua proposta para o produto ' . 
+                    htmlspecialchars($proposta['produto_nome']) . '. Novo preço: R$ ' . 
+                    number_format($preco_proposto, 2, ',', '.') . ', Quantidade: ' . $quantidade
+                );
+            }
             
             header("Location: minhas_propostas.php?sucesso=" . urlencode("Proposta atualizada com sucesso!"));
             exit();

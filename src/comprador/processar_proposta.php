@@ -11,6 +11,7 @@ error_log("Usuario ID na SESSION: " . (isset($_SESSION['usuario_id']) ? $_SESSIO
 error_log("POST data: " . print_r($_POST, true));
 
 require_once __DIR__ . '/../conexao.php'; 
+require_once __DIR__ . '/../../includes/send_notification.php';
 
 // Função para redirecionar com mensagem
 function redirecionar($tipo, $mensagem, $anuncio_id = null) {

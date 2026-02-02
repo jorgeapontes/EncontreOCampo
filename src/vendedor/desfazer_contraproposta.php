@@ -3,6 +3,7 @@
 
 session_start();
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/../../includes/send_notification.php';
 
 function redirecionar($id, $tipo, $mensagem) {
     header("Location: detalhes_proposta.php?id=" . $id . "&" . $tipo . "=" . urlencode($mensagem));
@@ -32,11 +33,23 @@ try {
                     pn.produto_id,
                     pn.proposta_comprador_id,
                     pc.status AS status_comprador,
-                    p.vendedor_id
+                    p.vendedor_id,
+                    pc.comprador_id,
+                    p.nome AS produto_nome,
+                    c.usuario_id AS comprador_usuario_id,
+                    uc.email AS comprador_email,
+                    uc.nome AS comprador_nome,
+                    v.usuario_id AS vendedor_usuario_id,
+                    uv.email AS vendedor_email,
+                    uv.nome AS vendedor_nome
                   FROM propostas_vendedor pv
                   JOIN propostas_negociacao pn ON pv.proposta_comprador_id = pn.proposta_comprador_id
                   JOIN propostas_comprador pc ON pn.proposta_comprador_id = pc.id
                   JOIN produtos p ON pn.produto_id = p.id
+                  JOIN compradores c ON pc.comprador_id = c.id
+                  JOIN usuarios uc ON c.usuario_id = uc.id
+                  JOIN vendedores v ON p.vendedor_id = v.id
+                  JOIN usuarios uv ON v.usuario_id = uv.id
                   WHERE pv.proposta_comprador_id = :proposta_comprador_id 
                   AND p.vendedor_id = (SELECT id FROM vendedores WHERE usuario_id = :usuario_id)
                   LIMIT 1";
@@ -55,6 +68,13 @@ try {
     $proposta_vendedor_id = $dados['proposta_vendedor_id'];
     $negociacao_id = $dados['negociacao_id'];
     $produto_id = $dados['produto_id'];
+    $comprador_usuario_id = $dados['comprador_usuario_id'];
+    $comprador_email = $dados['comprador_email'];
+    $comprador_nome = $dados['comprador_nome'];
+    $vendedor_usuario_id = $dados['vendedor_usuario_id'];
+    $vendedor_email = $dados['vendedor_email'];
+    $vendedor_nome = $dados['vendedor_nome'];
+    $produto_nome = $dados['produto_nome'];
     
     // Iniciar transação
     $conn->beginTransaction();
@@ -122,6 +142,41 @@ try {
         }
         
         $conn->commit();
+        
+        // NOTIFICAÇÃO POR EMAIL
+        // Notificar o comprador
+        if ($comprador_email) {
+            $subject = "Contraproposta Cancelada - Encontre o Campo";
+            $message = "Olá " . htmlspecialchars($comprador_nome) . ",\n\n";
+            $message .= "A contraproposta feita pelo vendedor para o produto '" . htmlspecialchars($produto_nome) . "' foi cancelada.\n\n";
+            $message .= "Detalhes:\n";
+            $message .= "- Produto: " . htmlspecialchars($produto_nome) . "\n";
+            $message .= "- Vendedor: " . htmlspecialchars($vendedor_nome) . "\n";
+            $message .= "- Ação: Contraproposta cancelada/desfeita\n";
+            $message .= "- Data: " . date('d/m/Y H:i') . "\n\n";
+            $message .= "Sua proposta original agora está novamente em análise pelo vendedor.\n";
+            $message .= "Acesse o sistema para acompanhar a negociação.\n\n";
+            $message .= "Atenciosamente,\nEquipe Encontre o Campo";
+            
+            enviarEmailNotificacao($comprador_email, $comprador_nome, $subject, $message);
+        }
+        
+        // Notificar o vendedor (quem executou a ação)
+        if ($vendedor_email) {
+            $subject = "Contraproposta Desfeita - Encontre o Campo";
+            $message = "Olá " . htmlspecialchars($vendedor_nome) . ",\n\n";
+            $message .= "Você desfez uma contraproposta com sucesso.\n\n";
+            $message .= "Detalhes:\n";
+            $message .= "- Produto: " . htmlspecialchars($produto_nome) . "\n";
+            $message .= "- Comprador: " . htmlspecialchars($comprador_nome) . "\n";
+            $message .= "- Ação: Contraproposta desfeita\n";
+            $message .= "- Data: " . date('d/m/Y H:i') . "\n\n";
+            $message .= "A proposta do comprador voltou ao estado inicial de 'enviada'.\n";
+            $message .= "Você pode analisá-la novamente e tomar uma nova decisão.\n\n";
+            $message .= "Atenciosamente,\nEquipe Encontre o Campo";
+            
+            enviarEmailNotificacao($vendedor_email, $vendedor_nome, $subject, $message);
+        }
         
         redirecionar($proposta_comprador_id, 'sucesso', "Contraproposta desfeita com sucesso! A proposta voltou ao estado inicial.");
         

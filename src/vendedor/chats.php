@@ -23,6 +23,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 $sql = null;
                 $acao_log = '';
+                $notificar_outro_usuario = false;
+                $outro_usuario_id = null;
+                $outro_usuario_email = null;
+                $outro_usuario_nome = null;
+                $produto_id = null;
+                $produto_nome = null;
+
+                // Buscar informações da conversa para notificação
+                if ($tipo_chat === 'vendedor') {
+                    // Como vendedor, notificar o comprador
+                    $sql_info = "SELECT 
+                        cc.produto_id,
+                        cc.comprador_id as outro_usuario_id,
+                        u.email as outro_usuario_email,
+                        u.nome as outro_usuario_nome,
+                        p.nome as produto_nome
+                        FROM chat_conversas cc
+                        INNER JOIN produtos p ON cc.produto_id = p.id
+                        INNER JOIN usuarios u ON cc.comprador_id = u.id
+                        WHERE cc.id = :conversa_id";
+                } else {
+                    // Como comprador, notificar o vendedor
+                    $sql_info = "SELECT 
+                        cc.produto_id,
+                        p.vendedor_id,
+                        u.email as outro_usuario_email,
+                        u.nome as outro_usuario_nome,
+                        p.nome as produto_nome
+                        FROM chat_conversas cc
+                        INNER JOIN produtos p ON cc.produto_id = p.id
+                        INNER JOIN vendedores v ON p.vendedor_id = v.id
+                        INNER JOIN usuarios u ON v.usuario_id = u.id
+                        WHERE cc.id = :conversa_id";
+                }
+                
+                $stmt_info = $conn->prepare($sql_info);
+                $stmt_info->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);
+                $stmt_info->execute();
+                $conversa_info = $stmt_info->fetch(PDO::FETCH_ASSOC);
+                
+                if ($conversa_info) {
+                    if ($tipo_chat === 'vendedor') {
+                        $outro_usuario_id = $conversa_info['outro_usuario_id'];
+                    } else {
+                        $outro_usuario_id = $conversa_info['vendedor_id'];
+                    }
+                    $outro_usuario_email = $conversa_info['outro_usuario_email'];
+                    $outro_usuario_nome = $conversa_info['outro_usuario_nome'];
+                    $produto_id = $conversa_info['produto_id'];
+                    $produto_nome = $conversa_info['produto_nome'];
+                }
 
                 // 1. ARQUIVAR
                 if ($_POST['action'] === 'arquivar_conversa') {
@@ -33,6 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $mensagem_sucesso = "Conversa arquivada com sucesso!";
                     $acao_log = 'arquivar_conversa';
+                    $notificar_outro_usuario = false;
                 
                 // 2. RESTAURAR
                 } elseif ($_POST['action'] === 'restaurar_conversa') {
@@ -43,19 +95,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $mensagem_sucesso = "Conversa restaurada com sucesso!";
                     $acao_log = 'restaurar_conversa';
+                    $notificar_outro_usuario = false;
 
                 // 3. EXCLUIR (Lógica de Soft Delete)
                 } elseif ($_POST['action'] === 'excluir_conversa') {
                     if ($tipo_chat === 'vendedor') {
-                        // Vendedor exclui sua visualização
-
                         $sql = "UPDATE chat_conversas SET favorito_vendedor = 0, vendedor_excluiu = 1 WHERE id = :conversa_id";
                     } else {
-                        // Comprador exclui sua visualização
                         $sql = "UPDATE chat_conversas SET favorito_comprador = 0, comprador_excluiu = 1 WHERE id = :conversa_id";
                     }
                     $mensagem_sucesso = "Conversa excluída da sua lista.";
                     $acao_log = 'excluir_conversa_usuario';
+                    $notificar_outro_usuario = true;
                 }
                 
                 if (isset($sql)) {
@@ -72,6 +123,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt_audit->bindParam(':acao', $acao_log);
                     $stmt_audit->execute();
                     
+                    // NOTIFICAÇÃO POR EMAIL
+                    if ($notificar_outro_usuario && $outro_usuario_email && $acao_log === 'excluir_conversa_usuario') {
+                        // Buscar informações do usuário atual
+                        $sql_usuario_atual = "SELECT nome, email FROM usuarios WHERE id = :usuario_id";
+                        $stmt_usuario_atual = $conn->prepare($sql_usuario_atual);
+                        $stmt_usuario_atual->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+                        $stmt_usuario_atual->execute();
+                        $usuario_atual = $stmt_usuario_atual->fetch(PDO::FETCH_ASSOC);
+                        
+                        $subject = "Conversa Excluída - Encontre o Campo";
+                        $message = "Olá " . htmlspecialchars($outro_usuario_nome) . ",\n\n";
+                        $message .= "Um usuário excluiu uma conversa relacionada a um produto.\n\n";
+                        $message .= "Detalhes:\n";
+                        $message .= "- Produto: " . htmlspecialchars($produto_nome) . "\n";
+                        $message .= "- Usuário que excluiu: " . htmlspecialchars($usuario_atual['nome'] ?? 'Usuário') . "\n";
+                        $message .= "- Ação: Conversa excluída da lista\n";
+                        $message .= "- Data: " . date('d/m/Y H:i') . "\n\n";
+                        $message .= "Acesse o sistema para ver mais detalhes.\n\n";
+                        $message .= "Atenciosamente,\nEquipe Encontre o Campo";
+
+                        require_once '../../includes/send_notification.php';
+                        
+                        enviarEmailNotificacao($outro_usuario_email, $outro_usuario_nome, $subject, $message);
+                    }
+                    
                     // Redirecionar para evitar reenvio do formulário
                     header("Location: chats.php?aba=" . $aba . "&success=1&msg=" . urlencode($mensagem_sucesso));
                     exit();
@@ -83,6 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
 
 // Verificar mensagens de sucesso/erro via GET
 $success = isset($_GET['success']) && $_GET['success'] == 1;

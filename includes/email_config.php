@@ -18,29 +18,45 @@ function enviarEmailRecuperacao($destinatario, $nome, $reset_link) {
     
     try {
         // Configurações do servidor SMTP
-        $mail -> isSMTP();
-        $mail -> Host = $_ENV['SMTP_HOST'];
-        $mail -> SMTPAuth = true;
-        $mail -> Username = $_ENV['SMTP_USERNAME'];
-        $mail -> Password = $_ENV['SMTP_PASSWORD'];
-        $mail -> SMTPSecure = $_ENV['SMTP_ENCRYPTION'] === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
-        $mail -> Port = $_ENV['SMTP_PORT'];
+        $mail->isSMTP();
+        $mail->Host = $_ENV['SMTP_HOST'];
+        $mail->SMTPAuth = true;
+        $mail->Username = $_ENV['SMTP_USERNAME'];
+        $mail->Password = $_ENV['SMTP_PASSWORD'];
+        $mail->SMTPSecure = $_ENV['SMTP_ENCRYPTION'] === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port = (int)$_ENV['SMTP_PORT'];
+        
+        // Configurações de Debug e Encoding
+        $mail->SMTPDebug = SMTP::DEBUG_OFF; // SMTP::DEBUG_SERVER para debug completo
+        $mail->Debugoutput = 'error_log'; // Registra erros no error_log
+        $mail->CharSet = PHPMailer::CHARSET_UTF8;
+
+        // Configurações de Timeout
+        $mail->Timeout = 10;
+        $mail->SMTPKeepAlive = true;
         
         // Remetente e destinatário
-        $mail -> setFrom($_ENV['SMTP_USERNAME'], 'Encontre o Campo');
-        $mail -> addAddress($destinatario, $nome);
+        $mail->setFrom($_ENV['SMTP_USERNAME'], 'Encontre o Campo');
+        $mail->addAddress($destinatario, $nome);
         
         // Conteúdo do email
-        $mail -> isHTML(true);
-        $mail -> Subject = 'Redefinição de Senha - Encontre o Campo';
+        $mail->isHTML(true);
+        $mail->Subject = 'Redefinição de Senha - Encontre o Campo';
         
         // Template do email
-        $mail -> Body = gerarTemplateEmail($nome, $reset_link);
-        $mail -> AltBody = "Olá $nome,\n\nPara redefinir sua senha, clique no link: $reset_link\n\nEste link expira em 1 hora.\n\nSe você não solicitou isso, ignore este email.";
+        $mail->Body = gerarTemplateEmail($nome, $reset_link);
+        $mail->AltBody = "Olá $nome,\n\nPara redefinir sua senha, clique no link: $reset_link\n\nEste link expira em 1 hora.\n\nSe você não solicitou isso, ignore este email.";
         
-        return $mail->send();
+        $resultado = $mail->send();
+        
+        if ($resultado) {
+            error_log("Email de recuperação enviado com sucesso para: $destinatario");
+        }
+        
+        return $resultado;
     } catch (Exception $e) {
-        error_log("Erro ao enviar email: " . $mail -> ErrorInfo);
+        $erro = "Erro ao enviar email de recuperação para $destinatario: " . $e->getMessage() . " | SMTP Error: " . $mail->ErrorInfo;
+        error_log($erro);
         return false;
     }
 }

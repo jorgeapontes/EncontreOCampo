@@ -5,6 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once __DIR__ . '/../../config/StripeConfig.php';
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/../../includes/send_notification.php'; // NOVO: Adicionado para notificações
 
 use Config\StripeConfig;
 StripeConfig::init();
@@ -41,6 +42,14 @@ if ($id_plano && $usuario_id) {
 
     if ($plano && !empty($plano['stripe_price_id'])) {
         try {
+            // Buscar informações do usuário para notificação
+            $stmtUsuario = $db->prepare("SELECT nome, email FROM usuarios WHERE id = :usuario_id");
+            $stmtUsuario->execute([':usuario_id' => $usuario_id]);
+            $usuario_info = $stmtUsuario->fetch(PDO::FETCH_ASSOC);
+            
+            $usuario_nome = $usuario_info['nome'] ?? 'Usuário';
+            $usuario_email = $usuario_info['email'] ?? null;
+
             // Detectar a URL base dinamicamente baseado no servidor
             $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
             $host = $_SERVER['HTTP_HOST'];
@@ -62,13 +71,46 @@ if ($id_plano && $usuario_id) {
                 'customer_email' => $_SESSION['usuario_email'] ?? null,
                 'metadata' => [
                     'vendedor_id' => $vendedor_id_real, 
-                    'plano_id' => $id_plano
+                    'plano_id' => $id_plano,
+                    'usuario_nome' => $usuario_nome
                 ]
             ]);
+
+            // NOTIFICAÇÃO POR EMAIL - NOVO (antes do redirecionamento)
+            if ($usuario_email) {
+                $subject = "Processamento de Assinatura Iniciado - Encontre o Campo";
+                $message = "Olá " . htmlspecialchars($usuario_nome) . ",\n\n";
+                $message .= "Você iniciou o processo de assinatura do plano '" . htmlspecialchars($plano['nome']) . "'.\n\n";
+                $message .= "Detalhes:\n";
+                $message .= "- Plano: " . htmlspecialchars($plano['nome']) . "\n";
+                $message .= "- Data/Hora: " . date('d/m/Y H:i') . "\n";
+                $message .= "- Status: Processamento iniciado\n\n";
+                $message .= "Você será redirecionado para a página de pagamento do Stripe.\n";
+                $message .= "Após a confirmação do pagamento, seu plano será ativado automaticamente.\n\n";
+                $message .= "Caso tenha algum problema, entre em contato com nosso suporte.\n\n";
+                $message .= "Atenciosamente,\nEquipe Encontre o Campo";
+                
+                enviarEmailNotificacao('rafaeltonetti.cardoso@gmail.com', $usuario_nome, $subject, $message);
+            }
 
             header("Location: " . $session->url);
             exit;
         } catch (Exception $e) {
+            // NOTIFICAÇÃO DE ERRO - NOVO
+            if ($usuario_email) {
+                $subject = "Erro no Processamento da Assinatura - Encontre o Campo";
+                $message = "Olá " . htmlspecialchars($usuario_nome) . ",\n\n";
+                $message .= "Ocorreu um erro ao processar sua solicitação de assinatura.\n\n";
+                $message .= "Detalhes do erro:\n";
+                $message .= "- Plano: " . htmlspecialchars($plano['nome']) . "\n";
+                $message .= "- Data/Hora: " . date('d/m/Y H:i') . "\n";
+                $message .= "- Erro: " . $e->getMessage() . "\n\n";
+                $message .= "Por favor, tente novamente ou entre em contato com nosso suporte.\n\n";
+                $message .= "Atenciosamente,\nEquipe Encontre o Campo";
+                
+                enviarEmailNotificacao('rafaeltonetti.cardoso@gmail.com', $usuario_nome, $subject, $message);
+            }
+            
             die("Erro ao criar sessão de pagamento: " . $e->getMessage());
         }
     } else {
@@ -78,3 +120,4 @@ if ($id_plano && $usuario_id) {
     header("Location: escolher_plano.php");
     exit;
 }
+?>

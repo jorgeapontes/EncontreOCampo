@@ -2,6 +2,7 @@
 // src/transportador/concluir_entrega.php
 require_once __DIR__ . '/../permissions.php';
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/../../includes/send_notification.php';
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'transportador') {
     header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Transportador."));
@@ -72,7 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 file_put_contents($caminho_assinatura, $data_assinatura);
 
                 // 3. Atualizar Banco de Dados
-                // Ajuste: usar os status esperados pelo histórico (status = 'entregue' e status_detalhado = 'finalizada')
                 $sql_update = "UPDATE entregas 
                                SET status = 'entregue', 
                                    status_detalhado = 'finalizada',
@@ -87,6 +87,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':assinatura' => $nome_assinatura,
                     ':id' => $entrega_id
                 ]);
+
+                // NOTIFICAÇÃO: Buscar informações para notificar comprador e vendedor
+                $sql_info = "SELECT 
+                    e.*,
+                    p.nome as produto_nome,
+                    c.usuario_id as comprador_usuario_id,
+                    uc.email as comprador_email,
+                    uc.nome as comprador_nome,
+                    v.usuario_id as vendedor_usuario_id,
+                    uv.email as vendedor_email,
+                    uv.nome as vendedor_nome,
+                    t.nome_comercial as transportador_nome
+                FROM entregas e
+                INNER JOIN produtos p ON e.produto_id = p.id
+                LEFT JOIN compradores c ON e.comprador_id = c.usuario_id
+                LEFT JOIN usuarios uc ON c.usuario_id = uc.id
+                INNER JOIN vendedores v ON v.id = p.vendedor_id
+                INNER JOIN usuarios uv ON v.usuario_id = uv.id
+                INNER JOIN transportadores t ON e.transportador_id = t.id
+                WHERE e.id = :id";
+                
+                $stmt_info = $db->prepare($sql_info);
+                $stmt_info->bindParam(':id', $entrega_id, PDO::PARAM_INT);
+                $stmt_info->execute();
+                $info_entrega = $stmt_info->fetch(PDO::FETCH_ASSOC);
+
+                if ($info_entrega) {
+                    // Notificar COMPRADOR
+                    if (!empty($info_entrega['comprador_email'])) {
+                        $assunto_comprador = "✅ Entrega Concluída - Pedido #" . $entrega_id;
+                        $conteudo_comprador = "Sua entrega do produto '{$info_entrega['produto_nome']}' foi concluída pelo transportador {$info_entrega['transportador_nome']}. A entrega foi registrada em " . date('d/m/Y H:i') . " com assinatura digital e foto do comprovante.";
+                        
+                        enviarEmailNotificacao(
+                            $info_entrega['comprador_email'],
+                            $info_entrega['comprador_nome'],
+                            $assunto_comprador,
+                            $conteudo_comprador
+                        );
+                    }
+
+                    // Notificar VENDEDOR
+                    if (!empty($info_entrega['vendedor_email'])) {
+                        $assunto_vendedor = "📦 Entrega Finalizada - Pedido #" . $entrega_id;
+                        $conteudo_vendedor = "A entrega do seu produto '{$info_entrega['produto_nome']}' foi concluída pelo transportador {$info_entrega['transportador_nome']}. Pagamento será processado conforme combinado.";
+                        
+                        enviarEmailNotificacao(
+                            $info_entrega['vendedor_email'],
+                            $info_entrega['vendedor_nome'],
+                            $assunto_vendedor,
+                            $conteudo_vendedor
+                        );
+                    }
+                }
 
                 header("Location: historico.php?sucesso=" . urlencode("Entrega concluída com sucesso!"));
                 exit();

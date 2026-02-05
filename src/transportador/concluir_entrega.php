@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../permissions.php';
 require_once __DIR__ . '/../conexao.php';
 require_once __DIR__ . '/../../includes/send_notification.php';
+require_once __DIR__ . '/../funcoes_notificacoes.php';
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'transportador') {
     header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Transportador."));
@@ -124,6 +125,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $info_entrega['comprador_nome'],
                             $assunto_comprador,
                             $conteudo_comprador
+                        );
+                    }
+
+                    // Criar notificação na plataforma e enviar email pedindo avaliação
+                    if (!empty($info_entrega['comprador_usuario_id'])) {
+                        $url_avaliacao = "src/avaliar.php?tipo=produto&produto_id=" . urlencode($info_entrega['produto_id']) . "&entrega_id=" . urlencode($entrega_id);
+                        criarNotificacao($info_entrega['comprador_usuario_id'], "Avalie seu produto: {$info_entrega['produto_nome']}", 'info', $url_avaliacao);
+
+                        $assunto_avaliacao = "Avalie seu produto - Encontre o Campo";
+                        $conteudo_avaliacao = "Olá {$info_entrega['comprador_nome']},\n\nSua entrega do produto '{$info_entrega['produto_nome']}' foi concluída. Agradecemos se puder avaliar sua experiência. Acesse: " . (isset($_SERVER['HTTP_HOST']) ? 'http://' . $_SERVER['HTTP_HOST'] . '/' : '') . $url_avaliacao;
+
+                        enviarEmailNotificacao(
+                            $info_entrega['comprador_email'],
+                            $info_entrega['comprador_nome'],
+                            $assunto_avaliacao,
+                            $conteudo_avaliacao
                         );
                     }
 

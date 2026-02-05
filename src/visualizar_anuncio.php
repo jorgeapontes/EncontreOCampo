@@ -176,6 +176,28 @@ try {
     // Se der erro, continua sem produtos relacionados
 }
 
+// Buscar avaliações do produto
+$avaliacoes = [];
+$media_avaliacao = 0;
+try {
+    $sql_aval = "SELECT a.*, u.nome FROM avaliacoes a LEFT JOIN usuarios u ON a.avaliador_usuario_id = u.id WHERE a.produto_id = :produto_id AND a.tipo = 'produto' ORDER BY a.data_criacao DESC";
+    $stmt_aval = $conn->prepare($sql_aval);
+    $stmt_aval->bindParam(':produto_id', $anuncio_id, PDO::PARAM_INT);
+    $stmt_aval->execute();
+    $avaliacoes = $stmt_aval->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Calcular média
+    if (!empty($avaliacoes)) {
+        $soma_notas = 0;
+        foreach ($avaliacoes as $av) {
+            $soma_notas += (int)$av['nota'];
+        }
+        $media_avaliacao = round($soma_notas / count($avaliacoes), 1);
+    }
+} catch (Exception $e) {
+    // Se der erro, continua sem avaliações
+}
+
 $preco_unitario = $info_desconto['preco_final'];
 $preco_display = number_format($preco_unitario, 2, ',', '.');
 $unidade = htmlspecialchars($anuncio['unidade_medida']);
@@ -554,6 +576,131 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
         .single-image .carrossel-counter {
             display: none;
         }
+        
+        /* Estilos para seção de avaliações */
+        .avaliacoes-section {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 30px 0;
+            border-left: 5px solid #4CAF50;
+        }
+        
+        .avaliacoes-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .media-avaliacao {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .numero-media {
+            font-size: 3em;
+            font-weight: 700;
+            color: #4CAF50;
+        }
+        
+        .estrelas-media {
+            display: flex;
+            gap: 5px;
+            font-size: 1.2em;
+        }
+        
+        .estrela-cheia {
+            color: #ffc107;
+        }
+        
+        .estrela-vazia {
+            color: #ddd;
+        }
+        
+        .total-avaliacoes {
+            color: #666;
+            font-size: 0.95em;
+        }
+        
+        .avaliacoes-info {
+            flex: 1;
+        }
+        
+        .avaliacoes-info h3 {
+            margin-top: 0;
+            color: #333;
+            font-size: 1.3em;
+        }
+        
+        .avaliacoes-info p {
+            color: #666;
+            margin: 5px 0;
+        }
+        
+        .avaliacoes-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .avaliacao-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .avaliacao-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .avaliador-nome {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95em;
+        }
+        
+        .avaliacao-data {
+            color: #999;
+            font-size: 0.85em;
+        }
+        
+        .avaliacao-nota {
+            display: flex;
+            gap: 3px;
+            font-size: 1.1em;
+        }
+        
+        .avaliacao-comentario {
+            color: #555;
+            line-height: 1.6;
+            margin-top: 10px;
+            font-size: 0.95em;
+        }
+        
+        .sem-avaliacoes {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+        
+        .sem-avaliacoes i {
+            font-size: 3em;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+    
     </style>
 </head>
 <body>
@@ -768,8 +915,48 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                                 </button>
                             <?php endif; ?>
                         </div>
+
+                        <?php
+                        // Mostrar link para avaliar produto apenas para usuários logados que compraram e são elegíveis
+                        // DEBUG: Show session status
+                        // echo "<!-- DEBUG: is_logged_in=$is_logged_in, usuario_id=" . ($_SESSION['usuario_id'] ?? 'NULL') . " -->";
                         
-                        <?php if (!$is_logged_in): ?>
+                        if ($is_logged_in) {
+                            try {
+                                $usuario_logado = $_SESSION['usuario_id'];
+                                $sql_check = "SELECT p.opcao_frete, p.comprador_id FROM propostas p LEFT JOIN compradores c ON p.comprador_id = c.id WHERE p.produto_id = :produto_id AND (p.comprador_id = :usuario_id OR c.usuario_id = :usuario_id) AND p.status = 'aceita' ORDER BY p.data_inicio DESC LIMIT 1";
+                                $stc = $conn->prepare($sql_check);
+                                $stc->bindParam(':produto_id', $anuncio_id, PDO::PARAM_INT);
+                                $stc->bindParam(':usuario_id', $usuario_logado, PDO::PARAM_INT);
+                                $stc->execute();
+                                $rowc = $stc->fetch(PDO::FETCH_ASSOC);
+                                $mostrar_avaliar = false;
+                                if ($rowc) {
+                                    $op = $rowc['opcao_frete'] ?? null;
+                                    if (in_array($op, ['vendedor','comprador'])) {
+                                        $mostrar_avaliar = true;
+                                    } elseif ($op === 'entregador') {
+                                        // permitir somente se houver entrega concluída
+                                        $sql_ent = "SELECT e.id FROM entregas e LEFT JOIN compradores c ON e.comprador_id = c.id WHERE e.produto_id = :produto_id AND (e.comprador_id = :usuario_id OR c.usuario_id = :usuario_id) AND (e.status = 'entregue' OR e.status_detalhado = 'finalizada') LIMIT 1";
+                                        $ste = $conn->prepare($sql_ent);
+                                        $ste->bindParam(':produto_id', $anuncio_id, PDO::PARAM_INT);
+                                        $ste->bindParam(':usuario_id', $usuario_logado, PDO::PARAM_INT);
+                                        $ste->execute();
+                                        if ($ste->fetch(PDO::FETCH_ASSOC)) {
+                                            $mostrar_avaliar = true;
+                                        }
+                                    }
+                                }
+
+                                if ($mostrar_avaliar) {
+                                    echo '<div style="margin-top:10px;"><a href="avaliar.php?tipo=produto&produto_id='.urlencode($anuncio_id).'" class="btn btn-info">Avaliar este produto</a></div>';
+                                }
+                            } catch (Exception $e) {
+                                // não bloquear a exibição do anúncio em caso de erro na verificação
+                            }
+                        }
+
+                        if (!$is_logged_in): ?>
                             <div class="aviso-acao">
                                 <p class="status-info" style="color: #ff6b6b; font-size: 0.9em; margin-top: 5px;">
                                     <i class="fas fa-exclamation-triangle"></i>
@@ -792,6 +979,83 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                 </div>
             </div>
             <?php endif; ?>
+
+            <!-- Avaliações do Produto -->
+            <div class="avaliacoes-section">
+                <div class="avaliacoes-header">
+                    <?php if (!empty($avaliacoes)): ?>
+                        <div class="media-avaliacao">
+                            <div class="numero-media"><?php echo $media_avaliacao; ?></div>
+                            <div class="estrelas-media">
+                                <?php 
+                                for ($i = 1; $i <= 5; $i++) {
+                                    if ($i <= floor($media_avaliacao)) {
+                                        echo '<i class="fas fa-star estrela-cheia"></i>';
+                                    } elseif ($i - 0.5 <= $media_avaliacao) {
+                                        echo '<i class="fas fa-star-half-alt estrela-cheia"></i>';
+                                    } else {
+                                        echo '<i class="far fa-star estrela-vazia"></i>';
+                                    }
+                                }
+                                ?>
+                            </div>
+                            <div class="total-avaliacoes"><?php echo count($avaliacoes); ?> <?php echo count($avaliacoes) === 1 ? 'avaliação' : 'avaliações'; ?></div>
+                        </div>
+                        <div class="avaliacoes-info">
+                            <h3><i class="fas fa-comments"></i> Avaliações dos Clientes</h3>
+                            <p>Veja o que os compradores acham deste produto</p>
+                        </div>
+                    <?php else: ?>
+                        <div class="avaliacoes-info">
+                            <h3><i class="fas fa-comments"></i> Avaliações dos Clientes</h3>
+                            <p>Este produto ainda não tem avaliações. Seja o primeiro a avaliar!</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <?php if (!empty($avaliacoes)): ?>
+                    <div class="avaliacoes-lista">
+                        <?php foreach ($avaliacoes as $av): ?>
+                            <div class="avaliacao-item">
+                                <div class="avaliacao-header">
+                                    <div>
+                                        <div class="avaliador-nome">
+                                            <?php echo htmlspecialchars($av['nome'] ?? 'Comprador Anônimo'); ?>
+                                        </div>
+                                        <div class="avaliacao-data">
+                                            <?php 
+                                            $data = new DateTime($av['data_criacao']);
+                                            echo $data->format('d/m/Y');
+                                            ?>
+                                        </div>
+                                    </div>
+                                    <div class="avaliacao-nota">
+                                        <?php 
+                                        for ($i = 1; $i <= 5; $i++) {
+                                            if ($i <= (int)$av['nota']) {
+                                                echo '<i class="fas fa-star estrela-cheia"></i>';
+                                            } else {
+                                                echo '<i class="far fa-star estrela-vazia"></i>';
+                                            }
+                                        }
+                                        ?>
+                                    </div>
+                                </div>
+                                <?php if (!empty($av['comentario'])): ?>
+                                    <div class="avaliacao-comentario">
+                                        <?php echo nl2br(htmlspecialchars($av['comentario'])); ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="sem-avaliacoes">
+                        <div><i class="fas fa-star"></i></div>
+                        <p>Nenhuma avaliação ainda. Compre este produto e deixe sua avaliação!</p>
+                    </div>
+                <?php endif; ?>
+            </div>
 
             <!-- Produtos Relacionados -->
             <?php if (!empty($produtos_relacionados)): ?>

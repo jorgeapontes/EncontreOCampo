@@ -164,6 +164,40 @@ if ($viewer_id) {
                     <span class="bar"></span>
                 </div>
             </div>
+            <?php
+                // Mostrar botão de avaliar vendedor se o viewer comprou deste vendedor e situação permitir
+                if ($viewer_id && isset($user['id'])) {
+                    try {
+                        $sql_check = "SELECT p.produto_id, p.opcao_frete FROM propostas p LEFT JOIN compradores c ON p.comprador_id = c.id WHERE p.vendedor_id = :profile AND (p.comprador_id = :viewer OR c.usuario_id = :viewer) AND p.status = 'aceita' ORDER BY p.data_inicio DESC LIMIT 1";
+                        $stc = $db->prepare($sql_check);
+                        $stc->bindParam(':profile', $profile_id, PDO::PARAM_INT);
+                        $stc->bindParam(':viewer', $viewer_id, PDO::PARAM_INT);
+                        $stc->execute();
+                        $rowc = $stc->fetch(PDO::FETCH_ASSOC);
+                        $mostrar_avaliar_vendedor = false;
+                        if ($rowc) {
+                            $op = $rowc['opcao_frete'] ?? null;
+                            $produto_rel = $rowc['produto_id'] ?? null;
+                            if (in_array($op, ['vendedor','comprador'])) {
+                                $mostrar_avaliar_vendedor = true;
+                            } elseif ($op === 'entregador' && $produto_rel) {
+                                $sql_ent = "SELECT id FROM entregas WHERE produto_id = :produto_id AND comprador_id = :viewer AND (status = 'entregue' OR status_detalhado = 'finalizada') LIMIT 1";
+                                $ste = $db->prepare($sql_ent);
+                                $ste->bindParam(':produto_id', $produto_rel, PDO::PARAM_INT);
+                                $ste->bindParam(':viewer', $viewer_id, PDO::PARAM_INT);
+                                $ste->execute();
+                                if ($ste->fetch(PDO::FETCH_ASSOC)) $mostrar_avaliar_vendedor = true;
+                            }
+                        }
+
+                        if ($mostrar_avaliar_vendedor) {
+                            echo '<div style="margin-top:12px;"><a href="avaliar.php?tipo=vendedor&vendedor_id='.urlencode($profile_id).'" class="btn btn-info">Avaliar este vendedor</a></div>';
+                        }
+                    } catch (Exception $e) {
+                        // ignorar erros de verificação
+                    }
+                }
+            ?>
         </nav>
     </header>
 

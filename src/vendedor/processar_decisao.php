@@ -4,6 +4,7 @@
 session_start();
 require_once __DIR__ . '/../conexao.php';
 require_once __DIR__ . '/../../includes/send_notification.php'; // NOVO: Adicionado para notificações
+require_once __DIR__ . '/../funcoes_notificacoes.php';
 
 function redirecionar($id, $tipo, $mensagem) {
     header("Location: detalhes_proposta.php?id=" . $id . "&" . $tipo . "=" . urlencode($mensagem));
@@ -204,6 +205,46 @@ try {
                 enviarEmailNotificacao($proposta['vendedor_email'], $proposta['vendedor_nome'], $subject, $message);
             }
             
+            // Após aceitar a proposta: se a opção de frete for retirada/vendedor (não entregador), liberar avaliação imediata
+            try {
+                // Buscar usuario_id do comprador (tabela compradores -> usuario_id)
+                $sql_usuario_comprador = "SELECT usuario_id FROM compradores WHERE id = :comprador_id";
+                $stmt_uc = $conn->prepare($sql_usuario_comprador);
+                $stmt_uc->bindParam(':comprador_id', $proposta['comprador_id']);
+                $stmt_uc->execute();
+                $comprador_row = $stmt_uc->fetch(PDO::FETCH_ASSOC);
+                $comprador_usuario_id = $comprador_row['usuario_id'] ?? null;
+
+                if ($comprador_usuario_id) {
+                    // Buscar registro na tabela propostas para checar opcao_frete (usa IDs de usuário)
+                    $sql_check_opcao = "SELECT opcao_frete, ID FROM propostas WHERE comprador_id = :usuario_id AND vendedor_id = :vendedor_id AND produto_id = :produto_id AND status = 'aceita' ORDER BY data_inicio DESC LIMIT 1";
+                    $stmt_check = $conn->prepare($sql_check_opcao);
+                    $stmt_check->bindParam(':usuario_id', $comprador_usuario_id, PDO::PARAM_INT);
+                    $stmt_check->bindParam(':vendedor_id', $proposta['produto_vendedor_id'], PDO::PARAM_INT);
+                    $stmt_check->bindParam(':produto_id', $proposta['produto_id'], PDO::PARAM_INT);
+                    $stmt_check->execute();
+                    $row_check = $stmt_check->fetch(PDO::FETCH_ASSOC);
+
+                    $opcao_frete = $row_check['opcao_frete'] ?? null;
+                    $proposta_id_original = $row_check['ID'] ?? null;
+
+                    if ($opcao_frete && in_array($opcao_frete, ['vendedor','comprador'])) {
+                        // Criar notificação e enviar email pedindo avaliação
+                        $url_avaliacao = "../avaliar.php?tipo=produto&produto_id=" . urlencode($proposta['produto_id']) . "&proposta_id=" . urlencode($proposta_comprador_id);
+                        criarNotificacao($comprador_usuario_id, "Avalie seu produto: {$proposta['produto_nome']}", 'info', $url_avaliacao);
+
+                        if (!empty($proposta['comprador_email'])) {
+                            $assunto_av = "Avalie seu produto - Encontre o Campo";
+                            $mensagem_av = "Olá {$proposta['comprador_nome']},\n\nSua compra do produto '{$proposta['produto_nome']}' foi confirmada. Agradecemos se puder avaliar sua experiência. Acesse: " . (isset($_SERVER['HTTP_HOST']) ? 'http://' . $_SERVER['HTTP_HOST'] . '/' : '') . $url_avaliacao;
+                            enviarEmailNotificacao($proposta['comprador_email'], $proposta['comprador_nome'], $assunto_av, $mensagem_av);
+                        }
+                    }
+                }
+            } catch (Exception $e) {
+                // Não bloquear fluxo por falha na notificação
+                error_log('Erro ao criar notificação de avaliação: ' . $e->getMessage());
+            }
+
             $msg = $vendedor_proposal ? 
                 "Contraproposta do comprador aceita com sucesso! Negociação finalizada." :
                 "Proposta do comprador aceita com sucesso! Negociação concluída.";

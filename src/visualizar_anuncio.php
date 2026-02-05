@@ -178,7 +178,9 @@ try {
 
 // Buscar avaliações do produto
 $avaliacoes = [];
+$avaliacoes_limitadas = [];
 $media_avaliacao = 0;
+$total_avaliacoes = 0;
 try {
     $sql_aval = "SELECT a.*, u.nome FROM avaliacoes a LEFT JOIN usuarios u ON a.avaliador_usuario_id = u.id WHERE a.produto_id = :produto_id AND a.tipo = 'produto' ORDER BY a.data_criacao DESC";
     $stmt_aval = $conn->prepare($sql_aval);
@@ -193,6 +195,10 @@ try {
             $soma_notas += (int)$av['nota'];
         }
         $media_avaliacao = round($soma_notas / count($avaliacoes), 1);
+        $total_avaliacoes = count($avaliacoes);
+        
+        // Limitar a 3 avaliações mais recentes para exibição
+        $avaliacoes_limitadas = array_slice($avaliacoes, 0, 3);
     }
 } catch (Exception $e) {
     // Se der erro, continua sem avaliações
@@ -701,6 +707,34 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
             color: #ddd;
         }
     
+        .ver-mais-avaliacoes {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .btn-ver-mais {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-ver-mais:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-ver-mais i {
+            font-size: 1.1em;
+        }
     </style>
 </head>
 <body>
@@ -999,7 +1033,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                                 }
                                 ?>
                             </div>
-                            <div class="total-avaliacoes"><?php echo count($avaliacoes); ?> <?php echo count($avaliacoes) === 1 ? 'avaliação' : 'avaliações'; ?></div>
+                            <div class="total-avaliacoes"><?php echo $total_avaliacoes; ?> <?php echo $total_avaliacoes === 1 ? 'avaliação' : 'avaliações'; ?></div>
                         </div>
                         <div class="avaliacoes-info">
                             <h3><i class="fas fa-comments"></i> Avaliações dos Clientes</h3>
@@ -1015,7 +1049,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
 
                 <?php if (!empty($avaliacoes)): ?>
                     <div class="avaliacoes-lista">
-                        <?php foreach ($avaliacoes as $av): ?>
+                        <?php foreach ($avaliacoes_limitadas as $av): ?>
                             <div class="avaliacao-item">
                                 <div class="avaliacao-header">
                                     <div>
@@ -1049,6 +1083,20 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                             </div>
                         <?php endforeach; ?>
                     </div>
+                    
+                    <?php if ($total_avaliacoes > 3): ?>
+                        <div class="ver-mais-avaliacoes" style="text-align: center; margin-top: 20px;">
+                            <?php if ($is_logged_in): ?>
+                                <a href="avaliacoes.php?tipo=produto&id=<?php echo $anuncio_id; ?>" class="btn-ver-mais" style="background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; transition: all 0.3s;">
+                                    <i class="fas fa-eye"></i> Ver todas as <?php echo $total_avaliacoes; ?> avaliações
+                                </a>
+                            <?php else: ?>
+                                <a href="login.php?redirect=avaliacoes.php?tipo=produto&id=<?php echo $anuncio_id; ?>" class="btn-ver-mais" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; transition: all 0.3s;">
+                                    <i class="fas fa-sign-in-alt"></i> Faça login para ver todas as <?php echo $total_avaliacoes; ?> avaliações
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
                 <?php else: ?>
                     <div class="sem-avaliacoes">
                         <div><i class="fas fa-star"></i></div>

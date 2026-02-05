@@ -94,7 +94,7 @@ switch ($tipo_avaliacao) {
     case 'vendedor':
         // Buscar informações do vendedor
         try {
-            $sql_vendedor = "SELECT nome_comercial FROM vendedores WHERE id = :id";
+            $sql_vendedor = "SELECT nome_comercial FROM vendedores WHERE usuario_id = :id";
             $stmt_vendedor = $conn->prepare($sql_vendedor);
             $stmt_vendedor->bindParam(':id', $id_referencia, PDO::PARAM_INT);
             $stmt_vendedor->execute();
@@ -114,7 +114,7 @@ switch ($tipo_avaliacao) {
     case 'comprador':
         // Buscar informações do comprador
         try {
-            $sql_comprador = "SELECT nome_comercial FROM compradores WHERE id = :id";
+            $sql_comprador = "SELECT nome_comercial FROM compradores WHERE usuario_id = :id";
             $stmt_comprador = $conn->prepare($sql_comprador);
             $stmt_comprador->bindParam(':id', $id_referencia, PDO::PARAM_INT);
             $stmt_comprador->execute();
@@ -135,7 +135,7 @@ switch ($tipo_avaliacao) {
         // Buscar informações do transportador (se houver tabela específica)
         try {
             // Adapte conforme sua estrutura de tabelas
-            $sql_transportador = "SELECT nome FROM transportadores WHERE id = :id";
+            $sql_transportador = "SELECT nome FROM transportadores WHERE usuario_id = :id";
             $stmt_transportador = $conn->prepare($sql_transportador);
             $stmt_transportador->bindParam(':id', $id_referencia, PDO::PARAM_INT);
             $stmt_transportador->execute();
@@ -580,19 +580,29 @@ try {
                 <div class="avaliacoes-info">
                     <div>
                         <h3><i class="fas fa-comments"></i> Avaliações dos Clientes</h3>
-                        <p>Veja o que os compradores acham deste produto</p>
+                        <p>Veja o que os compradores acham deste 
+                            <?php if ($tipo_avaliacao === 'produto'): ?>
+                                produto
+                            <?php elseif ($tipo_avaliacao === 'vendedor'): ?>
+                                vendedor
+                            <?php elseif ($tipo_avaliacao === 'comprador'): ?>
+                                comprador
+                            <?php elseif ($tipo_avaliacao === 'comprador'): ?>
+                                comprador
+                            <?php endif; ?>    
+                        </p>
                     </div>
                     <?php if ($tipo_avaliacao === 'produto' && $mostrar_botao_avaliar): ?>
-                    <div class="botao-avaliar">
-                        <a href="./avaliar.php?tipo=produto&produto_id=<?php echo $id_referencia; ?>" class="btn-avaliar">
-                        <i class="fas fa-star"></i> Avaliar este produto
-                    </a>
+                        <div class="botao-avaliar">
+                            <a href="./avaliar.php?tipo=produto&produto_id=<?php echo $id_referencia; ?>" class="btn-avaliar">
+                            <i class="fas fa-star"></i> Avaliar este produto
+                        </a>
                     </div>
-                <?php elseif ($tipo_avaliacao === 'produto' && isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo'): ?>
-                    <div style="padding: 10px 15px; background: #f8f9fa; border-radius: var(--radius); color: #666; font-size: 0.9em;">
-                        <i class="fas fa-info-circle"></i> Você só pode avaliar produtos que comprou
-                    </div>
-                <?php endif; ?>    
+                    <?php elseif ($tipo_avaliacao === 'produto' && isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo'): ?>
+                        <div style="padding: 10px 15px; background: #f8f9fa; border-radius: var(--radius); color: #666; font-size: 0.9em;">
+                            <i class="fas fa-info-circle"></i> Você só pode avaliar produtos que comprou
+                        </div>
+                    <?php endif; ?>  
                 </div>
                 <?php 
                     $contador = 0;

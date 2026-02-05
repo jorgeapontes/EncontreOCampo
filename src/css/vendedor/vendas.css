@@ -839,7 +839,6 @@ th:last-child {
     transition: transform 0.2s ease;
     margin-bottom: 20px;
     float: right;
-    margin-left: 10px;
 }
 
 .btn-avaliar-vendedor :hover{
@@ -875,4 +874,60 @@ th:last-child {
         
         .botao-avaliar .btn-avaliar i {
             font-size: 0.9rem;
+        }
+
+        .fa-star, .fa-star-half-alt {
+        font-size: 1.2em;
+    }
+
+    .avaliacao-vendedor {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #fff8e1 0%, #fff3e0 100%);
+            border-radius: 8px;
+            border: 1px solid #ffd54f;
+            width: fit-content;
+            height: fit-content ;
+        }
+        
+        .media-avaliacao-vendedor {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .numero-media-vendedor {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #ff9800;
+        }
+        
+        .estrelas-media-vendedor {
+            display: flex;
+            gap: 3px;
+        }
+        
+        .estrela-cheia-vendedor {
+            color: #ffc107;
+        }
+        
+        .estrela-vazia-vendedor {
+            color: #ddd;
+        }
+        
+        .total-avaliacoes-vendedor {
+            margin-left: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .sem-avaliacoes-vendedor {
+            color: #999;
+            font-style: italic;
+            margin-top: 10px;
         }

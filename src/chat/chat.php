@@ -1543,7 +1543,7 @@ function carregarProposta(force = false) {
     
     carregamentoPropostaEmAndamento = true;
     
-    fetchJSON(`carregar_proposta.php?produto_id=<?php echo $produto_id; ?>`)
+    fetchJSON(`carregar_proposta.php?produto_id=<?php echo $produto_id; ?>&conversa_id=${conversaId}`)
         .then(data => {
             if (!data.success) {
                 console.error('Erro ao carregar proposta:', data.error);

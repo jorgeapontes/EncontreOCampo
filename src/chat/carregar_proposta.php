@@ -17,7 +17,43 @@ $usuario_tipo = $_SESSION['usuario_tipo']; // 'comprador' ou 'vendedor'
 $database = new Database();
 $conn = $database->getConnection();
 
-// Buscar a proposta mais recente para este produto e usuário
+$sql_produto = "SELECT v.usuario_id as vendedor_usuario_id 
+                FROM produtos p
+                JOIN vendedores v ON p.vendedor_id = v.id
+                WHERE p.id = :produto_id";
+                
+$stmt_produto = $conn->prepare($sql_produto);
+$stmt_produto->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+$stmt_produto->execute();
+$produto_info = $stmt_produto->fetch(PDO::FETCH_ASSOC);
+
+if (!$produto_info) {
+    echo json_encode(['success' => false, 'error' => 'Produto não encontrado']);
+    exit();
+}
+
+$vendedor_id = $produto_info['vendedor_usuario_id'];
+
+$comprador_id = $usuario_id;
+
+if ($usuario_tipo === 'vendedor') {
+    
+    if (isset($_GET['conversa_id']) && $_GET['conversa_id'] > 0) {
+        $conversa_id = (int)$_GET['conversa_id'];
+        
+        $sql_conversa = "SELECT comprador_id FROM chat_conversas WHERE id = :conversa_id";
+        $stmt_conv = $conn->prepare($sql_conversa);
+        $stmt_conv->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);
+        $stmt_conv->execute();
+        $conversa_info = $stmt_conv->fetch(PDO::FETCH_ASSOC);
+        
+        if ($conversa_info) {
+            $comprador_id = $conversa_info['comprador_id'];
+            $vendedor_id = $usuario_id; 
+        }
+    }
+}
+
 $sql = "SELECT p.*,
         prod.nome as produto_nome,
         prod.modo_precificacao,
@@ -30,13 +66,18 @@ $sql = "SELECT p.*,
         JOIN usuarios u_comp ON p.comprador_id = u_comp.id
         JOIN usuarios u_vend ON p.vendedor_id = u_vend.id
         WHERE p.produto_id = :produto_id 
-        AND (p.comprador_id = :usuario_id OR p.vendedor_id = :usuario_id)
+        AND (
+            (p.comprador_id = :comprador_id AND p.vendedor_id = :vendedor_id)
+            OR
+            (p.comprador_id = :vendedor_id AND p.vendedor_id = :comprador_id)
+        )
         ORDER BY p.data_atualizacao DESC 
         LIMIT 1";
 
 $stmt = $conn->prepare($sql);
 $stmt->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
-$stmt->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+$stmt->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
+$stmt->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
 $stmt->execute();
 
 $proposta = $stmt->fetch(PDO::FETCH_ASSOC);

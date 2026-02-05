@@ -1446,3 +1446,41 @@ ul {
         gap: 8px;
     }
 }
+        
+        .ver-mais-avaliacoes {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .btn-ver-mais {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95em;
+        }
+        
+        .btn-ver-mais:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(76, 175, 80, 0.3);
+            background: linear-gradient(135deg, #43A047 0%, #1B5E20 100%);
+        }
+        
+        @media (max-width: 768px) {
+            /* ... código CSS existente ... */
+            
+            .btn-ver-mais {
+                padding: 10px 20px;
+                font-size: 0.9em;
+            }
+        }

@@ -512,7 +512,8 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
         <div class="chat-area">
             <?php if ($conversa_id && $outro_usuario_id): ?>
                 <div class="chat-header">
-                    <div class="usuario-info">
+                    <div style="display: flex; flex-direction: row;">
+                        <div class="usuario-info">
                         <div class="avatar-container">
                             <?php if ($foto_perfil): ?>
                                 <div class="avatar" id="avatar-usuario" data-foto="<?php echo htmlspecialchars($foto_perfil); ?>" style="cursor: pointer;">
@@ -534,6 +535,51 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                                 <small><?php echo $eh_vendedor_produto ? 'Comprador' : 'Vendedor'; ?></small>
                             </div>
                         </a>
+                    </div>
+                    <!-- EXIBIÇÃO DA AVALIAÇÃO MÉDIA DO OUTRO USUÁRIO -->
+                    <div class="avaliacao-usuario-chat" 
+                        onclick="redirectToUserReviews(<?php echo $outro_usuario_id; ?>, '<?php echo $eh_vendedor_produto ? 'comprador' : 'vendedor'; ?>')"
+                        title="Clique para ver todas as avaliações de <?php echo htmlspecialchars($outro_usuario_nome); ?>">
+                        <div class="avaliacao-mini">
+                            <div class="estrela-media-chat">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="nota-media-chat">
+                                <?php 
+                                // Buscar a avaliação média do outro usuário
+                                $sql_avaliacao_outro = "SELECT AVG(nota) as media, COUNT(*) as total 
+                                                    FROM avaliacoes 
+                                                    WHERE tipo = :tipo_usuario 
+                                                    AND ";
+                                
+                                // Definir o campo correto baseado no tipo de usuário
+                                if ($eh_vendedor_produto) {
+                                    // Se o usuário atual é vendedor, o outro é comprador
+                                    $tipo_avaliacao_outro = 'comprador';
+                                    $sql_avaliacao_outro .= "comprador_id = :usuario_id";
+                                } else {
+                                    // Se o usuário atual é comprador, o outro é vendedor
+                                    $tipo_avaliacao_outro = 'vendedor';
+                                    $sql_avaliacao_outro .= "vendedor_id = :usuario_id";
+                                }
+                                
+                                $stmt_avaliacao_outro = $conn->prepare($sql_avaliacao_outro);
+                                $stmt_avaliacao_outro->bindParam(':tipo_usuario', $tipo_avaliacao_outro);
+                                $stmt_avaliacao_outro->bindParam(':usuario_id', $outro_usuario_id, PDO::PARAM_INT);
+                                $stmt_avaliacao_outro->execute();
+                                $avaliacao_outro = $stmt_avaliacao_outro->fetch(PDO::FETCH_ASSOC);
+                                
+                                $media_outro = $avaliacao_outro['media'] ? round($avaliacao_outro['media'], 1) : 0;
+                                $total_avaliacoes_outro = $avaliacao_outro['total'] ?? 0;
+                                
+                                echo number_format($media_outro, 1, ',', '.');
+                                ?>
+                            </div>
+                            <div class="total-avaliacoes-chat">
+                                (<?php echo $total_avaliacoes_outro; ?>)
+                            </div>
+                        </div>
+                    </div>
                     </div>
                     <a href="<?php echo $url_voltar; ?>" class="btn-voltar">
                         <i class="fas fa-arrow-left"></i>
@@ -3188,6 +3234,24 @@ function verificarExibicaoBotaoSidebar() {
         sidebarNegociacaoBtn.style.display = 'none';
     } else if (sidebarNegociacaoBtn) {
         sidebarNegociacaoBtn.style.display = 'block';
+    }
+}
+
+// Função para redirecionar para avaliações do usuário
+function redirectToUserReviews(usuarioId, tipoUsuario) {
+    // Determinar o tipo de avaliação baseado no tipo do usuário
+    const tipoAvaliacao = tipoUsuario === 'vendedor' ? 'vendedor' : 'comprador';
+    
+    // Verificar se o usuário está logado
+    const isLoggedIn = <?php echo isset($_SESSION['usuario_id']) ? 'true' : 'false'; ?>;
+    
+    if (isLoggedIn) {
+        // Usuário logado: redireciona diretamente para a página de avaliações
+        window.location.href = '../avaliacoes.php?tipo=' + tipoAvaliacao + '&id=' + usuarioId;
+    } else {
+        // Usuário não logado: redireciona para login com parâmetro de redirecionamento
+        const redirectUrl = encodeURIComponent('../avaliacoes.php?tipo=' + tipoAvaliacao + '&id=' + usuarioId);
+        window.location.href = '../login.php?redirect=' + redirectUrl;
     }
 }
     </script>

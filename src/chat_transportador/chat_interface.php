@@ -56,12 +56,15 @@ try {
     if ($conv['comprador_id'] == $uid) {
         $outro_nome = $conv['transportador_nome'] ?: 'Transportador';
         $outro_papel = 'Transportador';
+        $outro_tipo_avaliacao = 'transportador'; // Adicionado
     } elseif (!empty($conv['transportador_id']) && $conv['transportador_id'] == $uid) {
         $outro_nome = $conv['comprador_nome'] ?: 'Comprador';
         $outro_papel = 'Comprador';
+        $outro_tipo_avaliacao = 'comprador'; // Adicionado
     } else {
         $outro_nome = $conv['comprador_nome'] ?: 'Usuário';
         $outro_papel = 'Comprador';
+        $outro_tipo_avaliacao = 'comprador'; // Adicionado
     }
 
     // Foto de perfil
@@ -366,7 +369,8 @@ try {
 
         <div class="chat-area">
             <div class="chat-header">
-                <div class="usuario-info">
+                <div style="display: flex; flex-direction: row;">
+                    <div class="usuario-info">
                     <div class="avatar-container">
                         <img id="outro-avatar" src="<?php echo htmlspecialchars($foto_perfil); ?>" alt="Avatar" style="width:56px;height:56px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid #eee;">
                     </div>
@@ -378,6 +382,51 @@ try {
                             <small><?php echo htmlspecialchars($outro_papel); ?></small>
                         </div>
                     </a>
+                    </div>
+                    <!-- EXIBIÇÃO DA AVALIAÇÃO MÉDIA DO OUTRO USUÁRIO -->
+                    <div class="avaliacao-usuario-chat" 
+                            onclick="redirectToUserReviews(<?php echo $outro_usuario_id; ?>, '<?php echo $outro_tipo_avaliacao; ?>')"
+                            title="Clique para ver todas as avaliações de <?php echo htmlspecialchars($outro_nome); ?>">
+                        <div class="avaliacao-mini">
+                            <div class="estrela-media-chat">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="nota-media-chat">
+                                <?php 
+                                // Buscar a avaliação média do outro usuário
+                                $sql_avaliacao_outro = "SELECT AVG(nota) as media, COUNT(*) as total 
+                                                    FROM avaliacoes 
+                                                    WHERE tipo = :tipo_usuario 
+                                                    AND ";
+                                
+                                // Definir o campo correto baseado no tipo de usuário
+                                if ($is_comprador) {
+                                    // Se o usuário atual é comprador, o outro é transportador
+                                    $tipo_avaliacao_outro = 'transportador';
+                                    $sql_avaliacao_outro .= "transportador_id = :usuario_id";
+                                } else {
+                                    // Se o usuário atual é transportador, o outro é comprador
+                                    $tipo_avaliacao_outro = 'comprador';
+                                    $sql_avaliacao_outro .= "comprador_id = :usuario_id";
+                                }
+                                
+                                $stmt_avaliacao_outro = $conn->prepare($sql_avaliacao_outro);
+                                $stmt_avaliacao_outro->bindParam(':tipo_usuario', $tipo_avaliacao_outro);
+                                $stmt_avaliacao_outro->bindParam(':usuario_id', $outro_usuario_id, PDO::PARAM_INT);
+                                $stmt_avaliacao_outro->execute();
+                                $avaliacao_outro = $stmt_avaliacao_outro->fetch(PDO::FETCH_ASSOC);
+                                
+                                $media_outro = $avaliacao_outro['media'] ? round($avaliacao_outro['media'], 1) : 0;
+                                $total_avaliacoes_outro = $avaliacao_outro['total'] ?? 0;
+                                
+                                echo number_format($media_outro, 1, ',', '.');
+                                ?>
+                            </div>
+                            <div class="total-avaliacoes-chat">
+                                (<?php echo $total_avaliacoes_outro; ?>)
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <a href="#" class="btn-voltar" onclick="goBack(event)"> <i class="fas fa-arrow-left"></i>Voltar</a>
             </div>
@@ -783,6 +832,24 @@ try {
 
         // Fechar modal sucesso
         document.getElementById('btn-fechar-modal')?.addEventListener('click', () => document.getElementById('modal-sucesso-aceite').style.display = 'none');
+    
+    // Função para redirecionar para avaliações do usuário - CORRIGIDA
+function redirectToUserReviews(usuarioId, tipoUsuario) {
+
+    const tipoAvaliacao = tipoUsuario === 'transportador' ? 'transportador' : 'comprador';
+    
+    // Verificar se o usuário está logado (já está logado pois está no chat)
+    const isLoggedIn = <?php echo isset($_SESSION['usuario_id']) ? 'true' : 'false'; ?>;
+    
+    if (isLoggedIn) {
+        // Usuário logado: redireciona diretamente para a página de avaliações
+        window.location.href = '../avaliacoes.php?tipo=' + tipoAvaliacao + '&id=' + usuarioId;
+    } else {
+        // Usuário não logado (fallback - não deveria acontecer pois está no chat)
+        const redirectUrl = encodeURIComponent('../avaliacoes.php?tipo=' + tipoAvaliacao + '&id=' + usuarioId);
+        window.location.href = '../login.php?redirect=' + redirectUrl;
+    }
+}
     </script>
 </body>
 </html>

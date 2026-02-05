@@ -197,7 +197,53 @@ try {
             <div class="tabela-anuncios">
                 <?php if (count($propostas) > 0): ?>
                     <div class="cards-list">
-                        <?php foreach ($propostas as $p): ?>
+                        <?php foreach ($propostas as $p): 
+                            // Verificar se o usuário é elegível para avaliar este produto (mesma lógica do view_ad.php)
+                            $mostrar_avaliar = false;
+                            if (isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo') {
+                                try {
+                                    $usuario_logado = $_SESSION['usuario_id'];
+                                    $produto_id = $p['produto_id'];
+                                    
+                                    $sql_check = "SELECT p.opcao_frete, p.comprador_id FROM propostas p 
+                                                 LEFT JOIN compradores c ON p.comprador_id = c.id 
+                                                 WHERE p.produto_id = :produto_id 
+                                                 AND (p.comprador_id = :usuario_id OR c.usuario_id = :usuario_id) 
+                                                 AND p.status = 'aceita' 
+                                                 ORDER BY p.data_inicio DESC LIMIT 1";
+                                    $stc = $db->prepare($sql_check);
+                                    $stc->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+                                    $stc->bindParam(':usuario_id', $usuario_logado, PDO::PARAM_INT);
+                                    $stc->execute();
+                                    $rowc = $stc->fetch(PDO::FETCH_ASSOC);
+                                    
+                                    if ($rowc) {
+                                        $op = $rowc['opcao_frete'] ?? null;
+                                        if (in_array($op, ['vendedor','comprador'])) {
+                                            $mostrar_avaliar = true;
+                                        } elseif ($op === 'entregador') {
+                                            // permitir somente se houver entrega concluída
+                                            $sql_ent = "SELECT e.id FROM entregas e 
+                                                       LEFT JOIN compradores c ON e.comprador_id = c.id 
+                                                       WHERE e.produto_id = :produto_id 
+                                                       AND (e.comprador_id = :usuario_id OR c.usuario_id = :usuario_id) 
+                                                       AND (e.status = 'entregue' OR e.status_detalhado = 'finalizada') 
+                                                       LIMIT 1";
+                                            $ste = $db->prepare($sql_ent);
+                                            $ste->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+                                            $ste->bindParam(':usuario_id', $usuario_logado, PDO::PARAM_INT);
+                                            $ste->execute();
+                                            if ($ste->fetch(PDO::FETCH_ASSOC)) {
+                                                $mostrar_avaliar = true;
+                                            }
+                                        }
+                                    }
+                                } catch (Exception $e) {
+                                    // não bloquear a exibição em caso de erro
+                                    error_log("Erro verificação avaliação negociações: " . $e->getMessage());
+                                }
+                            }
+                        ?>
                             <div class="proposal-card" id="proposal-<?php echo $p['ID']; ?>">
                                 <div class="card-image">
                                     <?php $img = !empty($p['produto_imagem']) ? $p['produto_imagem'] : '../../img/placeholder.png';
@@ -210,6 +256,13 @@ try {
                                             <a href="<?php echo $link; ?>" class="card-link"><h3><?php echo htmlspecialchars($p['produto_nome'] ?? 'Produto'); ?></h3></a>
                                             <small class="date"><?php echo date('d/m/Y H:i', strtotime($p['data_inicio'])); ?></small>
                                         </div>
+                                        <?php if ($mostrar_avaliar): ?>
+                                        <div class="botao-avaliar">
+                                            <a href="../avaliar.php?tipo=produto&produto_id=<?php echo urlencode($p['produto_id']); ?>" class="btn-avaliar">
+                                                <i class="fas fa-star"></i>Avaliar este produto
+                                            </a>
+                                        </div>
+                                        <?php endif; ?>
                                     </div>
 
                                     <div class="card-grid">

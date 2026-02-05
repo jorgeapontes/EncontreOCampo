@@ -526,10 +526,14 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                                 </div>
                             <?php endif; ?>
                         </div>
-                        <div>
-                            <h3><?php echo htmlspecialchars($outro_usuario_nome); ?></h3>
-                            <small><?php echo $eh_vendedor_produto ? 'Comprador' : 'Vendedor'; ?></small>
-                        </div>
+                        <a href="../verperfil.php?usuario_id=<?php echo $outro_usuario_id; ?>" 
+                            style="text-decoration: none; color: inherit;"
+                            title="Ver perfil de <?php echo htmlspecialchars($outro_usuario_nome); ?>">
+                            <div class="name-and-type" style="cursor: pointer;">
+                                <h3><?php echo htmlspecialchars($outro_usuario_nome); ?></h3>
+                                <small><?php echo $eh_vendedor_produto ? 'Comprador' : 'Vendedor'; ?></small>
+                            </div>
+                        </a>
                     </div>
                     <a href="<?php echo $url_voltar; ?>" class="btn-voltar">
                         <i class="fas fa-arrow-left"></i>

@@ -370,10 +370,14 @@ try {
                     <div class="avatar-container">
                         <img id="outro-avatar" src="<?php echo htmlspecialchars($foto_perfil); ?>" alt="Avatar" style="width:56px;height:56px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid #eee;">
                     </div>
-                    <div>
-                        <h3><?php echo htmlspecialchars($outro_nome); ?></h3>
-                        <small><?php echo htmlspecialchars($outro_papel); ?></small>
-                    </div>
+                    <a href="../verperfil.php?usuario_id=<?php echo $outro_usuario_id; ?>" 
+                            style="text-decoration: none; color: inherit;"
+                            title="Ver perfil de <?php echo htmlspecialchars($outro_usuario_nome); ?>">
+                        <div class="name-and-type" style="cursor: pointer;">
+                            <h3><?php echo htmlspecialchars($outro_nome); ?></h3>
+                            <small><?php echo htmlspecialchars($outro_papel); ?></small>
+                        </div>
+                    </a>
                 </div>
                 <a href="#" class="btn-voltar" onclick="goBack(event)"> <i class="fas fa-arrow-left"></i>Voltar</a>
             </div>

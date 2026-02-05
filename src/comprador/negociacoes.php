@@ -247,7 +247,7 @@ try {
                             <div class="proposal-card" id="proposal-<?php echo $p['ID']; ?>">
                                 <div class="card-image">
                                     <?php $img = !empty($p['produto_imagem']) ? $p['produto_imagem'] : '../../img/placeholder.png';
-                                          $link = '../visualizar_anuncio.php?anuncio_id=' . intval($p['produto_id']); ?>
+                                          $link = './view_ad.php?anuncio_id=' . intval($p['produto_id']); ?>
                                     <a href="<?php echo $link; ?>"><img src="<?php echo $img; ?>" alt="<?php echo htmlspecialchars($p['produto_nome'] ?? 'Produto'); ?>"></a>
                                 </div>
                                 <div class="card-content">

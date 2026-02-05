@@ -5,7 +5,7 @@ require_once __DIR__ . '/conexao.php';
 require_once __DIR__ . '/permissions.php';
 
 // Verificar acesso
-if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['comprador', 'vendedor'])) {
+if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['comprador', 'vendedor','transportador'])) {
     header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador ou Vendedor."));
     exit();
 }
@@ -580,7 +580,7 @@ try {
                 <div class="avaliacoes-info">
                     <div>
                         <h3><i class="fas fa-comments"></i> Avaliações dos Clientes</h3>
-                        <p>Veja o que os compradores acham deste 
+                        <p>Veja o que os usuários acham deste 
                             <?php if ($tipo_avaliacao === 'produto'): ?>
                                 produto
                             <?php elseif ($tipo_avaliacao === 'vendedor'): ?>

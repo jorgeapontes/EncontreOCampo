@@ -2963,3 +2963,75 @@ button.processando::after {
         font-size: 14px;
     }
 }
+
+/* ESTILOS PARA A AVALIAÇÃO DO USUÁRIO NO CHAT */
+.avaliacao-usuario-chat {
+    display: flex;
+    align-items: center;
+    margin-left: 15px;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, #fff8e1 0%, #fff3e0 100%);
+    border-radius: 20px;
+    border: 1px solid #ffd54f;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 80px;
+    justify-content: center;
+}
+
+.avaliacao-usuario-chat:hover {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffecb3 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.avaliacao-mini {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.estrela-media-chat {
+    color: #ffc107;
+    font-size: 1.1em;
+}
+
+.nota-media-chat {
+    font-size: 1em;
+    font-weight: 700;
+    color: #ff9800;
+}
+
+.total-avaliacoes-chat {
+    font-size: 0.85em;
+    color: #666;
+}
+
+/* Para responsividade em telas menores */
+@media (max-width: 768px) {
+    .avaliacao-usuario-chat {
+        margin-left: 10px;
+        padding: 6px 10px;
+        min-width: 70px;
+    }
+    
+    .nota-media-chat {
+        font-size: 0.9em;
+    }
+    
+    .total-avaliacoes-chat {
+        font-size: 0.8em;
+    }
+}
+
+@media (max-width: 480px) {
+    .avaliacao-usuario-chat {
+        margin-left: 8px;
+        padding: 5px 8px;
+        min-width: 65px;
+    }
+    
+    .avaliacao-mini {
+        gap: 3px;
+    }
+}

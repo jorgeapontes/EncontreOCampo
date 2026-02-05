@@ -312,13 +312,16 @@ try {
 // BUSCAR AVALIAÇÕES DO PRODUTO (ADICIONADO DO visualizar_anuncio.php)
 // =========================================================================
 $avaliacoes = [];
+$avaliacoes_limitadas = [];
 $media_avaliacao = 0;
+$total_avaliacoes = 0;
 try {
-    $sql_aval = "SELECT a.*, u.nome FROM avaliacoes a LEFT JOIN usuarios u ON a.avaliador_usuario_id = u.id WHERE a.produto_id = :produto_id AND a.tipo = 'produto' ORDER BY a.data_criacao DESC";
-    $stmt_aval = $conn->prepare($sql_aval);
-    $stmt_aval->bindParam(':produto_id', $anuncio_id, PDO::PARAM_INT);
-    $stmt_aval->execute();
-    $avaliacoes = $stmt_aval->fetchAll(PDO::FETCH_ASSOC);
+    // Buscar todas as avaliações para calcular média
+    $sql_aval_todas = "SELECT a.*, u.nome FROM avaliacoes a LEFT JOIN usuarios u ON a.avaliador_usuario_id = u.id WHERE a.produto_id = :produto_id AND a.tipo = 'produto' ORDER BY a.data_criacao DESC";
+    $stmt_aval_todas = $conn->prepare($sql_aval_todas);
+    $stmt_aval_todas->bindParam(':produto_id', $anuncio_id, PDO::PARAM_INT);
+    $stmt_aval_todas->execute();
+    $avaliacoes = $stmt_aval_todas->fetchAll(PDO::FETCH_ASSOC);
     
     // Calcular média
     if (!empty($avaliacoes)) {
@@ -327,6 +330,10 @@ try {
             $soma_notas += (int)$av['nota'];
         }
         $media_avaliacao = round($soma_notas / count($avaliacoes), 1);
+        $total_avaliacoes = count($avaliacoes);
+        
+        // Limitar a 3 avaliações mais recentes para exibição
+        $avaliacoes_limitadas = array_slice($avaliacoes, 0, 3);
     }
 } catch (Exception $e) {
     // Se der erro, continua sem avaliações
@@ -745,7 +752,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
             <!-- Seção de Avaliações (ADICIONADA) -->
             <div class="avaliacoes-section">
                 <div class="avaliacoes-header">
-                    <?php if (!empty($avaliacoes)): ?>
+                    <?php if ($total_avaliacoes > 0): ?>
                         <div class="media-avaliacao">
                             <div class="numero-media"><?php echo $media_avaliacao; ?></div>
                             <div class="estrelas-media">
@@ -761,7 +768,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                                 }
                                 ?>
                             </div>
-                            <div class="total-avaliacoes"><?php echo count($avaliacoes); ?> <?php echo count($avaliacoes) === 1 ? 'avaliação' : 'avaliações'; ?></div>
+                            <div class="total-avaliacoes"><?php echo $total_avaliacoes; ?> <?php echo $total_avaliacoes === 1 ? 'avaliação' : 'avaliações'; ?></div>
                         </div>
                         <div class="avaliacoes-info">
                             <h3><i class="fas fa-comments"></i> Avaliações dos Clientes</h3>
@@ -817,9 +824,9 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                     <?php endif; ?>
                 </div>
 
-                <?php if (!empty($avaliacoes)): ?>
+                <?php if (!empty($avaliacoes_limitadas)): ?>
                     <div class="avaliacoes-lista">
-                        <?php foreach ($avaliacoes as $av): ?>
+                        <?php foreach ($avaliacoes_limitadas as $av): ?>
                             <div class="avaliacao-item">
                                 <div class="avaliacao-header">
                                     <div>
@@ -853,6 +860,13 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                             </div>
                         <?php endforeach; ?>
                     </div>
+                    <?php if ($total_avaliacoes > 3): ?>
+                        <div class="ver-mais-avaliacoes">
+                            <a href="../avaliacoes.php?tipo=produto&id=<?php echo $anuncio_id; ?>" class="btn-ver-mais">
+                                <i class="fas fa-eye"></i> Ver todas as <?php echo $total_avaliacoes; ?> avaliações
+                            </a>
+                        </div>
+                    <?php endif; ?>
                 <?php else: ?>
                     <div class="sem-avaliacoes">
                         <div><i class="fas fa-star"></i></div>

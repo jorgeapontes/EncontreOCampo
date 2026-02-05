@@ -536,7 +536,7 @@ th:last-child {
     justify-content: space-between;
 }
 
-.proposal-card .card-row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding-right:52px; }
+.proposal-card .card-row { display:flex; justify-content:space-between; align-items:center; gap:12px; }
 .proposal-card .card-title h3 { margin:0; font-size:1.05rem; color:var(--text-color); }
 .proposal-card .card-title .date { display:block; color:#777; font-size:0.85rem; }
 
@@ -828,3 +828,51 @@ th:last-child {
         margin-bottom: 8px;
     }
 }
+
+.btn-avaliar-vendedor a{
+    background-color: #4caf50;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.2s;
+    transition: transform 0.2s ease;
+    margin-bottom: 20px;
+    float: right;
+    margin-left: 10px;
+}
+
+.btn-avaliar-vendedor :hover{
+    background-color: #218838;
+    transform: translateY(-1px);
+}
+
+.botao-avaliar {
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .botao-avaliar .btn-avaliar {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .botao-avaliar .btn-avaliar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
+        }
+        
+        .botao-avaliar .btn-avaliar i {
+            font-size: 0.9rem;
+        }

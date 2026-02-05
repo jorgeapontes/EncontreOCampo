@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 05/02/2026 às 02:17
+-- Tempo de geração: 05/02/2026 às 22:26
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -91,11 +91,13 @@ CREATE TABLE `avaliacoes` (
   `avaliador_usuario_id` int(11) NOT NULL,
   `produto_id` int(11) DEFAULT NULL,
   `vendedor_id` int(11) DEFAULT NULL,
+  `comprador_id` int(11) DEFAULT NULL,
+  `transportador_id` int(11) DEFAULT NULL,
   `proposta_id` int(11) DEFAULT NULL,
   `entrega_id` int(11) DEFAULT NULL,
   `nota` tinyint(1) NOT NULL,
   `comentario` text DEFAULT NULL,
-  `tipo` enum('produto','vendedor') NOT NULL,
+  `tipo` enum('produto','vendedor','comprador','transportador') NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -103,8 +105,8 @@ CREATE TABLE `avaliacoes` (
 -- Despejando dados para a tabela `avaliacoes`
 --
 
-INSERT INTO `avaliacoes` (`id`, `avaliador_usuario_id`, `produto_id`, `vendedor_id`, `proposta_id`, `entrega_id`, `nota`, `comentario`, `tipo`, `data_criacao`) VALUES
-(1, 37, 34, NULL, NULL, NULL, 4, 'Muito boa a banana', 'produto', '2026-02-04 23:28:05');
+INSERT INTO `avaliacoes` (`id`, `avaliador_usuario_id`, `produto_id`, `vendedor_id`, `comprador_id`, `transportador_id`, `proposta_id`, `entrega_id`, `nota`, `comentario`, `tipo`, `data_criacao`) VALUES
+(1, 37, 34, NULL, NULL, NULL, NULL, NULL, 4, 'Muito boa a banana', 'produto', '2026-02-04 23:28:05');
 
 -- --------------------------------------------------------
 

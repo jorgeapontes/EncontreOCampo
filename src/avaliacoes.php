@@ -135,13 +135,13 @@ switch ($tipo_avaliacao) {
         // Buscar informações do transportador (se houver tabela específica)
         try {
             // Adapte conforme sua estrutura de tabelas
-            $sql_transportador = "SELECT nome FROM transportadores WHERE usuario_id = :id";
+            $sql_transportador = "SELECT nome_comercial FROM transportadores WHERE usuario_id = :id";
             $stmt_transportador = $conn->prepare($sql_transportador);
             $stmt_transportador->bindParam(':id', $id_referencia, PDO::PARAM_INT);
             $stmt_transportador->execute();
             
             if ($transportador = $stmt_transportador->fetch(PDO::FETCH_ASSOC)) {
-                $pagina_titulo = "Avaliações do Transportador: " . htmlspecialchars($transportador['nome']);
+                $pagina_titulo = "Avaliações do Transportador: " . htmlspecialchars($transportador['nome_comercial']);
                 $subtitulo = "Perfil do transportador";
             } else {
                 header("Location: dashboard.php?erro=" . urlencode("Transportador não encontrado."));
@@ -587,8 +587,8 @@ try {
                                 vendedor
                             <?php elseif ($tipo_avaliacao === 'comprador'): ?>
                                 comprador
-                            <?php elseif ($tipo_avaliacao === 'comprador'): ?>
-                                comprador
+                            <?php elseif ($tipo_avaliacao === 'transportador'): ?>
+                                transportador
                             <?php endif; ?>    
                         </p>
                     </div>

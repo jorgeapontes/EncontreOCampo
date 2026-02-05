@@ -121,6 +121,8 @@ if ($viewer_id) {
     <link rel="shortcut icon" href="../img/logo-nova.png" type="image/x-icon">
     <title>Ver Perfil - <?php echo htmlspecialchars($user['nome'] ?? 'Usuário'); ?></title>
     <link rel="stylesheet" href="css/vendedor/vendas.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -223,6 +225,123 @@ if ($viewer_id) {
                         </div>
                     </div>
                 </div>
+                <div style="display: flex; align-items: center; flex-direction: column;">
+                <?php
+            // Buscar avaliações do usuário (vendedor, comprador ou transportador)
+            $media_avaliacao = 0;
+            $total_avaliacoes = 0;
+            $tipo_avaliacao = ''; // Para saber qual tipo de avaliação mostrar
+            
+            if ($profile_id) {
+                try {
+                    // Verificar se é vendedor
+                    $sql_check_vendedor = "SELECT 1 FROM vendedores WHERE usuario_id = ?";
+                    $stmt_check = $db->prepare($sql_check_vendedor);
+                    $stmt_check->execute([$profile_id]);
+                    $is_vendedor = $stmt_check->fetch(PDO::FETCH_ASSOC);
+                    
+                    // Verificar se é comprador
+                    $sql_check_comprador = "SELECT 1 FROM compradores WHERE usuario_id = ?";
+                    $stmt_check2 = $db->prepare($sql_check_comprador);
+                    $stmt_check2->execute([$profile_id]);
+                    $is_comprador = $stmt_check2->fetch(PDO::FETCH_ASSOC);
+                    
+                    // Verificar se é transportador (ajuste conforme sua tabela)
+                    $sql_check_transportador = "SELECT 1 FROM transportadores WHERE usuario_id = ?";
+                    $stmt_check3 = $db->prepare($sql_check_transportador);
+                    $stmt_check3->execute([$profile_id]);
+                    $is_transportador = $stmt_check3->fetch(PDO::FETCH_ASSOC);
+                    
+                    // Determinar qual tipo de avaliação buscar
+                    if ($is_vendedor) {
+                        $tipo_avaliacao = 'vendedor';
+                        $coluna_id = 'vendedor_id';
+                    } elseif ($is_comprador) {
+                        $tipo_avaliacao = 'comprador';
+                        $coluna_id = 'comprador_id';
+                    } elseif ($is_transportador) {
+                        $tipo_avaliacao = 'transportador';
+                        $coluna_id = 'transportador_id';
+                    }
+                    
+                    // Buscar avaliações se houver tipo definido
+                    if (!empty($tipo_avaliacao)) {
+                        $sql_avaliacoes = "SELECT nota 
+                                           FROM avaliacoes 
+                                           WHERE tipo = :tipo 
+                                           AND $coluna_id = :usuario_id
+                                           ORDER BY data_criacao DESC";
+                        
+                        $stmt_avaliacoes = $db->prepare($sql_avaliacoes);
+                        $stmt_avaliacoes->bindParam(':tipo', $tipo_avaliacao);
+                        $stmt_avaliacoes->bindParam(':usuario_id', $profile_id, PDO::PARAM_INT);
+                        $stmt_avaliacoes->execute();
+                        $avaliacoes = $stmt_avaliacoes->fetchAll(PDO::FETCH_ASSOC);
+                        
+                        // Calcular média das avaliações
+                        if (!empty($avaliacoes)) {
+                            $soma_notas = 0;
+                            foreach ($avaliacoes as $av) {
+                                $soma_notas += (int)$av['nota'];
+                            }
+                            $media_avaliacao = round($soma_notas / count($avaliacoes), 1);
+                            $total_avaliacoes = count($avaliacoes);
+                        }
+                    }
+                } catch (Exception $e) {
+                    // Ignorar erros na busca de avaliações
+                    error_log("Erro ao buscar avaliações: " . $e->getMessage());
+                }
+            }
+            
+            // Determinar rótulo para o tipo
+            $rotulo_tipo = '';
+            switch ($tipo_avaliacao) {
+                case 'vendedor': $rotulo_tipo = 'Vendedor'; break;
+                case 'comprador': $rotulo_tipo = 'Comprador'; break;
+                case 'transportador': $rotulo_tipo = 'Transportador'; break;
+            }
+        ?>
+        
+        <?php if (!empty($tipo_avaliacao) && $total_avaliacoes > 0): ?>
+        <div class="avaliacao-vendedor" >
+            <div class="media-avaliacao-vendedor" style="display: flex; align-items: center; gap: 10px;">
+                <div class="numero-media-vendedor" style="font-size: 1.8em; font-weight: 700; color: #ff9800;">
+                    <?php echo $media_avaliacao; ?>
+                </div>
+                <div>
+                    <div class="estrelas-media-vendedor" style="display: flex; gap: 3px; margin-bottom: 5px;">
+                        <?php 
+                        for ($i = 1; $i <= 5; $i++) {
+                            if ($i <= floor($media_avaliacao)) {
+                                echo '<i class="fas fa-star estrela-cheia-vendedor"></i>';
+                            } elseif ($i - 0.5 <= $media_avaliacao) {
+                                echo '<i class="fas fa-star-half-alt estrela-cheia-vendedor"></i>';
+                            } else {
+                                echo '<i class="far fa-star estrela-vazia-vendedor"></i>';
+                            }
+                        }
+                        ?>
+                    </div>
+                    <div class="total-avaliacoes-vendedor" style="color: #666; font-size: 0.9em;">
+                        <?php echo $total_avaliacoes; ?> <?php echo $total_avaliacoes === 1 ? 'avaliação' : 'avaliações'; ?>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 8px;">
+                <a href="avaliacoes.php?tipo=<?php echo $tipo_avaliacao; ?>&id=<?php echo urlencode($profile_id); ?>" 
+                   style="font-size: 0.85em; color: #007bff; text-decoration: none;">
+                    Ver todas as avaliações <i class="fas fa-external-link-alt" ></i>
+                </a>
+            </div>
+        </div>
+        <?php elseif (!empty($tipo_avaliacao)): ?>
+        <div style="margin: 10px 0 15px 0; padding: 10px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6; width: fit-content;">
+            <div style="color: #999; font-size: 0.9em;">
+                <i class="far fa-star"></i> <?php echo $rotulo_tipo; ?> ainda não tem avaliações
+            </div>
+        </div>
+        <?php endif; ?>
                 <div class="btn-avaliar-vendedor">
                     <?php
                         // Mostrar botão de avaliar vendedor se o viewer comprou deste vendedor e situação permitir
@@ -258,6 +377,7 @@ if ($viewer_id) {
                             }
                         }
                     ?>
+                </div>
                 </div>
             </div>
 

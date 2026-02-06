@@ -21,6 +21,9 @@ $id_referencia = (int)$_GET['id']; // ID do produto, vendedor, etc.
 $pagina_titulo = '';
 $subtitulo = '';
 $mostrar_botao_avaliar = false;
+$comprador_id_tabela = null;
+$transportador_id_tabela = null;
+$vendedor_id_tabela = null;  // 
 
 $database = new Database();
 $conn = $database->getConnection();
@@ -94,12 +97,13 @@ switch ($tipo_avaliacao) {
     case 'vendedor':
         // Buscar informações do vendedor
         try {
-            $sql_vendedor = "SELECT nome_comercial FROM vendedores WHERE usuario_id = :id";
+            $sql_vendedor = "SELECT id, nome_comercial FROM vendedores WHERE usuario_id = :id";
             $stmt_vendedor = $conn->prepare($sql_vendedor);
             $stmt_vendedor->bindParam(':id', $id_referencia, PDO::PARAM_INT);
             $stmt_vendedor->execute();
             
             if ($vendedor = $stmt_vendedor->fetch(PDO::FETCH_ASSOC)) {
+                $vendedor_id_tabela = $vendedor['id']; // ADICIONAR ESTA LINHA
                 $pagina_titulo = "Avaliações do Vendedor: " . htmlspecialchars($vendedor['nome_comercial']);
                 $subtitulo = "Perfil do vendedor";
             } else {
@@ -114,14 +118,45 @@ switch ($tipo_avaliacao) {
     case 'comprador':
         // Buscar informações do comprador
         try {
-            $sql_comprador = "SELECT nome_comercial FROM compradores WHERE usuario_id = :id";
+            $sql_comprador = "SELECT id, nome_comercial FROM compradores WHERE usuario_id = :id";
             $stmt_comprador = $conn->prepare($sql_comprador);
             $stmt_comprador->bindParam(':id', $id_referencia, PDO::PARAM_INT);
             $stmt_comprador->execute();
             
             if ($comprador = $stmt_comprador->fetch(PDO::FETCH_ASSOC)) {
+                $comprador_id_tabela = $comprador['id']; // ID da tabela compradores
                 $pagina_titulo = "Avaliações do Comprador: " . htmlspecialchars($comprador['nome_comercial']);
                 $subtitulo = "Perfil do comprador";
+                
+                // Verificar se usuário logado pode avaliar este comprador
+                if (isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo') {
+                    $usuario_logado = $_SESSION['usuario_id'];
+                    
+                    // Verificar se foi vendedor com este comprador
+                    // compradores.usuario_id precisa ser comparado com propostas.comprador_id
+                    $sql_comp_uid = "SELECT usuario_id FROM compradores WHERE id = :comprador_id LIMIT 1";
+                    $st_comp_uid = $conn->prepare($sql_comp_uid);
+                    $st_comp_uid->bindParam(':comprador_id', $comprador_id_tabela, PDO::PARAM_INT);
+                    $st_comp_uid->execute();
+                    $comp_uid_row = $st_comp_uid->fetch(PDO::FETCH_ASSOC);
+                    
+                    if ($comp_uid_row) {
+                        $comprador_usuario_id = $comp_uid_row['usuario_id'];
+                        
+                        $sql_check = "SELECT 1 FROM propostas p 
+                                      WHERE p.comprador_id = :comprador_usuario_id
+                                      AND p.status = 'aceita' 
+                                      AND p.vendedor_id = :usuario_id
+                                      LIMIT 1";
+                        $stc = $conn->prepare($sql_check);
+                        $stc->bindParam(':comprador_usuario_id', $comprador_usuario_id, PDO::PARAM_INT);
+                        $stc->bindParam(':usuario_id', $usuario_logado, PDO::PARAM_INT);
+                        $stc->execute();
+                        if ($stc->fetch(PDO::FETCH_ASSOC)) {
+                            $mostrar_botao_avaliar = true;
+                        }
+                    }
+                }
             } else {
                 header("Location: dashboard.php?erro=" . urlencode("Comprador não encontrado."));
                 exit();
@@ -135,14 +170,35 @@ switch ($tipo_avaliacao) {
         // Buscar informações do transportador (se houver tabela específica)
         try {
             // Adapte conforme sua estrutura de tabelas
-            $sql_transportador = "SELECT nome_comercial FROM transportadores WHERE usuario_id = :id";
+            $sql_transportador = "SELECT id, nome_comercial FROM transportadores WHERE usuario_id = :id";
             $stmt_transportador = $conn->prepare($sql_transportador);
             $stmt_transportador->bindParam(':id', $id_referencia, PDO::PARAM_INT);
             $stmt_transportador->execute();
             
             if ($transportador = $stmt_transportador->fetch(PDO::FETCH_ASSOC)) {
+                $transportador_id_tabela = $transportador['id']; // ID da tabela transportadores
                 $pagina_titulo = "Avaliações do Transportador: " . htmlspecialchars($transportador['nome_comercial']);
                 $subtitulo = "Perfil do transportador";
+                
+                // Verificar se usuário logado pode avaliar este transportador
+                if (isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo') {
+                    $usuario_logado = $_SESSION['usuario_id'];
+                    
+                    // Verificar se teve entrega com este transportador
+                    $sql_check = "SELECT 1 FROM entregas e 
+                                  LEFT JOIN compradores c ON e.comprador_id = c.id 
+                                  LEFT JOIN vendedores v ON e.vendedor_id = v.id 
+                                  WHERE e.transportador_id = :transportador_id 
+                                  AND (e.vendedor_id = :usuario_id OR v.usuario_id = :usuario_id OR e.comprador_id = :usuario_id OR c.usuario_id = :usuario_id) 
+                                  AND (e.status = 'entregue' OR e.status_detalhado = 'finalizada') LIMIT 1";
+                    $stc = $conn->prepare($sql_check);
+                    $stc->bindParam(':transportador_id', $transportador_id_tabela, PDO::PARAM_INT);
+                    $stc->bindParam(':usuario_id', $usuario_logado, PDO::PARAM_INT);
+                    $stc->execute();
+                    if ($stc->fetch(PDO::FETCH_ASSOC)) {
+                        $mostrar_botao_avaliar = true;
+                    }
+                }
             } else {
                 header("Location: dashboard.php?erro=" . urlencode("Transportador não encontrado."));
                 exit();
@@ -168,29 +224,58 @@ try {
                       LEFT JOIN usuarios u ON a.avaliador_usuario_id = u.id 
                       WHERE a.tipo = :tipo AND a.";
     
-    // Definir o campo correto baseado no tipo
+    // Definir o campo correto e o ID correto baseado no tipo
+    $id_para_buscar = null;
+    
     switch ($tipo_avaliacao) {
         case 'produto':
             $sql_avaliacoes .= "produto_id = :id";
+            $id_para_buscar = $id_referencia; // produto usa o ID direto
             break;
         case 'vendedor':
             $sql_avaliacoes .= "vendedor_id = :id";
+            $id_para_buscar = $vendedor_id_tabela ?? null; // usar ID da tabela vendedores
             break;
         case 'comprador':
             $sql_avaliacoes .= "comprador_id = :id";
+            $id_para_buscar = $comprador_id_tabela ?? null; // usar ID da tabela compradores
             break;
         case 'transportador':
             $sql_avaliacoes .= "transportador_id = :id";
+            $id_para_buscar = $transportador_id_tabela ?? null; // usar ID da tabela transportadores
             break;
     }
     
     $sql_avaliacoes .= " ORDER BY a.data_criacao DESC";
     
+    // Verificar se temos um ID válido para buscar
+    if ($id_para_buscar === null) {
+        throw new Exception("ID não encontrado para tipo: " . $tipo_avaliacao);
+    }
+    
     $stmt_avaliacoes = $conn->prepare($sql_avaliacoes);
     $stmt_avaliacoes->bindParam(':tipo', $tipo_avaliacao);
-    $stmt_avaliacoes->bindParam(':id', $id_referencia, PDO::PARAM_INT);
+    $stmt_avaliacoes->bindParam(':id', $id_para_buscar, PDO::PARAM_INT);
     $stmt_avaliacoes->execute();
     $avaliacoes = $stmt_avaliacoes->fetchAll(PDO::FETCH_ASSOC);
+
+    // Buscar fotos relacionadas às avaliações (em lote)
+    if (!empty($avaliacoes)) {
+        $ids = array_column($avaliacoes, 'id');
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stmt_fotos = $conn->prepare("SELECT avaliacao_id, caminho FROM avaliacao_fotos WHERE avaliacao_id IN ($placeholders) ORDER BY id ASC");
+        $stmt_fotos->execute($ids);
+        $fotos_raw = $stmt_fotos->fetchAll(PDO::FETCH_ASSOC);
+        $fotos_map = [];
+        foreach ($fotos_raw as $f) {
+            $fotos_map[$f['avaliacao_id']][] = $f['caminho'];
+        }
+        // Anexar lista de fotos a cada avaliação
+        foreach ($avaliacoes as &$av) {
+            $av['fotos'] = $fotos_map[$av['id']] ?? [];
+        }
+        unset($av);
+    }
     
     // Calcular média
     if (!empty($avaliacoes)) {
@@ -203,6 +288,8 @@ try {
     }
 } catch (PDOException $e) {
     die("Erro ao buscar avaliações: " . $e->getMessage());
+} catch (Exception $e) {
+    die("Erro: " . $e->getMessage());
 }
 ?>
 
@@ -598,11 +685,31 @@ try {
                             <i class="fas fa-star"></i> Avaliar este produto
                         </a>
                     </div>
+                    <?php elseif ($tipo_avaliacao === 'transportador' && $mostrar_botao_avaliar): ?>
+                        <div class="botao-avaliar">
+                            <a href="./avaliar.php?tipo=transportador&transportador_id=<?php echo $transportador_id_tabela; ?>" class="btn-avaliar">
+                            <i class="fas fa-star"></i> Avaliar este transportador
+                        </a>
+                    </div>
+                    <?php elseif ($tipo_avaliacao === 'comprador' && $mostrar_botao_avaliar): ?>
+                        <div class="botao-avaliar">
+                            <a href="./avaliar.php?tipo=comprador&comprador_id=<?php echo $comprador_id_tabela; ?>" class="btn-avaliar">
+                            <i class="fas fa-star"></i> Avaliar este comprador
+                        </a>
+                    </div>
                     <?php elseif ($tipo_avaliacao === 'produto' && isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo'): ?>
                         <div style="padding: 10px 15px; background: #f8f9fa; border-radius: var(--radius); color: #666; font-size: 0.9em;">
                             <i class="fas fa-info-circle"></i> Você só pode avaliar produtos que comprou
                         </div>
-                    <?php endif; ?>  
+                    <?php elseif ($tipo_avaliacao === 'transportador' && isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo'): ?>
+                        <div style="padding: 10px 15px; background: #f8f9fa; border-radius: var(--radius); color: #666; font-size: 0.9em;">
+                            <i class="fas fa-info-circle"></i> Você só pode avaliar transportadores com quem fez negócio
+                        </div>
+                    <?php elseif ($tipo_avaliacao === 'comprador' && isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo'): ?>
+                        <div style="padding: 10px 15px; background: #f8f9fa; border-radius: var(--radius); color: #666; font-size: 0.9em;">
+                            <i class="fas fa-info-circle"></i> Você só pode avaliar compradores com quem fez negócio
+                        </div>
+                    <?php endif; ?> 
                 </div>
                 <?php 
                     $contador = 0;
@@ -641,6 +748,15 @@ try {
                                 <?php echo nl2br(htmlspecialchars($av['comentario'])); ?>
                             </div>
                         <?php endif; ?>
+                        <?php if (!empty($av['fotos'])): ?>
+                            <div class="avaliacao-fotos" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+                                <?php foreach ($av['fotos'] as $foto): ?>
+                                    <a href="../<?php echo htmlspecialchars($foto); ?>" target="_blank" rel="noopener" style="display:inline-block;">
+                                        <img src="../<?php echo htmlspecialchars($foto); ?>" alt="Foto da avaliação" style="max-width:140px;max-height:140px;object-fit:cover;border-radius:8px;border:1px solid #e3e3e3;" />
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -650,6 +766,128 @@ try {
                 <div><i class="fas fa-star"></i></div>
                 <p>Nenhuma avaliação encontrada.</p>
             </div>
+        <?php endif; ?>
+
+        <!-- Seção: Pessoas para avaliar -->
+        <?php if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'vendedor' && isset($_SESSION['usuario_id'])): ?>
+            <?php
+            // Vendedor: mostrar compradores com quem fez negócio
+            try {
+                $vendedor_id = null;
+                $sql_v = "SELECT id FROM vendedores WHERE usuario_id = :uid";
+                $stmt_v = $conn->prepare($sql_v);
+                $stmt_v->bindParam(':uid', $_SESSION['usuario_id'], PDO::PARAM_INT);
+                $stmt_v->execute();
+                $v_row = $stmt_v->fetch(PDO::FETCH_ASSOC);
+                if ($v_row) {
+                    $vendedor_id = $v_row['id'];
+                    
+                    $sql_cp = "SELECT DISTINCT c.id, c.nome_comercial, u.id as usuario_id, u.nome 
+                               FROM compradores c 
+                               INNER JOIN usuarios u ON c.usuario_id = u.id 
+                               INNER JOIN propostas p ON p.comprador_id = c.id 
+                               WHERE p.vendedor_id = :vendedor_id AND p.status = 'aceita' 
+                               ORDER BY u.nome ASC";
+                    $stmt_cp = $conn->prepare($sql_cp);
+                    $stmt_cp->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
+                    $stmt_cp->execute();
+                    $compradores = $stmt_cp->fetchAll(PDO::FETCH_ASSOC);
+                    
+                    if (!empty($compradores)): ?>
+                        <div style="background: white; padding: 25px; border-radius: var(--radius); margin-top: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                            <h3><i class="fas fa-users"></i> Compradores para avaliar</h3>
+                            <p style="color: #666; margin-bottom: 20px;">Veja e avalie os compradores com quem você fez negócios</p>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                                <?php foreach ($compradores as $comp): ?>
+                                    <div style="border: 1px solid #e3e3e3; padding: 15px; border-radius: 6px; text-align: center;">
+                                        <div style="font-weight: 600; margin-bottom: 10px;"><?php echo htmlspecialchars($comp['nome'] ?? $comp['nome_comercial']); ?></div>
+                                        <a href="./avaliacoes.php?tipo=comprador&id=<?php echo $comp['usuario_id']; ?>" style="color: #4CAF50; text-decoration: none; font-weight: 500;">Ver avaliações</a>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif;
+                }
+            } catch (Exception $e) {
+                // Silencioso
+            }
+            ?>
+        <?php elseif (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'transportador' && isset($_SESSION['usuario_id'])): ?>
+            <?php
+            // Transportador: mostrar compradores e vendedores com quem fez entregas
+            try {
+                $transportador_id = null;
+                $sql_t = "SELECT id FROM transportadores WHERE usuario_id = :uid";
+                $stmt_t = $conn->prepare($sql_t);
+                $stmt_t->bindParam(':uid', $_SESSION['usuario_id'], PDO::PARAM_INT);
+                $stmt_t->execute();
+                $t_row = $stmt_t->fetch(PDO::FETCH_ASSOC);
+                if ($t_row) {
+                    $transportador_id = $t_row['id'];
+                    
+                    // Compradores
+                    $sql_cc = "SELECT DISTINCT c.id, u.id as usuario_id, u.nome, c.nome_comercial 
+                               FROM compradores c 
+                               INNER JOIN usuarios u ON c.usuario_id = u.id 
+                               INNER JOIN entregas e ON e.comprador_id = c.id 
+                               WHERE e.transportador_id = :transportador_id AND (e.status = 'entregue' OR e.status_detalhado = 'finalizada') 
+                               ORDER BY u.nome ASC";
+                    $stmt_cc = $conn->prepare($sql_cc);
+                    $stmt_cc->bindParam(':transportador_id', $transportador_id, PDO::PARAM_INT);
+                    $stmt_cc->execute();
+                    $compradores_transp = $stmt_cc->fetchAll(PDO::FETCH_ASSOC);
+                    
+                    // Vendedores
+                    $sql_vv = "SELECT DISTINCT v.id, u.id as usuario_id, u.nome, v.nome_comercial 
+                               FROM vendedores v 
+                               INNER JOIN usuarios u ON v.usuario_id = u.id 
+                               INNER JOIN entregas e ON e.vendedor_id = v.id 
+                               WHERE e.transportador_id = :transportador_id AND (e.status = 'entregue' OR e.status_detalhado = 'finalizada') 
+                               ORDER BY u.nome ASC";
+                    $stmt_vv = $conn->prepare($sql_vv);
+                    $stmt_vv->bindParam(':transportador_id', $transportador_id, PDO::PARAM_INT);
+                    $stmt_vv->execute();
+                    $vendedores_transp = $stmt_vv->fetchAll(PDO::FETCH_ASSOC);
+                    
+                    if (!empty($compradores_transp) || !empty($vendedores_transp)): ?>
+                        <div style="background: white; padding: 25px; border-radius: var(--radius); margin-top: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                            <h3><i class="fas fa-users"></i> Pessoas para avaliar</h3>
+                            <p style="color: #666; margin-bottom: 20px;">Avalie os compradores e vendedores com quem você fez entregas</p>
+                            
+                            <?php if (!empty($compradores_transp)): ?>
+                                <div style="margin-bottom: 25px;">
+                                    <h4 style="margin-bottom: 15px; color: #333;">Compradores</h4>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                                        <?php foreach ($compradores_transp as $comp): ?>
+                                            <div style="border: 1px solid #e3e3e3; padding: 15px; border-radius: 6px; text-align: center;">
+                                                <div style="font-weight: 600; margin-bottom: 10px;"><?php echo htmlspecialchars($comp['nome'] ?? $comp['nome_comercial']); ?></div>
+                                                <a href="./avaliacoes.php?tipo=comprador&id=<?php echo $comp['usuario_id']; ?>" style="color: #4CAF50; text-decoration: none; font-weight: 500;">Ver avaliações</a>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <?php if (!empty($vendedores_transp)): ?>
+                                <div>
+                                    <h4 style="margin-bottom: 15px; color: #333;">Vendedores</h4>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                                        <?php foreach ($vendedores_transp as $vend): ?>
+                                            <div style="border: 1px solid #e3e3e3; padding: 15px; border-radius: 6px; text-align: center;">
+                                                <div style="font-weight: 600; margin-bottom: 10px;"><?php echo htmlspecialchars($vend['nome'] ?? $vend['nome_comercial']); ?></div>
+                                                <a href="./avaliacoes.php?tipo=vendedor&id=<?php echo $vend['usuario_id']; ?>" style="color: #4CAF50; text-decoration: none; font-weight: 500;">Ver avaliações</a>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif;
+                }
+            } catch (Exception $e) {
+                // Silencioso
+            }
+            ?>
         <?php endif; ?>
     </div>
 </body>

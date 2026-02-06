@@ -232,49 +232,59 @@ if ($viewer_id) {
             $total_avaliacoes = 0;
             $tipo_avaliacao = ''; // Para saber qual tipo de avaliação mostrar
             
-            if ($profile_id) {
+            // Buscar e exibir avaliações do usuário
+            $media_avaliacao = 0;
+            $total_avaliacoes = 0;
+            $tipo_avaliacao = null;
+            
+            if ($profile_id > 0) {
                 try {
-                    // Verificar se é vendedor
-                    $sql_check_vendedor = "SELECT 1 FROM vendedores WHERE usuario_id = ?";
+                    // Verificar se é vendedor e buscar o ID da tabela vendedores
+                    $sql_check_vendedor = "SELECT id FROM vendedores WHERE usuario_id = ?";
                     $stmt_check = $db->prepare($sql_check_vendedor);
                     $stmt_check->execute([$profile_id]);
-                    $is_vendedor = $stmt_check->fetch(PDO::FETCH_ASSOC);
+                    $vendedor_row = $stmt_check->fetch(PDO::FETCH_ASSOC);
                     
-                    // Verificar se é comprador
-                    $sql_check_comprador = "SELECT 1 FROM compradores WHERE usuario_id = ?";
+                    // Verificar se é comprador e buscar o ID da tabela compradores
+                    $sql_check_comprador = "SELECT id FROM compradores WHERE usuario_id = ?";
                     $stmt_check2 = $db->prepare($sql_check_comprador);
                     $stmt_check2->execute([$profile_id]);
-                    $is_comprador = $stmt_check2->fetch(PDO::FETCH_ASSOC);
+                    $comprador_row = $stmt_check2->fetch(PDO::FETCH_ASSOC);
                     
-                    // Verificar se é transportador (ajuste conforme sua tabela)
-                    $sql_check_transportador = "SELECT 1 FROM transportadores WHERE usuario_id = ?";
+                    // Verificar se é transportador e buscar o ID da tabela transportadores
+                    $sql_check_transportador = "SELECT id FROM transportadores WHERE usuario_id = ?";
                     $stmt_check3 = $db->prepare($sql_check_transportador);
                     $stmt_check3->execute([$profile_id]);
-                    $is_transportador = $stmt_check3->fetch(PDO::FETCH_ASSOC);
+                    $transportador_row = $stmt_check3->fetch(PDO::FETCH_ASSOC);
                     
-                    // Determinar qual tipo de avaliação buscar
-                    if ($is_vendedor) {
+                    // Determinar qual tipo de avaliação buscar e qual ID usar
+                    $id_para_buscar = null;
+                    
+                    if ($vendedor_row) {
                         $tipo_avaliacao = 'vendedor';
                         $coluna_id = 'vendedor_id';
-                    } elseif ($is_comprador) {
+                        $id_para_buscar = $vendedor_row['id']; // ID da tabela vendedores
+                    } elseif ($comprador_row) {
                         $tipo_avaliacao = 'comprador';
                         $coluna_id = 'comprador_id';
-                    } elseif ($is_transportador) {
+                        $id_para_buscar = $comprador_row['id']; // ID da tabela compradores
+                    } elseif ($transportador_row) {
                         $tipo_avaliacao = 'transportador';
                         $coluna_id = 'transportador_id';
+                        $id_para_buscar = $transportador_row['id']; // ID da tabela transportadores
                     }
                     
                     // Buscar avaliações se houver tipo definido
-                    if (!empty($tipo_avaliacao)) {
+                    if (!empty($tipo_avaliacao) && $id_para_buscar) {
                         $sql_avaliacoes = "SELECT nota 
                                            FROM avaliacoes 
                                            WHERE tipo = :tipo 
-                                           AND $coluna_id = :usuario_id
+                                           AND $coluna_id = :id_tabela
                                            ORDER BY data_criacao DESC";
                         
                         $stmt_avaliacoes = $db->prepare($sql_avaliacoes);
                         $stmt_avaliacoes->bindParam(':tipo', $tipo_avaliacao);
-                        $stmt_avaliacoes->bindParam(':usuario_id', $profile_id, PDO::PARAM_INT);
+                        $stmt_avaliacoes->bindParam(':id_tabela', $id_para_buscar, PDO::PARAM_INT);
                         $stmt_avaliacoes->execute();
                         $avaliacoes = $stmt_avaliacoes->fetchAll(PDO::FETCH_ASSOC);
                         
@@ -343,41 +353,204 @@ if ($viewer_id) {
         </div>
         <?php endif; ?>
                 <div class="btn-avaliar-vendedor">
-                    <?php
-                        // Mostrar botão de avaliar vendedor se o viewer comprou deste vendedor e situação permitir
-                        if ($viewer_id && isset($user['id'])) {
-                            try {
-                                $sql_check = "SELECT p.produto_id, p.opcao_frete FROM propostas p LEFT JOIN compradores c ON p.comprador_id = c.id WHERE p.vendedor_id = :profile AND (p.comprador_id = :viewer OR c.usuario_id = :viewer) AND p.status = 'aceita' ORDER BY p.data_inicio DESC LIMIT 1";
-                                $stc = $db->prepare($sql_check);
-                                $stc->bindParam(':profile', $profile_id, PDO::PARAM_INT);
-                                $stc->bindParam(':viewer', $viewer_id, PDO::PARAM_INT);
-                                $stc->execute();
-                                $rowc = $stc->fetch(PDO::FETCH_ASSOC);
-                                $mostrar_avaliar_vendedor = false;
-                                if ($rowc) {
-                                    $op = $rowc['opcao_frete'] ?? null;
-                                    $produto_rel = $rowc['produto_id'] ?? null;
-                                    if (in_array($op, ['vendedor','comprador'])) {
-                                        $mostrar_avaliar_vendedor = true;
-                                    } elseif ($op === 'entregador' && $produto_rel) {
-                                        $sql_ent = "SELECT id FROM entregas WHERE produto_id = :produto_id AND comprador_id = :viewer AND (status = 'entregue' OR status_detalhado = 'finalizada') LIMIT 1";
-                                        $ste = $db->prepare($sql_ent);
-                                        $ste->bindParam(':produto_id', $produto_rel, PDO::PARAM_INT);
-                                        $ste->bindParam(':viewer', $viewer_id, PDO::PARAM_INT);
-                                        $ste->execute();
-                                        if ($ste->fetch(PDO::FETCH_ASSOC)) $mostrar_avaliar_vendedor = true;
+                <?php
+                    if ($viewer_id && isset($user['id']) && $viewer_id != $profile_id) {
+                        try {
+                            $tipo_avaliacao = null;
+                            $id_para_avaliar = null;
+                            $mostrar_botao = false;
+                            
+                            // ========================================
+                            // CENÁRIO 1: Viewer (VENDEDOR) avaliando COMPRADOR
+                            // ========================================
+                            $sql_vendedor_comprador = "
+                                SELECT p.comprador_id
+                                FROM propostas p 
+                                WHERE p.vendedor_id = :viewer
+                                AND p.comprador_id = :profile
+                                AND p.status = 'aceita' 
+                                LIMIT 1
+                            ";
+                            
+                            $stmt1 = $db->prepare($sql_vendedor_comprador);
+                            $stmt1->bindParam(':viewer', $viewer_id, PDO::PARAM_INT);
+                            $stmt1->bindParam(':profile', $profile_id, PDO::PARAM_INT);
+                            $stmt1->execute();
+                            $result1 = $stmt1->fetch(PDO::FETCH_ASSOC);
+                            
+                            if ($result1) {
+                                $tipo_avaliacao = 'comprador';
+                                // Buscar o ID real da tabela compradores
+                                $sql_comp_id = "SELECT id FROM compradores WHERE usuario_id = :usuario_id LIMIT 1";
+                                $stmt_cid = $db->prepare($sql_comp_id);
+                                $stmt_cid->bindParam(':usuario_id', $profile_id, PDO::PARAM_INT);
+                                $stmt_cid->execute();
+                                $comp_row = $stmt_cid->fetch(PDO::FETCH_ASSOC);
+                                if ($comp_row) {
+                                    $id_para_avaliar = $comp_row['id'];
+                                    $mostrar_botao = true;
+                                }
+                            }
+                            
+                            // ========================================
+                            // CENÁRIO 2: Viewer (COMPRADOR) avaliando VENDEDOR
+                            // ========================================
+                            if (!$mostrar_botao) {
+                                $sql_comprador_vendedor = "
+                                    SELECT p.vendedor_id
+                                    FROM propostas p 
+                                    WHERE p.vendedor_id = :profile 
+                                    AND p.comprador_id = :viewer
+                                    AND p.status = 'aceita' 
+                                    LIMIT 1
+                                ";
+                                
+                                $stmt2 = $db->prepare($sql_comprador_vendedor);
+                                $stmt2->bindParam(':profile', $profile_id, PDO::PARAM_INT);
+                                $stmt2->bindParam(':viewer', $viewer_id, PDO::PARAM_INT);
+                                $stmt2->execute();
+                                $result2 = $stmt2->fetch(PDO::FETCH_ASSOC);
+                                
+                                if ($result2) {
+                                    $tipo_avaliacao = 'vendedor';
+                                    // Buscar o ID real da tabela vendedores
+                                    $sql_vend_id = "SELECT id FROM vendedores WHERE usuario_id = :usuario_id LIMIT 1";
+                                    $stmt_vid = $db->prepare($sql_vend_id);
+                                    $stmt_vid->bindParam(':usuario_id', $profile_id, PDO::PARAM_INT);
+                                    $stmt_vid->execute();
+                                    $vend_row = $stmt_vid->fetch(PDO::FETCH_ASSOC);
+                                    if ($vend_row) {
+                                        $id_para_avaliar = $vend_row['id'];
+                                        $mostrar_botao = true;
                                     }
                                 }
-
-                                if ($mostrar_avaliar_vendedor) {
-                                    echo '<div style="margin-top:12px;"><a href="avaliar.php?tipo=vendedor&vendedor_id='.urlencode($profile_id).'" class="btn btn-info">Avaliar este vendedor</a></div>';
-                                }
-                            } catch (Exception $e) {
-                                // ignorar erros de verificação
                             }
+                            
+                            // ========================================
+                            // CENÁRIO 3: Avaliando TRANSPORTADOR
+                            // ========================================
+                            if (!$mostrar_botao) {
+                                // Viewer (vendedor ou comprador) avaliando transportador
+                                $sql_avaliar_transportador = "
+                                    SELECT e.transportador_id
+                                    FROM entregas e
+                                    LEFT JOIN transportadores t ON e.transportador_id = t.id
+                                    WHERE t.usuario_id = :profile
+                                    AND (e.vendedor_id = :viewer OR e.comprador_id = :viewer)
+                                    AND (e.status = 'entregue' OR e.status_detalhado = 'finalizada')
+                                    LIMIT 1
+                                ";
+                                
+                                $stmt3 = $db->prepare($sql_avaliar_transportador);
+                                $stmt3->bindParam(':profile', $profile_id, PDO::PARAM_INT);
+                                $stmt3->bindParam(':viewer', $viewer_id, PDO::PARAM_INT);
+                                $stmt3->execute();
+                                $result3 = $stmt3->fetch(PDO::FETCH_ASSOC);
+                                
+                                if ($result3) {
+                                    $tipo_avaliacao = 'transportador';
+                                    $id_para_avaliar = $result3['transportador_id'];
+                                    $mostrar_botao = true;
+                                }
+                            }
+                            
+                            // ========================================
+                            // CENÁRIO 4: TRANSPORTADOR avaliando VENDEDOR
+                            // ========================================
+                            if (!$mostrar_botao) {
+                                $sql_transp_vendedor = "
+                                    SELECT e.vendedor_id
+                                    FROM entregas e
+                                    LEFT JOIN transportadores t ON e.transportador_id = t.id
+                                    WHERE t.usuario_id = :viewer
+                                    AND e.vendedor_id = :profile
+                                    AND (e.status = 'entregue' OR e.status_detalhado = 'finalizada')
+                                    LIMIT 1
+                                ";
+                                
+                                $stmt4 = $db->prepare($sql_transp_vendedor);
+                                $stmt4->bindParam(':viewer', $viewer_id, PDO::PARAM_INT);
+                                $stmt4->bindParam(':profile', $profile_id, PDO::PARAM_INT);
+                                $stmt4->execute();
+                                $result4 = $stmt4->fetch(PDO::FETCH_ASSOC);
+                                
+                                if ($result4) {
+                                    $tipo_avaliacao = 'vendedor';
+                                    $sql_vend_id = "SELECT id FROM vendedores WHERE usuario_id = :usuario_id LIMIT 1";
+                                    $stmt_vid = $db->prepare($sql_vend_id);
+                                    $stmt_vid->bindParam(':usuario_id', $profile_id, PDO::PARAM_INT);
+                                    $stmt_vid->execute();
+                                    $vend_row = $stmt_vid->fetch(PDO::FETCH_ASSOC);
+                                    if ($vend_row) {
+                                        $id_para_avaliar = $vend_row['id'];
+                                        $mostrar_botao = true;
+                                    }
+                                }
+                            }
+                            
+                            // ========================================
+                            // CENÁRIO 5: TRANSPORTADOR avaliando COMPRADOR
+                            // ========================================
+                            if (!$mostrar_botao) {
+                                $sql_transp_comprador = "
+                                    SELECT e.comprador_id
+                                    FROM entregas e
+                                    LEFT JOIN transportadores t ON e.transportador_id = t.id
+                                    WHERE t.usuario_id = :viewer
+                                    AND e.comprador_id = :profile
+                                    AND (e.status = 'entregue' OR e.status_detalhado = 'finalizada')
+                                    LIMIT 1
+                                ";
+                                
+                                $stmt5 = $db->prepare($sql_transp_comprador);
+                                $stmt5->bindParam(':viewer', $viewer_id, PDO::PARAM_INT);
+                                $stmt5->bindParam(':profile', $profile_id, PDO::PARAM_INT);
+                                $stmt5->execute();
+                                $result5 = $stmt5->fetch(PDO::FETCH_ASSOC);
+                                
+                                if ($result5) {
+                                    $tipo_avaliacao = 'comprador';
+                                    $sql_comp_id = "SELECT id FROM compradores WHERE usuario_id = :usuario_id LIMIT 1";
+                                    $stmt_cid = $db->prepare($sql_comp_id);
+                                    $stmt_cid->bindParam(':usuario_id', $profile_id, PDO::PARAM_INT);
+                                    $stmt_cid->execute();
+                                    $comp_row = $stmt_cid->fetch(PDO::FETCH_ASSOC);
+                                    if ($comp_row) {
+                                        $id_para_avaliar = $comp_row['id'];
+                                        $mostrar_botao = true;
+                                    }
+                                }
+                            }
+                            
+                            // ========================================
+                            // EXIBIR BOTÃO
+                            // ========================================
+                            if ($mostrar_botao && $tipo_avaliacao && $id_para_avaliar) {
+                                $textos = [
+                                    'vendedor' => 'Avaliar este vendedor',
+                                    'comprador' => 'Avaliar este comprador',
+                                    'transportador' => 'Avaliar este transportador'
+                                ];
+                                
+                                $texto_botao = $textos[$tipo_avaliacao] ?? '';
+                                $param_nome = $tipo_avaliacao . '_id';
+                                $url_avaliacao = 'avaliar.php?tipo=' . urlencode($tipo_avaliacao) . '&' . $param_nome . '=' . urlencode($id_para_avaliar);
+                                
+                                if ($texto_botao) {
+                                    echo '<div style="margin-top:12px;">';
+                                    echo '<a href="' . htmlspecialchars($url_avaliacao) . '" class="btn btn-info">';
+                                    echo htmlspecialchars($texto_botao);
+                                    echo '</a>';
+                                    echo '</div>';
+                                }
+                            }
+                            
+                        } catch (Exception $e) {
+                            error_log("Erro ao verificar permissão de avaliação: " . $e->getMessage());
                         }
-                    ?>
-                </div>
+                    }
+                ?>
+            </div>
                 </div>
             </div>
 

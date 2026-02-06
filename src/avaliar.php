@@ -10,16 +10,50 @@ if (!isset($_SESSION['usuario_id'])) {
 }
 
 $usuario_id = $_SESSION['usuario_id'];
-$tipo = $_GET['tipo'] ?? $_POST['tipo'] ?? null; // 'produto' ou 'vendedor'
+$tipo = $_GET['tipo'] ?? $_POST['tipo'] ?? null; // 'produto', 'vendedor', 'transportador', 'comprador'
 $produto_id = isset($_GET['produto_id']) ? intval($_GET['produto_id']) : (isset($_POST['produto_id']) ? intval($_POST['produto_id']) : null);
 $vendedor_id = isset($_GET['vendedor_id']) ? intval($_GET['vendedor_id']) : (isset($_POST['vendedor_id']) ? intval($_POST['vendedor_id']) : null);
+$transportador_id = isset($_GET['transportador_id']) ? intval($_GET['transportador_id']) : (isset($_POST['transportador_id']) ? intval($_POST['transportador_id']) : null);
+$comprador_id = isset($_GET['comprador_id']) ? intval($_GET['comprador_id']) : (isset($_POST['comprador_id']) ? intval($_POST['comprador_id']) : null);
 $proposta_id = isset($_GET['proposta_id']) ? intval($_GET['proposta_id']) : (isset($_POST['proposta_id']) ? intval($_POST['proposta_id']) : null);
 $entrega_id = isset($_GET['entrega_id']) ? intval($_GET['entrega_id']) : (isset($_POST['entrega_id']) ? intval($_POST['entrega_id']) : null);
+
+// Converter usuario_id para ID da tabela se necessário (quando vem de avaliacoes.php)
+try {
+    $db_temp = new Database();
+    $conn_temp = $db_temp->getConnection();
+    
+    if ($tipo === 'transportador' && $transportador_id > 0) {
+        // Verificar se é usuario_id ou ID da tabela
+        $sql_check = "SELECT id FROM transportadores WHERE usuario_id = :id LIMIT 1";
+        $stmt_check = $conn_temp->prepare($sql_check);
+        $stmt_check->bindParam(':id', $transportador_id, PDO::PARAM_INT);
+        $stmt_check->execute();
+        $result = $stmt_check->fetch(PDO::FETCH_ASSOC);
+        if ($result) {
+            $transportador_id = $result['id']; // Converter para ID da tabela
+        }
+    }
+    
+    if ($tipo === 'comprador' && $comprador_id > 0) {
+        // Verificar se é usuario_id ou ID da tabela
+        $sql_check = "SELECT id FROM compradores WHERE usuario_id = :id LIMIT 1";
+        $stmt_check = $conn_temp->prepare($sql_check);
+        $stmt_check->bindParam(':id', $comprador_id, PDO::PARAM_INT);
+        $stmt_check->execute();
+        $result = $stmt_check->fetch(PDO::FETCH_ASSOC);
+        if ($result) {
+            $comprador_id = $result['id']; // Converter para ID da tabela
+        }
+    }
+} catch (Exception $e) {
+    // Silencioso
+}
 
 $erro = '';
 $sucesso = '';
 
-function usuarioEhElegivel($conn, $usuario_id, $tipo, $produto_id = null, $vendedor_id = null, $proposta_id = null, $entrega_id = null) {
+function usuarioEhElegivel($conn, $usuario_id, $tipo, $produto_id = null, $vendedor_id = null, $transportador_id = null, $comprador_id = null, $proposta_id = null, $entrega_id = null) {
     try {
         if ($tipo === 'produto') {
                 if ($produto_id) {
@@ -50,7 +84,6 @@ function usuarioEhElegivel($conn, $usuario_id, $tipo, $produto_id = null, $vende
                     }
                 }
             }
-            // if entrega_id provided, check delivery record (also consider compradores mapping)
             if ($entrega_id) {
                 $sql_e = "SELECT e.id FROM entregas e LEFT JOIN compradores c ON e.comprador_id = c.id WHERE e.id = :entrega_id AND (e.comprador_id = :usuario_id OR c.usuario_id = :usuario_id) AND (e.status = 'entregue' OR e.status_detalhado = 'finalizada') LIMIT 1";
                 $se = $conn->prepare($sql_e);
@@ -64,19 +97,42 @@ function usuarioEhElegivel($conn, $usuario_id, $tipo, $produto_id = null, $vende
 
         if ($tipo === 'vendedor') {
             if ($vendedor_id) {
+                // Buscar o usuario_id do vendedor
+                $sql_vend_uid = "SELECT usuario_id FROM vendedores WHERE id = :vendedor_id LIMIT 1";
+                $st_vend_uid = $conn->prepare($sql_vend_uid);
+                $st_vend_uid->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
+                $st_vend_uid->execute();
+                $vend_uid_row = $st_vend_uid->fetch(PDO::FETCH_ASSOC);
+                
+                if ($vend_uid_row) {
+                    $vendedor_usuario_id = $vend_uid_row['usuario_id'];
+                    
+                    // Propostas usam usuario_id diretamente
+                    $sql = "SELECT 1 FROM propostas 
+                            WHERE vendedor_id = :vendedor_usuario_id 
+                            AND comprador_id = :usuario_id 
+                            AND status = 'aceita' LIMIT 1";
+                    $st = $conn->prepare($sql);
+                    $st->bindParam(':vendedor_usuario_id', $vendedor_usuario_id, PDO::PARAM_INT);
+                    $st->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+                    $st->execute();
+                    if ($st->fetch(PDO::FETCH_ASSOC)) return true;
+                }
+            }
+            return false;
+        }
 
-                $sql_vendedor = "SELECT u.nome 
-                                FROM vendedores v 
-                                INNER JOIN usuarios u ON v.usuario_id = u.id 
-                                WHERE v.id = :vendedor_id";
-                $stmt_vendedor = $conn->prepare($sql_vendedor);
-                $stmt_vendedor->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
-                $stmt_vendedor->execute();
-                $vendedor = $stmt_vendedor->fetch(PDO::FETCH_ASSOC);
-
-                $sql = "SELECT 1 FROM propostas WHERE vendedor_id = :vendedor_id AND comprador_id = :usuario_id AND status = 'aceita' LIMIT 1";
+        if ($tipo === 'transportador') {
+            if ($transportador_id) {
+                // Verificar se o usuário (vendedor ou comprador) teve uma entrega com este transportador
+                $sql = "SELECT 1 FROM entregas e 
+                        LEFT JOIN compradores c ON e.comprador_id = c.id 
+                        LEFT JOIN vendedores v ON e.vendedor_id = v.id 
+                        WHERE e.transportador_id = :transportador_id 
+                        AND (e.vendedor_id = :usuario_id OR v.usuario_id = :usuario_id OR e.comprador_id = :usuario_id OR c.usuario_id = :usuario_id) 
+                        AND (e.status = 'entregue' OR e.status_detalhado = 'finalizada') LIMIT 1";
                 $st = $conn->prepare($sql);
-                $st->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
+                $st->bindParam(':transportador_id', $transportador_id, PDO::PARAM_INT);
                 $st->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
                 $st->execute();
                 if ($st->fetch(PDO::FETCH_ASSOC)) return true;
@@ -84,7 +140,48 @@ function usuarioEhElegivel($conn, $usuario_id, $tipo, $produto_id = null, $vende
             return false;
         }
 
+        if ($tipo === 'comprador') {
+            if ($comprador_id) {
+                // Buscar o usuario_id do comprador
+                $sql_comp_uid = "SELECT usuario_id FROM compradores WHERE id = :comprador_id LIMIT 1";
+                $st_comp_uid = $conn->prepare($sql_comp_uid);
+                $st_comp_uid->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
+                $st_comp_uid->execute();
+                $comp_uid_row = $st_comp_uid->fetch(PDO::FETCH_ASSOC);
+                
+                if ($comp_uid_row) {
+                    $comprador_usuario_id = $comp_uid_row['usuario_id'];
+                    
+                    // Via proposta (vendedor) - propostas usam usuario_id diretamente
+                    $sql = "SELECT 1 FROM propostas p 
+                            WHERE p.comprador_id = :comprador_usuario_id
+                            AND p.status = 'aceita' 
+                            AND p.vendedor_id = :usuario_id
+                            LIMIT 1";
+                    $st = $conn->prepare($sql);
+                    $st->bindParam(':comprador_usuario_id', $comprador_usuario_id, PDO::PARAM_INT);
+                    $st->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+                    $st->execute();
+                    if ($st->fetch(PDO::FETCH_ASSOC)) return true;
+
+                    // Ou verificar se foi transportador com esse comprador
+                    $sql2 = "SELECT 1 FROM entregas e 
+                             WHERE e.comprador_id = :comprador_usuario_id
+                             AND e.transportador_id = (SELECT id FROM transportadores WHERE usuario_id = :usuario_id LIMIT 1) 
+                             AND (e.status = 'entregue' OR e.status_detalhado = 'finalizada') LIMIT 1";
+                    $st2 = $conn->prepare($sql2);
+                    $st2->bindParam(':comprador_usuario_id', $comprador_usuario_id, PDO::PARAM_INT);
+                    $st2->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+                    $st2->execute();
+                    if ($st2->fetch(PDO::FETCH_ASSOC)) return true;
+                }
+            }
+            return false;
+        }
+        
+        return false;
     } catch (Exception $e) {
+        error_log("Erro em usuarioEhElegivel: " . $e->getMessage());
         return false;
     }
 }
@@ -95,6 +192,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tipo = $_POST['tipo'] ?? $tipo;
     $produto_id = !empty($_POST['produto_id']) ? intval($_POST['produto_id']) : $produto_id;
     $vendedor_id = !empty($_POST['vendedor_id']) ? intval($_POST['vendedor_id']) : $vendedor_id;
+    $transportador_id = !empty($_POST['transportador_id']) ? intval($_POST['transportador_id']) : $transportador_id;
+    $comprador_id = !empty($_POST['comprador_id']) ? intval($_POST['comprador_id']) : $comprador_id;
     $proposta_id = !empty($_POST['proposta_id']) ? intval($_POST['proposta_id']) : $proposta_id;
     $entrega_id = !empty($_POST['entrega_id']) ? intval($_POST['entrega_id']) : $entrega_id;
 
@@ -106,25 +205,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $conn = $database->getConnection();
 
             // Validar se o usuário é elegível para avaliar este item
-            if (!usuarioEhElegivel($conn, $usuario_id, $tipo, $produto_id, $vendedor_id, $proposta_id, $entrega_id)) {
+            if (!usuarioEhElegivel($conn, $usuario_id, $tipo, $produto_id, $vendedor_id, $transportador_id, $comprador_id, $proposta_id, $entrega_id)) {
                 $erro = 'Você não tem permissão para avaliar este item.';
             } else {
 
-            $sql = "INSERT INTO avaliacoes (avaliador_usuario_id, produto_id, vendedor_id, proposta_id, entrega_id, nota, comentario, tipo) VALUES (:avaliador, :produto, :vendedor, :proposta, :entrega, :nota, :comentario, :tipo)";
+            $sql = "INSERT INTO avaliacoes (avaliador_usuario_id, produto_id, vendedor_id, comprador_id, transportador_id, proposta_id, entrega_id, nota, comentario, tipo) VALUES (:avaliador, :produto, :vendedor, :comprador, :transportador, :proposta, :entrega, :nota, :comentario, :tipo)";
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(':avaliador', $usuario_id, PDO::PARAM_INT);
             $prod_bind = $produto_id ?: null;
             $vend_bind = $vendedor_id ?: null;
+            $comp_bind = $comprador_id ?: null;
+            $transp_bind = $transportador_id ?: null;
             $prop_bind = $proposta_id ?: null;
             $ent_bind = $entrega_id ?: null;
             $stmt->bindParam(':produto', $prod_bind, PDO::PARAM_INT);
             $stmt->bindParam(':vendedor', $vend_bind, PDO::PARAM_INT);
+            $stmt->bindParam(':comprador', $comp_bind, PDO::PARAM_INT);
+            $stmt->bindParam(':transportador', $transp_bind, PDO::PARAM_INT);
             $stmt->bindParam(':proposta', $prop_bind, PDO::PARAM_INT);
             $stmt->bindParam(':entrega', $ent_bind, PDO::PARAM_INT);
             $stmt->bindParam(':nota', $nota, PDO::PARAM_INT);
             $stmt->bindParam(':comentario', $comentario);
             $stmt->bindParam(':tipo', $tipo);
             $stmt->execute();
+
+            // Capturar ID da avaliação recém-criada
+            $avaliacao_id = $conn->lastInsertId();
+
+            // Criar tabela para armazenar fotos de avaliações, se não existir
+            $sql_create = "CREATE TABLE IF NOT EXISTS avaliacao_fotos (
+                id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                avaliacao_id INT(11) NOT NULL,
+                caminho VARCHAR(500) NOT NULL,
+                data_criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP()
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+            $conn->exec($sql_create);
+
+            // Processar uploads de fotos (campo 'fotos')
+            if (!empty($_FILES['fotos']) && is_array($_FILES['fotos']['name'])) {
+                $uploadDir = __DIR__ . '/../uploads/avaliacoes/';
+                if (!is_dir($uploadDir)) {
+                    @mkdir($uploadDir, 0755, true);
+                }
+
+                for ($i = 0; $i < count($_FILES['fotos']['name']); $i++) {
+                    if (empty($_FILES['fotos']['name'][$i])) continue;
+                    $tmpName = $_FILES['fotos']['tmp_name'][$i];
+                    $origName = basename($_FILES['fotos']['name'][$i]);
+                    $size = $_FILES['fotos']['size'][$i];
+                    $error = $_FILES['fotos']['error'][$i];
+
+                    if ($error !== UPLOAD_ERR_OK) continue;
+                    if ($size <= 0) continue;
+
+                    // Validar extensão simples
+                    $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
+                    $allowed = ['jpg','jpeg','png','gif','webp'];
+                    if (!in_array($ext, $allowed)) continue;
+
+                    $newName = 'avaliacao_' . $avaliacao_id . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                    $destPath = $uploadDir . $newName;
+
+                    if (@move_uploaded_file($tmpName, $destPath)) {
+                        $relativePath = 'uploads/avaliacoes/' . $newName;
+                        $ins = $conn->prepare("INSERT INTO avaliacao_fotos (avaliacao_id, caminho) VALUES (:aid, :c)");
+                        $ins->bindParam(':aid', $avaliacao_id, PDO::PARAM_INT);
+                        $ins->bindParam(':c', $relativePath);
+                        $ins->execute();
+                    }
+                }
+            }
 
             // Notificar vendedor/usuario alvo
             if ($tipo === 'produto' && $produto_id) {
@@ -163,6 +313,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         enviarEmailNotificacao($usuario_email['email'], $usuario_email['nome'], 'Nova avaliação recebida', 'Você recebeu uma nova avaliação na plataforma. Acesse seu perfil para ver detalhes.');
                     }
                 }
+            } elseif ($tipo === 'transportador' && $transportador_id) {
+                // buscar usuario do transportador
+                $stmt_tu = $conn->prepare("SELECT usuario_id FROM transportadores WHERE id = :tid");
+                $stmt_tu->bindParam(':tid', $transportador_id, PDO::PARAM_INT);
+                $stmt_tu->execute();
+                $tu = $stmt_tu->fetch(PDO::FETCH_ASSOC);
+                $transportador_usuario = $tu['usuario_id'] ?? null;
+                if ($transportador_usuario) {
+                    criarNotificacao($transportador_usuario, "Você recebeu uma nova avaliação como transportador.", 'info', "src/verperfil.php?usuario_id=" . $transportador_usuario);
+                    $usuario_email = buscarEmailUsuario($transportador_usuario);
+                    if ($usuario_email && $usuario_email['email']) {
+                        enviarEmailNotificacao($usuario_email['email'], $usuario_email['nome'], 'Nova avaliação recebida', 'Você recebeu uma nova avaliação na plataforma. Acesse seu perfil para ver detalhes.');
+                    }
+                }
+            } elseif ($tipo === 'comprador' && $comprador_id) {
+                // buscar usuario do comprador
+                $stmt_cu = $conn->prepare("SELECT usuario_id FROM compradores WHERE id = :cid");
+                $stmt_cu->bindParam(':cid', $comprador_id, PDO::PARAM_INT);
+                $stmt_cu->execute();
+                $cu = $stmt_cu->fetch(PDO::FETCH_ASSOC);
+                $comprador_usuario = $cu['usuario_id'] ?? null;
+                if ($comprador_usuario) {
+                    criarNotificacao($comprador_usuario, "Você recebeu uma nova avaliação como comprador.", 'info', "src/verperfil.php?usuario_id=" . $comprador_usuario);
+                    $usuario_email = buscarEmailUsuario($comprador_usuario);
+                    if ($usuario_email && $usuario_email['email']) {
+                        enviarEmailNotificacao($usuario_email['email'], $usuario_email['nome'], 'Nova avaliação recebida', 'Você recebeu uma nova avaliação na plataforma. Acesse seu perfil para ver detalhes.');
+                    }
+                }
             }
 
                 $sucesso = 'Avaliação enviada. Obrigado!';
@@ -178,7 +356,7 @@ if (empty($sucesso) && empty($erro)) {
     try {
         $database = new Database();
         $conn = $database->getConnection();
-        if (!usuarioEhElegivel($conn, $usuario_id, $tipo, $produto_id, $vendedor_id, $proposta_id, $entrega_id)) {
+        if (!usuarioEhElegivel($conn, $usuario_id, $tipo, $produto_id, $vendedor_id, $transportador_id, $comprador_id, $proposta_id, $entrega_id)) {
             $erro = 'Você não tem permissão para avaliar este item.';
         }
     } catch (Exception $e) {
@@ -369,6 +547,8 @@ if (empty($sucesso) && empty($erro)) {
             
             $produto = [];
             $vendedor = [];
+            $transportador = [];
+            $comprador = [];
             $usuario = [];
             
             if ($tipo === 'produto' && $produto_id) {
@@ -396,6 +576,26 @@ if (empty($sucesso) && empty($erro)) {
                     $usuario = $stmt_usuario->fetch(PDO::FETCH_ASSOC) ?: [];
                 }
             }
+            elseif ($tipo === 'transportador' && $transportador_id) {
+                $sql_transportador = "SELECT u.nome 
+                                     FROM transportadores t 
+                                     INNER JOIN usuarios u ON t.usuario_id = u.id 
+                                     WHERE t.id = :transportador_id";
+                $stmt_transportador = $conn->prepare($sql_transportador);
+                $stmt_transportador->bindParam(':transportador_id', $transportador_id, PDO::PARAM_INT);
+                $stmt_transportador->execute();
+                $transportador = $stmt_transportador->fetch(PDO::FETCH_ASSOC) ?: [];
+            }
+            elseif ($tipo === 'comprador' && $comprador_id) {
+                $sql_comprador = "SELECT u.nome 
+                                  FROM compradores c 
+                                  INNER JOIN usuarios u ON c.usuario_id = u.id 
+                                  WHERE c.id = :comprador_id";
+                $stmt_comprador = $conn->prepare($sql_comprador);
+                $stmt_comprador->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
+                $stmt_comprador->execute();
+                $comprador = $stmt_comprador->fetch(PDO::FETCH_ASSOC) ?: [];
+            }
         } catch (Exception $e) {
             // Erro silencioso
         }
@@ -406,6 +606,10 @@ if (empty($sucesso) && empty($erro)) {
             <?php echo htmlspecialchars($produto['nome']); ?>
         <?php elseif ($tipo === 'vendedor' && isset($usuario['nome'])): ?>
             <?php echo htmlspecialchars($usuario['nome']); ?>
+        <?php elseif ($tipo === 'transportador' && isset($transportador['nome'])): ?>
+            <?php echo htmlspecialchars($transportador['nome']); ?>
+        <?php elseif ($tipo === 'comprador' && isset($comprador['nome'])): ?>
+            <?php echo htmlspecialchars($comprador['nome']); ?>
         <?php endif; ?>
     </h2>
     <?php if ($erro): ?>
@@ -417,10 +621,12 @@ if (empty($sucesso) && empty($erro)) {
         </div>
             <center><button type="button" class="back-btn" onclick="history.back(history.back())">Voltar</button></center>
         <?php else: ?>
-    <form method="POST" id="avaliacaoForm">
+    <form method="POST" id="avaliacaoForm" enctype="multipart/form-data">
         <input type="hidden" name="tipo" value="<?php echo htmlspecialchars($tipo); ?>">
         <input type="hidden" name="produto_id" value="<?php echo htmlspecialchars($produto_id); ?>">
         <input type="hidden" name="vendedor_id" value="<?php echo htmlspecialchars($vendedor_id); ?>">
+        <input type="hidden" name="transportador_id" value="<?php echo htmlspecialchars($transportador_id); ?>">
+        <input type="hidden" name="comprador_id" value="<?php echo htmlspecialchars($comprador_id); ?>">
         <input type="hidden" name="proposta_id" value="<?php echo htmlspecialchars($proposta_id); ?>">
         <input type="hidden" name="entrega_id" value="<?php echo htmlspecialchars($entrega_id); ?>">
         <input type="hidden" name="nota" id="notaInput" value="0" required>
@@ -453,6 +659,10 @@ if (empty($sucesso) && empty($erro)) {
         </div>
         
         <div style="margin-top:25px;text-align:center;">
+            <div style="margin-bottom:12px;">
+                <label style="display:block;font-weight:bold;margin-bottom:8px;">Fotos (opcional)</label>
+                <input type="file" name="fotos[]" accept="image/*" multiple style="width:100%;" />
+            </div>
             <button type="button" class="cancel-btn" onclick="history.back()">Cancelar</button>
             <button type="submit" class="submit-btn" id="submitBtn" disabled>Enviar avaliação</button>
         </div>

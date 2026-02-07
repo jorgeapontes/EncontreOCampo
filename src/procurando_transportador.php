@@ -620,6 +620,260 @@ try {
                 navMenu.classList.remove("active");
             }));
         }
+
+        // ============== ATUALIZAÇÃO DINÂMICA VIA AJAX ==============
+let ultimaVerificacao = Math.floor(Date.now() / 1000);
+let estaVerificando = false;
+let intervaloAtualizacao = null;
+const TEMPO_POLLING = 10000; // 10 segundos
+
+function iniciarPolling() {
+    // Verificar imediatamente
+    verificarAtualizacoes();
+    
+    // Configurar intervalo
+    intervaloAtualizacao = setInterval(verificarAtualizacoes, TEMPO_POLLING);
+    
+    // Verificar quando a janela ganha foco
+    window.addEventListener('focus', function() {
+        if (!estaVerificando) {
+            verificarAtualizacoes();
+        }
+    });
+    
+    // Parar polling quando a janela perde foco
+    window.addEventListener('blur', function() {
+        if (intervaloAtualizacao) {
+            clearInterval(intervaloAtualizacao);
+            intervaloAtualizacao = null;
+        }
+    });
+    
+    // Retomar quando ganha foco novamente
+    window.addEventListener('focus', function() {
+        if (!intervaloAtualizacao) {
+            intervaloAtualizacao = setInterval(verificarAtualizacoes, TEMPO_POLLING);
+        }
+    });
+}
+
+function verificarAtualizacoes() {
+    if (estaVerificando) return;
+    
+    estaVerificando = true;
+    
+    fetch(`atualizar_transportador_ajax.php?ultima_verificacao=${ultimaVerificacao}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erro na rede');
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Atualizar timestamp
+        ultimaVerificacao = data.timestamp || Math.floor(Date.now() / 1000);
+        
+        if (data.error) {
+            console.error('Erro:', data.error);
+            return;
+        }
+        
+        // Se houve atualizações
+        if (data.atualizado) {
+            // 1. Atualizar badges de mensagens não lidas
+            if (data.contadores && Array.isArray(data.contadores)) {
+                data.contadores.forEach(contador => {
+                    atualizarBadgeConversa(contador.conversa_id, contador.nao_lidas);
+                });
+            }
+            
+            // 2. Atualizar últimas mensagens
+            if (data.ultimas_mensagens && Array.isArray(data.ultimas_mensagens)) {
+                data.ultimas_mensagens.forEach(msg => {
+                    atualizarUltimaMensagem(msg.conversa_id, msg.ultima_mensagem, msg.ultima_mensagem_data);
+                });
+            }
+            
+            // 3. Mostrar notificação sutil
+            if (data.novas_mensagens && data.novas_mensagens.length > 0) {
+                mostrarNotificacaoNovasMensagens(data.novas_mensagens.length);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Erro na verificação:', error);
+        // Tentar novamente mais tarde
+        setTimeout(verificarAtualizacoes, TEMPO_POLLING * 2);
+    })
+    .finally(() => {
+        estaVerificando = false;
+    });
+}
+
+function atualizarBadgeConversa(conversaId, quantidade) {
+    const card = document.getElementById(`conversa-${conversaId}`);
+    if (!card) return;
+    
+    // Encontrar badge existente
+    const badge = card.querySelector('.badge-novo');
+    const produtoNomeDiv = card.querySelector('.produto-nome-principal');
+    
+    if (quantidade > 0) {
+        // Adicionar classe de não lida (opcional, se quiser estilo diferente)
+        // card.classList.add('nao-lida');
+        
+        // Criar ou atualizar badge
+        if (!badge && produtoNomeDiv) {
+            const novoBadge = document.createElement('span');
+            novoBadge.className = 'badge-novo';
+            novoBadge.textContent = `${quantidade} nova${quantidade > 1 ? 's' : ''}`;
+            produtoNomeDiv.appendChild(novoBadge);
+            
+            // Animação
+            novoBadge.style.animation = 'pulse 1s ease-in-out';
+            setTimeout(() => {
+                novoBadge.style.animation = '';
+            }, 1000);
+        } else if (badge) {
+            badge.textContent = `${quantidade} nova${quantidade > 1 ? 's' : ''}`;
+            badge.style.display = 'inline-block';
+            badge.style.animation = 'pulse 1s ease-in-out';
+            setTimeout(() => {
+                badge.style.animation = '';
+            }, 1000);
+        }
+    } else {
+        // Remover badge se não houver mensagens não lidas
+        if (badge) {
+            badge.remove();
+        }
+    }
+}
+
+function atualizarUltimaMensagem(conversaId, mensagem, dataStr) {
+    const card = document.getElementById(`conversa-${conversaId}`);
+    if (!card) return;
+    
+    // Atualizar mensagem no elemento existente
+    const msgElement = card.querySelector('.ultima-mensagem');
+    if (msgElement && mensagem) {
+        // Formatar data
+        if (dataStr) {
+            const data = new Date(dataStr);
+            const dataFormatada = data.toLocaleDateString('pt-BR') + ' ' + 
+                                data.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+            
+            if (mensagem.includes('[Imagem]')) {
+                msgElement.innerHTML = `<i class="fas fa-comment"></i> [Imagem] - ${dataFormatada}`;
+            } else {
+                // Limitar tamanho da mensagem
+                const msgTruncada = mensagem.length > 60 ? mensagem.substring(0, 57) + '...' : mensagem;
+                msgElement.innerHTML = `<i class="fas fa-comment"></i> ${msgTruncada}`;
+            }
+        } else {
+            if (mensagem.includes('[Imagem]')) {
+                msgElement.innerHTML = `<i class="fas fa-comment"></i> [Imagem]`;
+            } else {
+                const msgTruncada = mensagem.length > 60 ? mensagem.substring(0, 57) + '...' : mensagem;
+                msgElement.innerHTML = `<i class="fas fa-comment"></i> ${msgTruncada}`;
+            }
+        }
+    }
+}
+
+function mostrarNotificacaoNovasMensagens(quantidade) {
+    // Criar notificação sutil
+    const notif = document.createElement('div');
+    notif.className = 'notificacao-flutuante';
+    notif.innerHTML = `
+        <i class="fas fa-comment-dots"></i>
+        <span>${quantidade} nova${quantidade > 1 ? 's' : ''} mensagem${quantidade > 1 ? 's' : ''} de transportador</span>
+        <button onclick="this.parentElement.remove()">&times;</button>
+    `;
+    
+    // Estilos
+    notif.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: #2E7D32;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        z-index: 9999;
+        animation: slideInRight 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(notif);
+    
+    // Remover automaticamente após 5 segundos
+    setTimeout(() => {
+        if (notif.parentElement) {
+            notif.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => notif.remove(), 300);
+        }
+    }, 5000);
+}
+
+// Adicionar estilos CSS para animações
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    
+    .notificacao-flutuante {
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .notificacao-flutuante button {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0;
+        margin-left: 10px;
+    }
+    
+    .badge-novo {
+        background: #dc3545;
+        color: white;
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-weight: 700;
+        margin-left: 8px;
+        animation: pulse 1s ease-in-out;
+    }
+`;
+document.head.appendChild(style);
+
+// Iniciar polling quando a página carregar
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(iniciarPolling, 2000);
+});
 </script>
 </body>
 </html>

@@ -475,6 +475,128 @@ try {
         font-size: 0.9rem;
     }
 }
+
+.loading-conversas {
+            padding: 3rem;
+            text-align: center;
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .loading-conversas i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .notificacao-flutuante {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: #2E7D32;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        .notificacao-flutuante button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 10px;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+            50% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+        }
+        
+        .conversa-card.nao-lida {
+            background-color: #f0f9ff !important;
+            border-left: 4px solid #2196F3 !important;
+        }
+        
+        .badge-novo {
+            animation: pulse 1s ease-in-out;
+        }
+        
+        .conversa-card.nova {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Adicione abas para ativos/arquivados (opcional) */
+        .abas-container {
+            display: flex;
+            gap: 1px;
+            margin-bottom: 20px;
+            background: #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .aba {
+            flex: 1;
+            padding: 12px 20px;
+            background: #f8f9fa;
+            border: none;
+            border-right: 1px solid #e0e0e0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .aba:last-child {
+            border-right: none;
+        }
+        
+        .aba.active {
+            background: #2E7D32;
+            color: white;
+        }
+        
+        .aba:hover:not(.active) {
+            background: #e9ecef;
+        }
+        
+        .badge-aba {
+            background: #dc3545;
+            color: white;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -514,90 +636,11 @@ try {
                 <h2>Conversas com Transportadores</h2>
             </div>
 
-            <div class="conversas-list">
-                <?php if (count($conversas) > 0): ?>
-                    <?php foreach ($conversas as $conversa):
-                        // DEBUG: Informações sobre o caminho da imagem
-                        $imagem_db = $conversa['produto_imagem'];
-                        
-                        // Testa diferentes possibilidades de caminho
-                        $opcoes_caminho = [
-                            'original' => $imagem_db,
-                            'sem_barra' => str_replace('../', '', $imagem_db),
-                            'com_barra' => '../' . str_replace('../', '', $imagem_db),
-                            'raiz' => '/' . str_replace('../', '', $imagem_db),
-                        ];
-                        
-                        // Encontra qual caminho existe
-                        $imagem_final = '../img/placeholder.png';
-                        $caminho_usado = 'nenhum';
-                        
-                        foreach ($opcoes_caminho as $tipo => $caminho) {
-                            if ($caminho && file_exists(__DIR__ . '/' . $caminho)) {
-                                $imagem_final = $caminho;
-                                $caminho_usado = $tipo;
-                                break;
-                            }
-                        }
-                        
-                        $data_formatada = $conversa['ultima_mensagem_data'] ? date('d/m/Y H:i', strtotime($conversa['ultima_mensagem_data'])) : '';
-                        $tem_nao_lidas = !empty($conversa['mensagens_nao_lidas']) && $conversa['mensagens_nao_lidas'] > 0;
-                        $esta_arquivado = !empty($conversa['arquivado']) && $conversa['arquivado'] == 1;
-                        $chat_url = "chat_transportador/chat_interface.php?conversa_id=" . $conversa['conversa_id'];
-                    ?>
-                    <div class="conversa-card <?php echo $tem_nao_lidas ? 'nao-lida' : ''; ?> <?php echo $esta_arquivado ? 'arquivado' : ''; ?>" id="conversa-<?php echo $conversa['conversa_id']; ?>">
-                        <?php if (!$esta_arquivado): ?>
-                            <a href="<?php echo $chat_url; ?>" style="display:flex;gap:1.5rem;align-items:center;text-decoration:none;color:inherit;flex:1;">
-                        <?php else: ?>
-                            <div style="display:flex;gap:1.5rem;align-items:center;flex:1;cursor:default;">
-                        <?php endif; ?>
-                        <div class="produto-thumb">
-                            <img src="<?php echo htmlspecialchars($imagem_final); ?>" 
-                                 alt="<?php echo htmlspecialchars($conversa['produto_nome']); ?>"
-                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                            <i class="fas fa-image placeholder-icon" style="display: none;"></i>
-
-                        </div>
-                        <div class="conversa-info">
-                            <div style="display:flex;justify-content:space-between;align-items:center;">
-                                <div class="produto-nome-principal"><?php echo htmlspecialchars($conversa['produto_nome']); ?>
-                                    <?php if ($esta_arquivado): ?>
-                                        <span class="badge-arquivado"><i class="fas fa-archive"></i> Arquivado</span>
-                                    <?php endif; ?>
-                                    <?php if ($tem_nao_lidas && !$esta_arquivado): ?>
-                                        <span class="badge-novo"><?php echo $conversa['mensagens_nao_lidas']; ?> nova<?php echo $conversa['mensagens_nao_lidas'] > 1 ? 's' : ''; ?></span>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="conversa-data"><?php echo $data_formatada; ?></div>
-                            </div>
-                            <div style="margin-top:8px;color:#666;">
-                                <strong>Transportador:</strong> <?php echo htmlspecialchars($conversa['transportador_nome'] ?? 'Transportador'); ?>
-                            </div>
-                            <?php if ($conversa['ultima_mensagem']): ?>
-                                <div class="ultima-mensagem" style="margin-top:8px;">
-                                    <i class="fas fa-comment"></i> <?php echo htmlspecialchars($conversa['ultima_mensagem']); ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                        <?php if (!$esta_arquivado): ?>
-                            </a>
-                        <?php else: ?>
-                            </div>
-                        <?php endif; ?>
-                        <div class="conversa-actions">
-                            <a href="<?php echo $chat_url; ?>" class="btn-chat">
-                                <i class="fas fa-comments"></i> Abrir Chat
-                            </a>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <div class="empty-state">
-                        <i class="fas fa-comments" style="font-size:48px;margin-bottom:12px;"></i>
-                        <h3>Nenhuma conversa com transportador encontrada</h3>
-                        <p>Quando transportadores entrarem em contato, as conversas aparecerão aqui.</p>
-                    </div>
-                <?php endif; ?>
+            <div class="conversas-list" id="conversasList">
+                <!-- As conversas serão carregadas dinamicamente aqui -->
+                <div class="loading-conversas" id="loadingConversas">
+                    <i class="fas fa-spinner fa-spin"></i> Carregando conversas...
+                </div>
             </div>
         </div>
     </main>
@@ -621,259 +664,529 @@ try {
             }));
         }
 
-        // ============== ATUALIZAÇÃO DINÂMICA VIA AJAX ==============
-let ultimaVerificacao = Math.floor(Date.now() / 1000);
-let estaVerificando = false;
-let intervaloAtualizacao = null;
-const TEMPO_POLLING = 10000; // 10 segundos
+        // ============== SISTEMA DINÂMICO DE CONVERSAS ==============
+        let conversasCache = new Map();
+        let ultimaVerificacao = Math.floor(Date.now() / 1000);
+        let estaVerificando = false;
+        let intervaloAtualizacao = null;
+        const TEMPO_POLLING = 8000; // 8 segundos
+        const abaAtiva = 'ativos'; // Pode ser dinâmico se adicionar abas
 
-function iniciarPolling() {
-    // Verificar imediatamente
-    verificarAtualizacoes();
-    
-    // Configurar intervalo
-    intervaloAtualizacao = setInterval(verificarAtualizacoes, TEMPO_POLLING);
-    
-    // Verificar quando a janela ganha foco
-    window.addEventListener('focus', function() {
-        if (!estaVerificando) {
-            verificarAtualizacoes();
+        // Inicializar sistema dinâmico
+        function iniciarSistemaDinamico() {
+            carregarConversasIniciais();
+            iniciarPolling();
+            gerenciarEventosJanela();
         }
-    });
-    
-    // Parar polling quando a janela perde foco
-    window.addEventListener('blur', function() {
-        if (intervaloAtualizacao) {
-            clearInterval(intervaloAtualizacao);
-            intervaloAtualizacao = null;
+
+        // Carregar conversas iniciais via AJAX
+        function carregarConversasIniciais() {
+            const loadingEl = document.getElementById('loadingConversas');
+            const conversasList = document.getElementById('conversasList');
+            
+            fetch(`carregar_conversas_transportador_ajax.php?aba=${abaAtiva}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    mostrarErroCarregamento(data.error);
+                    return;
+                }
+                
+                if (loadingEl) loadingEl.remove();
+                
+                if (data.conversas && data.conversas.length > 0) {
+                    data.conversas.forEach(conversa => {
+                        renderizarConversa(conversa);
+                        conversasCache.set(conversa.conversa_id, conversa);
+                    });
+                } else {
+                    mostrarEstadoVazio();
+                }
+                
+                if (data.timestamp) {
+                    ultimaVerificacao = data.timestamp;
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar conversas:', error);
+                mostrarErroCarregamento('Erro ao carregar conversas');
+            });
         }
-    });
-    
-    // Retomar quando ganha foco novamente
-    window.addEventListener('focus', function() {
-        if (!intervaloAtualizacao) {
+
+        // Renderizar uma conversa individual
+        function renderizarConversa(conversa) {
+            const conversasList = document.getElementById('conversasList');
+            
+            // Verificar se já existe
+            const existingCard = document.getElementById(`conversa-${conversa.conversa_id}`);
+            if (existingCard) {
+                atualizarConversaExistente(existingCard, conversa);
+                return;
+            }
+            
+            // Criar novo card
+            const card = document.createElement('div');
+            card.className = `conversa-card ${conversa.mensagens_nao_lidas > 0 ? 'nao-lida' : ''} nova`;
+            card.id = `conversa-${conversa.conversa_id}`;
+            card.dataset.tipo = conversa.mensagens_nao_lidas > 0 ? 'nao-lida' : 'lida';
+            card.dataset.conversaId = conversa.conversa_id;
+            card.dataset.ultimaData = conversa.ultima_mensagem_data;
+            
+            // Corrigir caminho da imagem
+            const imagemProduto = corrigirCaminhoImagem(conversa.produto_imagem);
+            const chatUrl = `chat_transportador/chat_interface.php?conversa_id=${conversa.conversa_id}`;
+            
+            const dataFormatada = conversa.ultima_mensagem_data ? 
+                formatarData(conversa.ultima_mensagem_data) : '';
+            
+            // Construir HTML do card
+            card.innerHTML = `
+                <a href="${chatUrl}" style="display:flex;gap:1.5rem;align-items:center;text-decoration:none;color:inherit;flex:1;">
+                    <div class="produto-thumb">
+                        <img src="${escapeHtml(imagemProduto)}" 
+                             alt="${escapeHtml(conversa.produto_nome)}"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <i class="fas fa-image placeholder-icon" style="display: none;"></i>
+                    </div>
+                    <div class="conversa-info">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div class="produto-nome-principal">
+                                ${escapeHtml(conversa.produto_nome)}
+                                ${conversa.mensagens_nao_lidas > 0 ? 
+                                    `<span class="badge-novo">${conversa.mensagens_nao_lidas} nova${conversa.mensagens_nao_lidas > 1 ? 's' : ''}</span>` : 
+                                    ''
+                                }
+                            </div>
+                            <div class="conversa-data">${dataFormatada}</div>
+                        </div>
+                        <div style="margin-top:8px;color:#666;">
+                            <strong>Transportador:</strong> ${escapeHtml(conversa.transportador_nome || 'Transportador')}
+                        </div>
+                        ${conversa.ultima_mensagem ? 
+                            `<div class="ultima-mensagem" style="margin-top:8px;">
+                                <i class="fas fa-comment"></i> ${tratarUltimaMensagem(conversa.ultima_mensagem)}
+                            </div>` : 
+                            ''
+                        }
+                    </div>
+                </a>
+                <div class="conversa-actions">
+                    <a href="${chatUrl}" class="btn-chat">
+                        <i class="fas fa-comments"></i> Abrir Chat
+                    </a>
+                </div>
+            `;
+            
+            // Inserir na lista em ordem cronológica
+            inserirConversaNaOrdemCorreta(card, conversa);
+            
+            // Remover classe de nova após animação
+            setTimeout(() => {
+                card.classList.remove('nova');
+            }, 2000);
+            
+            // Adicionar ao cache
+            conversasCache.set(conversa.conversa_id, conversa);
+        }
+
+        // Inserir conversa na ordem correta (mais recente primeiro)
+        function inserirConversaNaOrdemCorreta(card, conversaData) {
+            const conversasList = document.getElementById('conversasList');
+            const cards = conversasList.querySelectorAll('.conversa-card');
+            
+            if (cards.length === 0) {
+                conversasList.appendChild(card);
+                return;
+            }
+            
+            const novaData = new Date(conversaData.ultima_mensagem_data);
+            let inserido = false;
+            
+            for (let i = 0; i < cards.length; i++) {
+                const cardExistente = cards[i];
+                const dataExistente = new Date(cardExistente.dataset.ultimaData || 0);
+                
+                if (novaData > dataExistente) {
+                    conversasList.insertBefore(card, cardExistente);
+                    inserido = true;
+                    break;
+                }
+            }
+            
+            if (!inserido) {
+                conversasList.appendChild(card);
+            }
+            
+            // Remover estado vazio se existir
+            const emptyState = conversasList.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            // Remover loading se existir
+            const loadingEl = conversasList.querySelector('.loading-conversas');
+            if (loadingEl) {
+                loadingEl.remove();
+            }
+        }
+
+        // Atualizar conversa existente
+        function atualizarConversaExistente(card, conversa) {
+            // Atualizar badge de mensagens não lidas
+            const badgeNovo = card.querySelector('.badge-novo');
+            const produtoNomeDiv = card.querySelector('.produto-nome-principal');
+            
+            if (conversa.mensagens_nao_lidas > 0) {
+                card.classList.add('nao-lida');
+                card.dataset.tipo = 'nao-lida';
+                
+                if (!badgeNovo && produtoNomeDiv) {
+                    const novoBadge = document.createElement('span');
+                    novoBadge.className = 'badge-novo';
+                    novoBadge.textContent = `${conversa.mensagens_nao_lidas} nova${conversa.mensagens_nao_lidas > 1 ? 's' : ''}`;
+                    produtoNomeDiv.appendChild(novoBadge);
+                    
+                    novoBadge.style.animation = 'pulse 1s ease-in-out';
+                    setTimeout(() => {
+                        novoBadge.style.animation = '';
+                    }, 1000);
+                    
+                } else if (badgeNovo) {
+                    badgeNovo.textContent = `${conversa.mensagens_nao_lidas} nova${conversa.mensagens_nao_lidas > 1 ? 's' : ''}`;
+                    badgeNovo.style.animation = 'pulse 1s ease-in-out';
+                    setTimeout(() => {
+                        badgeNovo.style.animation = '';
+                    }, 1000);
+                }
+            } else {
+                card.classList.remove('nao-lida');
+                card.dataset.tipo = 'lida';
+                if (badgeNovo) badgeNovo.remove();
+            }
+            
+            // Atualizar última mensagem
+            const ultimaMsgElement = card.querySelector('.ultima-mensagem');
+            if (ultimaMsgElement && conversa.ultima_mensagem) {
+                ultimaMsgElement.innerHTML = `<i class="fas fa-comment"></i> ${tratarUltimaMensagem(conversa.ultima_mensagem)}`;
+            }
+            
+            // Atualizar data da última mensagem
+            const dataElement = card.querySelector('.conversa-data');
+            if (dataElement && conversa.ultima_mensagem_data) {
+                dataElement.textContent = formatarData(conversa.ultima_mensagem_data);
+            }
+            
+            // Atualizar cache
+            conversasCache.set(conversa.conversa_id, conversa);
+        }
+
+        // Remover conversa da lista
+        function removerConversa(conversaId) {
+            const card = document.getElementById(`conversa-${conversaId}`);
+            if (card) {
+                card.style.opacity = '0';
+                card.style.transform = 'translateX(-100%)';
+                card.style.transition = 'all 0.3s ease';
+                
+                setTimeout(() => {
+                    if (card.parentNode) {
+                        card.remove();
+                        conversasCache.delete(conversaId);
+                        
+                        // Verificar se a lista ficou vazia
+                        const conversasList = document.getElementById('conversasList');
+                        if (conversasList.children.length === 0) {
+                            mostrarEstadoVazio();
+                        }
+                    }
+                }, 300);
+            }
+        }
+
+        // Função de polling para atualizações
+        function iniciarPolling() {
             intervaloAtualizacao = setInterval(verificarAtualizacoes, TEMPO_POLLING);
         }
-    });
-}
 
-function verificarAtualizacoes() {
-    if (estaVerificando) return;
-    
-    estaVerificando = true;
-    
-    fetch(`atualizar_transportador_ajax.php?ultima_verificacao=${ultimaVerificacao}`, {
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Erro na rede');
-        }
-        return response.json();
-    })
-    .then(data => {
-        // Atualizar timestamp
-        ultimaVerificacao = data.timestamp || Math.floor(Date.now() / 1000);
-        
-        if (data.error) {
-            console.error('Erro:', data.error);
-            return;
-        }
-        
-        // Se houve atualizações
-        if (data.atualizado) {
-            // 1. Atualizar badges de mensagens não lidas
-            if (data.contadores && Array.isArray(data.contadores)) {
-                data.contadores.forEach(contador => {
-                    atualizarBadgeConversa(contador.conversa_id, contador.nao_lidas);
-                });
-            }
+        function verificarAtualizacoes() {
+            if (estaVerificando) return;
             
-            // 2. Atualizar últimas mensagens
-            if (data.ultimas_mensagens && Array.isArray(data.ultimas_mensagens)) {
-                data.ultimas_mensagens.forEach(msg => {
-                    atualizarUltimaMensagem(msg.conversa_id, msg.ultima_mensagem, msg.ultima_mensagem_data);
-                });
-            }
+            estaVerificando = true;
             
-            // 3. Mostrar notificação sutil
-            if (data.novas_mensagens && data.novas_mensagens.length > 0) {
-                mostrarNotificacaoNovasMensagens(data.novas_mensagens.length);
-            }
+            fetch(`atualizar_transportador_ajax.php?aba=${abaAtiva}&ultima_verificacao=${ultimaVerificacao}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data || data.error) {
+                    if (data && data.error) {
+                        console.error('Erro na resposta:', data.error);
+                    }
+                    return;
+                }
+                
+                ultimaVerificacao = data.timestamp || Math.floor(Date.now() / 1000);
+                
+                if (data.atualizado) {
+                    // 1. Processar novas conversas
+                    if (data.novas_conversas && Array.isArray(data.novas_conversas)) {
+                        data.novas_conversas.forEach(conversa => {
+                            if (conversa && conversa.conversa_id) {
+                                renderizarConversa(conversa);
+                            }
+                        });
+                        
+                        if (data.novas_conversas.length > 0) {
+                            mostrarNotificacao(`Nova${data.novas_conversas.length > 1 ? 's' : ''} conversa${data.novas_conversas.length > 1 ? 's' : ''} com transportador`);
+                        }
+                    }
+                    
+                    // 2. Processar conversas removidas
+                    if (data.conversas_removidas && Array.isArray(data.conversas_removidas)) {
+                        data.conversas_removidas.forEach(conv => {
+                            if (conv && conv.conversa_id) {
+                                removerConversa(conv.conversa_id);
+                            }
+                        });
+                    }
+                    
+                    // 3. Atualizar mensagens não lidas
+                    if (data.contadores && Array.isArray(data.contadores)) {
+                        data.contadores.forEach(contador => {
+                            if (contador && contador.conversa_id) {
+                                const conversa = conversasCache.get(parseInt(contador.conversa_id));
+                                if (conversa) {
+                                    conversa.mensagens_nao_lidas = parseInt(contador.nao_lidas) || 0;
+                                    const card = document.getElementById(`conversa-${contador.conversa_id}`);
+                                    if (card) {
+                                        atualizarConversaExistente(card, conversa);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    
+                    // 4. Atualizar últimas mensagens
+                    if (data.ultimas_mensagens && Array.isArray(data.ultimas_mensagens)) {
+                        data.ultimas_mensagens.forEach(msg => {
+                            if (msg && msg.conversa_id) {
+                                const conversa = conversasCache.get(parseInt(msg.conversa_id));
+                                if (conversa) {
+                                    conversa.ultima_mensagem = msg.ultima_mensagem;
+                                    conversa.ultima_mensagem_data = msg.ultima_mensagem_data;
+                                    const card = document.getElementById(`conversa-${msg.conversa_id}`);
+                                    if (card) {
+                                        atualizarConversaExistente(card, conversa);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    
+                    // 5. Mostrar notificação de novas mensagens
+                    if (data.novas_mensagens && data.novas_mensagens.length > 0) {
+                        mostrarNotificacaoNovasMensagens(data.novas_mensagens.length);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erro na verificação:', error);
+                setTimeout(verificarAtualizacoes, TEMPO_POLLING * 2);
+            })
+            .finally(() => {
+                estaVerificando = false;
+            });
         }
-    })
-    .catch(error => {
-        console.error('Erro na verificação:', error);
-        // Tentar novamente mais tarde
-        setTimeout(verificarAtualizacoes, TEMPO_POLLING * 2);
-    })
-    .finally(() => {
-        estaVerificando = false;
-    });
-}
 
-function atualizarBadgeConversa(conversaId, quantidade) {
-    const card = document.getElementById(`conversa-${conversaId}`);
-    if (!card) return;
-    
-    // Encontrar badge existente
-    const badge = card.querySelector('.badge-novo');
-    const produtoNomeDiv = card.querySelector('.produto-nome-principal');
-    
-    if (quantidade > 0) {
-        // Adicionar classe de não lida (opcional, se quiser estilo diferente)
-        // card.classList.add('nao-lida');
-        
-        // Criar ou atualizar badge
-        if (!badge && produtoNomeDiv) {
-            const novoBadge = document.createElement('span');
-            novoBadge.className = 'badge-novo';
-            novoBadge.textContent = `${quantidade} nova${quantidade > 1 ? 's' : ''}`;
-            produtoNomeDiv.appendChild(novoBadge);
-            
-            // Animação
-            novoBadge.style.animation = 'pulse 1s ease-in-out';
-            setTimeout(() => {
-                novoBadge.style.animation = '';
-            }, 1000);
-        } else if (badge) {
-            badge.textContent = `${quantidade} nova${quantidade > 1 ? 's' : ''}`;
-            badge.style.display = 'inline-block';
-            badge.style.animation = 'pulse 1s ease-in-out';
-            setTimeout(() => {
-                badge.style.animation = '';
-            }, 1000);
+        // Funções auxiliares
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
-    } else {
-        // Remover badge se não houver mensagens não lidas
-        if (badge) {
-            badge.remove();
-        }
-    }
-}
 
-function atualizarUltimaMensagem(conversaId, mensagem, dataStr) {
-    const card = document.getElementById(`conversa-${conversaId}`);
-    if (!card) return;
-    
-    // Atualizar mensagem no elemento existente
-    const msgElement = card.querySelector('.ultima-mensagem');
-    if (msgElement && mensagem) {
-        // Formatar data
-        if (dataStr) {
+        function formatarData(dataStr) {
             const data = new Date(dataStr);
-            const dataFormatada = data.toLocaleDateString('pt-BR') + ' ' + 
-                                data.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+            return data.toLocaleDateString('pt-BR') + ' ' + 
+                   data.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+        }
+
+        function tratarUltimaMensagem(mensagem) {
+            if (mensagem.includes('[Imagem]')) {
+                return '[Imagem]';
+            }
+            if (mensagem.length > 60) {
+                return escapeHtml(mensagem.substring(0, 57)) + '...';
+            }
+            return escapeHtml(mensagem);
+        }
+
+        function corrigirCaminhoImagem(caminho) {
+            if (!caminho) return 'img/placeholder.png';
             
-            if (mensagem.includes('[Imagem]')) {
-                msgElement.innerHTML = `<i class="fas fa-comment"></i> [Imagem] - ${dataFormatada}`;
-            } else {
-                // Limitar tamanho da mensagem
-                const msgTruncada = mensagem.length > 60 ? mensagem.substring(0, 57) + '...' : mensagem;
-                msgElement.innerHTML = `<i class="fas fa-comment"></i> ${msgTruncada}`;
+            // URLs completos
+            if (caminho.startsWith('http') || caminho.startsWith('//')) {
+                return caminho;
             }
-        } else {
-            if (mensagem.includes('[Imagem]')) {
-                msgElement.innerHTML = `<i class="fas fa-comment"></i> [Imagem]`;
-            } else {
-                const msgTruncada = mensagem.length > 60 ? mensagem.substring(0, 57) + '...' : mensagem;
-                msgElement.innerHTML = `<i class="fas fa-comment"></i> ${msgTruncada}`;
+            
+            // Corrigir caminhos do banco: "../uploads/" -> "uploads/"
+            if (caminho.startsWith('../uploads/')) {
+                return caminho.substring(3);
             }
+            
+            // Se já estiver correto ou for outro formato
+            return caminho;
         }
-    }
-}
 
-function mostrarNotificacaoNovasMensagens(quantidade) {
-    // Criar notificação sutil
-    const notif = document.createElement('div');
-    notif.className = 'notificacao-flutuante';
-    notif.innerHTML = `
-        <i class="fas fa-comment-dots"></i>
-        <span>${quantidade} nova${quantidade > 1 ? 's' : ''} mensagem${quantidade > 1 ? 's' : ''} de transportador</span>
-        <button onclick="this.parentElement.remove()">&times;</button>
-    `;
-    
-    // Estilos
-    notif.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: #2E7D32;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        z-index: 9999;
-        animation: slideInRight 0.3s ease-out;
-    `;
-    
-    document.body.appendChild(notif);
-    
-    // Remover automaticamente após 5 segundos
-    setTimeout(() => {
-        if (notif.parentElement) {
-            notif.style.animation = 'slideOutRight 0.3s ease-in';
-            setTimeout(() => notif.remove(), 300);
+        function mostrarEstadoVazio() {
+            const conversasList = document.getElementById('conversasList');
+            if (!conversasList) return;
+            
+            conversasList.innerHTML = '';
+            
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.innerHTML = `
+                <i class="fas fa-comments" style="font-size:48px;margin-bottom:12px;"></i>
+                <h3>Nenhuma conversa com transportador encontrada</h3>
+                <p>Quando transportadores entrarem em contato, as conversas aparecerão aqui.</p>
+            `;
+            
+            conversasList.appendChild(emptyState);
         }
-    }, 5000);
-}
 
-// Adicionar estilos CSS para animações
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-    }
-    
-    @keyframes slideInRight {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    
-    @keyframes slideOutRight {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-    }
-    
-    .notificacao-flutuante {
-        font-size: 14px;
-        font-weight: 500;
-    }
-    
-    .notificacao-flutuante button {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 20px;
-        cursor: pointer;
-        padding: 0;
-        margin-left: 10px;
-    }
-    
-    .badge-novo {
-        background: #dc3545;
-        color: white;
-        font-size: 12px;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-weight: 700;
-        margin-left: 8px;
-        animation: pulse 1s ease-in-out;
-    }
-`;
-document.head.appendChild(style);
+        function mostrarErroCarregamento(mensagem) {
+            const conversasList = document.getElementById('conversasList');
+            const loadingEl = document.getElementById('loadingConversas');
+            
+            if (loadingEl) loadingEl.remove();
+            
+            conversasList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Erro ao carregar conversas</h3>
+                    <p>${mensagem}</p>
+                    <button onclick="carregarConversasIniciais()" class="btn-chat" style="margin-top: 15px;">
+                        <i class="fas fa-redo"></i> Tentar novamente
+                    </button>
+                </div>
+            `;
+        }
 
-// Iniciar polling quando a página carregar
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(iniciarPolling, 2000);
-});
-</script>
+        function mostrarNotificacao(mensagem) {
+            const notif = document.createElement('div');
+            notif.className = 'notificacao-flutuante';
+            notif.innerHTML = `
+                <i class="fas fa-comment-alt"></i>
+                <span>${mensagem}</span>
+                <button onclick="this.parentElement.remove()">&times;</button>
+            `;
+            
+            notif.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: #2E7D32;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                z-index: 9999;
+                animation: slideInRight 0.3s ease-out;
+            `;
+            
+            document.body.appendChild(notif);
+            
+            setTimeout(() => {
+                if (notif.parentElement) {
+                    notif.style.animation = 'slideOutRight 0.3s ease-in';
+                    setTimeout(() => notif.remove(), 300);
+                }
+            }, 4000);
+        }
+
+        function mostrarNotificacaoNovasMensagens(quantidade) {
+            const notif = document.createElement('div');
+            notif.className = 'notificacao-flutuante';
+            notif.innerHTML = `
+                <i class="fas fa-comment-dots"></i>
+                <span>${quantidade} nova${quantidade > 1 ? 's' : ''} mensagem${quantidade > 1 ? 's' : ''} de transportador</span>
+                <button onclick="this.parentElement.remove()">&times;</button>
+            `;
+            
+            notif.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: #2E7D32;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                z-index: 9999;
+                animation: slideInRight 0.3s ease-out;
+            `;
+            
+            document.body.appendChild(notif);
+            
+            setTimeout(() => {
+                if (notif.parentElement) {
+                    notif.style.animation = 'slideOutRight 0.3s ease-in';
+                    setTimeout(() => notif.remove(), 300);
+                }
+            }, 5000);
+        }
+
+        function gerenciarEventosJanela() {
+            window.addEventListener('focus', function() {
+                if (!estaVerificando) {
+                    verificarAtualizacoes();
+                }
+            });
+            
+            window.addEventListener('blur', function() {
+                if (intervaloAtualizacao) {
+                    clearInterval(intervaloAtualizacao);
+                    intervaloAtualizacao = null;
+                }
+            });
+            
+            window.addEventListener('focus', function() {
+                if (!intervaloAtualizacao) {
+                    iniciarPolling();
+                }
+            });
+        }
+
+        // Função para filtrar conversas (opcional)
+        function filtrarConversas(tipo) {
+            const cards = document.querySelectorAll('.conversa-card');
+            cards.forEach(card => {
+                if (tipo === 'todas') {
+                    card.style.display = 'flex';
+                } else if (tipo === 'nao-lidas') {
+                    card.style.display = (card.dataset.tipo === 'nao-lida') ? 'flex' : 'none';
+                }
+            });
+        }
+
+        // Iniciar sistema quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(iniciarSistemaDinamico, 500);
+        });
+    </script>
 </body>
 </html>

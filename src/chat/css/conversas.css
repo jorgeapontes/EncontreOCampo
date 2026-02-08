@@ -943,3 +943,30 @@ body {
 html {
     scrollbar-gutter: stable;
 }
+
+/* Estilos para loading e estados vazios dinâmicos */
+.loading-conversas {
+    padding: 3rem;
+    text-align: center;
+    color: #6c757d;
+    font-size: 16px;
+}
+
+.loading-conversas i {
+    font-size: 24px;
+    margin-right: 10px;
+}
+
+.conversa-card {
+    transition: all 0.3s ease;
+}
+
+.conversa-card.nova {
+    animation: highlightNew 2s ease-in-out;
+}
+
+@keyframes highlightNew {
+    0% { background-color: #e8f5e9; }
+    50% { background-color: #c8e6c9; }
+    100% { background-color: inherit; }
+}

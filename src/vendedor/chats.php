@@ -9,6 +9,11 @@ $conn = $database->getConnection();
 $usuario_id = $_SESSION['usuario_id'];
 $vendedor_id = $vendedor['id'];
 
+// Adicionar vendedor_id à sessão se não estiver
+if (!isset($_SESSION['vendedor_id']) && isset($vendedor_id)) {
+    $_SESSION['vendedor_id'] = $vendedor_id;
+}
+
 // Verificar se está visualizando arquivados ou ativos
 $aba = isset($_GET['aba']) ? $_GET['aba'] : 'ativos';
 $mostrar_arquivados = ($aba === 'arquivados');
@@ -198,6 +203,9 @@ try {
     } else {
         $sql_vendedor .= " AND cc.favorito_vendedor = 0";
     }
+
+    // ORDENAR POR DATA DA ÚLTIMA MENSAGEM (MAIS RECENTE PRIMEIRO)
+    $sql_vendedor .= " ORDER BY cc.ultima_mensagem_data DESC";
     
     $stmt_vendedor = $conn->prepare($sql_vendedor);
     $stmt_vendedor->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
@@ -244,6 +252,9 @@ try {
     } else {
         $sql_comprador .= " AND cc.favorito_comprador = 0";
     }
+
+    // ORDENAR POR DATA DA ÚLTIMA MENSAGEM (MAIS RECENTE PRIMEIRO)
+    $sql_comprador .= " ORDER BY cc.ultima_mensagem_data DESC";
     
     $stmt_comprador = $conn->prepare($sql_comprador);
     $stmt_comprador->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
@@ -258,7 +269,7 @@ try {
 // COMBINAR TODAS AS CONVERSAS
 $conversas = array_merge($conversas_vendedor, $conversas_comprador);
 
-// ORDENAR POR DATA MAIS RECENTE
+// ORDENAR POR DATA MAIS RECENTE (garantir ordem correta após merge)
 usort($conversas, function($a, $b) {
     return strtotime($b['ultima_mensagem_data']) - strtotime($a['ultima_mensagem_data']);
 });
@@ -542,97 +553,11 @@ try {
                 <?php endif; ?>
             </div>
             
-            <div class="conversas-list">
-                <?php if (count($conversas) > 0): ?>
-                    <?php foreach ($conversas as $conversa): 
-                        $imagem_produto = $conversa['produto_imagem'] ? htmlspecialchars($conversa['produto_imagem']) : '../../img/placeholder.png';
-                        $tem_nao_lidas = $conversa['mensagens_nao_lidas'] > 0;
-                        $data_formatada = $conversa['ultima_mensagem_data'] ? date('d/m/Y H:i', strtotime($conversa['ultima_mensagem_data'])) : '';
-                        $eh_vendedor_chat = $conversa['tipo_chat'] === 'vendedor';
-                        $esta_arquivado = $conversa['arquivado'] == 1;
-                        
-                        $chat_url = $mostrar_arquivados ? '#' : "../chat/chat.php?produto_id={$conversa['produto_id']}&conversa_id={$conversa['conversa_id']}&ref=vendedor_chats&aba=" . ($mostrar_arquivados ? 'arquivados' : 'ativos');
-                    ?>
-                        <div class="conversa-card <?php echo $tem_nao_lidas ? 'nao-lida' : ''; ?> <?php echo $esta_arquivado ? 'arquivado' : ''; ?>" 
-                             data-tipo="<?php echo $tem_nao_lidas ? 'nao-lida' : 'lida'; ?>"
-                             id="conversa-<?php echo $conversa['conversa_id']; ?>">
-                            
-                            <?php if (!$mostrar_arquivados): ?>
-                                <a href="<?php echo $chat_url; ?>" style="display: flex; gap: 1.5rem; align-items: center; text-decoration: none; color: inherit; flex: 1;">
-                            <?php else: ?>
-                                <div style="display: flex; gap: 1.5rem; align-items: center; flex: 1; cursor: default;">
-                            <?php endif; ?>
-                                
-                                <div class="produto-thumb">
-                                    <img src="<?php echo $imagem_produto; ?>" alt="<?php echo htmlspecialchars($conversa['produto_nome']); ?>">
-                                </div>
-                                
-                                <div class="conversa-info">
-                                    <div class="conversa-top">
-                                        <div class="comprador-nome">
-                                            <i class="fas fa-<?php echo $eh_vendedor_chat ? 'user-circle' : 'store'; ?>"></i>
-                                            <?php echo htmlspecialchars($conversa['outro_usuario_nome']); ?>
-                                            <span class="badge-tipo"><?php echo $eh_vendedor_chat ? 'Venda' : 'Compra'; ?></span>
-                                            <?php if ($esta_arquivado): ?>
-                                                <span class="badge-arquivado"><i class="fas fa-archive"></i> Arquivado</span>
-                                            <?php endif; ?>
-                                            <?php if ($tem_nao_lidas && !$mostrar_arquivados): ?>
-                                                <span class="badge-novo"><?php echo $conversa['mensagens_nao_lidas']; ?> nova<?php echo $conversa['mensagens_nao_lidas'] > 1 ? 's' : ''; ?></span>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="produto-nome">
-                                        <i class="fas fa-box"></i>
-                                        <?php echo htmlspecialchars($conversa['produto_nome']); ?>
-                                        <span class="produto-preco">- R$ <?php echo number_format($conversa['produto_preco'], 2, ',', '.'); ?></span>
-                                    </div>
-                                    
-                                    <?php if ($conversa['ultima_mensagem']): ?>
-                                        <div class="ultima-mensagem">
-                                            <?= $data_formatada  ?> -
-                                            <?php 
-                                            if (strpos($conversa['ultima_mensagem'], '[Imagem]') !== false) { echo '<i class="fas fa-image"></i>&nbsp;&nbsp;Enviou uma imagem'; } 
-                                            else { echo htmlspecialchars($conversa['ultima_mensagem']); }
-                                            ?>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                            
-                            <?php if (!$mostrar_arquivados): ?>
-                                </a>
-                            <?php else: ?>
-                                </div>
-                            <?php endif; ?>
-                            
-                            <div class="conversa-actions">
-                                <?php if ($mostrar_arquivados): ?>
-                                    <button type="button" class="btn-restaurar" onclick="confirmarRestauracao(<?php echo $conversa['conversa_id']; ?>, '<?php echo $conversa['tipo_chat']; ?>')">
-                                        <i class="fas fa-box-open"></i> Restaurar
-                                    </button>
-
-                                    <button type="button" class="btn-excluir" onclick="confirmarExclusao(<?php echo $conversa['conversa_id']; ?>, '<?php echo $conversa['tipo_chat']; ?>')">
-                                        <i class="fas fa-trash"></i> Excluir
-                                    </button>
-                                <?php else: ?>
-                                    <button type="button" class="btn-arquivar" onclick="confirmarArquivamento(<?php echo $conversa['conversa_id']; ?>, '<?php echo $conversa['tipo_chat']; ?>')">
-                                        <i class="fas fa-archive"></i> Arquivar
-                                    </button>
-                                    <a href="<?php echo $chat_url; ?>" class="btn-chat"><i class="fas fa-comments"></i></a>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <div class="empty-state">
-                        <i class="fas fa-<?php echo $mostrar_arquivados ? 'archive' : 'comments'; ?>"></i>
-                        <h3><?php echo $mostrar_arquivados ? 'Nenhuma conversa arquivada' : 'Nenhuma conversa ainda'; ?></h3>
-                        <p>
-                            <?php if ($mostrar_arquivados): ?>As conversas que você arquivar aparecerão aqui.
-                            <?php else: ?>Quando você conversar com compradores ou vendedores, as conversas aparecerão aqui.<?php endif; ?>
-                        </p>
-                    </div>
-                <?php endif; ?>
+            <div class="conversas-list" id="conversasList">
+                <!-- As conversas serão carregadas dinamicamente aqui -->
+                <div class="loading-conversas" id="loadingConversas">
+                    <i class="fas fa-spinner fa-spin"></i> Carregando conversas...
+                </div>
             </div>
         </div>
     </div>
@@ -760,40 +685,367 @@ try {
         }, 5000);
         <?php endif; ?>
 
-        // ============== ATUALIZAÇÃO DINÂMICA VIA AJAX ==============
+        // ============== SISTEMA DINÂMICO DE CONVERSAS ==============
+let conversasCache = new Map(); // Cache de conversas já renderizadas
 let ultimaVerificacao = Math.floor(Date.now() / 1000);
 let estaVerificando = false;
 let intervaloAtualizacao = null;
-const TEMPO_POLLING = 10000; // 10 segundos
+const TEMPO_POLLING = 8000; // 8 segundos
 
+// Inicializar sistema dinâmico
+function iniciarSistemaDinamico() {
+    // Carregar conversas iniciais via AJAX
+    carregarConversasIniciais();
+    
+    // Iniciar polling para atualizações
+    iniciarPolling();
+    
+    // Eventos de foco/desfoco da janela
+    gerenciarEventosJanela();
+}
+
+// Carregar conversas iniciais
+function carregarConversasIniciais() {
+    const loadingEl = document.getElementById('loadingConversas');
+    const conversasList = document.getElementById('conversasList');
+    
+    fetch(`carregar_conversas_ajax.php?aba=<?php echo $aba; ?>`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            mostrarErroCarregamento(data.error);
+            return;
+        }
+        
+        // Remover loading
+        if (loadingEl) loadingEl.remove();
+        
+        // Renderizar conversas
+        if (data.conversas && data.conversas.length > 0) {
+            data.conversas.forEach(conversa => {
+                renderizarConversa(conversa);
+                conversasCache.set(conversa.conversa_id, conversa);
+            });
+            
+            // Atualizar estatísticas
+            atualizarEstatisticas(data);
+        } else {
+            mostrarEstadoVazio();
+        }
+        
+        // Inicializar timestamp
+        if (data.timestamp) {
+            ultimaVerificacao = data.timestamp;
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao carregar conversas:', error);
+        mostrarErroCarregamento('Erro ao carregar conversas');
+    });
+}
+
+// Renderizar uma conversa individual
+// Substitua a função renderizarConversa por esta versão corrigida:
+function renderizarConversa(conversa) {
+    const conversasList = document.getElementById('conversasList');
+    const estaArquivado = conversa.arquivado == 1;
+    const mostraArquivados = <?php echo $mostrar_arquivados ? 'true' : 'false'; ?>;
+    
+    // Verificar se já existe de forma mais segura
+    const existingCard = document.getElementById(`conversa-${conversa.conversa_id}`);
+    if (existingCard) {
+        atualizarConversaExistente(existingCard, conversa);
+        return;
+    }
+    
+    // Criar novo card
+    const card = document.createElement('div');
+    card.className = `conversa-card ${conversa.mensagens_nao_lidas > 0 ? 'nao-lida' : ''} ${estaArquivado ? 'arquivado' : ''} nova`;
+    card.id = `conversa-${conversa.conversa_id}`;
+    card.dataset.tipo = conversa.mensagens_nao_lidas > 0 ? 'nao-lida' : 'lida';
+    card.dataset.conversaId = conversa.conversa_id;
+    
+    const imagemProduto = conversa.produto_imagem || '../../img/placeholder.png';
+    const chatUrl = !mostraArquivados ? 
+        `../chat/chat.php?produto_id=${conversa.produto_id}&conversa_id=${conversa.conversa_id}&ref=vendedor_chats&aba=ativos` : 
+        '#';
+    
+    const ehVendedorChat = conversa.tipo_chat === 'vendedor';
+    const ultimaMsgTratada = tratarUltimaMensagem(conversa.ultima_mensagem);
+    const dataFormatada = conversa.ultima_mensagem_data ? 
+        formatarData(conversa.ultima_mensagem_data) : '';
+    
+    // Construir HTML do card de forma mais segura
+    card.innerHTML = `
+        ${!mostraArquivados ? 
+            `<a href="${chatUrl}" class="conversa-link" style="display: flex; gap: 1.5rem; align-items: center; text-decoration: none; color: inherit; flex: 1;">` : 
+            `<div class="conversa-content" style="display: flex; gap: 1.5rem; align-items: center; flex: 1; cursor: default;">`
+        }
+            <div class="produto-thumb">
+                <img src="${escapeHtml(imagemProduto)}" alt="${escapeHtml(conversa.produto_nome)}" onerror="this.src='../../img/placeholder.png'">
+            </div>
+            
+            <div class="conversa-info">
+                <div class="conversa-top">
+                    <div class="comprador-nome">
+                        <i class="fas fa-${ehVendedorChat ? 'user-circle' : 'store'}"></i>
+                        ${escapeHtml(conversa.outro_usuario_nome)}
+                        <span class="badge-tipo">${ehVendedorChat ? 'Venda' : 'Compra'}</span>
+                        ${estaArquivado ? 
+                            `<span class="badge-arquivado"><i class="fas fa-archive"></i> Arquivado</span>` : 
+                            ''
+                        }
+                        ${conversa.mensagens_nao_lidas > 0 && !mostraArquivados ? 
+                            `<span class="badge-novo">${conversa.mensagens_nao_lidas} nova${conversa.mensagens_nao_lidas > 1 ? 's' : ''}</span>` : 
+                            ''
+                        }
+                    </div>
+                </div>
+                
+                <div class="produto-nome">
+                    <i class="fas fa-box"></i>
+                    ${escapeHtml(conversa.produto_nome)}
+                    <span class="produto-preco">- R$ ${formatarPreco(conversa.produto_preco)}</span>
+                </div>
+                
+                ${conversa.ultima_mensagem ? 
+                    `<div class="ultima-mensagem">
+                        ${dataFormatada} - ${ultimaMsgTratada}
+                    </div>` : 
+                    ''
+                }
+            </div>
+        
+        ${!mostraArquivados ? '</a>' : '</div>'}
+        
+        <div class="conversa-actions">
+            ${mostraArquivados ? 
+                `<button type="button" class="btn-restaurar" data-conversa-id="${conversa.conversa_id}" data-tipo-chat="${conversa.tipo_chat}">
+                    <i class="fas fa-box-open"></i> Restaurar
+                </button>
+                <button type="button" class="btn-excluir" data-conversa-id="${conversa.conversa_id}" data-tipo-chat="${conversa.tipo_chat}">
+                    <i class="fas fa-trash"></i> Excluir
+                </button>` : 
+                `<button type="button" class="btn-arquivar" data-conversa-id="${conversa.conversa_id}" data-tipo-chat="${conversa.tipo_chat}">
+                    <i class="fas fa-archive"></i> Arquivar
+                </button>
+                <a href="${chatUrl}" class="btn-chat"><i class="fas fa-comments"></i></a>`
+            }
+        </div>
+    `;
+    
+    // Adicionar event listeners para os botões
+    setTimeout(() => {
+        const cardElement = document.getElementById(`conversa-${conversa.conversa_id}`);
+        if (cardElement) {
+            const btnArquivar = cardElement.querySelector('.btn-arquivar');
+            const btnRestaurar = cardElement.querySelector('.btn-restaurar');
+            const btnExcluir = cardElement.querySelector('.btn-excluir');
+            
+            if (btnArquivar) {
+                btnArquivar.addEventListener('click', function() {
+                    confirmarArquivamento(this.dataset.conversaId, this.dataset.tipoChat);
+                });
+            }
+            
+            if (btnRestaurar) {
+                btnRestaurar.addEventListener('click', function() {
+                    confirmarRestauracao(this.dataset.conversaId, this.dataset.tipoChat);
+                });
+            }
+            
+            if (btnExcluir) {
+                btnExcluir.addEventListener('click', function() {
+                    confirmarExclusao(this.dataset.conversaId, this.dataset.tipoChat);
+                });
+            }
+        }
+    }, 100);
+    
+    // Inserir na lista de forma segura
+    if (conversasList) {
+        // Verificar se há estado vazio para remover
+        const emptyState = conversasList.querySelector('.empty-state');
+        if (emptyState) {
+            emptyState.remove();
+        }
+        
+        const loadingEl = conversasList.querySelector('.loading-conversas');
+        if (loadingEl) {
+            loadingEl.remove();
+        }
+        
+        function inserirConversaNaOrdemCorreta(card, conversaData) {
+            const conversasList = document.getElementById('conversasList');
+            const cards = conversasList.querySelectorAll('.conversa-card');
+            
+            // Se não há outras conversas, insere no início
+            if (cards.length === 0) {
+                conversasList.appendChild(card);
+                return;
+            }
+            
+            // Encontrar a posição correta baseada na data
+            const novaData = new Date(conversaData.ultima_mensagem_data);
+            let inserido = false;
+            
+            for (let i = 0; i < cards.length; i++) {
+                const cardExistente = cards[i];
+                const dataExistente = new Date(cardExistente.dataset.ultimaData || cardExistente.querySelector('.ultima-mensagem')?.textContent?.match(/\d{2}\/\d{2}\/\d{4}/)?.[0] || 0);
+                
+                // Se a nova conversa é mais recente, insere antes
+                if (novaData > dataExistente) {
+                    conversasList.insertBefore(card, cardExistente);
+                    inserido = true;
+                    break;
+                }
+            }
+            
+            // Se não encontrou posição (é a mais antiga), insere no final
+            if (!inserido) {
+                conversasList.appendChild(card);
+            }
+        }
+
+        // E na função renderizarConversa(), substitua a inserção por:
+        inserirConversaNaOrdemCorreta(card, conversa);
+
+    }
+    
+    // Remover classe de nova após animação
+    setTimeout(() => {
+        if (card.classList) {
+            card.classList.remove('nova');
+        }
+    }, 2000);
+    
+    // Adicionar ao cache
+    conversasCache.set(conversa.conversa_id, conversa);
+}
+
+// Atualizar conversa existente
+function atualizarConversaExistente(card, conversa) {
+    if (!card || !card.classList) return;
+    
+    // Guardar o valor anterior de mensagens não lidas para comparação
+    const badgeNovoAnterior = card.querySelector('.badge-novo');
+    const mensagensAnteriores = badgeNovoAnterior ? 
+        parseInt(badgeNovoAnterior.textContent.match(/\d+/)[0]) : 0;
+    const mensagensAtuais = conversa.mensagens_nao_lidas || 0;
+    
+    // Atualizar badge de mensagens não lidas
+    const badgeNovo = card.querySelector('.badge-novo');
+    const compradorNomeDiv = card.querySelector('.comprador-nome');
+    
+    if (conversa.mensagens_nao_lidas > 0) {
+        card.classList.add('nao-lida');
+        card.dataset.tipo = 'nao-lida';
+        
+        if (!badgeNovo && compradorNomeDiv) {
+            const novoBadge = document.createElement('span');
+            novoBadge.className = 'badge-novo';
+            novoBadge.textContent = `${conversa.mensagens_nao_lidas} nova${conversa.mensagens_nao_lidas > 1 ? 's' : ''}`;
+            compradorNomeDiv.appendChild(novoBadge);
+            
+            // Aplicar animação para novo badge
+            novoBadge.style.animation = 'pulse 1s ease-in-out';
+            setTimeout(() => {
+                novoBadge.style.animation = '';
+            }, 1000);
+            
+        } else if (badgeNovo) {
+            // Verificar se o número mudou (aumentou)
+            if (mensagensAtuais > mensagensAnteriores) {
+                // Aplicar animação apenas quando o número aumenta
+                if (badgeNovo.getAttribute('data-animating') !== 'true') {
+                    badgeNovo.setAttribute('data-animating', 'true');
+                    badgeNovo.textContent = `${conversa.mensagens_nao_lidas} nova${conversa.mensagens_nao_lidas > 1 ? 's' : ''}`;
+                    badgeNovo.style.animation = 'pulse 1s ease-in-out';
+                    
+                    setTimeout(() => {
+                        badgeNovo.style.animation = '';
+                        badgeNovo.setAttribute('data-animating', 'false');
+                    }, 1000);
+                }           
+            } else if (mensagensAtuais !== mensagensAnteriores) {
+                // Apenas atualizar texto sem animação se o número diminuiu ou mudou
+                badgeNovo.textContent = `${conversa.mensagens_nao_lidas} nova${conversa.mensagens_nao_lidas > 1 ? 's' : ''}`;
+            }
+        }
+    } else {
+        card.classList.remove('nao-lida');
+        card.dataset.tipo = 'lida';
+        if (badgeNovo) badgeNovo.remove();
+    }
+    
+    // Atualizar última mensagem
+    const ultimaMsgElement = card.querySelector('.ultima-mensagem');
+    if (ultimaMsgElement && conversa.ultima_mensagem) {
+        const ultimaMsgTratada = tratarUltimaMensagem(conversa.ultima_mensagem);
+        const dataFormatada = conversa.ultima_mensagem_data ? 
+            formatarData(conversa.ultima_mensagem_data) : '';
+        
+        ultimaMsgElement.innerHTML = `${dataFormatada} - ${ultimaMsgTratada}`;
+    }
+    
+    // Atualizar cache
+    conversasCache.set(conversa.conversa_id, conversa);
+}
+
+// Remover conversa da lista
+function removerConversa(conversaId) {
+    const card = document.getElementById(`conversa-${conversaId}`);
+    if (card) {
+        card.style.opacity = '0';
+        card.style.transform = 'translateX(-100%)';
+        card.style.transition = 'all 0.3s ease';
+        
+        setTimeout(() => {
+            card.remove();
+            conversasCache.delete(conversaId);
+            
+            // Verificar se a lista ficou vazia
+            const conversasList = document.getElementById('conversasList');
+            if (conversasList.children.length === 0) {
+                mostrarEstadoVazio();
+            }
+        }, 300);
+    }
+}
+
+// Adicione esta função utilitária
+function elementoExiste(elemento) {
+    return elemento && elemento.nodeType === 1;
+}
+
+// Modifique a função removerConversa para ser mais segura:
+function removerConversa(conversaId) {
+    const card = document.getElementById(`conversa-${conversaId}`);
+    if (elementoExiste(card)) {
+        card.style.opacity = '0';
+        card.style.transform = 'translateX(-100%)';
+        card.style.transition = 'all 0.3s ease';
+        
+        setTimeout(() => {
+            if (elementoExiste(card) && card.parentNode) {
+                card.remove();
+                conversasCache.delete(conversaId);
+                
+                // Verificar se a lista ficou vazia
+                const conversasList = document.getElementById('conversasList');
+                if (conversasList && conversasList.children.length === 0) {
+                    mostrarEstadoVazio();
+                }
+            }
+        }, 300);
+    }
+}
+
+// Função de polling para atualizações
 function iniciarPolling() {
-    // Verificar imediatamente
-    verificarAtualizacoes();
-    
-    // Configurar intervalo
     intervaloAtualizacao = setInterval(verificarAtualizacoes, TEMPO_POLLING);
-    
-    // Verificar quando a janela ganha foco
-    window.addEventListener('focus', function() {
-        if (!estaVerificando) {
-            verificarAtualizacoes();
-        }
-    });
-    
-    // Parar polling quando a janela perde foco (opcional, economiza recursos)
-    window.addEventListener('blur', function() {
-        if (intervaloAtualizacao) {
-            clearInterval(intervaloAtualizacao);
-            intervaloAtualizacao = null;
-        }
-    });
-    
-    // Retomar quando ganha foco novamente
-    window.addEventListener('focus', function() {
-        if (!intervaloAtualizacao) {
-            intervaloAtualizacao = setInterval(verificarAtualizacoes, TEMPO_POLLING);
-        }
-    });
 }
 
 function verificarAtualizacoes() {
@@ -802,133 +1054,105 @@ function verificarAtualizacoes() {
     estaVerificando = true;
     
     fetch(`atualizar_chats_ajax.php?aba=<?php echo $aba; ?>&ultima_verificacao=${ultimaVerificacao}`, {
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Erro na rede');
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         return response.json();
     })
     .then(data => {
-        // Atualizar timestamp
-        ultimaVerificacao = data.timestamp || Math.floor(Date.now() / 1000);
-        
-        if (data.error) {
-            console.error('Erro:', data.error);
+        if (!data || data.error) {
+            if (data && data.error) {
+                console.error('Erro na resposta:', data.error);
+            }
             return;
         }
         
-        // Se houve atualizações
+        ultimaVerificacao = data.timestamp || Math.floor(Date.now() / 1000);
+        
         if (data.atualizado) {
-            // 1. Atualizar badges de mensagens não lidas
+            // 1. Processar novas conversas
+            if (data.novas_conversas && Array.isArray(data.novas_conversas)) {
+                data.novas_conversas.forEach(conversa => {
+                    if (conversa && conversa.conversa_id) {
+                        renderizarConversa(conversa);
+                    }
+                });
+                
+                if (data.novas_conversas.length > 0) {
+                    mostrarNotificacao(`Nova${data.novas_conversas.length > 1 ? 's' : ''} conversa${data.novas_conversas.length > 1 ? 's' : ''} iniciada${data.novas_conversas.length > 1 ? 's' : ''}`);
+                }
+            }
+            
+            // 2. Processar conversas removidas
+            if (data.conversas_removidas && Array.isArray(data.conversas_removidas)) {
+                data.conversas_removidas.forEach(conv => {
+                    if (conv && conv.conversa_id) {
+                        removerConversa(conv.conversa_id);
+                    }
+                });
+            }
+            
+            // 3. Atualizar mensagens não lidas
             if (data.contadores && Array.isArray(data.contadores)) {
                 data.contadores.forEach(contador => {
-                    atualizarBadgeConversa(contador.conversa_id, contador.nao_lidas);
+                    if (contador && contador.conversa_id) {
+                        const conversa = conversasCache.get(parseInt(contador.conversa_id));
+                        if (conversa) {
+                            conversa.mensagens_nao_lidas = parseInt(contador.nao_lidas) || 0;
+                            const card = document.getElementById(`conversa-${contador.conversa_id}`);
+                            if (card) {
+                                atualizarConversaExistente(card, conversa);
+                            }
+                        }
+                    }
                 });
             }
             
-            // 2. Atualizar contador na stats-bar
-            if (data.total_nao_lidas !== undefined) {
-                const elementosValor = document.querySelectorAll('.stats-bar .stat-item:nth-child(2) .value');
-                elementosValor.forEach(el => {
-                    el.textContent = data.total_nao_lidas;
-                });
-            }
-            
-            // 3. Atualizar últimas mensagens
+            // 4. Atualizar últimas mensagens
             if (data.ultimas_mensagens && Array.isArray(data.ultimas_mensagens)) {
                 data.ultimas_mensagens.forEach(msg => {
-                    atualizarUltimaMensagem(msg.conversa_id, msg.ultima_mensagem, msg.ultima_mensagem_data);
+                    if (msg && msg.conversa_id) {
+                        const conversa = conversasCache.get(parseInt(msg.conversa_id));
+                        if (conversa) {
+                            conversa.ultima_mensagem = msg.ultima_mensagem;
+                            conversa.ultima_mensagem_data = msg.ultima_mensagem_data;
+                            const card = document.getElementById(`conversa-${msg.conversa_id}`);
+                            if (card) {
+                                atualizarConversaExistente(card, conversa);
+                            }
+                            if (data.novas_conversas.length <= 0) {
+                                mostrarNotificacaoNovasMensagens(data.ultimas_mensagens.length);
+                                // Animação sutil
+                                badgeNovo.style.animation = 'pulse 1s ease-in-out';
+                                setTimeout(() => {
+                                    badge.style.animation = '';
+                                }, 1000);
+                            }
+                        }
+                    }
                 });
             }
             
-            // 4. Mostrar notificação sutil (opcional)
-            if (data.novas_mensagens && data.novas_mensagens.length > 0) {
-                mostrarNotificacaoNovasMensagens(data.novas_mensagens.length);
-            }
+            // 5. Atualizar estatísticas
+            atualizarEstatisticas(data);
             
-            // 5. Atualizar filtro se estiver ativo
+            // 6. Atualizar filtro se necessário
             const filtroAtivo = document.querySelector('.filter-btn.active');
-            if (filtroAtivo && filtroAtivo.textContent.includes('Não Lidas')) {
-                filtrarConversas('nao-lidas');
+            if (filtroAtivo && filtroAtivo.textContent && filtroAtivo.textContent.includes('Não Lidas')) {
+                aplicarFiltroDinamico('nao-lidas');
             }
         }
     })
     .catch(error => {
         console.error('Erro na verificação:', error);
-        // Tentar novamente mais tarde
         setTimeout(verificarAtualizacoes, TEMPO_POLLING * 2);
     })
     .finally(() => {
         estaVerificando = false;
     });
-}
-
-function atualizarBadgeConversa(conversaId, quantidade) {
-    const card = document.getElementById(`conversa-${conversaId}`);
-    if (!card) return;
-    
-    // Encontrar ou criar badge
-    let badge = card.querySelector('.badge-novo');
-    const compradorNomeDiv = card.querySelector('.comprador-nome');
-    
-    if (quantidade > 0) {
-        // Adicionar classe de não lida
-        card.classList.add('nao-lida');
-        card.setAttribute('data-tipo', 'nao-lida');
-        
-        if (!badge && compradorNomeDiv) {
-            badge = document.createElement('span');
-            badge.className = 'badge-novo';
-            compradorNomeDiv.appendChild(badge);
-        }
-        
-        if (badge) {
-            badge.textContent = `${quantidade} nova${quantidade > 1 ? 's' : ''}`;
-            badge.style.display = 'inline-block';
-            
-            // Animação sutil
-            badge.style.animation = 'pulse 1s ease-in-out';
-            setTimeout(() => {
-                badge.style.animation = '';
-            }, 1000);
-        }
-    } else {
-        // Remover badge se não houver mensagens não lidas
-        card.classList.remove('nao-lida');
-        card.setAttribute('data-tipo', 'lida');
-        
-        if (badge) {
-            badge.remove();
-        }
-    }
-}
-
-function atualizarUltimaMensagem(conversaId, mensagem, dataStr) {
-    const card = document.getElementById(`conversa-${conversaId}`);
-    if (!card) return;
-    
-    // Atualizar mensagem no elemento existente
-    const msgElement = card.querySelector('.ultima-mensagem');
-    if (msgElement && mensagem) {
-        // Extrair a parte da data atual (mantém o formato existente)
-        const partes = msgElement.textContent.split(' - ');
-        if (partes.length > 0 && dataStr) {
-            const data = new Date(dataStr);
-            const dataFormatada = data.toLocaleDateString('pt-BR') + ' ' + data.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-            
-            if (mensagem.includes('[Imagem]')) {
-                msgElement.innerHTML = `${dataFormatada} - <i class="fas fa-image"></i>&nbsp;&nbsp;Enviou uma imagem`;
-            } else {
-                // Limitar tamanho da mensagem
-                const msgTruncada = mensagem.length > 60 ? mensagem.substring(0, 57) + '...' : mensagem;
-                msgElement.innerHTML = `${dataFormatada} - ${msgTruncada}`;
-            }
-        }
-    }
 }
 
 function mostrarNotificacaoNovasMensagens(quantidade) {
@@ -973,9 +1197,9 @@ function mostrarNotificacaoNovasMensagens(quantidade) {
 const style = document.createElement('style');
 style.textContent = `
     @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+        50% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
     }
     
     @keyframes slideInRight {
@@ -988,6 +1212,12 @@ style.textContent = `
         to { transform: translateX(100%); opacity: 0; }
     }
     
+    .badge-novo {
+        animation: none; /* Reset inicial */
+        display: inline-block;
+        position: relative;
+    }
+
     .notificacao-flutuante {
         font-size: 14px;
         font-weight: 500;
@@ -1010,12 +1240,184 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Iniciar polling quando a página carregar
+// Funções auxiliares
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function formatarPreco(preco) {
+    return parseFloat(preco).toFixed(2).replace('.', ',');
+}
+
+function formatarData(dataStr) {
+    const data = new Date(dataStr);
+    return data.toLocaleDateString('pt-BR') + ' ' + 
+           data.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+}
+
+function tratarUltimaMensagem(mensagem) {
+    if (mensagem.includes('[Imagem]')) {
+        return '<i class="fas fa-image"></i>&nbsp;&nbsp;Enviou uma imagem';
+    }
+    // Truncar mensagem muito longa
+    if (mensagem.length > 60) {
+        return escapeHtml(mensagem.substring(0, 57)) + '...';
+    }
+    return escapeHtml(mensagem);
+}
+
+function mostrarEstadoVazio() {
+    const conversasList = document.getElementById('conversasList');
+    if (!conversasList) return;
+    
+    const mostraArquivados = <?php echo $mostrar_arquivados ? 'true' : 'false'; ?>;
+    
+    // Limpar lista
+    conversasList.innerHTML = '';
+    
+    // Adicionar estado vazio
+    const emptyState = document.createElement('div');
+    emptyState.className = 'empty-state';
+    emptyState.innerHTML = `
+        <i class="fas fa-${mostraArquivados ? 'archive' : 'comments'}"></i>
+        <h3>${mostraArquivados ? 'Nenhuma conversa arquivada' : 'Nenhuma conversa ainda'}</h3>
+        <p>
+            ${mostraArquivados ? 
+                'As conversas que você arquivar aparecerão aqui.' : 
+                'Quando você conversar com compradores ou vendedores, as conversas aparecerão aqui.'
+            }
+        </p>
+    `;
+    
+    conversasList.appendChild(emptyState);
+}
+
+function mostrarErroCarregamento(mensagem) {
+    const conversasList = document.getElementById('conversasList');
+    const loadingEl = document.getElementById('loadingConversas');
+    
+    if (loadingEl) loadingEl.remove();
+    
+    conversasList.innerHTML = `
+        <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Erro ao carregar conversas</h3>
+            <p>${mensagem}</p>
+            <button onclick="carregarConversasIniciais()" class="btn-chat" style="margin-top: 15px;">
+                <i class="fas fa-redo"></i> Tentar novamente
+            </button>
+        </div>
+    `;
+}
+
+function atualizarEstatisticas(data) {
+    // Atualizar contadores na stats-bar
+    const elementosValor = document.querySelectorAll('.stats-bar .stat-item .value');
+    if (elementosValor.length >= 3) {
+        // Conversas Ativas
+        elementosValor[0].textContent = data.total_conversas || 0;
+        // Não Lidas
+        elementosValor[1].textContent = data.total_nao_lidas || 0;
+        // Arquivadas
+        elementosValor[2].textContent = data.total_arquivadas || 0;
+    }
+    
+    // Atualizar badge da aba arquivados
+    const badgeArquivados = document.querySelector('.aba:nth-child(2) .badge-aba');
+    if (badgeArquivados) {
+        if (data.total_arquivadas > 0) {
+            badgeArquivados.textContent = data.total_arquivadas;
+            badgeArquivados.style.display = 'inline-block';
+        } else {
+            badgeArquivados.style.display = 'none';
+        }
+    }
+}
+
+function aplicarFiltroDinamico(tipo) {
+    const cards = document.querySelectorAll('.conversa-card');
+    cards.forEach(card => {
+        if (tipo === 'todas') {
+            card.style.display = 'flex';
+        } else if (tipo === 'nao-lidas') {
+            card.style.display = (card.dataset.tipo === 'nao-lida') ? 'flex' : 'none';
+        }
+    });
+}
+
+function mostrarNotificacao(mensagem) {
+    // Criar notificação sutil
+    const notif = document.createElement('div');
+    notif.className = 'notificacao-flutuante';
+    notif.innerHTML = `
+        <i class="fas fa-comment-alt"></i>
+        <span>${mensagem}</span>
+        <button onclick="this.parentElement.remove()">&times;</button>
+    `;
+    
+    notif.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        z-index: 9999;
+        animation: slideInRight 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(notif);
+    
+    setTimeout(() => {
+        if (notif.parentElement) {
+            notif.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => notif.remove(), 300);
+        }
+    }, 4000);
+}
+
+function gerenciarEventosJanela() {
+    window.addEventListener('focus', function() {
+        if (!estaVerificando) {
+            verificarAtualizacoes();
+        }
+    });
+    
+    window.addEventListener('blur', function() {
+        if (intervaloAtualizacao) {
+            clearInterval(intervaloAtualizacao);
+            intervaloAtualizacao = null;
+        }
+    });
+    
+    window.addEventListener('focus', function() {
+        if (!intervaloAtualizacao) {
+            iniciarPolling();
+        }
+    });
+}
+
+// Modificar a função filtrarConversas existente
+function filtrarConversas(tipo) {
+    const buttons = document.querySelectorAll('.filter-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.closest('.filter-btn').classList.add('active');
+    
+    aplicarFiltroDinamico(tipo);
+}
+
+// Iniciar sistema quando a página carregar
 document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(iniciarPolling, 2000); // Esperar 2 segundos após carregamento
+    setTimeout(iniciarSistemaDinamico, 500);
 });
 
-// ============== FIM DA ATUALIZAÇÃO DINÂMICA ==============
     </script>
 </body>
 </html>

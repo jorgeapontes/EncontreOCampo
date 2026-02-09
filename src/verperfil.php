@@ -263,15 +263,15 @@ if ($viewer_id) {
                     if ($vendedor_row) {
                         $tipo_avaliacao = 'vendedor';
                         $coluna_id = 'vendedor_id';
-                        $id_para_buscar = $vendedor_row['id']; // ID da tabela vendedores
+                        $id_para_buscar = $profile_id; 
                     } elseif ($comprador_row) {
                         $tipo_avaliacao = 'comprador';
                         $coluna_id = 'comprador_id';
-                        $id_para_buscar = $comprador_row['id']; // ID da tabela compradores
+                        $id_para_buscar = $profile_id; 
                     } elseif ($transportador_row) {
                         $tipo_avaliacao = 'transportador';
                         $coluna_id = 'transportador_id';
-                        $id_para_buscar = $transportador_row['id']; // ID da tabela transportadores
+                        $id_para_buscar = $profile_id; 
                     }
                     
                     // Buscar avaliações se houver tipo definido
@@ -534,7 +534,7 @@ if ($viewer_id) {
                                 
                                 $texto_botao = $textos[$tipo_avaliacao] ?? '';
                                 $param_nome = $tipo_avaliacao . '_id';
-                                $url_avaliacao = 'avaliar.php?tipo=' . urlencode($tipo_avaliacao) . '&' . $param_nome . '=' . urlencode($id_para_avaliar);
+                                $url_avaliacao = 'avaliar.php?tipo=' . urlencode($tipo_avaliacao) . '&' . $param_nome . '=' . urlencode($profile_id);
                                 
                                 if ($texto_botao) {
                                     echo '<div style="margin-top:12px;">';

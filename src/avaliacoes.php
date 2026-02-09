@@ -106,6 +106,27 @@ switch ($tipo_avaliacao) {
                 $vendedor_id_tabela = $vendedor['id']; // ADICIONAR ESTA LINHA
                 $pagina_titulo = "Avaliações do Vendedor: " . htmlspecialchars($vendedor['nome_comercial']);
                 $subtitulo = "Perfil do vendedor";
+
+                // Verificar se usuário logado pode avaliar este vendedor
+                if (isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo') {
+                    $usuario_logado = $_SESSION['usuario_id'];
+                    
+                    // Verificar diretamente na tabela propostas
+                    $sql_check = "SELECT 1 FROM propostas p 
+                                WHERE p.comprador_id = :usuario_id
+                                AND p.vendedor_id = :vendedor_usuario_id
+                                AND p.status = 'aceita' 
+                                LIMIT 1";
+                    
+                    $stc = $conn->prepare($sql_check);
+                    $stc->bindParam(':usuario_id', $usuario_logado, PDO::PARAM_INT);
+                    $stc->bindParam(':vendedor_usuario_id', $id_referencia, PDO::PARAM_INT); // id_referencia é o usuario_id do vendedor
+                    $stc->execute();
+                    
+                    if ($stc->fetch(PDO::FETCH_ASSOC)) {
+                        $mostrar_botao_avaliar = true;
+                    }
+                }
             } else {
                 header("Location: dashboard.php?erro=" . urlencode("Vendedor não encontrado."));
                 exit();
@@ -230,19 +251,19 @@ try {
     switch ($tipo_avaliacao) {
         case 'produto':
             $sql_avaliacoes .= "produto_id = :id";
-            $id_para_buscar = $id_referencia; // produto usa o ID direto
+            $id_para_buscar = $id_referencia; 
             break;
         case 'vendedor':
             $sql_avaliacoes .= "vendedor_id = :id";
-            $id_para_buscar = $vendedor_id_tabela ?? null; // usar ID da tabela vendedores
+            $id_para_buscar = $id_referencia ?? null; 
             break;
         case 'comprador':
             $sql_avaliacoes .= "comprador_id = :id";
-            $id_para_buscar = $comprador_id_tabela ?? null; // usar ID da tabela compradores
+            $id_para_buscar = $id_referencia ?? null; 
             break;
         case 'transportador':
             $sql_avaliacoes .= "transportador_id = :id";
-            $id_para_buscar = $transportador_id_tabela ?? null; // usar ID da tabela transportadores
+            $id_para_buscar = $id_referencia ?? null; 
             break;
     }
     
@@ -685,6 +706,12 @@ try {
                             <i class="fas fa-star"></i> Avaliar este produto
                         </a>
                     </div>
+                    <?php elseif ($tipo_avaliacao === 'vendedor' && $mostrar_botao_avaliar): ?>
+                        <div class="botao-avaliar">
+                            <a href="./avaliar.php?tipo=vendedor&vendedor_id=<?php echo $vendedor_id_tabela; ?>" class="btn-avaliar">
+                            <i class="fas fa-star"></i> Avaliar este vendedor
+                        </a>
+                    </div>
                     <?php elseif ($tipo_avaliacao === 'transportador' && $mostrar_botao_avaliar): ?>
                         <div class="botao-avaliar">
                             <a href="./avaliar.php?tipo=transportador&transportador_id=<?php echo $transportador_id_tabela; ?>" class="btn-avaliar">
@@ -700,6 +727,10 @@ try {
                     <?php elseif ($tipo_avaliacao === 'produto' && isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo'): ?>
                         <div style="padding: 10px 15px; background: #f8f9fa; border-radius: var(--radius); color: #666; font-size: 0.9em;">
                             <i class="fas fa-info-circle"></i> Você só pode avaliar produtos que comprou
+                        </div>
+                    <?php elseif ($tipo_avaliacao === 'vendedor' && isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo'): ?>
+                        <div style="padding: 10px 15px; background: #f8f9fa; border-radius: var(--radius); color: #666; font-size: 0.9em;">
+                            <i class="fas fa-info-circle"></i> Você só pode avaliar vendedores com quem fez negócio
                         </div>
                     <?php elseif ($tipo_avaliacao === 'transportador' && isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo'): ?>
                         <div style="padding: 10px 15px; background: #f8f9fa; border-radius: var(--radius); color: #666; font-size: 0.9em;">

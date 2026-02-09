@@ -98,7 +98,7 @@ function usuarioEhElegivel($conn, $usuario_id, $tipo, $produto_id = null, $vende
         if ($tipo === 'vendedor') {
             if ($vendedor_id) {
                 // Buscar o usuario_id do vendedor
-                $sql_vend_uid = "SELECT usuario_id FROM vendedores WHERE id = :vendedor_id LIMIT 1";
+                $sql_vend_uid = "SELECT usuario_id FROM vendedores WHERE usuario_id = :vendedor_id LIMIT 1";
                 $st_vend_uid = $conn->prepare($sql_vend_uid);
                 $st_vend_uid->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
                 $st_vend_uid->execute();
@@ -208,6 +208,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!usuarioEhElegivel($conn, $usuario_id, $tipo, $produto_id, $vendedor_id, $transportador_id, $comprador_id, $proposta_id, $entrega_id)) {
                 $erro = 'Você não tem permissão para avaliar este item.';
             } else {
+
+            if($tipo === 'comprador'){
+                $comprador_id = $_GET['comprador_id'];
+            }
+            if($tipo === 'vendedor'){
+                $vendedor_id = $_GET['vendedor_id'];
+            }
+            if($tipo === 'transportador'){
+                $transportador_id = $_GET['transportador_id'];
+            }
 
             $sql = "INSERT INTO avaliacoes (avaliador_usuario_id, produto_id, vendedor_id, comprador_id, transportador_id, proposta_id, entrega_id, nota, comentario, tipo) VALUES (:avaliador, :produto, :vendedor, :comprador, :transportador, :proposta, :entrega, :nota, :comentario, :tipo)";
             $stmt = $conn->prepare($sql);

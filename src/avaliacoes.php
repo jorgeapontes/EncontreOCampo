@@ -708,19 +708,19 @@ try {
                     </div>
                     <?php elseif ($tipo_avaliacao === 'vendedor' && $mostrar_botao_avaliar): ?>
                         <div class="botao-avaliar">
-                            <a href="./avaliar.php?tipo=vendedor&vendedor_id=<?php echo $vendedor_id_tabela; ?>" class="btn-avaliar">
+                            <a href="./avaliar.php?tipo=vendedor&vendedor_id=<?php echo $id_referencia; ?>" class="btn-avaliar">
                             <i class="fas fa-star"></i> Avaliar este vendedor
                         </a>
                     </div>
                     <?php elseif ($tipo_avaliacao === 'transportador' && $mostrar_botao_avaliar): ?>
                         <div class="botao-avaliar">
-                            <a href="./avaliar.php?tipo=transportador&transportador_id=<?php echo $transportador_id_tabela; ?>" class="btn-avaliar">
+                            <a href="./avaliar.php?tipo=transportador&transportador_id=<?php echo $id_referencia; ?>" class="btn-avaliar">
                             <i class="fas fa-star"></i> Avaliar este transportador
                         </a>
                     </div>
                     <?php elseif ($tipo_avaliacao === 'comprador' && $mostrar_botao_avaliar): ?>
                         <div class="botao-avaliar">
-                            <a href="./avaliar.php?tipo=comprador&comprador_id=<?php echo $comprador_id_tabela; ?>" class="btn-avaliar">
+                            <a href="./avaliar.php?tipo=comprador&comprador_id=<?php echo $id_referencia; ?>" class="btn-avaliar">
                             <i class="fas fa-star"></i> Avaliar este comprador
                         </a>
                     </div>

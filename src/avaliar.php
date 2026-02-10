@@ -1,5 +1,4 @@
 <?php
-// src/avaliar.php
 session_start();
 require_once __DIR__ . '/conexao.php';
 require_once __DIR__ . '/funcoes_notificacoes.php';
@@ -31,7 +30,7 @@ try {
         $stmt_check->execute();
         $result = $stmt_check->fetch(PDO::FETCH_ASSOC);
         if ($result) {
-            $transportador_id = $result['id']; // Converter para ID da tabela
+            $transportador_id = $result['id'];
         }
     }
     
@@ -43,11 +42,10 @@ try {
         $stmt_check->execute();
         $result = $stmt_check->fetch(PDO::FETCH_ASSOC);
         if ($result) {
-            $comprador_id = $result['id']; // Converter para ID da tabela
+            $comprador_id = $result['id']; 
         }
     }
 } catch (Exception $e) {
-    // Silencioso
 }
 
 $erro = '';

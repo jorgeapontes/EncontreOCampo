@@ -1,23 +1,21 @@
 <?php
-// avaliacoes.php - Página reutilizável para exibir todas as avaliações
 session_start();
 require_once __DIR__ . '/conexao.php';
 require_once __DIR__ . '/permissions.php';
 
-// Verificar acesso
+
 if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['comprador', 'vendedor','transportador'])) {
     header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador ou Vendedor."));
     exit();
 }
 
-// Verificar parâmetros obrigatórios
 if (!isset($_GET['tipo']) || !isset($_GET['id'])) {
     header("Location: dashboard.php?erro=" . urlencode("Parâmetros inválidos."));
     exit();
 }
 
 $tipo_avaliacao = $_GET['tipo']; // 'produto', 'vendedor', 'comprador', 'transportador'
-$id_referencia = (int)$_GET['id']; // ID do produto, vendedor, etc.
+$id_referencia = (int)$_GET['id']; // ID do produto, vendedor, etc
 $pagina_titulo = '';
 $subtitulo = '';
 $mostrar_botao_avaliar = false;
@@ -28,10 +26,9 @@ $vendedor_id_tabela = null;  //
 $database = new Database();
 $conn = $database->getConnection();
 
-// Configurar título e consulta baseado no tipo
+
 switch ($tipo_avaliacao) {
     case 'produto':
-        // Buscar informações do produto
         try {
             $sql_produto = "SELECT p.nome, p.id as produto_id, v.nome_comercial, v.id as vendedor_id FROM produtos p 
                            JOIN vendedores v ON p.vendedor_id = v.id 
@@ -95,7 +92,6 @@ switch ($tipo_avaliacao) {
         break;
         
     case 'vendedor':
-        // Buscar informações do vendedor
         try {
             $sql_vendedor = "SELECT id, nome_comercial FROM vendedores WHERE usuario_id = :id";
             $stmt_vendedor = $conn->prepare($sql_vendedor);
@@ -190,7 +186,6 @@ switch ($tipo_avaliacao) {
     case 'transportador':
         // Buscar informações do transportador (se houver tabela específica)
         try {
-            // Adapte conforme sua estrutura de tabelas
             $sql_transportador = "SELECT id, nome_comercial FROM transportadores WHERE usuario_id = :id";
             $stmt_transportador = $conn->prepare($sql_transportador);
             $stmt_transportador->bindParam(':id', $id_referencia, PDO::PARAM_INT);
@@ -245,7 +240,6 @@ try {
                       LEFT JOIN usuarios u ON a.avaliador_usuario_id = u.id 
                       WHERE a.tipo = :tipo AND a.";
     
-    // Definir o campo correto e o ID correto baseado no tipo
     $id_para_buscar = null;
     
     switch ($tipo_avaliacao) {
@@ -280,7 +274,6 @@ try {
     $stmt_avaliacoes->execute();
     $avaliacoes = $stmt_avaliacoes->fetchAll(PDO::FETCH_ASSOC);
 
-    // Buscar fotos relacionadas às avaliações (em lote)
     if (!empty($avaliacoes)) {
         $ids = array_column($avaliacoes, 'id');
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
@@ -298,7 +291,6 @@ try {
         unset($av);
     }
     
-    // Calcular média
     if (!empty($avaliacoes)) {
         $soma_notas = 0;
         foreach ($avaliacoes as $av) {

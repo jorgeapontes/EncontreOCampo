@@ -1,6 +1,4 @@
 <?php
-// Script de migração rápido para adicionar a coluna modo_precificacao
-// Uso: php db\migrate_add_modo_precificacao.php
 
 require_once __DIR__ . '/../src/conexao.php';
 

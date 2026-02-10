@@ -1,9 +1,9 @@
 <?php
-// src/atualizar_transportador_ajax.php
+
 session_start();
 require_once __DIR__ . '/conexao.php';
 
-// Verificar autenticação
+
 if (!isset($_SESSION['usuario_id']) || !isset($_SESSION['usuario_tipo'])) {
     echo json_encode(['error' => 'Não autenticado']);
     exit();
@@ -17,7 +17,6 @@ $mostrar_arquivados = ($aba === 'arquivados');
 $database = new Database();
 $conn = $database->getConnection();
 
-// TIMESTAMP da última verificação
 $ultima_verificacao = $_GET['ultima_verificacao'] ?? 0;
 
 $response = [
@@ -33,7 +32,6 @@ $response = [
 ];
 
 try {
-    // BUSCAR NOVAS CONVERSAS CRIADAS DESDE A ÚLTIMA VERIFICAÇÃO
     $sql_novas_conversas = "SELECT 
                     cc.id AS conversa_id,
                     cc.produto_id,
@@ -72,7 +70,6 @@ try {
     $stmt_novas_conv->execute();
     $novas_conversas = $stmt_novas_conv->fetchAll(PDO::FETCH_ASSOC);
     
-    // Verificar conversas removidas (excluídas pelo usuário)
     $sql_removidas = "SELECT cc.id as conversa_id
                     FROM chat_conversas cc
                     WHERE cc.comprador_id = :usuario_id
@@ -92,7 +89,7 @@ try {
         $response['conversas_removidas'] = $conversas_removidas;
     }
     
-    // VERIFICAR MENSAGENS NOVAS PARA COMPRADOR COM TRANSPORTADOR
+    // VERIFICAR MENSAGENS NOVAS PARA COMPRADOR *COM* TRANSPORTADOR
     $sql_novas_mensagens = "SELECT 
                         cm.conversa_id,
                         COUNT(cm.id) as total_novas,
@@ -120,7 +117,6 @@ try {
         $response['novas_mensagens'] = $novas_mensagens;
     }
     
-    // CONTAR TOTAL DE MENSAGENS NÃO LIDAS
     $sql_contadores = "SELECT 
                         cc.id as conversa_id,
                         COUNT(cm.id) as nao_lidas
@@ -155,7 +151,6 @@ try {
     }
     $response['total_nao_lidas'] = $total_nao_lidas;
     
-    // ATUALIZAR ÚLTIMAS MENSAGENS
     $sql_ultimas_msg = "SELECT 
                         cc.id as conversa_id,
                         cc.ultima_mensagem,
@@ -174,7 +169,6 @@ try {
     
     $response['ultimas_mensagens'] = $stmt_ultimas->fetchAll(PDO::FETCH_ASSOC);
     
-    // CONTAR TOTAL DE CONVERSAS
     $sql_total = "SELECT COUNT(*) as total
                   FROM chat_conversas cc
                   WHERE cc.comprador_id = :usuario_id

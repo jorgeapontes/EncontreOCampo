@@ -1,5 +1,4 @@
 <?php
-// Script de debug para testar conexão PDO com as mesmas credenciais de src/conexao.php
 $host = 'localhost';
 $db_name = 'encontre_ocampo';
 $username = 'root';

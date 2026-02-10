@@ -1,11 +1,9 @@
 <?php
 namespace Config;
 
-// Carrega o autoload do Composer na pasta vendor do projeto
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 class StripeConfig {
-    // Substitua pela sua chave sk_test...
     private static $apiKey = '***REMOVED_STRIPE_TEST_KEY***';
 
     public static function init() {

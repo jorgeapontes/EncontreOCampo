@@ -1,8 +1,4 @@
 <?php
-/**
- * Script para gerar JSON com todas as cidades do Brasil
- * Busca dados da API IBGE e salva em cidades_data.json
- */
 
 // Estados brasileiros com suas siglas
 $estados = [
@@ -80,7 +76,6 @@ foreach ($estados as $sigla => $nome_estado) {
         
         echo "✅ " . count($nomes_cidades) . " cidades\n";
         
-        // Pequeno delay para não sobrecarregar a API
         sleep(1);
         
     } catch (Exception $e) {
@@ -93,7 +88,6 @@ echo "✅ Total de cidades processadas: $total_cidades\n";
 echo "✅ Estados processados: " . count($cidades_por_estado) . "\n";
 echo str_repeat("=", 60) . "\n\n";
 
-// Salvar JSON
 $arquivo_output = __DIR__ . '/../src/vendedor/cidades_data.json';
 
 $json_content = json_encode($cidades_por_estado, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);

@@ -1,5 +1,4 @@
 <?php
-// src/anuncios.php
 session_start();
 require_once 'conexao.php';
 
@@ -9,27 +8,21 @@ $usuario_id = $_SESSION['usuario_id'] ?? null;
 $is_comprador = $usuario_tipo === 'comprador' || $usuario_tipo === 'vendedor';
 
 
-
-// Conexão e busca dos anúncios
 $database = new Database();
 $conn = $database->getConnection();
 $anuncios = [];
 
-// Parâmetros de filtro e ordenação
 $termo_pesquisa = $_GET['pesquisa'] ?? '';
 $filtro_categoria = $_GET['categoria'] ?? '';
 $filtro_estado = $_GET['estado'] ?? '';
 $ordenacao = $_GET['ordenacao'] ?? 'recentes';
 
-// Inicializamos o array de condições
-// O status='ativo' será tratado dentro da subquery para gerar o ranking correto
 $where_conditions = [];
 $params = [];
 
 // Filtro por pesquisa
 if (!empty(trim($termo_pesquisa))) {
     $termo_pesquisa = trim($termo_pesquisa);
-    // Nota: p.nome refere-se à tabela derivada 'p' definida no SQL abaixo
     $where_conditions[] = "(p.nome LIKE :pesquisa OR p.descricao LIKE :pesquisa OR u.nome LIKE :pesquisa)";
     $params[':pesquisa'] = '%' . $termo_pesquisa . '%';
 }
@@ -68,11 +61,11 @@ switch ($ordenacao) {
         $order_by = 'p.estoque DESC';
         break;
     default:
-        $order_by = 'p.data_criacao DESC'; // Mostra os mais recentes primeiro na listagem geral
+        $order_by = 'p.data_criacao DESC';
         break;
 }
 
-// Categorias e Estados disponíveis para filtros
+
 $categorias_disponiveis = [
     'Frutas Cítricas', 'Frutas Tropicais', 'Frutas de Caroço',
     'Frutas Vermelhas', 'Frutas Secas', 'Frutas Exóticas',
@@ -85,14 +78,6 @@ $estados_disponiveis = [
 ];
 
 try {
-    /* LÓGICA PRINCIPAL DE FILTRO POR PLANO:
-       1. Criamos uma tabela derivada (p) que seleciona todos os produtos ativos.
-       2. Usamos ROW_NUMBER() para numerar os anúncios de cada vendedor (rn), 
-          ordenando por ID ASC (os mais antigos recebem números menores: 1, 2, 3...).
-       3. Fazemos JOIN com a tabela 'planos' (pl).
-       4. No WHERE final, filtramos: p.rn <= pl.limite_total_anuncios.
-       Isso oculta automaticamente os anúncios mais novos que excedem o limite do plano atual.
-    */
     $sql = "SELECT 
                 p.id, 
                 p.nome AS produto, 
@@ -200,7 +185,6 @@ foreach ($anuncios as &$a) {
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
     
     <style>
-        /* Popup para Vendedores */
         .vendedor-popup {
             position: fixed;
             top: 80px;
@@ -315,7 +299,7 @@ foreach ($anuncios as &$a) {
             }
         }
 
-        /* Toast Notification para Aviso de Vendedores */
+        /* Aviso de Vendedores */
         .toast-notification {
             position: fixed;
             top: 20px;
@@ -872,7 +856,6 @@ foreach ($anuncios as &$a) {
             });
         });
         
-        // Popup para Vendedores
         const vendedorPopup = document.getElementById('vendedor-popup');
         if (vendedorPopup) {
             // Verifica se o popup já foi mostrado
@@ -880,15 +863,12 @@ foreach ($anuncios as &$a) {
             const popupShown = localStorage.getItem(popupKey);
             
             if (popupShown) {
-                // Se já foi mostrado, remove o elemento
                 vendedorPopup.remove();
             } else {
-                // Marca como mostrado no localStorage
                 localStorage.setItem(popupKey, 'true');
                 
                 const popupClose = vendedorPopup.querySelector('.popup-close');
                 
-                // Fecha o popup ao clicar no X
                 popupClose.addEventListener('click', function() {
                     vendedorPopup.classList.add('hide');
                     setTimeout(() => vendedorPopup.remove(), 300);
@@ -904,17 +884,15 @@ foreach ($anuncios as &$a) {
             }
         }
 
-        // Toast de aviso para vendedores (após login)
         const toastVendedor = document.getElementById('toast-aviso-vendedor');
         if (toastVendedor) {
-            // Fechar automaticamente após 7 segundos
+            // Fechar automaticamente após 7.5 segundos
             setTimeout(() => {
                 fecharToastVendedor();
-            }, 7000);
+            }, 7500);
         }
     });
 
-    // Função para fechar o toast de vendedor
     function fecharToastVendedor() {
         const toastVendedor = document.getElementById('toast-aviso-vendedor');
         if (toastVendedor) {

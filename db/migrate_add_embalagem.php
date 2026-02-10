@@ -1,6 +1,4 @@
 <?php
-// Script de migração para adicionar colunas de embalagem
-// Uso: php db\migrate_add_embalagem.php
 
 require_once __DIR__ . '/../src/conexao.php';
 

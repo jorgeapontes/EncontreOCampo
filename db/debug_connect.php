@@ -1,8 +1,18 @@
 <?php
-$host = 'localhost';
-$db_name = 'encontre_ocampo';
-$username = 'root';
-$password = '';
+// Carregar autoload e variáveis de ambiente, se disponível
+$autoload = __DIR__ . '/../vendor/autoload.php';
+if (file_exists($autoload)) {
+    require_once $autoload;
+    if (class_exists('Dotenv\Dotenv')) {
+        $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+        $dotenv->safeLoad();
+    }
+}
+
+$host = $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?? 'localhost';
+$db_name = $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?? 'encontre_ocampo';
+$username = $_ENV['DB_USER'] ?? getenv('DB_USER') ?? 'root';
+$password = $_ENV['DB_PASS'] ?? getenv('DB_PASS') ?? '';
 
 try {
     $pdo = new PDO("mysql:host={$host};dbname={$db_name};charset=utf8", $username, $password, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);

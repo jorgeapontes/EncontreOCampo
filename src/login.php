@@ -1,84 +1,305 @@
 <?php
+// Garante que a sessão seja iniciada caso o conexao.php não faça isso
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require_once 'conexao.php';
 
+// Define o fuso horário para garantir que o tempo de bloqueio seja preciso
+date_default_timezone_set('America/Sao_Paulo');
+
+// =====================================================================
+// Variáveis de Segurança (Configuráveis)
+// =====================================================================
+$MAX_TENTATIVAS_CONTA  = 5;   // Erros permitidos por CONTA antes de bloquear
+$MAX_TENTATIVAS_IP     = 15;  // Erros permitidos por IP antes de bloquear (cobre credential stuffing)
+$TEMPO_BLOQUEIO_MINUTOS = 15; // Tempo de bloqueio em minutos (conta e IP)
+
+// Hash fictício usado para igualar o tempo de resposta quando o e-mail
+// não existe no banco (mitiga timing attack / user enumeration)
+$HASH_FICTICIO = '$2y$10$wH8z8K5JZ0qjA1L1G5cF1u3p5gk0F2qzN1y8b2v6mQk9b3hYV8e1S';
+
 $erro = '';
+$ip_atual = getClientIp();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = sanitizeInput($_POST['email']);
-    $password = $_POST['password'];
 
-    if (!empty($email) && !empty($password)) {
-        $database = new Database();
-        $db = $database->getConnection();
+    // =================================================================
+    // VALIDAÇÃO DO TOKEN CSRF
+    // =================================================================
+    $csrf_valido = isset($_POST['csrf_token'], $_SESSION['csrf_token'])
+        && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token']);
 
-        $query = "SELECT id, email, senha, tipo, nome, status FROM usuarios WHERE email = :email";
-        $stmt = $db->prepare($query);
-        $stmt->bindParam(':email', $email);
-        $stmt->execute();
+    if (!$csrf_valido) {
+        $erro = "Sua sessão expirou ou a requisição é inválida. Atualize a página e tente novamente.";
+    } else {
 
-        if ($stmt->rowCount() == 1) {
-            $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            if (password_verify($password, $usuario['senha'])) {
-                // REMOVA ou modifique o bloco de verificação de status "pendente"
-                // Mantenha apenas a verificação para "ativo" e outros status
-                
-                if ($usuario['status'] === 'ativo' || $usuario['status'] === 'pendente') {
-                    $_SESSION['usuario_id'] = $usuario['id'];
-                    $_SESSION['usuario_email'] = $usuario['email'];
-                    $_SESSION['usuario_tipo'] = $usuario['tipo'];
-                    $_SESSION['usuario_nome'] = $usuario['nome'];
-                    $_SESSION['usuario_status'] = $usuario['status']; // Adicione o status na sessão
-                    
-                    // Sinalizar login recente para vendedores (para mostrar aviso nas páginas)
-                    if ($usuario['tipo'] === 'vendedor') {
-                        $_SESSION['login_recente_vendedor'] = true;
+        $email = sanitizeInput($_POST['email']);
+        $password = $_POST['password'];
+
+        if (!empty($email) && !empty($password)) {
+            $database = new Database();
+            $db = $database->getConnection();
+            $agora = new DateTime();
+
+            // =============================================================
+            // 1) VERIFICA BLOQUEIO POR IP (credential stuffing / força bruta)
+            // =============================================================
+            $ip_bloqueado = false;
+
+            $queryIp = "SELECT id, tentativas, bloqueado_ate FROM tentativas_ip WHERE ip = :ip";
+            $stmtIp = $db->prepare($queryIp);
+            $stmtIp->bindParam(':ip', $ip_atual);
+            $stmtIp->execute();
+            $regIp = $stmtIp->fetch(PDO::FETCH_ASSOC);
+
+            if ($regIp) {
+                // Janela de esquecimento do IP: se passou o tempo e não atingiu o limite, zera
+                if (!empty($regIp['bloqueado_ate'])) {
+                    $validadeIp = new DateTime($regIp['bloqueado_ate']);
+
+                    if ($regIp['tentativas'] < $MAX_TENTATIVAS_IP && $agora > $validadeIp) {
+                        $sqlResetIp = "UPDATE tentativas_ip SET tentativas = 0, bloqueado_ate = NULL WHERE ip = :ip";
+                        $stmtResetIp = $db->prepare($sqlResetIp);
+                        $stmtResetIp->bindParam(':ip', $ip_atual);
+                        $stmtResetIp->execute();
+                        $regIp['tentativas'] = 0;
+                        $regIp['bloqueado_ate'] = null;
                     }
-                    
-                    // Redirecionar baseado no tipo de usuário
-                    switch ($usuario['tipo']) {
-                        case 'admin':
-                            header("Location: admin/dashboard.php");
-                            break;
-                        case 'comprador':
-                        case 'vendedor':
-                        case 'transportador':
-                            // Para usuários não-admin com status pendente
-                            if ($usuario['status'] === 'pendente') {
-                                header("Location: ../index.php");
-                            } else {
-                                // Para status ativo
-                                switch ($usuario['tipo']) {
-                                    case 'comprador':
-                                        header("Location: anuncios.php");
-                                        break;
-                                    case 'vendedor':
-                                        header("Location: vendedor/dashboard.php");
-                                        break;
-                                    case 'transportador':
-                                        header("Location: transportador/dashboard.php");
-                                        break;
-                                }
-                            }
-                            break;
-                        default:
-                            header("Location: ../index.php");
+
+                    // Verifica se o IP está efetivamente bloqueado agora
+                    if ($regIp['tentativas'] >= $MAX_TENTATIVAS_IP && !empty($regIp['bloqueado_ate'])) {
+                        $bloqueioIp = new DateTime($regIp['bloqueado_ate']);
+                        if ($agora < $bloqueioIp) {
+                            $ip_bloqueado = true;
+                            $diff = $agora->diff($bloqueioIp);
+                            $minutos_restantes = $diff->i + ($diff->h * 60) + ($diff->days * 24 * 60) + 1;
+                            $erro = "Muitas tentativas detectadas a partir do seu endereço. Tente novamente em {$minutos_restantes} minuto(s).";
+                        }
                     }
-                    exit();
-                } else {
-                    $erro = "Conta inativa ou suspensa";
                 }
-            } else {
-                $erro = "Senha incorreta";
+            }
+
+            if (!$ip_bloqueado) {
+
+                // =========================================================
+                // 2) BUSCA O USUÁRIO PELO EMAIL
+                // =========================================================
+                $query = "SELECT id, email, senha, tipo, nome, status, tentativas_falhas, bloqueado_ate FROM usuarios WHERE email = :email";
+                $stmt = $db->prepare($query);
+                $stmt->bindParam(':email', $email);
+                $stmt->execute();
+
+                $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+                $usuarioEncontrado = ($usuario !== false);
+
+                $bloqueado = false;
+
+                if ($usuarioEncontrado) {
+                    // =========================================================
+                    // JANELA DE ESQUECIMENTO (ZERAR ERROS POR TEMPO) - CONTA
+                    // =========================================================
+                    if ($usuario['tentativas_falhas'] > 0 && !empty($usuario['bloqueado_ate'])) {
+                        $validade_erro = new DateTime($usuario['bloqueado_ate']);
+
+                        if ($usuario['tentativas_falhas'] < $MAX_TENTATIVAS_CONTA && $agora > $validade_erro) {
+                            $sqlResetTempo = "UPDATE usuarios SET tentativas_falhas = 0, bloqueado_ate = NULL WHERE id = :id";
+                            $stmtResetTempo = $db->prepare($sqlResetTempo);
+                            $stmtResetTempo->bindParam(':id', $usuario['id']);
+                            $stmtResetTempo->execute();
+
+                            $usuario['tentativas_falhas'] = 0;
+                            $usuario['bloqueado_ate'] = null;
+                        }
+                    }
+
+                    // Verifica se a conta está atualmente bloqueada (estouro de limite)
+                    if ($usuario['tentativas_falhas'] >= $MAX_TENTATIVAS_CONTA && !empty($usuario['bloqueado_ate'])) {
+                        $bloqueio = new DateTime($usuario['bloqueado_ate']);
+
+                        if ($agora < $bloqueio) {
+                            $bloqueado = true;
+                            $diff = $agora->diff($bloqueio);
+                            $minutos_restantes = $diff->i + ($diff->h * 60) + ($diff->days * 24 * 60) + 1;
+                            $erro = "Por motivos de segurança, sua conta foi temporariamente bloqueada. Tente novamente em {$minutos_restantes} minuto(s).";
+                        }
+                    }
+                }
+
+                // =========================================================
+                // 3) VALIDAÇÃO DA SENHA
+                //    Sempre executamos password_verify(), mesmo se o e-mail
+                //    não existir, para igualar o tempo de resposta entre os
+                //    dois casos (mitigação de timing attack).
+                // =========================================================
+                if (!$bloqueado) {
+
+                    $hashParaComparar = $usuarioEncontrado ? $usuario['senha'] : $HASH_FICTICIO;
+                    $senhaCorreta = password_verify($password, $hashParaComparar);
+
+                    if ($usuarioEncontrado && $senhaCorreta) {
+                        // ---> SENHA CORRETA <---
+                        if ($usuario['status'] === 'ativo' || $usuario['status'] === 'pendente') {
+
+                            // Reseta contadores de erro da CONTA
+                            $sqlReset = "UPDATE usuarios SET tentativas_falhas = 0, bloqueado_ate = NULL WHERE id = :id";
+                            $stmtReset = $db->prepare($sqlReset);
+                            $stmtReset->bindParam(':id', $usuario['id']);
+                            $stmtReset->execute();
+
+                            // Reseta contador de erro do IP também
+                            $sqlResetIpOk = "UPDATE tentativas_ip SET tentativas = 0, bloqueado_ate = NULL WHERE ip = :ip";
+                            $stmtResetIpOk = $db->prepare($sqlResetIpOk);
+                            $stmtResetIpOk->bindParam(':ip', $ip_atual);
+                            $stmtResetIpOk->execute();
+
+                            // Log de acesso bem-sucedido
+                            registrarLogAcesso($db, $usuario['id'], $email, $ip_atual, true, null);
+
+                            // ==========================================
+                            // PROTEÇÃO CONTRA SESSION HIJACKING/FIXATION
+                            // ==========================================
+                            session_regenerate_id(true);
+
+                            $_SESSION['usuario_id'] = $usuario['id'];
+                            $_SESSION['usuario_email'] = $usuario['email'];
+                            $_SESSION['usuario_tipo'] = $usuario['tipo'];
+                            $_SESSION['usuario_nome'] = $usuario['nome'];
+                            $_SESSION['usuario_status'] = $usuario['status'];
+
+                            // Sinalizar login recente para vendedores (para mostrar aviso nas páginas)
+                            if ($usuario['tipo'] === 'vendedor') {
+                                $_SESSION['login_recente_vendedor'] = true;
+                            }
+
+                            // Token CSRF não é mais necessário após o login bem-sucedido nesta página
+                            unset($_SESSION['csrf_token']);
+
+                            // Redirecionar baseado no tipo de usuário
+                            switch ($usuario['tipo']) {
+                                case 'admin':
+                                    header("Location: admin/dashboard.php");
+                                    break;
+                                case 'comprador':
+                                case 'vendedor':
+                                case 'transportador':
+                                    if ($usuario['status'] === 'pendente') {
+                                        header("Location: ../index.php");
+                                    } else {
+                                        switch ($usuario['tipo']) {
+                                            case 'comprador':
+                                                header("Location: anuncios.php");
+                                                break;
+                                            case 'vendedor':
+                                                header("Location: vendedor/dashboard.php");
+                                                break;
+                                            case 'transportador':
+                                                header("Location: transportador/dashboard.php");
+                                                break;
+                                        }
+                                    }
+                                    break;
+                                default:
+                                    header("Location: ../index.php");
+                            }
+                            exit();
+                        } else {
+                            $erro = "Conta inativa ou suspensa.";
+                            registrarLogAcesso($db, $usuario['id'], $email, $ip_atual, false, 'conta_inativa');
+                        }
+                    } else {
+                        // ---> SENHA INCORRETA (ou e-mail não encontrado) <---
+
+                        // --- Atualiza contador da CONTA (somente se o e-mail existir) ---
+                        if ($usuarioEncontrado) {
+                            $tentativas = $usuario['tentativas_falhas'] + 1;
+
+                            $futuro = new DateTime();
+                            $futuro->modify("+{$TEMPO_BLOQUEIO_MINUTOS} minutes");
+                            $bloqueado_ate = $futuro->format('Y-m-d H:i:s');
+
+                            if ($tentativas >= $MAX_TENTATIVAS_CONTA) {
+                                $erro = "Muitas tentativas incorretas. Sua conta foi bloqueada por {$TEMPO_BLOQUEIO_MINUTOS} minutos.";
+                            } else {
+                                $tentativas_restantes = $MAX_TENTATIVAS_CONTA - $tentativas;
+                                $erro = "Email ou senha incorretos. Restam {$tentativas_restantes} tentativa(s).";
+                            }
+
+                            $sqlUpdate = "UPDATE usuarios SET tentativas_falhas = :tentativas, bloqueado_ate = :bloqueado_ate WHERE id = :id";
+                            $stmtUpdate = $db->prepare($sqlUpdate);
+                            $stmtUpdate->bindParam(':tentativas', $tentativas, PDO::PARAM_INT);
+                            $stmtUpdate->bindParam(':bloqueado_ate', $bloqueado_ate);
+                            $stmtUpdate->bindParam(':id', $usuario['id']);
+                            $stmtUpdate->execute();
+
+                            registrarLogAcesso($db, $usuario['id'], $email, $ip_atual, false, 'senha_incorreta');
+                        } else {
+                            // Mensagem genérica para não revelar se o e-mail existe
+                            $erro = "Email ou senha incorretos.";
+                            registrarLogAcesso($db, null, $email, $ip_atual, false, 'email_nao_encontrado');
+                        }
+
+                        // --- Atualiza contador do IP (sempre, exista o e-mail ou não) ---
+                        $futuroIp = new DateTime();
+                        $futuroIp->modify("+{$TEMPO_BLOQUEIO_MINUTOS} minutes");
+                        $bloqueadoAteIp = $futuroIp->format('Y-m-d H:i:s');
+
+                        $tentativasIpAtual = $regIp ? $regIp['tentativas'] + 1 : 1;
+
+                        $sqlUpsertIp = "INSERT INTO tentativas_ip (ip, tentativas, bloqueado_ate, ultima_tentativa)
+                                         VALUES (:ip, :tentativas, :bloqueado_ate, NOW())
+                                         ON DUPLICATE KEY UPDATE
+                                            tentativas = :tentativas2,
+                                            bloqueado_ate = :bloqueado_ate2,
+                                            ultima_tentativa = NOW()";
+                        $stmtUpsertIp = $db->prepare($sqlUpsertIp);
+                        $stmtUpsertIp->bindParam(':ip', $ip_atual);
+                        $stmtUpsertIp->bindParam(':tentativas', $tentativasIpAtual, PDO::PARAM_INT);
+                        $stmtUpsertIp->bindParam(':bloqueado_ate', $bloqueadoAteIp);
+                        $stmtUpsertIp->bindParam(':tentativas2', $tentativasIpAtual, PDO::PARAM_INT);
+                        $stmtUpsertIp->bindParam(':bloqueado_ate2', $bloqueadoAteIp);
+                        $stmtUpsertIp->execute();
+                    }
+                }
             }
         } else {
-            $erro = "Usuário não encontrado";
+            $erro = "Por favor, preencha todos os campos.";
         }
-    } else {
-        $erro = "Por favor, preencha todos os campos";
+    }
+}
+
+// =====================================================================
+// GERA UM NOVO TOKEN CSRF PARA O FORMULÁRIO (sempre, no fim do processamento)
+// =====================================================================
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+/**
+ * Registra uma tentativa de login na tabela de auditoria log_acessos.
+ * Falhas no log NUNCA devem interromper o fluxo de login, por isso
+ * o erro é apenas registrado no error_log do servidor.
+ */
+function registrarLogAcesso($db, $usuarioId, $email, $ip, $sucesso, $motivoFalha) {
+    try {
+        $sql = "INSERT INTO log_acessos (usuario_id, email_tentado, ip, user_agent, sucesso, motivo_falha)
+                VALUES (:usuario_id, :email, :ip, :user_agent, :sucesso, :motivo_falha)";
+        $stmt = $db->prepare($sql);
+        $userAgent = substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 500);
+        $sucessoInt = $sucesso ? 1 : 0;
+        $stmt->bindParam(':usuario_id', $usuarioId, $usuarioId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':ip', $ip);
+        $stmt->bindParam(':user_agent', $userAgent);
+        $stmt->bindParam(':sucesso', $sucessoInt, PDO::PARAM_INT);
+        $stmt->bindParam(':motivo_falha', $motivoFalha);
+        $stmt->execute();
+    } catch (Exception $e) {
+        error_log('Falha ao registrar log_acessos: ' . $e->getMessage());
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -104,10 +325,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <?php if (!empty($erro)): ?>
-                <div class="alert alert-danger"><?php echo $erro; ?></div>
+                <div class="alert alert-danger"><?php echo escapeHtml($erro); ?></div>
             <?php endif; ?>
 
             <form method="POST" action="login.php">
+                <input type="hidden" name="csrf_token" value="<?php echo escapeHtml($_SESSION['csrf_token']); ?>">
+
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" placeholder="seu@email.com" required>

@@ -1,9 +1,10 @@
 <?php
-// Garante que a sessão seja iniciada caso o conexao.php não faça isso
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
+// A sessão é iniciada dentro de conexao.php (nome customizado EOC_SESSID,
+// cookie Secure/HttpOnly/SameSite). NÃO chame session_start() aqui antes
+// disso — isso faria o PHP abrir uma sessão padrão (PHPSESSID) e o bloco
+// de configuração de conexao.php seria pulado, gerando duas sessões
+// diferentes (um dos sintomas: login funciona mas páginas internas não
+// reconhecem o usuário logado).
 require_once 'conexao.php';
 
 // Define o fuso horário para garantir que o tempo de bloqueio seja preciso

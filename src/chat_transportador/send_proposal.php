@@ -60,29 +60,49 @@ try {
     if (!$trow) throw new Exception('Transportador não encontrado');
     $transportador_id = (int)$trow['id'];
 
-    // Buscar preço do produto para preencher preco_proposto (não crítico)
-    $sql_p = "SELECT preco, estoque FROM produtos WHERE id = :pid LIMIT 1";
-    $stmt_p = $conn->prepare($sql_p);
-    $stmt_p->bindParam(':pid', $produto_id, PDO::PARAM_INT);
-    $stmt_p->execute();
-    $prod = $stmt_p->fetch(PDO::FETCH_ASSOC);
-    $preco_produto = $prod ? (float)$prod['preco'] : 0.00;
+    // Buscar a proposta de venda já existente para esta conversa (comprador/vendedor/produto).
+    // A proposta de frete NÃO cria uma nova proposta em `propostas`: ela atualiza a proposta de venda existente.
+    $sql_find = "SELECT ID, preco_proposto, quantidade_proposta
+                 FROM propostas
+                 WHERE comprador_id = :comprador_id
+                   AND vendedor_id = :vendedor_id
+                   AND produto_id = :produto_id
+                 ORDER BY data_inicio DESC
+                 LIMIT 1";
+    $stmt_find = $conn->prepare($sql_find);
+    $stmt_find->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
+    $stmt_find->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
+    $stmt_find->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+    $stmt_find->execute();
+    $proposta_existente = $stmt_find->fetch(PDO::FETCH_ASSOC);
 
-    // Inserir proposta master (tabela propostas)
-    $sql_ins = "INSERT INTO propostas (comprador_id, vendedor_id, produto_id, preco_proposto, quantidade_proposta, forma_pagamento, opcao_frete, valor_frete, valor_total, status, data_inicio, data_atualizacao, data_entrega_estimada, transportador_id) VALUES (:comprador_id, :vendedor_id, :produto_id, :preco_proposto, 1, 'à vista', 'entregador', :valor_frete, :valor_total, 'negociacao', NOW(), NOW(), :data_entrega, :transportador_id)";
-    $stmt_ins = $conn->prepare($sql_ins);
-    $valor_total = $valor; // para entregas consideraremos só o frete aqui
-    $stmt_ins->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
-    $stmt_ins->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
-    $stmt_ins->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
-    $stmt_ins->bindParam(':preco_proposto', $preco_produto);
-    $stmt_ins->bindParam(':valor_frete', $valor);
-    $stmt_ins->bindParam(':valor_total', $valor_total);
-    $stmt_ins->bindParam(':data_entrega', $data_entrega);
-    $stmt_ins->bindParam(':transportador_id', $transportador_id, PDO::PARAM_INT);
-    if (!$stmt_ins->execute()) throw new Exception('Erro ao criar proposta');
+    if (!$proposta_existente) {
+        throw new Exception('Nenhuma proposta de venda encontrada para esta conversa');
+    }
 
-    $proposta_id = (int)$conn->lastInsertId();
+    $proposta_id = (int)$proposta_existente['ID'];
+    $preco_proposto = (float)$proposta_existente['preco_proposto'];
+    $quantidade_proposta = (int)$proposta_existente['quantidade_proposta'];
+
+    // valor_total = (preço * quantidade já propostos) + valor do frete
+    $valor_total = ($preco_proposto * $quantidade_proposta) + $valor;
+
+    // Acrescentar os valores da proposta de frete na proposta de venda existente
+    $sql_up_prop = "UPDATE propostas
+                    SET valor_frete = :valor_frete,
+                        valor_total = :valor_total,
+                        opcao_frete = 'entregador',
+                        data_entrega_estimada = :data_entrega,
+                        transportador_id = :transportador_id,
+                        data_atualizacao = NOW()
+                    WHERE ID = :proposta_id";
+    $stmt_up_prop = $conn->prepare($sql_up_prop);
+    $stmt_up_prop->bindParam(':valor_frete', $valor);
+    $stmt_up_prop->bindParam(':valor_total', $valor_total);
+    $stmt_up_prop->bindParam(':data_entrega', $data_entrega);
+    $stmt_up_prop->bindParam(':transportador_id', $transportador_id, PDO::PARAM_INT);
+    $stmt_up_prop->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
+    if (!$stmt_up_prop->execute()) throw new Exception('Erro ao atualizar a proposta de venda com os dados do frete');
 
     // Inserir na tabela propostas_transportadores (proposta DO transportador)
     // calcular prazo (dias) a partir de data_entrega

@@ -562,11 +562,7 @@ if (isset($_SESSION['usuario_id'])) {
                 WHERE p.opcao_frete = 'entregador' 
                 AND p.status = 'aceita' 
                 AND p.transportador_id IS NULL
-                AND COALESCE(p.frete_resolvido,0) = 0
-                AND NOT EXISTS (
-                    SELECT 1 FROM propostas_transportadores pt 
-                    WHERE pt.proposta_id = p.ID AND pt.status = 'aceita'
-                )";
+                AND COALESCE(p.frete_resolvido,0) = 0";
 
             // Aplicar filtros de estado
             if (!empty($filtro_estado_origem)) {

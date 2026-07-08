@@ -38,7 +38,7 @@ require_once 'src/conexao.php';
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <img src="../EncontreOCampo/img/logo-nova.png" alt="Logo">
+                    <img src="img/logo-nova.png" alt="Logo">
                     <div>
                         <h1>ENCONTRE</h1>
                         <h2>O CAMPO</h2>
@@ -158,7 +158,7 @@ require_once 'src/conexao.php';
                 </div>
                 <div class="sell-image">
                     <div class="logo-large">
-                        <img src="../EncontreOCampo/img/logo-nova.png" alt="Logo">
+                        <img src="img/logo-nova.png" alt="Logo">
                     </div>
                 </div>
             </div>
@@ -279,7 +279,7 @@ require_once 'src/conexao.php';
                                 <div class="form-group">
                                     <label for="cpfCnpjComprador" class="required">CPF/CNPJ </label>
                                     <input type="text" id="cpfCnpjComprador" name="cpfCnpjComprador" required placeholder="000.000.000-00">
-                                    <small class="form-help">Digite apenas números, a pontuação será aplicada automaticamente</small>
+                                    <small class="form-help">Digite apenas números para CPF ou letras e números para CNPJ; a pontuação será aplicada automaticamente</small>
                                 </div>
                                 
                                 <div class="form-group" id="nomeComercialGroup">
@@ -445,7 +445,7 @@ require_once 'src/conexao.php';
                                 <div class="form-group">
                                     <label for="cpfCnpjVendedor" class="required">CNPJ </label>
                                     <input type="text" id="cpfCnpjVendedor" name="cpfCnpjVendedor" required placeholder="00.000.000/0000-00">
-                                    <small class="form-help">Para vendedor, é obrigatório CNPJ (14 dígitos)</small>
+                                    <small class="form-help">Para vendedor, é obrigatório CNPJ (14 caracteres)</small>
                                 </div>
                                 
                                 <div class="form-group">

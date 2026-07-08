@@ -54,6 +54,20 @@ let currentSteps = {
     transportador: 1
 };
 
+function limparCpfCnpj(valor, tipo) {
+    const valorLimpo = String(valor || '');
+
+    if (tipo === 'cpf') {
+        return valorLimpo.replace(/\D/g, '');
+    }
+
+    if (tipo === 'cnpj') {
+        return valorLimpo.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    }
+
+    return valorLimpo;
+}
+
 // Função para mostrar/ocultar campos adicionais
 function toggleAdditionalFields() {
     console.log('toggleAdditionalFields chamado');
@@ -151,7 +165,7 @@ function toggleNomeComercialComprador() {
             
             // Limpar e reaplicar máscara para CPF
             if (cpfCnpjInput.value) {
-                let value = cpfCnpjInput.value.replace(/\D/g, '');
+                let value = limparCpfCnpj(cpfCnpjInput.value, 'cpf');
                 if (value.length > 11) {
                     value = value.substring(0, 11);
                 }
@@ -164,11 +178,11 @@ function toggleNomeComercialComprador() {
             
             // Limpar e reaplicar máscara para CNPJ
             if (cpfCnpjInput.value) {
-                let value = cpfCnpjInput.value.replace(/\D/g, '');
+                let value = limparCpfCnpj(cpfCnpjInput.value, 'cnpj');
                 if (value.length > 14) {
                     value = value.substring(0, 14);
                 }
-                cpfCnpjInput.value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+                cpfCnpjInput.value = value.replace(/([A-Za-z0-9]{2})([A-Za-z0-9]{3})([A-Za-z0-9]{3})([A-Za-z0-9]{4})([0-9]{2})/, '$1.$2.$3/$4-$5');
             }
         }
     } else {
@@ -212,7 +226,7 @@ function nextStep(type) {
             return;
         }
         
-        const cpfCnpjValue = cpfCnpjInput.value.replace(/\D/g, '');
+        const cpfCnpjValue = limparCpfCnpj(cpfCnpjInput.value, tipoPessoa.value === 'cpf' ? 'cpf' : 'cnpj');
         
         // Validar tamanho baseado no tipo
         if (tipoPessoa.value === 'cpf' && cpfCnpjValue.length !== 11) {
@@ -225,9 +239,11 @@ function nextStep(type) {
         if (tipoPessoa.value === 'cnpj' && cpfCnpjValue.length !== 14) {
             isValid = false;
             cpfCnpjInput.style.borderColor = '#ff6b6b';
-            alert('CNPJ deve ter 14 dígitos!');
+            alert('CNPJ deve ter 14 caracteres!');
             return;
         }
+
+        // TODO: implementar validação de dígito verificador do CNPJ alfanumérico quando a regra oficial for confirmada.
         
         // Validar nome comercial
         if (!nomeComercialInput.value.trim()) {
@@ -240,12 +256,12 @@ function nextStep(type) {
     
     if (type === 'vendedor' && currentSteps[type] === 1) {
         const cpfCnpjInput = document.getElementById('cpfCnpjVendedor');
-        const cpfCnpjValue = cpfCnpjInput.value.replace(/\D/g, '');
+        const cpfCnpjValue = limparCpfCnpj(cpfCnpjInput.value, 'cnpj');
         
         if (cpfCnpjValue.length !== 14) {
             isValid = false;
             cpfCnpjInput.style.borderColor = '#ff6b6b';
-            alert('Para vendedor, é obrigatório CNPJ com 14 dígitos!');
+            alert('Para vendedor, é obrigatório CNPJ com 14 caracteres!');
             return;
         }
         
@@ -601,13 +617,13 @@ function initializeCompradorMasks() {
     if (cpfCnpjInput) {
         cpfCnpjInput.addEventListener('input', function(e) {
             const tipoPessoa = document.querySelector('input[name="tipoPessoaComprador"]:checked');
-            let value = e.target.value.replace(/\D/g, '');
+            let value = limparCpfCnpj(e.target.value, tipoPessoa && tipoPessoa.value === 'cnpj' ? 'cnpj' : 'cpf');
             
             if (tipoPessoa && tipoPessoa.value === 'cnpj') {
                 if (value.length > 14) {
                     value = value.substring(0, 14);
                 }
-                value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+                value = value.replace(/([A-Za-z0-9]{2})([A-Za-z0-9]{3})([A-Za-z0-9]{3})([A-Za-z0-9]{4})([0-9]{2})/, '$1.$2.$3/$4-$5');
             } else {
                 if (value.length > 11) {
                     value = value.substring(0, 11);
@@ -643,8 +659,8 @@ function initializeVendedorMasks() {
     const cpfCnpjInput = document.getElementById('cpfCnpjVendedor');
     if (cpfCnpjInput) {
         cpfCnpjInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+            let value = limparCpfCnpj(e.target.value, 'cnpj');
+            value = value.replace(/([A-Za-z0-9]{2})([A-Za-z0-9]{3})([A-Za-z0-9]{3})([A-Za-z0-9]{4})([0-9]{2})/, '$1.$2.$3/$4-$5');
             e.target.value = value;
             
             if (value.length > 18) {
@@ -835,9 +851,9 @@ async function submitForm(e) {
     
     if (subject === 'vendedor') {
         const cpfCnpjInput = document.getElementById('cpfCnpjVendedor');
-        const cpfCnpjValue = cpfCnpjInput.value.replace(/\D/g, '');
+        const cpfCnpjValue = limparCpfCnpj(cpfCnpjInput.value, 'cnpj');
         if (cpfCnpjValue.length !== 14) {
-            alert('Para vendedor, é obrigatório CNPJ válido com 14 dígitos!');
+            alert('Para vendedor, é obrigatório CNPJ válido com 14 caracteres!');
             cpfCnpjInput.style.borderColor = '#ff6b6b';
             return;
         }

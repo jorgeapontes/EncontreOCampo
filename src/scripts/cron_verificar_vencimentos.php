@@ -34,8 +34,8 @@ foreach ($vencidos as $assinatura) {
     $db->beginTransaction();
 
     try {
-        // 2. Atualiza o status na tabela de assinaturas para 'expired'
-        $up1 = $db->prepare("UPDATE vendedor_assinaturas SET status = 'expired' WHERE vendedor_id = ? AND status = 'active'");
+        // 2. Atualiza o status na tabela de assinaturas para 'cancelled'
+        $up1 = $db->prepare("UPDATE vendedor_assinaturas SET status = 'cancelled' WHERE vendedor_id = ? AND status = 'active'");
         $up1->execute([$vendedor_id]);
 
         // 3. Atualiza o status na tabela de vendedores para 'inativo'

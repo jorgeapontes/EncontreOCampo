@@ -1,6 +1,5 @@
 <?php
 // src/admin/visualizar_chat.php
-session_start();
 require_once __DIR__ . '/../conexao.php';
 
 // Verificar se é admin

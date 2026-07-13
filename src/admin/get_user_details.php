@@ -1,6 +1,7 @@
 <?php
 // get_user_details.php
-session_start();
+
+require_once __DIR__ . '/../conexao.php';
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
     header('Content-Type: application/json');
@@ -8,7 +9,6 @@ if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') 
     exit();
 }
 
-require_once __DIR__ . '/../conexao.php';
 
 if (!isset($_GET['id'])) {
     header('Content-Type: application/json');

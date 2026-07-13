@@ -1,6 +1,5 @@
 <?php
 // src/admin/exportar_pdf.php
-session_start();
 require_once __DIR__ . '/../conexao.php';
 require_once __DIR__ . '/fpdf/fpdf.php';
 

@@ -1,15 +1,14 @@
 <?php
-// src/admin/processar_admin_acao.php
-session_start();
-
+// Incluir a conexão
+require_once __DIR__ . '/../conexao.php'; 
 // Redireciona se não for um admin logado
+
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
     header("Location: ../index.php");
     exit;
 }
 
-// Incluir a conexão
-require_once __DIR__ . '/../conexao.php'; 
+
 
 // Iniciar conexão com o Banco de Dados
 $database = new Database();

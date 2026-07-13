@@ -1,6 +1,5 @@
 <?php
 // src/sobre.php
-session_start();
 require_once 'conexao.php';
 
 // Variáveis de sessão

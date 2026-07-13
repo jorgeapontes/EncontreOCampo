@@ -1,6 +1,5 @@
 <?php
 // perfil_vendedor.php
-session_start();
 require_once 'conexao.php';
 
 // Verificar se o vendedor_id (que na verdade é o usuario_id do vendedor) foi passado

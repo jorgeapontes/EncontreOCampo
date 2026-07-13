@@ -1,7 +1,6 @@
 <?php
 // src/visualizar_anuncio.php
 // página para usuário sem login ativo
-session_start();
 require_once 'conexao.php';
 
 // 1. OBTENÇÃO DO ID DO ANÚNCIO

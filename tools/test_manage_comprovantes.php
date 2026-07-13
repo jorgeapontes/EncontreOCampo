@@ -1,6 +1,5 @@
 <?php
 // Script de teste: simula sessão de admin e inclui a página de comprovantes
-session_start();
 // Credenciais de teste (não persistir)
 $_SESSION['usuario_tipo'] = 'admin';
 $_SESSION['usuario_id'] = 1;

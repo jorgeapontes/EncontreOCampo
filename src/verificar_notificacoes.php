@@ -1,6 +1,5 @@
 <?php
 // src/verificar_notificacoes.php
-session_start();
 require_once 'conexao.php';
 
 header('Content-Type: application/json');

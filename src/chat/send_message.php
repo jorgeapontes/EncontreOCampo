@@ -1,6 +1,5 @@
 <?php
 // src/chat/send_message.php
-session_start();
 require_once __DIR__ . '/../conexao.php';
 require_once __DIR__ . '/chat_config.php';
 

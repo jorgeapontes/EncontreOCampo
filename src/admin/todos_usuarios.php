@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/../conexao.php';
 
 // Verificar se é admin
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
@@ -7,7 +7,6 @@ if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') 
     exit();
 }
 
-require_once __DIR__ . '/../conexao.php';
 
 $database = new Database();
 $conn = $database->getConnection();

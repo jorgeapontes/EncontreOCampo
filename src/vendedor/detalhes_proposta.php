@@ -1,7 +1,6 @@
 <?php
 // src/vendedor/detalhes_proposta.php - ATUALIZADO
 
-session_start();
 require_once __DIR__ . '/../conexao.php'; 
 
 // 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA

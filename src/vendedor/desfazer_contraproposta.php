@@ -1,7 +1,6 @@
 <?php
 // src/vendedor/desfazer_contraproposta.php - VERSÃO DEFINITIVA
 
-session_start();
 require_once __DIR__ . '/../conexao.php';
 require_once __DIR__ . '/../../includes/send_notification.php';
 

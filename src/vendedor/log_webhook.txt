@@ -135,3 +135,52 @@ STATUS ATUALIZADO: Atrasado para cliente cus_TnA4770youO5J1
 [2026-01-14 23:11:11] ERRO NO WEBHOOK: No signatures found matching the expected signature for payload em C:\xampp\htdocs\EncontreOCampo\vendor\stripe\stripe-php\lib\Exception\SignatureVerificationException.php na linha 28
 [2026-01-14 23:11:16] Evento recebido: invoice_payment.paid
 [2026-01-14 23:16:11] ERRO NO WEBHOOK: No signatures found matching the expected signature for payload em C:\xampp\htdocs\EncontreOCampo\vendor\stripe\stripe-php\lib\Exception\SignatureVerificationException.php na linha 28
+[2026-03-02 01:27:46] Evento recebido: customer.subscription.updated | Ambiente: PRODUÇÃO
+[2026-03-02 01:27:46] Processing subscription.updated para cliente: cus_TtzugKT9fr5hpb
+Novo price_id: price_1ShXpl0lZtce65b7YPwBPL9z
+[2026-03-02 01:27:47] ✓ Plano atualizado: Cliente=cus_TtzugKT9fr5hpb, Novo Plano ID=3 (Plano 3), Linhas atualizadas=0
+[2026-03-02 02:28:35] Evento recebido: invoice.paid | Ambiente: PRODUÇÃO
+STATUS: Ativo (renovação) | Cliente: cus_TtzugKT9fr5hpb | Linhas: 0
+[2026-03-02 13:44:00] Evento recebido: invoice.paid | Ambiente: PRODUÇÃO
+STATUS: Ativo (renovação - sem data) | Cliente: cus_TtzugKT9fr5hpb | Erro ao buscar subscription: Could not determine which URL to request: Stripe\Subscription instance has invalid ID: 
+[2026-03-02 13:50:28] Evento recebido: invoice.paid | Ambiente: PRODUÇÃO
+Subscription encontrada em parent.subscription_details.subscription: sub_1SwBvA0lZtce65b7P404qjuk
+invoice.paid - Cliente: cus_TtzugKT9fr5hpb, Subscription: sub_1SwBvA0lZtce65b7P404qjuk
+Subscription encontrada: current_period_end=, Próximo vencimento=2026-03-02 13:50:28
+UPDATE executado: Resultado=1, Linhas afetadas=1
+[2026-03-02 13:54:38] Evento recebido: invoice.paid | Ambiente: PRODUÇÃO
+Subscription encontrada em parent.subscription_details.subscription: sub_1SwBvA0lZtce65b7P404qjuk
+invoice.paid - Cliente: cus_TtzugKT9fr5hpb, Subscription: sub_1SwBvA0lZtce65b7P404qjuk
+Próximo vencimento encontrado na invoice (lines.period.end): 2026-04-02 01:27:18 (timestamp: 1775093238)
+UPDATE executado: Data do próximo vencimento = 2026-04-02 01:27:18, Linhas afetadas = 1
+[2026-03-02 14:00:07] [EVENTO] Evento recebido: invoice.paid | Ambiente: PRODUÇÃO
+[2026-03-02 14:00:07] [DEBUG] Subscription encontrada em parent.subscription_details.subscription: sub_1SwBvA0lZtce65b7P404qjuk
+[2026-03-02 14:00:07] [INFO] invoice.paid - Cliente: cus_TtzugKT9fr5hpb, Subscription: sub_1SwBvA0lZtce65b7P404qjuk
+[2026-03-02 14:00:07] [INFO] Próximo vencimento encontrado na invoice: 2026-04-02 01:27:18
+[2026-03-02 14:00:07] [SUCESSO] Pagamento processado: Cliente=cus_TtzugKT9fr5hpb, Próximo vencimento=2026-04-02 01:27:18, Linhas afetadas=0
+[2026-03-02 14:00:07] [FIM] Webhook processado com sucesso
+[2026-03-11 22:00:14] [ERRO] ERRO DE ASSINATURA: Unable to extract timestamp and signatures from header
+[2026-03-11 22:12:35] [ERRO] Método não permitido: GET
+[2026-03-11 22:12:36] [ERRO] Método não permitido: GET
+[2026-03-11 22:12:38] [ERRO] Método não permitido: GET
+[2026-04-02 01:27:43] [INFO] 🔧 Webhook inicializado - Ambiente: PRODUÇÃO
+[2026-04-02 01:27:43] [DEBUG] 📦 Payload recebido - Tamanho: 8042 bytes
+[2026-04-02 01:27:43] [EVENTO] ✅ Evento recebido: customer.subscription.updated | ID: evt_1THa2s0lZtce65b70mZU4ecL
+[2026-04-02 01:27:43] [DEBUG] 🔄 Processando subscription.updated para cliente: cus_TtzugKT9fr5hpb
+[2026-04-02 01:27:43] [DEBUG] 📊 Novo price_id: price_1ShXpl0lZtce65b7YPwBPL9z | Próximo vencimento: 2026-05-02 01:27:18
+[2026-04-02 01:27:43] [SUCESSO] ✅ Plano atualizado: Cliente=cus_TtzugKT9fr5hpb | Novo Plano=Plano 3 | Próximo vencimento=2026-05-02 01:27:18
+[2026-04-02 01:27:43] [FIM] ✅ Webhook processado com sucesso
+[2026-04-02 02:28:49] [INFO] 🔧 Webhook inicializado - Ambiente: PRODUÇÃO
+[2026-04-02 02:28:49] [DEBUG] 📦 Payload recebido - Tamanho: 5822 bytes
+[2026-04-02 02:28:49] [EVENTO] ✅ Evento recebido: invoice.paid | ID: evt_1THb000lZtce65b7HWKlc8sI
+[2026-04-02 02:28:49] [DEBUG] 📋 Subscription encontrada em parent.subscription_details.subscription: sub_1SwBvA0lZtce65b7P404qjuk
+[2026-04-02 02:28:49] [INFO] 💰 invoice.paid - Cliente: cus_TtzugKT9fr5hpb, Subscription: sub_1SwBvA0lZtce65b7P404qjuk
+[2026-04-02 02:28:49] [INFO] 📅 Próximo vencimento encontrado na invoice: 2026-05-02 01:27:18
+[2026-04-02 02:28:49] [SUCESSO] ✅ Pagamento processado com sucesso | Cliente=cus_TtzugKT9fr5hpb | Próximo vencimento=2026-05-02 01:27:18 | Linhas afetadas=0
+[2026-04-02 02:28:49] [FIM] ✅ Webhook processado com sucesso
+[2026-04-04 13:07:26] [INFO] 🔧 Webhook inicializado - Ambiente: PRODUÇÃO
+[2026-04-04 13:07:26] [DEBUG] 📦 Payload recebido - Tamanho: 5817 bytes
+[2026-04-04 13:07:26] [EVENTO] ✅ Evento recebido: customer.subscription.deleted | ID: evt_1TITv80lZtce65b70bo4BMhI
+[2026-04-04 13:07:26] [SUBSCRIPTION_DELETED] 🗑️ ASSINATURA DELETADA | Cliente: cus_TtzugKT9fr5hpb | Subscription: sub_1SwBvA0lZtce65b7P404qjuk | Linhas: 1
+[2026-04-04 13:07:26] [NOTIFICACAO] Notificação para cliente@email.com: Assinatura cancelada - Sua assinatura foi cancelada conforme solicitado.
+[2026-04-04 13:07:26] [FIM] ✅ Webhook processado com sucesso

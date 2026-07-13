@@ -1,7 +1,5 @@
 <?php
 // src/vendedor/anuncio_alterar_status.php
-
-session_start();
 require_once '../conexao.php';
 
 // Configurar cabeçalhos para JSON

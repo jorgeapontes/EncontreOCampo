@@ -1,6 +1,6 @@
 // EncontreOCampo/src/vendedor/redirects/pendente.php
 <?php
-session_start();
+require_once '../../conexao.php'
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">

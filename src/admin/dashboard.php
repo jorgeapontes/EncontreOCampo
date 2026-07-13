@@ -11,7 +11,8 @@ $database = new Database();
 $conn = $database->getConnection();
 
 if (!$conn) {
-    die("Erro fatal: Não foi possível conectar ao banco de dados.");
+    error_log("Erro de conexão no dashboard admin");
+   die("Ocorreu um erro ao carregar a página. Tente novamente mais tarde.");
 }
 
 try {
@@ -26,7 +27,8 @@ try {
     $stmt->execute();
     $solicitacoes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    die("Erro ao buscar solicitações: " . $e->getMessage()); 
+    error_log("Erro ao buscar solicitações (admin dashboard): " . $e->getMessage());
+   die("Ocorreu um erro ao carregar as solicitações. Tente novamente mais tarde.");
 }
 
 $feedback_msg = $_GET['msg'] ?? '';

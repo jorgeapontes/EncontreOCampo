@@ -1,6 +1,4 @@
 <?php
-// src/chat/responder_proposta.php
-session_start();
 require_once __DIR__ . '/../conexao.php';
 
 header('Content-Type: application/json');

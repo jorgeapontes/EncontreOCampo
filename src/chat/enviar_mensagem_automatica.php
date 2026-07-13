@@ -1,6 +1,5 @@
 <?php
 // src/chat/enviar_mensagem_automatica.php
-session_start();
 require_once __DIR__ . '/../conexao.php';
 
 header('Content-Type: application/json');

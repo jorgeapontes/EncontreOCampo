@@ -1,7 +1,6 @@
 <?php
 // src/vendedor/processar_decisao.php
 
-session_start();
 require_once __DIR__ . '/../conexao.php';
 require_once __DIR__ . '/../../includes/send_notification.php'; // NOVO: Adicionado para notificações
 require_once __DIR__ . '/../funcoes_notificacoes.php';

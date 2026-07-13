@@ -1,7 +1,6 @@
 <?php
 // src/vendedor/anuncio_excluir.php
 
-session_start();
 require_once '../conexao.php';
 
 // Configurar cabeçalhos para JSON

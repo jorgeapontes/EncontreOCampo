@@ -1,6 +1,5 @@
 // EncontreOCampo/src/vendedor/redirects/falha.php
 <?php
-session_start();
 require_once __DIR__ . '/../../config/Database.php';
 ?>
 <!DOCTYPE html>

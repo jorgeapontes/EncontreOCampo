@@ -1,6 +1,5 @@
 <?php
 // src/vendedor/config_logistica.php
-session_start();
 require_once __DIR__ . '/../permissions.php';
 require_once __DIR__ . '/../conexao.php';
 

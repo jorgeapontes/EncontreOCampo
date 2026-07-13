@@ -1,6 +1,5 @@
 <?php
 // src/vendedor/anuncios.php
-session_start();
 require_once '../conexao.php'; 
 
 // Verificar se o usuário está logado como vendedor

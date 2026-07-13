@@ -1,14 +1,6 @@
 <?php
 // src/comprador/processar_proposta.php - VERSÃO COM DEBUG
 
-session_start();
-
-// DEBUG: Verificar sessão no início
-error_log("=== DEBUG processar_proposta.php ===");
-error_log("Session ID: " . session_id());
-error_log("Usuario tipo na SESSION: " . (isset($_SESSION['usuario_tipo']) ? $_SESSION['usuario_tipo'] : 'NÃO DEFINIDO'));
-error_log("Usuario ID na SESSION: " . (isset($_SESSION['usuario_id']) ? $_SESSION['usuario_id'] : 'NÃO DEFINIDO'));
-error_log("POST data: " . print_r($_POST, true));
 
 require_once __DIR__ . '/../conexao.php'; 
 require_once __DIR__ . '/../../includes/send_notification.php';

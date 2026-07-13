@@ -1,6 +1,5 @@
 <?php
 // src/comprador/atualizar_chats_ajax.php 
-session_start();
 require_once __DIR__ . '/../conexao.php';
 
 // Verificar autenticação

@@ -1,6 +1,5 @@
 <?php
 // src/comprador/remover_favorito.php
-session_start();
 require_once __DIR__ . '/../conexao.php';
 
 // Verificar se o usuário está logado como comprador

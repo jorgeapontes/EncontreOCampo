@@ -1,7 +1,6 @@
 <?php
 // src/comprador/perfil.php
 
-session_start();
 require_once __DIR__ . '/../conexao.php'; 
 
 // 1. VERIFICAÇÃO DE ACESSO

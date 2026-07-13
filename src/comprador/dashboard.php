@@ -1,8 +1,6 @@
 <?php
 // src/comprador/dashboard.php
 
-// A sessão é iniciada dentro de conexao.php (nome customizado EOC_SESSID,
-// cookie Secure/HttpOnly/SameSite). Não chame session_start() aqui antes.
 require_once __DIR__ . '/../conexao.php'; 
 require_once __DIR__ . '/../permissions.php'; 
 

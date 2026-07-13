@@ -1,7 +1,7 @@
 <?php
 // src/comprador/responder_contraproposta.php - REDIRECIONADOR
 
-session_start();
+require_once __DIR__ . '/../conexao.php'; // inicia a sessão certa (EOC_SESSID)
 
 // 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA
 if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['comprador', 'vendedor'])) {
@@ -18,6 +18,6 @@ $negociacao_id = $_GET['id'];
 $acao = $_GET['acao'];
 
 // Redireciona para o novo processador
-header("Location: processar_resposta.php?id={$negociacao_id}&action={$acao}");
+header("Location: processar_resposta.php?id=" . urlencode($negociacao_id) . "&action=" . urlencode($acao));
 exit();
 ?>

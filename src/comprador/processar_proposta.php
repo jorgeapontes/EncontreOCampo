@@ -182,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
     } catch (PDOException $e) {
         error_log("Erro PDO: " . $e->getMessage());
-        redirecionar('erro', "Erro: " . $e->getMessage(), $produto_id);
+        redirecionar('erro', "Não foi possível processar sua proposta. Tente novamente.", $produto_id);
     }
     
 } else {

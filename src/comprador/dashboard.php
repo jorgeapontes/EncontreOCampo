@@ -52,10 +52,13 @@ try {
     if ($resultado_comprador) {
         $comprador_id = $resultado_comprador['id'];
     } else {
-        die("Erro: ID de comprador não encontrado. Não é possível carregar o dashboard.");
+        error_log("Comprador não encontrado para usuario_id: " . ($_SESSION['usuario_id'] ?? 'desconhecido'));
+   die("Ocorreu um erro ao carregar seu painel. Entre em contato com o suporte.");
+
     }
 } catch (PDOException $e) {
-    die("Erro ao buscar ID do comprador: " . $e->getMessage());
+    error_log("Erro ao buscar ID do comprador: " . $e->getMessage());
+   die("Ocorreu um erro ao carregar seu painel. Tente novamente mais tarde.");
 }
 
 // 3. BUSCA DOS TOTAIS DAS PROPOSTAS POR STATUS

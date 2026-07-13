@@ -21,7 +21,8 @@ if ($id_plano && $usuario_id) {
     $vendedor = $stmtVendedor->fetch(PDO::FETCH_ASSOC);
 
     if (!$vendedor) {
-        die("Erro: Perfil de vendedor não encontrado para este usuário.");
+        error_log("Perfil de vendedor não encontrado para usuario_id: " . $usuario_id);
+        die("Não foi possível encontrar seu perfil de vendedor. Entre em contato com o suporte.");
     }
 
     // Verifica se já possui assinatura ativa antes de processar nova compra
@@ -87,7 +88,7 @@ if ($id_plano && $usuario_id) {
                 $message .= "Caso tenha algum problema, entre em contato com nosso suporte.\n\n";
                 $message .= "Atenciosamente,\nEquipe Encontre o Campo";
                 
-                enviarEmailNotificacao('rafaeltonetti.cardoso@gmail.com', $usuario_nome, $subject, $message);
+                enviarEmailNotificacao($usuario_email, $usuario_nome, $subject, $message);
             }
 
             header("Location: " . $session->url);
@@ -105,13 +106,15 @@ if ($id_plano && $usuario_id) {
                 $message .= "Por favor, tente novamente ou entre em contato com nosso suporte.\n\n";
                 $message .= "Atenciosamente,\nEquipe Encontre o Campo";
                 
-                enviarEmailNotificacao('rafaeltonetti.cardoso@gmail.com', $usuario_nome, $subject, $message);
+                enviarEmailNotificacao($usuario_email, $usuario_nome, $subject, $message);
             }
             
-            die("Erro ao criar sessão de pagamento: " . $e->getMessage());
+            error_log("Erro ao criar sessão de pagamento Stripe: " . $e->getMessage());
+            die("Não foi possível iniciar o pagamento. Tente novamente ou entre em contato com o suporte.");
         }
     } else {
-        die("Erro: Plano inválido ou sem configuração de preço no Stripe.");
+        error_log("Plano inválido ou sem stripe_price_id, id_plano: " . $id_plano);
+        die("Este plano não está disponível no momento. Entre em contato com o suporte.");
     }
 } else {
     header("Location: escolher_plano.php");

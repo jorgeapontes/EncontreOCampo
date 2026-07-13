@@ -1,7 +1,6 @@
 <?php
 // src/comprador/minhas_propostas.php - ATUALIZADO
 
-session_start();
 require_once __DIR__ . '/../conexao.php'; 
 
 $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'] . '/';

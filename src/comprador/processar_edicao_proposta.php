@@ -1,7 +1,6 @@
 <?php
 // src/comprador/processar_edicao_proposta.php - ATUALIZADO
 
-session_start();
 require_once __DIR__ . '/../conexao.php'; 
 
 $database = new Database();

@@ -1,5 +1,4 @@
 <?php
-session_start();
 require_once __DIR__ . '/../conexao.php';
 
 header('Content-Type: application/json');
@@ -28,11 +27,17 @@ try {
     $conn->beginTransaction();
 
     // Buscar proposta_transportador
-    $sql = "SELECT pt.*, p.ID as proposta_id, p.produto_id, p.comprador_id, p.vendedor_id, t.id as transportador_id_sistema, t.usuario_id as transportador_usuario_id
-            FROM propostas_transportadores pt
-            JOIN propostas p ON pt.proposta_id = p.ID
-            LEFT JOIN transportadores t ON pt.transportador_id = t.id
-            WHERE pt.id = :id LIMIT 1";
+    $sql = "SELECT pt.*, 
+               p.ID as proposta_id, 
+               p.produto_id as proposta_produto_id, 
+               p.comprador_id as proposta_comprador_id, 
+               p.vendedor_id as proposta_vendedor_id,
+               t.id as transportador_id_sistema, 
+               t.usuario_id as transportador_usuario_id
+        FROM propostas_transportadores pt
+        JOIN propostas p ON pt.proposta_id = p.ID
+        LEFT JOIN transportadores t ON pt.transportador_id = t.id
+        WHERE pt.id = :id LIMIT 1";
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(':id', $pt_id, PDO::PARAM_INT);
     $stmt->execute();
@@ -40,7 +45,7 @@ try {
     if (!$row) throw new Exception('Proposta não encontrada');
 
     // Verificar se o comprador logado é o destinatário
-    if ((int)$row['comprador_id'] !== $usuario_id) {
+    if ((int)$row['proposta_comprador_id'] !== $usuario_id) {
         throw new Exception('Apenas o comprador desta proposta pode respondê-la');
     }
 
@@ -84,9 +89,9 @@ try {
         // A proposta original normalmente tem mesmo produto_id/comprador_id/vendedor_id e transportador_id IS NULL
         $sql_find_orig = "SELECT ID FROM propostas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND vendedor_id = :vendedor_id AND (transportador_id IS NULL OR transportador_id = 0) ORDER BY data_inicio DESC LIMIT 1";
         $st_find = $conn->prepare($sql_find_orig);
-        $st_find->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
-        $st_find->bindParam(':comprador_id', $row['comprador_id'], PDO::PARAM_INT);
-        $st_find->bindParam(':vendedor_id', $row['vendedor_id'], PDO::PARAM_INT);
+        $st_find->bindParam(':produto_id', $row['proposta_produto_id'], PDO::PARAM_INT);
+        $st_find->bindParam(':comprador_id', $row['proposta_comprador_id'], PDO::PARAM_INT);
+        $st_find->bindParam(':vendedor_id', $row['proposta_vendedor_id'], PDO::PARAM_INT);
         $st_find->execute();
         $orig = $st_find->fetch(PDO::FETCH_ASSOC);
         if ($orig && (int)$orig['ID'] !== (int)$row['proposta_id']) {
@@ -100,10 +105,10 @@ try {
         $end_origem = '';
         $end_destino = '';
         // vendedor
-        if (!empty($row['vendedor_id'])) {
+        if (!empty($row['proposta_vendedor_id'])) {
             $sql_v = "SELECT rua, numero, complemento, cidade, estado, cep, nome_comercial FROM vendedores WHERE id = :vid LIMIT 1";
             $st_v = $conn->prepare($sql_v);
-            $st_v->bindParam(':vid', $row['vendedor_id'], PDO::PARAM_INT);
+            $st_v->bindParam(':vid', $row['proposta_vendedor_id'], PDO::PARAM_INT);
             $st_v->execute();
             $v = $st_v->fetch(PDO::FETCH_ASSOC);
             if ($v) {
@@ -111,10 +116,10 @@ try {
             }
         }
         // comprador
-        if (!empty($row['comprador_id'])) {
+        if (!empty($row['proposta_comprador_id'])) {
             $sql_c = "SELECT rua, numero, complemento, cidade, estado, cep FROM compradores WHERE usuario_id = :cid LIMIT 1";
             $st_c = $conn->prepare($sql_c);
-            $st_c->bindParam(':cid', $row['comprador_id'], PDO::PARAM_INT);
+            $st_c->bindParam(':cid', $row['proposta_comprador_id'], PDO::PARAM_INT);
             $st_c->execute();
             $c = $st_c->fetch(PDO::FETCH_ASSOC);
             if ($c) {
@@ -124,10 +129,10 @@ try {
 
         // Resolver vendedor_id para inserir em entregas
         $vendedor_para_entrega = null;
-        if (!empty($row['vendedor_id'])) {
+        if (!empty($row['proposta_vendedor_id'])) {
             // Tentar como id da tabela vendedores
             $st_vchk = $conn->prepare("SELECT id FROM vendedores WHERE id = :vid LIMIT 1");
-            $st_vchk->bindParam(':vid', $row['vendedor_id'], PDO::PARAM_INT);
+            $st_vchk->bindParam(':vid', $row['proposta_vendedor_id'], PDO::PARAM_INT);
             $st_vchk->execute();
             $vchk = $st_vchk->fetch(PDO::FETCH_ASSOC);
             if ($vchk) {
@@ -135,7 +140,7 @@ try {
             } else {
                 // Tentar como usuario_id (legado)
                 $st_vchk2 = $conn->prepare("SELECT id FROM vendedores WHERE usuario_id = :uid LIMIT 1");
-                $st_vchk2->bindParam(':uid', $row['vendedor_id'], PDO::PARAM_INT);
+                $st_vchk2->bindParam(':uid', $row['proposta_vendedor_id'], PDO::PARAM_INT);
                 $st_vchk2->execute();
                 $vchk2 = $st_vchk2->fetch(PDO::FETCH_ASSOC);
                 if ($vchk2) $vendedor_para_entrega = $vchk2['id'];
@@ -145,7 +150,7 @@ try {
         // Criar entrega
         $sql_ent = "INSERT INTO entregas (produto_id, transportador_id, endereco_origem, endereco_destino, status, data_solicitacao, valor_frete, vendedor_id, comprador_id, data_aceitacao, observacoes, status_detalhado) VALUES (:produto_id, :transportador_id, :end_origem, :end_destino, 'pendente', NOW(), :valor_frete, :vendedor_id, :comprador_id, NOW(), :observacoes, 'aguardando_entrega')";
         $st_ent = $conn->prepare($sql_ent);
-        $st_ent->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
+        $st_ent->bindParam(':produto_id', $row['proposta_produto_id'], PDO::PARAM_INT);
         // Usar o id da tabela transportadores para a entrega
         if ($transportador_sistema_id !== null) {
             $st_ent->bindValue(':transportador_id', $transportador_sistema_id, PDO::PARAM_INT);
@@ -161,7 +166,7 @@ try {
         } else {
             $st_ent->bindValue(':vendedor_id', null, PDO::PARAM_NULL);
         }
-        $st_ent->bindParam(':comprador_id', $row['comprador_id'], PDO::PARAM_INT);
+        $st_ent->bindParam(':comprador_id', $row['proposta_comprador_id'], PDO::PARAM_INT);
         $st_ent->bindParam(':observacoes', $row['observacoes']);
         $st_ent->execute();
 
@@ -170,8 +175,8 @@ try {
         if ($transportador_sistema_id !== null) {
             $sql_conv = "SELECT id FROM chat_conversas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND transportador_id = :tid LIMIT 1";
             $st_conv = $conn->prepare($sql_conv);
-            $st_conv->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
-            $st_conv->bindParam(':comprador_id', $row['comprador_id'], PDO::PARAM_INT);
+            $st_conv->bindParam(':produto_id', $row['proposta_produto_id'], PDO::PARAM_INT);
+            $st_conv->bindParam(':comprador_id', $row['proposta_comprador_id'], PDO::PARAM_INT);
             $st_conv->bindParam(':tid', $transportador_sistema_id, PDO::PARAM_INT);
             $st_conv->execute();
             $convRow = $st_conv->fetch(PDO::FETCH_ASSOC);
@@ -180,8 +185,8 @@ try {
             // fallback
             $sql_conv2 = "SELECT id FROM chat_conversas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND transportador_id IS NOT NULL LIMIT 1";
             $st_conv2 = $conn->prepare($sql_conv2);
-            $st_conv2->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
-            $st_conv2->bindParam(':comprador_id', $row['comprador_id'], PDO::PARAM_INT);
+            $st_conv2->bindParam(':produto_id', $row['proposta_produto_id'], PDO::PARAM_INT);
+            $st_conv2->bindParam(':comprador_id', $row['proposta_comprador_id'], PDO::PARAM_INT);
             $st_conv2->execute();
             $convRow = $st_conv2->fetch(PDO::FETCH_ASSOC);
         }
@@ -215,8 +220,8 @@ try {
         // Opcional: enviar mensagem no chat informando a recusa
         $sql_conv = "SELECT id FROM chat_conversas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND transportador_id = :tid LIMIT 1";
         $st_conv = $conn->prepare($sql_conv);
-        $st_conv->bindParam(':produto_id', $row['produto_id'], PDO::PARAM_INT);
-        $st_conv->bindParam(':comprador_id', $row['comprador_id'], PDO::PARAM_INT);
+        $st_conv->bindParam(':produto_id', $row['proposta_produto_id'], PDO::PARAM_INT);
+        $st_conv->bindParam(':comprador_id', $row['proposta_comprador_id'], PDO::PARAM_INT);
         $transportador_sistema_id = $row['transportador_id_sistema'] ?? null;
         $st_conv->bindParam(':tid', $transportador_sistema_id, PDO::PARAM_INT);
         $st_conv->execute();

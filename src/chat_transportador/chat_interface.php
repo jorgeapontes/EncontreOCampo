@@ -1,6 +1,5 @@
 <?php
 // Interface simples de chat para transportador
-session_start();
 require_once __DIR__ . '/../conexao.php';
 
 if (!isset($_SESSION['usuario_id'])) {

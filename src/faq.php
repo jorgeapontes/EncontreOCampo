@@ -1,6 +1,5 @@
 <?php
 // src/faq.php
-session_start();
 require_once 'conexao.php';
 
 // Variáveis de sessão

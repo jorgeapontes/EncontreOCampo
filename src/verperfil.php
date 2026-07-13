@@ -1,6 +1,5 @@
 <?php
 // src/verperfil.php
-session_start();
 require_once 'conexao.php';
 
 $database = new Database();

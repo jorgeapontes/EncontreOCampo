@@ -6,11 +6,6 @@ ob_start();
 
 require_once 'conexao.php';
 
-// Iniciar sessão de forma segura
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
-
 // Limpar qualquer output anterior
 ob_end_clean();
 

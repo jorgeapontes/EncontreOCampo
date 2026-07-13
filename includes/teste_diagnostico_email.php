@@ -4,8 +4,6 @@
  * Este script ajuda a identificar exatamente o que está acontecendo com o envio de emails
  */
 
-session_start();
-
 // Verificar se é POST para enviar teste
 $enviando = $_SERVER['REQUEST_METHOD'] === 'POST';
 $resultado = null;

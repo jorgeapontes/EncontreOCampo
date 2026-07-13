@@ -3,11 +3,6 @@
 
 require_once 'conexao.php';
 
-// Iniciar sessão de forma segura
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
-
 // Configurar cabeçalhos para AJAX/JSON
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');

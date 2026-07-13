@@ -1,5 +1,4 @@
 <?php
-session_start();
 require_once '../src/conexao.php'; // Arquivo de conexão com o banco
 
 $database = new Database();

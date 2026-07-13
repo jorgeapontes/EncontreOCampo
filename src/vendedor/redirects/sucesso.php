@@ -1,9 +1,5 @@
 <?php
 // src/vendedor/stripe/sucesso.php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
 // Inclusão dos arquivos necessários
 require_once __DIR__ . '/../../../vendor/autoload.php'; 
 require_once __DIR__ . '/../../../config/StripeConfig.php';

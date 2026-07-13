@@ -2,10 +2,6 @@
 
 require_once 'src/conexao.php';
 
-    if (session_status() == PHP_SESSION_NONE) {
-        session_start();
-    }
-
     $button_text = 'Login';
 
     if (isset($_SESSION['usuario_nome'])) {

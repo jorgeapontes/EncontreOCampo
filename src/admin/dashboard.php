@@ -312,6 +312,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const nome = this.getAttribute("data-nome");
             const tipo = this.getAttribute("data-tipo");
             const jsonData = this.getAttribute("data-json");
+            const usuarioId = this.getAttribute("data-usuario-id");
             
             // Atualiza título do modal
             modalTitulo.innerText = `Detalhes da Solicitação`;
@@ -338,7 +339,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                     <div class="data-field" style="text-align: center; padding: 15px; background: white; border: 2px solid #e0e0e0; border-radius: 8px;">
                                         <div class="field-label" style="margin-bottom: 12px; color: #555; font-weight: 600;">Foto do Rosto</div>
                                         <div style="display: flex; justify-content: center; background: #f5f5f5; padding: 10px; border-radius: 6px;">
-                                            <img src="../../${fotoRosto}" alt="Foto do Rosto" style="max-width: 100%; height: auto; max-height: 300px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;" onclick="abrirImagemGrande('../../${fotoRosto}', 'Foto do Rosto')">
+                                            <img src="ver_documento.php?usuario_id=${usuarioId}&tipo=rosto" alt="Foto do Rosto" style="max-width: 100%; height: auto; max-height: 300px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;" onclick="abrirImagemGrande('ver_documento.php?usuario_id=${usuarioId}&tipo=rosto', 'Foto do Rosto')">
                                         </div>
                                     </div>
                                 ` : ''}
@@ -346,7 +347,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                     <div class="data-field" style="text-align: center; padding: 15px; background: white; border: 2px solid #e0e0e0; border-radius: 8px;">
                                         <div class="field-label" style="margin-bottom: 12px; color: #555; font-weight: 600;">Documento - Frente</div>
                                         <div style="display: flex; justify-content: center; background: #f5f5f5; padding: 10px; border-radius: 6px;">
-                                            <img src="../../${fotoFrente}" alt="Documento Frente" style="max-width: 100%; height: auto; max-height: 300px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;" onclick="abrirImagemGrande('../../${fotoFrente}', 'Documento - Frente')">
+                                            <img src="ver_documento.php?usuario_id=${usuarioId}&tipo=frente" alt="Documento Frente" style="max-width: 100%; height: auto; max-height: 300px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;" onclick="abrirImagemGrande('ver_documento.php?usuario_id=${usuarioId}&tipo=frente', 'Documento - Frente')">
                                         </div>
                                     </div>
                                 ` : ''}
@@ -354,7 +355,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                     <div class="data-field" style="text-align: center; padding: 15px; background: white; border: 2px solid #e0e0e0; border-radius: 8px;">
                                         <div class="field-label" style="margin-bottom: 12px; color: #555; font-weight: 600;">Documento - Verso</div>
                                         <div style="display: flex; justify-content: center; background: #f5f5f5; padding: 10px; border-radius: 6px;">
-                                            <img src="../../${fotoVerso}" alt="Documento Verso" style="max-width: 100%; height: auto; max-height: 300px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;" onclick="abrirImagemGrande('../../${fotoVerso}', 'Documento - Verso')">
+                                            <img src="ver_documento.php?usuario_id=${usuarioId}&tipo=verso" alt="Documento Verso" style="max-width: 100%; height: auto; max-height: 300px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;" onclick="abrirImagemGrande('ver_documento.php?usuario_id=${usuarioId}&tipo=verso', 'Documento - Verso')">
                                         </div>
                                     </div>
                                 ` : ''}

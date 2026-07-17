@@ -59,9 +59,12 @@ try {
     ]);
     
 } catch (Exception $e) {
+    error_log("Erro ao excluir proposta (proposta_id={$proposta_id}, usuario_id={$usuario_id}): " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage()
+        'error' => $e->getMessage() === 'Proposta não encontrada ou você não tem permissão para excluí-la'
+            ? $e->getMessage()
+            : 'Não foi possível excluir a proposta. Tente novamente.'
     ]);
 }
 ?>

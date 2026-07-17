@@ -98,9 +98,10 @@ try {
     
 } catch (Exception $e) {
     $conn->rollBack();
+    error_log("Erro ao responder negociação (proposta_id=" . ($dados['proposta_id'] ?? '?') . "): " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage()
+        'error' => 'Não foi possível processar sua resposta. Tente novamente.'
     ]);
 }
 ?>

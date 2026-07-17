@@ -71,9 +71,10 @@ try {
     ]);
     
 } catch (Exception $e) {
+    error_log("Erro ao buscar assinaturas (proposta_id={$proposta_id}): " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage()
+        'error' => 'Não foi possível carregar as assinaturas. Tente novamente.'
     ]);
 }
 ?>

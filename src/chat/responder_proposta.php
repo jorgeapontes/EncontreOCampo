@@ -228,10 +228,12 @@ $conn = $database->getConnection();
     
     // Limpar buffer
     ob_clean();
-    
+
+    error_log("Erro em responder_proposta.php (proposta_id=" . ($proposta_id ?? '?') . "): " . $e->getMessage());
+
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage()
+        'error' => 'Não foi possível processar sua solicitação. Tente novamente.'
     ]);
 }
 

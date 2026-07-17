@@ -54,8 +54,9 @@ $newFilename = uniqid('img_') . '_' . time() . '.' . $extension;
 $destination = $uploadDir . $newFilename;
 
 if (move_uploaded_file($file['tmp_name'], $destination)) {
-   $webPath = '/EncontreOCampo/uploads/chat/' . $newFilename;
-    
+    // Caminho relativo à raiz do site (public_html), sem o prefixo de pasta
+    // local de desenvolvimento que não existe em produção.
+    $webPath = '/uploads/chat/' . $newFilename;
 
     try {
 
@@ -86,20 +87,7 @@ if (move_uploaded_file($file['tmp_name'], $destination)) {
         echo json_encode(['success' => false, 'error' => 'Erro ao salvar no banco.']);
     }
 } else {
+    error_log("Falha ao mover arquivo de upload de chat: tmp_name={$file['tmp_name']} destino={$destination}");
     echo json_encode(['success' => false, 'error' => 'Falha ao mover arquivo.']);
 }
-
-if (move_uploaded_file($file['tmp_name'], $destination)) {
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
-    $host = $_SERVER['HTTP_HOST'];
-    $documentRoot = $_SERVER['DOCUMENT_ROOT'];
-    
-    error_log("=== DEBUG UPLOAD ===");
-    error_log("Document Root: " . $documentRoot);
-    error_log("Upload Dir: " . $uploadDir);
-    error_log("Destination: " . $destination);
-    error_log("File exists: " . (file_exists($destination) ? 'SIM' : 'NÃO'));
-    error_log("URL completa: " . $protocol . "://" . $host . "../uploads/chat/" . $newFilename);
-    
-    $webPath = '../uploads/chat/' . $newFilename;}
 ?>

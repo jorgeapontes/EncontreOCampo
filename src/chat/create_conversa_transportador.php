@@ -72,10 +72,7 @@ try {
             error_log('Duplicate conversa detected: ' . $e->getMessage());
             echo json_encode([
                 'success' => false,
-                'erro' => 'Conversa já atribuída a outro transportador ou conflito de índice',
-                'acao' => 'db_migration_requerida',
-                'migration' => 'db/migrations/007_update_conversa_unica_transportador.sql',
-                'mensagem' => 'Execute a migration para permitir conversas separadas por transportador (backup antes)'
+                'erro' => 'Não foi possível criar a conversa. Já existe um atendimento em andamento para esta proposta.'
             ]);
             exit();
         }
@@ -85,8 +82,7 @@ try {
 
 } catch (PDOException $e) {
     error_log('Erro create_conversa_transportador: ' . $e->getMessage());
-    // Retornar detalhe do erro temporariamente para depuração
-    echo json_encode(['success' => false, 'erro' => 'Erro ao criar conversa', 'detalhe' => $e->getMessage()]);
+    echo json_encode(['success' => false, 'erro' => 'Erro ao criar conversa']);
     exit();
 }
 

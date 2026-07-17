@@ -299,10 +299,12 @@ try {
     
     // Limpar buffer
     ob_clean();
-    
+
+    error_log("Erro em salvar_negociacao.php: " . $e->getMessage());
+
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage()
+        'error' => 'Não foi possível salvar a proposta. Tente novamente.'
     ]);
 }
 

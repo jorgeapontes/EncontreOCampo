@@ -248,7 +248,8 @@ try {
 
 } catch (Exception $e) {
     if ($conn && $conn->inTransaction()) $conn->rollBack();
-    echo json_encode(['success' => false, 'erro' => $e->getMessage()]);
+    error_log("Erro em responder_proposta.php (chat_transportador, pt_id={$pt_id}): " . $e->getMessage());
+    echo json_encode(['success' => false, 'erro' => 'Não foi possível processar sua resposta. Tente novamente.']);
     exit();
 }
 

@@ -148,7 +148,8 @@ try {
 
 } catch (Exception $e) {
     if ($conn && $conn->inTransaction()) $conn->rollBack();
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    error_log("Erro em send_proposal.php (conversa_id={$conversa_id}): " . $e->getMessage());
+    echo json_encode(['success' => false, 'error' => 'Não foi possível enviar a proposta de frete. Tente novamente.']);
     exit();
 }
 

@@ -71,10 +71,14 @@ if ($eh_vendedor_produto) {
         $sql_conversa = "SELECT c.comprador_id, u.nome AS comprador_nome
                         FROM chat_conversas c
                         JOIN usuarios u ON c.comprador_id = u.id
-                        WHERE c.id = :conversa_id";
+                        WHERE c.id = :conversa_id
+                        AND c.produto_id = :produto_id
+                        AND c.vendedor_id = :vendedor_usuario_id";
         
         $stmt_conv = $conn->prepare($sql_conversa);
         $stmt_conv->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);
+        $stmt_conv->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+        $stmt_conv->bindParam(':vendedor_usuario_id', $vendedor_usuario_id, PDO::PARAM_INT);
         $stmt_conv->execute();
         $conversa_info = $stmt_conv->fetch(PDO::FETCH_ASSOC);
         

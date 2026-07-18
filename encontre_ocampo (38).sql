@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 05/02/2026 às 22:26
+-- Tempo de geração: 18/07/2026 às 21:50
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -177,6 +177,7 @@ INSERT INTO `chat_auditoria` (`id`, `conversa_id`, `usuario_id`, `acao`, `detalh
 CREATE TABLE `chat_conversas` (
   `id` int(11) NOT NULL,
   `produto_id` int(11) NOT NULL,
+  `proposta_id` int(11) DEFAULT NULL,
   `comprador_id` int(11) NOT NULL,
   `vendedor_id` int(11) NOT NULL,
   `transportador_id` int(11) DEFAULT NULL,
@@ -205,11 +206,11 @@ CREATE TABLE `chat_conversas` (
 -- Despejando dados para a tabela `chat_conversas`
 --
 
-INSERT INTO `chat_conversas` (`id`, `produto_id`, `comprador_id`, `vendedor_id`, `transportador_id`, `ultima_mensagem`, `ultima_mensagem_data`, `comprador_lido`, `vendedor_lido`, `status`, `data_criacao`, `deletado`, `data_delecao`, `usuario_deletou`, `favorito_comprador`, `favorito_vendedor`, `comprador_excluiu`, `vendedor_excluiu`, `ultimo_ip_comprador`, `ultimo_ip_vendedor`, `ultimo_user_agent_comprador`, `ultimo_user_agent_vendedor`, `favorito_transportador`, `transportador_excluiu`) VALUES
-(58, 32, 30, 32, NULL, '✅ ACORDO CONCLUÍDO!\n\nAmbas as partes assinaram o acordo digitalmente.\nA proposta foi oficialmente aceita e a compra está confirmada.\n\n', '2026-01-30 15:22:06', 0, 1, 'ativo', '2026-01-30 15:21:12', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0),
-(59, 32, 30, 32, 34, '*PROPOSTA DE ENTREGA*\nValor: R$ 100,00\nPrazo: 2026-01-31\nID: 16', '2026-01-30 15:23:00', 1, 0, 'ativo', '2026-01-30 15:22:33', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0),
-(60, 33, 30, 33, 34, '*PROPOSTA DE ENTREGA*\nValor: R$ 222,00\nPrazo: 2026-01-31\nID: 17', '2026-01-30 15:23:30', 1, 0, 'ativo', '2026-01-30 15:23:17', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0),
-(61, 34, 37, 36, NULL, '✅ ACORDO CONCLUÍDO!\n\nAmbas as partes assinaram o acordo digitalmente.\nA proposta foi oficialmente aceita e a compra está confirmada.\n\n', '2026-02-04 22:35:57', 0, 1, 'ativo', '2026-02-04 22:33:41', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0);
+INSERT INTO `chat_conversas` (`id`, `produto_id`, `proposta_id`, `comprador_id`, `vendedor_id`, `transportador_id`, `ultima_mensagem`, `ultima_mensagem_data`, `comprador_lido`, `vendedor_lido`, `status`, `data_criacao`, `deletado`, `data_delecao`, `usuario_deletou`, `favorito_comprador`, `favorito_vendedor`, `comprador_excluiu`, `vendedor_excluiu`, `ultimo_ip_comprador`, `ultimo_ip_vendedor`, `ultimo_user_agent_comprador`, `ultimo_user_agent_vendedor`, `favorito_transportador`, `transportador_excluiu`) VALUES
+(58, 32, NULL, 30, 32, NULL, '✅ ACORDO CONCLUÍDO!\n\nAmbas as partes assinaram o acordo digitalmente.\nA proposta foi oficialmente aceita e a compra está confirmada.\n\n', '2026-01-30 15:22:06', 0, 1, 'ativo', '2026-01-30 15:21:12', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0),
+(59, 32, NULL, 30, 32, 34, '*PROPOSTA DE ENTREGA*\nValor: R$ 100,00\nPrazo: 2026-01-31\nID: 16', '2026-01-30 15:23:00', 1, 0, 'ativo', '2026-01-30 15:22:33', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0),
+(60, 33, NULL, 30, 33, 34, '*PROPOSTA DE ENTREGA*\nValor: R$ 222,00\nPrazo: 2026-01-31\nID: 17', '2026-01-30 15:23:30', 1, 0, 'ativo', '2026-01-30 15:23:17', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0),
+(61, 34, NULL, 37, 36, NULL, '✅ ACORDO CONCLUÍDO!\n\nAmbas as partes assinaram o acordo digitalmente.\nA proposta foi oficialmente aceita e a compra está confirmada.\n\n', '2026-02-04 22:35:57', 0, 1, 'ativo', '2026-02-04 22:33:41', 0, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -851,7 +852,7 @@ ALTER TABLE `chat_auditoria`
 --
 ALTER TABLE `chat_conversas`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `conversa_unica` (`produto_id`,`comprador_id`,`vendedor_id`,`transportador_id`),
+  ADD UNIQUE KEY `conversa_unica_proposta_transportador` (`proposta_id`,`transportador_id`),
   ADD KEY `comprador_id` (`comprador_id`),
   ADD KEY `vendedor_id` (`vendedor_id`),
   ADD KEY `idx_chat_conversas_deletado` (`deletado`);
@@ -1164,7 +1165,8 @@ ALTER TABLE `admin_acoes`
 ALTER TABLE `chat_conversas`
   ADD CONSTRAINT `chat_conversas_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `chat_conversas_ibfk_2` FOREIGN KEY (`comprador_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `chat_conversas_ibfk_3` FOREIGN KEY (`vendedor_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `chat_conversas_ibfk_3` FOREIGN KEY (`vendedor_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `chat_conversas_ibfk_proposta` FOREIGN KEY (`proposta_id`) REFERENCES `propostas` (`ID`) ON DELETE SET NULL;
 
 --
 -- Restrições para tabelas `chat_mensagens`

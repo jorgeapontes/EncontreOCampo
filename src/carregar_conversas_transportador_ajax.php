@@ -26,6 +26,7 @@ try {
     $sql = "SELECT 
                 cc.id AS conversa_id,
                 cc.produto_id,
+                cc.proposta_id,
                 cc.ultima_mensagem,
                 cc.ultima_mensagem_data,
                 p.nome AS produto_nome,
@@ -34,6 +35,10 @@ try {
                 cc.transportador_id,
                 (SELECT u.nome FROM usuarios u WHERE u.id = cc.transportador_id) AS transportador_nome,
                 cc.favorito_comprador AS arquivado,
+                pr.quantidade_proposta,
+                pr.valor_frete_final,
+                pr.data_entrega_estimada,
+                pr.status AS proposta_status,
                 (SELECT COUNT(*) 
                  FROM chat_mensagens cm 
                  WHERE cm.conversa_id = cc.id 
@@ -41,6 +46,7 @@ try {
                  AND cm.lida = 0) AS mensagens_nao_lidas
             FROM chat_conversas cc
             INNER JOIN produtos p ON cc.produto_id = p.id
+            LEFT JOIN propostas pr ON pr.ID = cc.proposta_id
             WHERE cc.comprador_id = :usuario_id
             AND cc.transportador_id IS NOT NULL
             AND cc.status = 'ativo'

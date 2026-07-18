@@ -18,6 +18,7 @@ try {
     $sql = "SELECT 
                 cc.id AS conversa_id,
                 cc.produto_id,
+                cc.proposta_id,
                 cc.ultima_mensagem,
                 cc.ultima_mensagem_data,
                 p.nome AS produto_nome,
@@ -26,9 +27,14 @@ try {
                 cc.transportador_id,
                 (SELECT u.nome FROM usuarios u WHERE u.id = cc.transportador_id) AS transportador_nome,
                 cc.favorito_comprador AS arquivado,
+                pr.quantidade_proposta,
+                pr.valor_frete_final,
+                pr.data_entrega_estimada,
+                pr.status AS proposta_status,
                 (SELECT COUNT(*) FROM chat_mensagens cm WHERE cm.conversa_id = cc.id AND cm.remetente_id != :usuario_id AND cm.lida = 0) AS mensagens_nao_lidas
             FROM chat_conversas cc
             INNER JOIN produtos p ON cc.produto_id = p.id
+            LEFT JOIN propostas pr ON pr.ID = cc.proposta_id
             WHERE cc.comprador_id = :usuario_id
             AND cc.transportador_id IS NOT NULL
             AND cc.status = 'ativo'
@@ -191,7 +197,11 @@ try {
         .produto-thumb .placeholder-icon { font-size: 32px; color: #999; }
         .debug-info { font-size: 10px; color: red; background: #fff; padding: 2px 4px; position: absolute; bottom: 0; left: 0; right: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .conversa-info { flex: 1; min-width: 0; }
-        .produto-nome-principal { font-weight: 700; color: #333; font-size: 16px; }
+        .produto-nome-principal { font-weight: 700; color: #333; font-size: 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .badge-proposta { background: #e3f2fd; color: #1565c0; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; white-space: nowrap; }
+        .badge-proposta-generica { background: #f1f1f1; color: #757575; }
+        .proposta-detalhes { font-size: 13px; color: #444; }
+        .proposta-detalhes strong { color: #2E7D32; }
         .conversa-data { font-size: 13px; color: #999; }
         .ultima-mensagem { font-size: 14px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 500px; }
         .conversa-actions { display: flex; gap: 8px; align-items: center; }
@@ -751,9 +761,13 @@ try {
                         <i class="fas fa-image placeholder-icon" style="display: none;"></i>
                     </div>
                     <div class="conversa-info">
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
                             <div class="produto-nome-principal">
                                 ${escapeHtml(conversa.produto_nome)}
+                                ${conversa.proposta_id ?
+                                    `<span class="badge-proposta">Proposta #${conversa.proposta_id}</span>` :
+                                    `<span class="badge-proposta badge-proposta-generica">Chat #${conversa.conversa_id}</span>`
+                                }
                                 ${conversa.mensagens_nao_lidas > 0 ? 
                                     `<span class="badge-novo">${conversa.mensagens_nao_lidas} nova${conversa.mensagens_nao_lidas > 1 ? 's' : ''}</span>` : 
                                     ''
@@ -764,6 +778,14 @@ try {
                         <div style="margin-top:8px;color:#666;">
                             <strong>Transportador:</strong> ${escapeHtml(conversa.transportador_nome || 'Transportador')}
                         </div>
+                        ${(conversa.valor_frete_final || conversa.data_entrega_estimada) ?
+                            `<div class="proposta-detalhes" style="margin-top:6px;">
+                                <i class="fas fa-truck"></i> Frete negociado:
+                                ${conversa.valor_frete_final ? `<strong>R$ ${Number(conversa.valor_frete_final).toFixed(2).replace('.', ',')}</strong>` : ''}
+                                ${conversa.data_entrega_estimada ? ` &middot; Prazo: <strong>${formatarDataSimples(conversa.data_entrega_estimada)}</strong>` : ''}
+                            </div>` :
+                            ''
+                        }
                         ${conversa.ultima_mensagem ? 
                             `<div class="ultima-mensagem" style="margin-top:8px;">
                                 <i class="fas fa-comment"></i> ${tratarUltimaMensagem(conversa.ultima_mensagem)}
@@ -1016,6 +1038,18 @@ try {
             const data = new Date(dataStr);
             return data.toLocaleDateString('pt-BR') + ' ' + 
                    data.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+        }
+
+        // Para campos que são apenas DATE (sem hora), como data_entrega_estimada.
+        // new Date("YYYY-MM-DD") é interpretado como UTC meia-noite; ao converter
+        // para o fuso local (ex: Brasil, UTC-3) a data "volta" um dia. Por isso,
+        // aqui extraímos ano/mês/dia direto da string, sem passar por Date/UTC.
+        function formatarDataSimples(dataStr) {
+            if (!dataStr) return '';
+            const partes = String(dataStr).split('T')[0].split('-');
+            if (partes.length !== 3) return dataStr;
+            const [ano, mes, dia] = partes;
+            return `${dia}/${mes}/${ano}`;
         }
 
         function tratarUltimaMensagem(mensagem) {

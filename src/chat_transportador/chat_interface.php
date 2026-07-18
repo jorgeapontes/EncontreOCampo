@@ -530,6 +530,14 @@ try {
         let ultimaPropostaIdRenderizada = 0; // Para controlar a sidebar
         const propostasProcessadas = new Map();
 
+        // Escapa texto antes de inserir via innerHTML (proteção contra XSS).
+        // Usada em qualquer mensagem exibida como HTML, não só texto puro.
+        function escapeHtml(texto) {
+            const div = document.createElement('div');
+            div.textContent = texto ?? '';
+            return div.innerHTML;
+        }
+
         // 1. Carregar mensagens
         async function carregarMensagens() {
             try {

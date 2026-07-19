@@ -52,14 +52,14 @@ if ($is_logged_in) {
                         </div>
                     </a>
                 </div>
-                
+
                 <!-- Menu Hamburguer (adicionado) -->
                 <div class="hamburger">
                     <span class="bar"></span>
                     <span class="bar"></span>
                     <span class="bar"></span>
                 </div>
-                
+
                 <ul class="nav-menu">
                     <li class="nav-item">
                         <a href="../index.php" class="nav-link">Home</a>
@@ -71,7 +71,7 @@ if ($is_logged_in) {
                         <a href="faq.php" class="nav-link">FAQ</a>
                     </li>
                     <li class="nav-item">
-                        <a href="<?php echo htmlspecialchars($button_action); ?>" 
+                        <a href="<?php echo htmlspecialchars($button_action); ?>"
                            class="nav-link <?php echo $is_logged_in ? 'user-profile' : 'open-login-modal'; ?>"
                            <?php if (!$is_logged_in) echo 'data-target="#loginModal"'; ?>>
                             <?php echo htmlspecialchars($button_text); ?>
@@ -95,35 +95,48 @@ if ($is_logged_in) {
 
         <div class="legal-content">
             <div class="legal-section">
-                <h3><i class="fas fa-gavel"></i> 1. Aceitação dos Termos</h3>
+                <h3><i class="fas fa-id-card"></i> 1. Identificação</h3>
+                <p>A plataforma Encontre o Campo é operada por:</p>
+                <ul>
+                    <li><strong>Razão Social:</strong> [PREENCHER RAZÃO SOCIAL] — CNPJ: [PREENCHER CNPJ QUANDO DISPONÍVEL]</li>
+                    <li><strong>Endereço:</strong> Jundiaí, São Paulo, Brasil</li>
+                    <li><strong>Email:</strong> legal@encontreocampo.com.br</li>
+                </ul>
+                <p><em>Nota interna: atualizar razão social e CNPJ assim que a empresa estiver formalmente constituída, antes de abrir a plataforma ao público.</em></p>
+            </div>
+
+            <div class="legal-section">
+                <h3><i class="fas fa-gavel"></i> 2. Aceitação dos Termos</h3>
                 <p>Ao acessar e usar a plataforma Encontre o Campo, você concorda em cumprir e estar vinculado a estes Termos de Uso. Se você não concordar com qualquer parte destes termos, não poderá usar nossos serviços.</p>
             </div>
 
             <div class="legal-section">
-                <h3><i class="fas fa-user-check"></i> 2. Cadastro na Plataforma</h3>
+                <h3><i class="fas fa-user-check"></i> 3. Cadastro na Plataforma</h3>
                 <p>Para usar todas as funcionalidades da plataforma, é necessário:</p>
                 <ul>
                     <li>Fornecer informações verdadeiras e completas no cadastro</li>
                     <li>Manter suas informações de contato atualizadas</li>
-                    <li>Ser maior de 18 anos ou ter autorização legal</li>
+                    <li><strong>Ser maior de 18 anos.</strong> A plataforma não é destinada a menores de idade, e o cadastro está disponível exclusivamente para maiores de 18 anos.</li>
                     <li>Utilizar apenas uma conta por perfil (comprador, vendedor, transportador)</li>
                 </ul>
             </div>
 
             <div class="legal-section">
-                <h3><i class="fas fa-shopping-cart"></i> 3. Transações e Negociações</h3>
-                <p><strong>3.1 Responsabilidades:</strong> A plataforma atua como intermediária nas negociações. Compradores e vendedores são responsáveis por:</p>
+                <h3><i class="fas fa-shopping-cart"></i> 4. Transações e Negociações</h3>
+                <p><strong>4.1 Responsabilidades:</strong> A plataforma atua como intermediária nas negociações. Compradores e vendedores são responsáveis por:</p>
                 <ul>
                     <li>Verificar a qualidade e quantidade dos produtos</li>
                     <li>Combinar condições de pagamento e entrega</li>
                     <li>Cumprir com os acordos estabelecidos</li>
                 </ul>
-                
-                <p><strong>3.2 Propostas:</strong> As propostas feitas através da plataforma são juridicamente vinculativas quando aceitas pela outra parte.</p>
+
+                <p><strong>4.2 Propostas:</strong> As propostas feitas através da plataforma são juridicamente vinculativas quando aceitas pela outra parte.</p>
+
+                <p><strong>4.3 Pagamentos de assinatura:</strong> Pagamentos de planos de assinatura (para vendedores) são processados por um parceiro de pagamento externo (Stripe). A plataforma não armazena dados de cartão de crédito.</p>
             </div>
 
             <div class="legal-section">
-                <h3><i class="fas fa-ban"></i> 4. Condutas Proibidas</h3>
+                <h3><i class="fas fa-ban"></i> 5. Condutas Proibidas</h3>
                 <p>É expressamente proibido:</p>
                 <ul>
                     <li>Fornecer informações falsas ou enganosas</li>
@@ -136,13 +149,13 @@ if ($is_logged_in) {
             </div>
 
             <div class="legal-section">
-                <h3><i class="fas fa-lock"></i> 5. Contas e Segurança</h3>
-                <p><strong>5.1 Senha:</strong> Você é responsável por manter a confidencialidade de sua senha e por todas as atividades que ocorram em sua conta.</p>
-                <p><strong>5.2 Notificação:</strong> Notifique-nos imediatamente sobre qualquer uso não autorizado de sua conta ou qualquer outra violação de segurança.</p>
+                <h3><i class="fas fa-lock"></i> 6. Contas e Segurança</h3>
+                <p><strong>6.1 Senha:</strong> Você é responsável por manter a confidencialidade de sua senha e por todas as atividades que ocorram em sua conta.</p>
+                <p><strong>6.2 Notificação:</strong> Notifique-nos imediatamente sobre qualquer uso não autorizado de sua conta ou qualquer outra violação de segurança.</p>
             </div>
 
             <div class="legal-section">
-                <h3><i class="fas fa-exclamation-triangle"></i> 6. Limitação de Responsabilidade</h3>
+                <h3><i class="fas fa-exclamation-triangle"></i> 7. Limitação de Responsabilidade</h3>
                 <p>A plataforma Encontre o Campo não se responsabiliza por:</p>
                 <ul>
                     <li>Qualidade, quantidade ou entrega dos produtos negociados</li>
@@ -153,12 +166,12 @@ if ($is_logged_in) {
             </div>
 
             <div class="legal-section">
-                <h3><i class="fas fa-balance-scale"></i> 7. Propriedade Intelectual</h3>
+                <h3><i class="fas fa-balance-scale"></i> 8. Propriedade Intelectual</h3>
                 <p>Todo o conteúdo da plataforma, incluindo logos, textos, gráficos e software, é propriedade da Encontre o Campo ou de seus licenciadores e está protegido por leis de propriedade intelectual.</p>
             </div>
 
             <div class="legal-section">
-                <h3><i class="fas fa-times-circle"></i> 8. Suspensão e Cancelamento</h3>
+                <h3><i class="fas fa-times-circle"></i> 9. Suspensão e Cancelamento</h3>
                 <p>Reservamo-nos o direito de suspender ou cancelar contas que:</p>
                 <ul>
                     <li>Violarem estes Termos de Uso</li>
@@ -169,17 +182,17 @@ if ($is_logged_in) {
             </div>
 
             <div class="legal-section">
-                <h3><i class="fas fa-pencil-alt"></i> 9. Alterações nos Termos</h3>
+                <h3><i class="fas fa-pencil-alt"></i> 10. Alterações nos Termos</h3>
                 <p>Podemos modificar estes Termos de Uso a qualquer momento. As alterações entrarão em vigor após a publicação na plataforma. O uso continuado da plataforma após as alterações constitui aceitação dos novos termos.</p>
             </div>
 
             <div class="legal-section">
-                <h3><i class="fas fa-balance-scale"></i> 10. Lei Aplicável</h3>
+                <h3><i class="fas fa-balance-scale"></i> 11. Lei Aplicável</h3>
                 <p>Estes Termos são regidos pelas leis da República Federativa do Brasil. Qualquer disputa será resolvida no foro da comarca de Jundiaí/SP.</p>
             </div>
 
             <div class="legal-section">
-                <h3><i class="fas fa-envelope"></i> 11. Contato</h3>
+                <h3><i class="fas fa-envelope"></i> 12. Contato</h3>
                 <p>Para questões sobre estes Termos de Uso, entre em contato conosco:</p>
                 <ul>
                     <li><strong>Email:</strong> legal@encontreocampo.com.br</li>
@@ -191,7 +204,7 @@ if ($is_logged_in) {
                 <div class="acceptance-box">
                     <i class="fas fa-check-circle"></i>
                     <h4>Aceitação dos Termos</h4>
-                    <p>Ao usar nossa plataforma, você declara que leu, compreendeu e concordou com estes Termos de Uso.</p>
+                    <p>Ao usar nossa plataforma, você declara que leu, compreendeu e concordou com estes Termos de Uso, e que é maior de 18 anos.</p>
                 </div>
             </div>
         </div>
@@ -203,7 +216,7 @@ if ($is_logged_in) {
             <span class="modal-close">&times;</span>
             <h3>Acesso à Plataforma</h3>
             <p>Faça login para acessar todas as funcionalidades</p>
-            
+
             <form action="login.php" method="POST">
                 <div class="form-group">
                     <label for="modal-email">Email</label>
@@ -226,7 +239,7 @@ if ($is_logged_in) {
         // Modal functionality
         const modal = document.getElementById('loginModal');
         const closeButton = document.querySelector('.modal-close');
-        
+
         function openModal(e) {
             e.preventDefault();
             modal.style.display = 'block';
@@ -247,7 +260,7 @@ if ($is_logged_in) {
                 modal.style.display = 'none';
             }
         }
-        
+
         // Navbar scroll behavior
         window.addEventListener('scroll', function() {
             const navbar = document.querySelector('.navbar');
@@ -262,17 +275,17 @@ if ($is_logged_in) {
             }
         });
     });
-        
+
         // Menu Hamburguer functionality (adicionado)
         const hamburger = document.querySelector(".hamburger");
         const navMenu = document.querySelector(".nav-menu");
-        
+
         if (hamburger) {
             hamburger.addEventListener("click", () => {
                 hamburger.classList.toggle("active");
                 navMenu.classList.toggle("active");
             });
-            
+
             // Fechar menu ao clicar em um link
             document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
                 hamburger.classList.remove("active");

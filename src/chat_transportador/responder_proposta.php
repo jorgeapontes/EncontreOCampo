@@ -18,7 +18,7 @@ if (!$dados || !isset($dados['acao']) || !isset($dados['id'])) {
 
 $acao = $dados['acao'];
 $pt_id = (int)$dados['id'];
-$usuario_id = $_SESSION['usuario_id'];
+$usuario_id = (int)$_SESSION['usuario_id'];
 
 $database = new Database();
 $conn = $database->getConnection();

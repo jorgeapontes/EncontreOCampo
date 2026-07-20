@@ -10,6 +10,8 @@ header('Content-Type: application/json; charset=utf-8');
 
 ob_start();
 
+$proposta_id = null;
+
 try {
 
     // Verificar se está logado
@@ -193,7 +195,10 @@ try {
         
         $stmt_not = $conn->prepare($sql_notificacao);
         $mensagem = "Acordo assinado por todas as partes! A proposta para '{$proposta['nome']}' foi concluída.";
-        $url = "../../src/chat/chat.php?produto_id=" . $proposta['produto_id'] . "&conversa_id=" . $_GET['conversa_id'] ?? '';
+        // Corrigido: precedência de operadores (antes ?? não pegava o valor certo por causa
+        // da concatenação vir antes). Agora usa uma variável separada para o conversa_id.
+        $conversa_id_url = $dados['conversa_id'] ?? ($_GET['conversa_id'] ?? '');
+        $url = "../../src/chat/chat.php?produto_id=" . $proposta['produto_id'] . "&conversa_id=" . $conversa_id_url;
         
         $stmt_not->bindParam(':usuario_id', $outro_usuario_id, PDO::PARAM_INT);
         $stmt_not->bindParam(':mensagem', $mensagem);
@@ -220,10 +225,12 @@ try {
     }
     
     ob_clean();
-    
+
+    error_log("Erro ao salvar assinatura (proposta_id={$proposta_id}): " . $e->getMessage());
+
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage()
+        'error' => 'Não foi possível registrar sua assinatura. Tente novamente.'
     ]);
 }
 

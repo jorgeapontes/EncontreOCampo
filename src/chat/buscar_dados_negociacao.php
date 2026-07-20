@@ -243,7 +243,7 @@ $stmt_rem->bindParam(':remetente_id', $remetente_id, PDO::PARAM_INT);
     
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage()
+        'error' => 'Não foi possível carregar os dados da negociação. Tente novamente.'
     ]);
 }
 ?>

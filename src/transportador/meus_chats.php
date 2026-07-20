@@ -88,6 +88,7 @@ try {
         $sql = "SELECT 
                  cc.id AS conversa_id,
                  cc.produto_id,
+                 cc.proposta_id,
                  cc.transportador_id,
                  cc.ultima_mensagem,
                  cc.ultima_mensagem_data,
@@ -101,6 +102,10 @@ try {
                  u.nome AS vendedor_nome,
                  v.nome_comercial AS vendedor_nome_comercial,
                  cc.favorito_transportador AS arquivado,
+                 pr.quantidade_proposta,
+                 pr.valor_frete_final,
+                 pr.data_entrega_estimada,
+                 pr.status AS proposta_status,
                  (SELECT COUNT(*) 
                   FROM chat_mensagens cm 
                   WHERE cm.conversa_id = cc.id 
@@ -111,6 +116,7 @@ try {
             INNER JOIN vendedores v ON p.vendedor_id = v.id
             INNER JOIN usuarios u ON v.usuario_id = u.id
             LEFT JOIN usuarios uc ON cc.comprador_id = uc.id
+            LEFT JOIN propostas pr ON pr.ID = cc.proposta_id
             WHERE (cc.transportador_id = :usuario_id OR cc.id IN (SELECT conversa_id FROM chat_mensagens WHERE remetente_id = :usuario_id))
             AND cc.status = 'ativo'
             AND cc.transportador_excluiu = 0"; // <-- LINHA ADICIONADA
@@ -234,7 +240,11 @@ try {
         .produto-thumb img { width: 100%; height: 100%; object-fit: cover; }
         .conversa-info { flex: 1; min-width: 0; }
         .conversa-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
-        .produto-nome-principal { font-weight: 700; color: #333; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+        .produto-nome-principal { font-weight: 700; color: #333; font-size: 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .badge-proposta { background: #e3f2fd; color: #1565c0; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; white-space: nowrap; }
+        .badge-proposta-generica { background: #f1f1f1; color: #757575; }
+        .proposta-detalhes { font-size: 13px; color: #444; margin-top: 4px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+        .proposta-detalhes strong { color: #2E7D32; }
         .badge-novo { background: #dc3545; color: white; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; }
         .badge-arquivado { background: #6c757d; color: white; font-size: 10px; padding: 3px 8px; border-radius: 12px; font-weight: 600; }
         .conversa-data { font-size: 13px; color: #999; }
@@ -446,6 +456,11 @@ try {
                                         <div class="produto-nome-principal">
                                             <i class="fas fa-box"></i>
                                             <?php echo htmlspecialchars($conversa['produto_nome']); ?>
+                                            <?php if (!empty($conversa['proposta_id'])): ?>
+                                                <span class="badge-proposta">Proposta #<?php echo (int)$conversa['proposta_id']; ?></span>
+                                            <?php else: ?>
+                                                <span class="badge-proposta badge-proposta-generica">Chat #<?php echo (int)$conversa['conversa_id']; ?></span>
+                                            <?php endif; ?>
                                             <?php if ($esta_arquivado): ?>
                                                 <span class="badge-arquivado"><i class="fas fa-archive"></i> Arquivado</span>
                                             <?php endif; ?>
@@ -461,8 +476,23 @@ try {
                                     <div class="vendedor-info">
                                         <i class="fas fa-user"></i>
                                         Contato: <?php echo htmlspecialchars($contato_display); ?>
-                                        <span class="produto-preco">- R$ <?php echo number_format($conversa['produto_preco'], 2, ',', '.'); ?></span>
                                     </div>
+
+                                    <?php if (!empty($conversa['valor_frete_final']) || !empty($conversa['data_entrega_estimada'])): ?>
+                                    <div class="proposta-detalhes">
+                                        <i class="fas fa-truck"></i>
+                                        Frete negociado:
+                                        <?php if (!empty($conversa['valor_frete_final'])): ?>
+                                            <strong>R$ <?php echo number_format($conversa['valor_frete_final'], 2, ',', '.'); ?></strong>
+                                        <?php endif; ?>
+                                        <?php if (!empty($conversa['data_entrega_estimada'])): ?>
+                                            &middot; Prazo: <strong><?php echo date('d/m/Y', strtotime($conversa['data_entrega_estimada'])); ?></strong>
+                                        <?php endif; ?>
+                                        <?php if (!empty($conversa['quantidade_proposta'])): ?>
+                                            &middot; Qtd: <strong><?php echo (int)$conversa['quantidade_proposta']; ?></strong>
+                                        <?php endif; ?>
+                                    </div>
+                                    <?php endif; ?>
                                     
                                     <?php if ($conversa['ultima_mensagem']): ?>
                                         <div class="ultima-mensagem">

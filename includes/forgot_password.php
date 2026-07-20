@@ -1,10 +1,15 @@
 <?php
+require_once '../src/conexao.php'; // Arquivo de conexão com o banco
+
+$database = new Database();
+$conn = $database->getConnection();
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="../img/logo-nova.png" type="image/x-icon">
     <title>Recuperar Senha - Encontre o Campo</title>
     <style>
         :root {

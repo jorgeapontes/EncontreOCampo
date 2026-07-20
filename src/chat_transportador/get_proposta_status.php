@@ -33,6 +33,7 @@ try {
         echo json_encode(['status' => 'nao_encontrada']);
     }
 } catch (Exception $e) {
-    echo json_encode(['error' => $e->getMessage()]);
+    error_log("Erro ao buscar status da proposta (id={$proposta_id}): " . $e->getMessage());
+    echo json_encode(['error' => 'Não foi possível verificar o status da proposta.']);
 }
 ?>

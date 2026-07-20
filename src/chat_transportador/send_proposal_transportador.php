@@ -8,7 +8,9 @@ if (!isset($_SESSION['usuario_id']) || !isset($_SESSION['usuario_tipo']) || $_SE
 
 $proposta_id = filter_input(INPUT_POST, 'proposta_id', FILTER_VALIDATE_INT);
 $valor = filter_input(INPUT_POST, 'valor', FILTER_VALIDATE_FLOAT);
-$data_entrega = filter_input(INPUT_POST, 'data_entrega', FILTER_SANITIZE_STRING);
+// FILTER_SANITIZE_STRING está depreciado (removido no PHP 9). trim() já é suficiente aqui,
+// pois o valor é usado só em strtotime()/bindParam(), nunca ecoado direto como HTML.
+$data_entrega = isset($_POST['data_entrega']) ? trim($_POST['data_entrega']) : '';
 
 if (!$proposta_id || !$valor || !$data_entrega) {
     echo json_encode(['success' => false, 'erro' => 'Dados inválidos.']);
@@ -129,6 +131,9 @@ try {
     $conn->commit();
     echo json_encode(['success' => true, 'conversa_id' => $conversa_id]);
 } catch (Exception $e) {
-    $conn->rollBack();
-    echo json_encode(['success' => false, 'erro' => $e->getMessage()]);
+    if ($conn && $conn->inTransaction()) {
+        $conn->rollBack();
+    }
+    error_log("Erro em send_proposal_transportador.php (proposta_id={$proposta_id}): " . $e->getMessage());
+    echo json_encode(['success' => false, 'erro' => 'Não foi possível enviar a proposta. Tente novamente.']);
 }

@@ -19,8 +19,8 @@ $database = new Database();
 $conn = $database->getConnection();
 
 try {
-        // Buscar dados da proposta e produto + vendedor (id do vendedor)
-        $sql = "SELECT p.produto_id, p.comprador_id, p.vendedor_id
+    // Buscar dados da proposta e produto + vendedor (id do vendedor)
+    $sql = "SELECT p.produto_id, p.comprador_id, p.vendedor_id
             FROM propostas p
             WHERE p.ID = :proposta_id LIMIT 1";
     $stmt = $conn->prepare($sql);
@@ -38,11 +38,14 @@ try {
     $vendedor_id = isset($row['vendedor_id']) ? (int)$row['vendedor_id'] : 0;
     $transportador_usuario_id = (int)$_SESSION['usuario_id'];
 
-    // Verificar se já existe conversa com transportador
-    $sql_check = "SELECT id FROM chat_conversas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND transportador_id = :transportador_id";
+    // Verificar se já existe conversa para ESTA proposta específica
+    // com este transportador (identidade correta da conversa:
+    // proposta_id + transportador_id, não mais produto+comprador+vendedor).
+    $sql_check = "SELECT id FROM chat_conversas
+                  WHERE proposta_id = :proposta_id
+                  AND transportador_id = :transportador_id";
     $stmt_check = $conn->prepare($sql_check);
-    $stmt_check->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
-    $stmt_check->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
+    $stmt_check->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
     $stmt_check->bindParam(':transportador_id', $transportador_usuario_id, PDO::PARAM_INT);
     $stmt_check->execute();
 
@@ -52,31 +55,43 @@ try {
         exit();
     }
 
-    // Criar nova conversa
-    $sql_insert = "INSERT INTO chat_conversas (produto_id, comprador_id, vendedor_id, transportador_id, ultima_mensagem_data) VALUES (:produto_id, :comprador_id, :vendedor_id, :transportador_id, NOW())";
+    // Criar nova conversa, já vinculada à proposta de origem
+    $sql_insert = "INSERT INTO chat_conversas
+                    (produto_id, proposta_id, comprador_id, vendedor_id, transportador_id, ultima_mensagem_data)
+                    VALUES
+                    (:produto_id, :proposta_id, :comprador_id, :vendedor_id, :transportador_id, NOW())";
     $stmt_ins = $conn->prepare($sql_insert);
     $stmt_ins->bindParam(':produto_id', $produto_id, PDO::PARAM_INT);
+    $stmt_ins->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
     $stmt_ins->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
     $stmt_ins->bindParam(':vendedor_id', $vendedor_id, PDO::PARAM_INT);
     $stmt_ins->bindParam(':transportador_id', $transportador_usuario_id, PDO::PARAM_INT);
+
     try {
         $stmt_ins->execute();
         $new_id = (int)$conn->lastInsertId();
         echo json_encode(['success' => true, 'conversa_id' => $new_id]);
         exit();
     } catch (PDOException $e) {
-        // Se for violação de chave única relacionada ao índice conversa_unica,
-        // informar que é necessário alterar o índice no BD para permitir
-        // múltiplas conversas por transportador (migration disponível).
+        // Violação do índice único conversa_unica_proposta_transportador.
+        // Só deve ocorrer em condição de corrida (duas requisições
+        // simultâneas para a mesma proposta). Nesse caso, buscar
+        // a conversa que acabou de ser criada pela outra requisição.
         if ($e->getCode() === '23000') {
-            error_log('Duplicate conversa detected: ' . $e->getMessage());
-            echo json_encode([
-                'success' => false,
-                'erro' => 'Conversa já atribuída a outro transportador ou conflito de índice',
-                'acao' => 'db_migration_requerida',
-                'migration' => 'db/migrations/007_update_conversa_unica_transportador.sql',
-                'mensagem' => 'Execute a migration para permitir conversas separadas por transportador (backup antes)'
-            ]);
+            error_log('Conversa duplicada detectada (condição de corrida): ' . $e->getMessage());
+
+            $stmt_retry = $conn->prepare($sql_check);
+            $stmt_retry->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
+            $stmt_retry->bindParam(':transportador_id', $transportador_usuario_id, PDO::PARAM_INT);
+            $stmt_retry->execute();
+
+            if ($stmt_retry->rowCount() > 0) {
+                $conv = $stmt_retry->fetch(PDO::FETCH_ASSOC);
+                echo json_encode(['success' => true, 'conversa_id' => (int)$conv['id']]);
+                exit();
+            }
+
+            echo json_encode(['success' => false, 'erro' => 'Conflito ao criar conversa. Tente novamente.']);
             exit();
         }
         // Se não for duplicata tratada, re-lançar para o catch externo
@@ -85,9 +100,7 @@ try {
 
 } catch (PDOException $e) {
     error_log('Erro create_conversa_transportador: ' . $e->getMessage());
-    // Retornar detalhe do erro temporariamente para depuração
-    echo json_encode(['success' => false, 'erro' => 'Erro ao criar conversa', 'detalhe' => $e->getMessage()]);
+    echo json_encode(['success' => false, 'erro' => 'Erro ao criar conversa']);
     exit();
 }
-
 ?>

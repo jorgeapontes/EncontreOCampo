@@ -67,6 +67,15 @@ try {
             if ($lk) $transportador_sistema_id = (int)$lk['id'];
         }
 
+        // IMPORTANTE: chat_conversas.transportador_id guarda o usuario_id do
+        // transportador (não o id da tabela `transportadores`). São espaços de
+        // ID diferentes — usar o errado faz a busca do chat não encontrar nada.
+        // Prioridade: t.usuario_id (join válido) > pt.transportador_id (caso
+        // legado em que essa coluna já armazena o usuario_id diretamente).
+        $transportador_usuario_id_chat = !empty($row['transportador_usuario_id'])
+            ? (int)$row['transportador_usuario_id']
+            : (!empty($row['transportador_id']) ? (int)$row['transportador_id'] : null);
+
         // Atualizar status da proposta transportador
         $sql_up = "UPDATE propostas_transportadores SET status = 'aceita', data_resposta = NOW() WHERE id = :id";
         $stmt_up = $conn->prepare($sql_up);
@@ -171,24 +180,39 @@ try {
         $st_ent->execute();
 
         // Inserir mensagem no chat notificando aceitação - MENSAGEM ALTERADA
+        // IMPORTANTE: buscar a conversa pela proposta_id (identidade correta),
+        // não apenas por produto+comprador+transportador — pois pode haver
+        // mais de uma proposta (ex: 81 e 82) para o mesmo produto/comprador/
+        // transportador, cada uma com seu próprio chat.
         $convRow = null;
-        if ($transportador_sistema_id !== null) {
-            $sql_conv = "SELECT id FROM chat_conversas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND transportador_id = :tid LIMIT 1";
+        $sql_conv_prop = "SELECT id FROM chat_conversas WHERE proposta_id = :proposta_id AND transportador_id = :tid LIMIT 1";
+        $st_conv_prop = $conn->prepare($sql_conv_prop);
+        $st_conv_prop->bindParam(':proposta_id', $row['proposta_id'], PDO::PARAM_INT);
+        $st_conv_prop->bindParam(':tid', $transportador_usuario_id_chat, PDO::PARAM_INT);
+        $st_conv_prop->execute();
+        $convRow = $st_conv_prop->fetch(PDO::FETCH_ASSOC);
+
+        if (!$convRow && $transportador_usuario_id_chat !== null) {
+            // Fallback legado (conversas antigas sem proposta_id preenchido)
+            $sql_conv = "SELECT id FROM chat_conversas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND transportador_id = :tid AND proposta_id IS NULL LIMIT 1";
             $st_conv = $conn->prepare($sql_conv);
             $st_conv->bindParam(':produto_id', $row['proposta_produto_id'], PDO::PARAM_INT);
             $st_conv->bindParam(':comprador_id', $row['proposta_comprador_id'], PDO::PARAM_INT);
-            $st_conv->bindParam(':tid', $transportador_sistema_id, PDO::PARAM_INT);
+            $st_conv->bindParam(':tid', $transportador_usuario_id_chat, PDO::PARAM_INT);
             $st_conv->execute();
             $convRow = $st_conv->fetch(PDO::FETCH_ASSOC);
         }
         if (!$convRow) {
-            // fallback
-            $sql_conv2 = "SELECT id FROM chat_conversas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND transportador_id IS NOT NULL LIMIT 1";
+            // Último fallback (apenas se nada acima encontrou nada)
+            $sql_conv2 = "SELECT id FROM chat_conversas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND transportador_id IS NOT NULL AND proposta_id IS NULL LIMIT 1";
             $st_conv2 = $conn->prepare($sql_conv2);
             $st_conv2->bindParam(':produto_id', $row['proposta_produto_id'], PDO::PARAM_INT);
             $st_conv2->bindParam(':comprador_id', $row['proposta_comprador_id'], PDO::PARAM_INT);
             $st_conv2->execute();
             $convRow = $st_conv2->fetch(PDO::FETCH_ASSOC);
+        }
+        if (!$convRow) {
+            error_log("responder_proposta.php: conversa não encontrada para proposta_id={$row['proposta_id']}, transportador_usuario_id_chat=" . var_export($transportador_usuario_id_chat, true) . ", produto_id={$row['proposta_produto_id']}, comprador_id={$row['proposta_comprador_id']}");
         }
         if ($convRow) {
             $conversa_id = (int)$convRow['id'];
@@ -217,15 +241,35 @@ try {
         $stmt_up->bindParam(':id', $pt_id, PDO::PARAM_INT);
         $stmt_up->execute();
         
-        // Opcional: enviar mensagem no chat informando a recusa
-        $sql_conv = "SELECT id FROM chat_conversas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND transportador_id = :tid LIMIT 1";
+        // Buscar conversa pela proposta_id (identidade correta - evita
+        // enviar a mensagem no chat de outra proposta do mesmo produto/
+        // comprador/transportador).
+        // IMPORTANTE: chat_conversas.transportador_id guarda o usuario_id
+        // do transportador, não o id da tabela `transportadores`.
+        $transportador_usuario_id_chat = !empty($row['transportador_usuario_id'])
+            ? (int)$row['transportador_usuario_id']
+            : (!empty($row['transportador_id']) ? (int)$row['transportador_id'] : null);
+
+        $sql_conv = "SELECT id FROM chat_conversas WHERE proposta_id = :proposta_id AND transportador_id = :tid LIMIT 1";
         $st_conv = $conn->prepare($sql_conv);
-        $st_conv->bindParam(':produto_id', $row['proposta_produto_id'], PDO::PARAM_INT);
-        $st_conv->bindParam(':comprador_id', $row['proposta_comprador_id'], PDO::PARAM_INT);
-        $transportador_sistema_id = $row['transportador_id_sistema'] ?? null;
-        $st_conv->bindParam(':tid', $transportador_sistema_id, PDO::PARAM_INT);
+        $st_conv->bindParam(':proposta_id', $row['proposta_id'], PDO::PARAM_INT);
+        $st_conv->bindParam(':tid', $transportador_usuario_id_chat, PDO::PARAM_INT);
         $st_conv->execute();
         $convRow = $st_conv->fetch(PDO::FETCH_ASSOC);
+
+        if (!$convRow) {
+            // Fallback legado (conversas antigas sem proposta_id preenchido)
+            $sql_conv_leg = "SELECT id FROM chat_conversas WHERE produto_id = :produto_id AND comprador_id = :comprador_id AND transportador_id = :tid AND proposta_id IS NULL LIMIT 1";
+            $st_conv_leg = $conn->prepare($sql_conv_leg);
+            $st_conv_leg->bindParam(':produto_id', $row['proposta_produto_id'], PDO::PARAM_INT);
+            $st_conv_leg->bindParam(':comprador_id', $row['proposta_comprador_id'], PDO::PARAM_INT);
+            $st_conv_leg->bindParam(':tid', $transportador_usuario_id_chat, PDO::PARAM_INT);
+            $st_conv_leg->execute();
+            $convRow = $st_conv_leg->fetch(PDO::FETCH_ASSOC);
+        }
+        if (!$convRow) {
+            error_log("responder_proposta.php (recusar): conversa não encontrada para proposta_id={$row['proposta_id']}, transportador_usuario_id_chat=" . var_export($transportador_usuario_id_chat, true));
+        }
         
         if ($convRow) {
             $conversa_id = (int)$convRow['id'];

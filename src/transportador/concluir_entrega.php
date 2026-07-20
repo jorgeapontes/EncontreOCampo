@@ -47,15 +47,31 @@ $sucesso = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $foto = $_FILES['foto_comprovante'] ?? null;
     $assinatura_base64 = $_POST['assinatura_data'] ?? '';
+    $extensoes_permitidas = ['jpg', 'jpeg', 'png', 'webp'];
+    $mimes_permitidos = ['image/jpeg', 'image/png', 'image/webp'];
 
     if (!$foto || $foto['error'] !== UPLOAD_ERR_OK) {
         $erro = "A foto do comprovante é obrigatória.";
     } elseif (empty($assinatura_base64)) {
         $erro = "A assinatura do recebedor é obrigatória.";
     } else {
+        $ext = strtolower(pathinfo($foto['name'], PATHINFO_EXTENSION));
+
+        if (!in_array($ext, $extensoes_permitidas, true)) {
+            $erro = "Formato da foto inválido. Envie uma imagem JPG, PNG ou WEBP.";
+        } else {
+            $info_imagem = @getimagesize($foto['tmp_name']);
+            $mime_foto = $info_imagem['mime'] ?? '';
+
+            if ($info_imagem === false || !in_array($mime_foto, $mimes_permitidos, true)) {
+                $erro = "O arquivo enviado não é uma imagem válida.";
+            }
+        }
+    }
+
+    if (empty($erro)) {
         try {
             // 1. Processar Foto
-            $ext = pathinfo($foto['name'], PATHINFO_EXTENSION);
             $nome_foto = "entrega_" . $entrega_id . "_" . time() . "." . $ext;
             $caminho_foto = "../../uploads/entregas/" . $nome_foto;
 

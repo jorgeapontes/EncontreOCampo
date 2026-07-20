@@ -240,6 +240,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // 2. Upload Novas Imagens
             $upload_dir = '../uploads/produtos/';
             if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
+            $extensoes_permitidas = ['jpg', 'jpeg', 'png', 'webp'];
+            $mimes_permitidos = ['image/jpeg', 'image/png', 'image/webp'];
             
             $mapa_novas_imagens = [];
             
@@ -249,6 +251,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($_FILES['novas_imagens']['error'][$i] === UPLOAD_ERR_OK) {
                         $tmp = $_FILES['novas_imagens']['tmp_name'][$i];
                         $ext = strtolower(pathinfo($_FILES['novas_imagens']['name'][$i], PATHINFO_EXTENSION));
+
+                        if (!in_array($ext, $extensoes_permitidas, true)) {
+                            throw new Exception('Formato de imagem inválido. Envie JPG, PNG ou WEBP.');
+                        }
+
+                        $info_imagem = @getimagesize($tmp);
+                        $mime_foto = $info_imagem['mime'] ?? '';
+
+                        if ($info_imagem === false || !in_array($mime_foto, $mimes_permitidos, true)) {
+                            throw new Exception('Um dos arquivos enviados não é uma imagem válida.');
+                        }
+
                         $new_name = uniqid('prod_', true) . '.' . $ext;
                         
                         if (move_uploaded_file($tmp, $upload_dir . $new_name)) {

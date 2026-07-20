@@ -169,7 +169,6 @@ try {
                             <th>Preço</th>
                             <th>Estoque</th>
                             <th>Status</th>
-                            <?php if ($propostas_existe): ?><th>Propostas</th><?php endif; ?>
                             <th>Ações</th>
                         </tr>
                     </thead>
@@ -238,18 +237,7 @@ try {
                                     <?php endif; ?>
                                 </td>
                                 
-                                <?php if ($propostas_existe): ?>
-                                    <td>
-                                        <?php if ($bloqueado): ?>-<?php else: ?>
-                                            <center>
-                                                <b><?php echo $propostas_count['total'] ?? 0; ?></b>
-                                                <?php if (($pendentes_count['total']??0) > 0): ?>
-                                                    <br><small style="color:red;"><?php echo $pendentes_count['total']; ?> pend.</small>
-                                                <?php endif; ?>
-                                            </center>
-                                        <?php endif; ?>
-                                    </td>
-                                <?php endif; ?>
+                                
                                 
                                 <td>
                                     <?php if ($bloqueado): ?>

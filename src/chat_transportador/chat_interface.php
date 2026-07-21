@@ -839,6 +839,11 @@ try {
 
         // Fechar modal sucesso
         document.getElementById('btn-fechar-modal')?.addEventListener('click', () => document.getElementById('modal-sucesso-aceite').style.display = 'none');
+        
+        // Redirecionar para minhas compras
+        document.getElementById('btn-ver-compras')?.addEventListener('click', () => {
+            window.location.href = '../comprador/dashboard.php';
+        });
     
     // Função para redirecionar para avaliações do usuário - CORRIGIDA
 function redirectToUserReviews(usuarioId, tipoUsuario) {

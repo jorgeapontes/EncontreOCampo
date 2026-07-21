@@ -146,7 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     // Criar notificação na plataforma e enviar email pedindo avaliação
                     if (!empty($info_entrega['comprador_usuario_id'])) {
-                        $url_avaliacao = "src/avaliar.php?tipo=produto&produto_id=" . urlencode($info_entrega['produto_id']) . "&entrega_id=" . urlencode($entrega_id);
+                        $url_avaliacao = "avaliar.php?tipo=produto&produto_id=" . urlencode($info_entrega['produto_id']) . "&entrega_id=" . urlencode($entrega_id);
                         criarNotificacao($info_entrega['comprador_usuario_id'], "Avalie seu produto: {$info_entrega['produto_nome']}", 'info', $url_avaliacao);
 
                         $assunto_avaliacao = "Avalie seu produto - Encontre o Campo";

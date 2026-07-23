@@ -2,6 +2,20 @@
 // src/vendedor/gerenciar_assinatura.php
 require_once 'auth.php'; // Garante que $vendedor e $db estão carregados
 
+// VERIFICA SE VEIO DO STRIPE E REDIRECIONA PARA O PERFIL
+if (isset($_GET['return_from_stripe']) && $_GET['return_from_stripe'] == '1') {
+    // Verifica se a sessão ainda está ativa
+    if (isset($_SESSION['usuario_id'])) {
+        // Redireciona para o perfil com mensagem de sucesso
+        header("Location: perfil.php?stripe_return=success");
+        exit();
+    } else {
+        // Se perdeu a sessão, redireciona para login
+        header("Location: ../../login.php?msg=sessao_expirada");
+        exit();
+    }
+}
+
 // 1. Buscamos os dados atualizados do banco (incluindo o stripe_customer_id que é essencial)
 $stmt = $db->prepare("
     SELECT 
@@ -79,19 +93,47 @@ try {
         .badge-pro { background: #eafaf1; color: var(--primary-green); }
         .badge-free { background: #f1f3f5; color: #6c757d; }
         .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;}
-        .actions { margin-top: 40px; display: flex; gap: 15px; }
-        .btn { flex: 1; padding: 15px; border-radius: 12px; font-weight: 600; text-decoration: none; text-align: center; transition: all 0.2s; cursor: pointer; border: none;}
+        .actions { margin-top: 40px; display: flex; gap: 15px; flex-wrap: wrap; }
+        .btn { flex: 1; padding: 15px; border-radius: 12px; font-weight: 600; text-decoration: none; text-align: center; transition: all 0.2s; cursor: pointer; border: none; min-width: 150px; }
         .btn-green { background-color: var(--primary-green); color: white; }
+        .btn-green:hover { background-color: var(--dark-green); }
         .btn-outline { border: 1px solid var(--border); color: var(--text-light); background: white; }
+        .btn-outline:hover { background: #f8f9fa; }
         .btn-danger-outline { border: 1px solid #ffcdd2; color: #d63031; background: white; }
+        .btn-danger-outline:hover { background: #fff5f5; }
         .historico-section { margin-top: 40px; background: white; padding: 30px; border-radius: 20px; border: 1px solid var(--border); }
         .tabela-recibos { width: 100%; border-collapse: collapse; }
         .tabela-recibos td, th { padding: 15px 10px; border-bottom: 1px solid #f1f3f5; text-align: left; }
+        .tabela-recibos tr:last-child td { border-bottom: none; }
+        .btn-voltar { display: inline-block; margin-top: 20px; color: var(--text-light); text-decoration: none; padding: 10px 20px; border: 1px solid var(--border); border-radius: 8px; transition: all 0.2s; }
+        .btn-voltar:hover { background: #f8f9fa; }
+        .link-recibo { color: var(--primary-green); text-decoration: none; font-weight: 600; }
+        .link-recibo:hover { text-decoration: underline; }
+        .mensagem-sucesso {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .mensagem-sucesso i { font-size: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <!-- Exibe mensagem de sucesso se veio do Stripe -->
+    <?php if (isset($_GET['stripe_return']) && $_GET['stripe_return'] == 'success'): ?>
+    <div class="mensagem-sucesso">
+        <i class="fa-solid fa-check-circle"></i>
+        <span>✅ Operação realizada com sucesso no Stripe! Sua assinatura foi atualizada.</span>
+    </div>
+    <?php endif; ?>
+
     <div class="card-assinatura">
         <?php if ($eh_plano_pago): ?>
             <div class="status-badge badge-pro">Plano Profissional Ativo</div>
@@ -100,43 +142,59 @@ try {
             <div class="info-grid">
                 <div><small>Próxima Cobrança</small><br><strong><?php echo date('d/m/Y', strtotime($dados['data_vencimento_assinatura'])); ?></strong></div>
                 <div><small>Valor Mensal</small><br><strong>R$ <?php echo number_format($dados['preco_mensal'], 2, ',', '.'); ?></strong></div>
+                <div><small>Status</small><br><strong style="color: var(--primary-green);">Ativo</strong></div>
             </div>
 
             <div class="actions">
                 <a href="gerar_portal_stripe.php" class="btn btn-green">
-                    <i class="fa-solid fa-arrows-rotate"></i> Mudar de Plano (Upgrade/Downgrade)
-                </a>
-                <a href="gerar_portal_stripe.php" class="btn btn-danger-outline">
-                    <i class="fa-solid fa-xmark"></i> Cancelar Assinatura
+                    <i class="fa-solid fa-arrows-rotate"></i> Gerenciar Assinatura
                 </a>
             </div>
+            <p style="font-size: 13px; color: var(--text-light); margin-top: 10px;">
+                <i class="fa-solid fa-info-circle"></i> Clique em "Gerenciar Assinatura" para alterar seu plano, atualizar dados de pagamento ou cancelar.
+            </p>
 
         <?php else: ?>
             <div class="status-badge badge-free">Plano Gratuito</div>
             <div style="font-size: 32px; font-weight: 800;">Versão Limitada</div>
-            <p>Faça um upgrade para anunciar mais produtos e ter maior visibilidade.</p>
+            <p style="color: var(--text-light); margin-top: 10px;">Faça um upgrade para anunciar mais produtos e ter maior visibilidade.</p>
             <div class="actions">
                 <a href="escolher_plano.php" class="btn btn-green">Escolher um Plano Profissional</a>
             </div>
         <?php endif; ?>
     </div>
-            <a href="perfil.php" style="text-align: center; display: block; margin-top: 20px;">Voltar</a>
+
     <div class="historico-section">
         <h3><i class="fa-solid fa-file-invoice-dollar"></i> Recibos Anteriores</h3>
         <?php if (empty($historico_pagamentos)): ?>
-            <p>Nenhum recibo disponível.</p>
+            <p style="color: var(--text-light);">Nenhum recibo disponível.</p>
         <?php else: ?>
             <table class="tabela-recibos">
-                <?php foreach ($historico_pagamentos as $invoice): ?>
+                <thead>
                     <tr>
-                        <td><?php echo date('d/m/Y', $invoice->created); ?></td>
-                        <td>R$ <?php echo number_format($invoice->amount_paid / 100, 2, ',', '.'); ?></td>
-                        <td><a href="<?php echo $invoice->hosted_invoice_url; ?>" target="_blank">Ver Recibo</a></td>
+                        <th>Data</th>
+                        <th>Valor</th>
+                        <th>Recibo</th>
                     </tr>
-                <?php endforeach; ?>
+                </thead>
+                <tbody>
+                    <?php foreach ($historico_pagamentos as $invoice): ?>
+                        <tr>
+                            <td><?php echo date('d/m/Y', $invoice->created); ?></td>
+                            <td>R$ <?php echo number_format($invoice->amount_paid / 100, 2, ',', '.'); ?></td>
+                            <td><a href="<?php echo $invoice->hosted_invoice_url; ?>" target="_blank" class="link-recibo"><i class="fa-solid fa-file-pdf"></i> Ver Recibo</a></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
             </table>
         <?php endif; ?>
     </div>
+
+    <center>
+        <a href="perfil.php" class="btn-voltar">
+            <i class="fa-solid fa-arrow-left"></i> Voltar para o Perfil
+        </a>
+    </center>
 </div>
 
 </body>

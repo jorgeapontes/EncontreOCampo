@@ -399,14 +399,24 @@ try {
         error_log("Erro ao verificar/criar colunas de foto: " . $e->getMessage());
     }
     
+        $temAceiteTermos = in_array('aceite_termos', $columns, true);
+    
     // Preparar variáveis de foto para bindParam (que requer referências)
     $foto_rosto = $fotos['rosto'] ?? null;
     $foto_documento_frente = $fotos['documento_frente'] ?? null;
     $foto_documento_verso = $fotos['documento_verso'] ?? null;
     
     // 1. Inserir na tabela usuarios
-    $sqlUsuario = "INSERT INTO usuarios (email, senha, tipo, nome, status, foto_rosto, foto_documento_frente, foto_documento_verso) 
-                   VALUES (:email, :senha, :tipo, :nome, 'pendente', :foto_rosto, :foto_documento_frente, :foto_documento_verso)";
+        $usuarioColumns = ['email', 'senha', 'tipo', 'nome', 'status', 'foto_rosto', 'foto_documento_frente', 'foto_documento_verso'];
+        $usuarioValues = [':email', ':senha', ':tipo', ':nome', "'pendente'", ':foto_rosto', ':foto_documento_frente', ':foto_documento_verso'];
+
+        if ($temAceiteTermos) {
+            $usuarioColumns[] = 'aceite_termos';
+            $usuarioValues[] = ':aceite_termos';
+        }
+
+        $sqlUsuario = "INSERT INTO usuarios (" . implode(', ', $usuarioColumns) . ") 
+                       VALUES (" . implode(', ', $usuarioValues) . ")";
     $stmtUsuario = $conn->prepare($sqlUsuario);
     $stmtUsuario->bindParam(':email', $email);
     $stmtUsuario->bindParam(':senha', $senhaHash);
@@ -415,6 +425,9 @@ try {
     $stmtUsuario->bindParam(':foto_rosto', $foto_rosto);
     $stmtUsuario->bindParam(':foto_documento_frente', $foto_documento_frente);
     $stmtUsuario->bindParam(':foto_documento_verso', $foto_documento_verso);
+        if ($temAceiteTermos) {
+            $stmtUsuario->bindValue(':aceite_termos', 1, PDO::PARAM_INT);
+        }
     $stmtUsuario->execute();
     
     $usuarioId = $conn->lastInsertId();

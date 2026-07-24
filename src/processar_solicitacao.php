@@ -216,6 +216,10 @@ if (strlen($dados['senha']) < 8) {
     sendJsonResponse(false, 'A senha deve ter no mínimo 8 caracteres.');
 }
 
+if (empty($dados['aceite_termos'])) {
+    sendJsonResponse(false, 'Você precisa aceitar os termos e condições para criar a conta.');
+}
+
 // Conectar ao banco de dados
 try {
     $database = new Database();

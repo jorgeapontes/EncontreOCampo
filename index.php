@@ -410,6 +410,13 @@ require_once 'src/conexao.php';
                                     <input type="file" id="fotoDocumentoVersoComprador" name="fotoDocumentoVersoComprador" accept="image/*" required>
                                     <small class="form-help">Envie uma foto clara do verso do seu documento</small>
                                 </div>
+
+                                <div class="form-group" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+                                    <label for="aceite_termos" style="display:flex; align-items:flex-box; gap:8px; cursor:pointer; font-weight:600; color:var(--dark-color);">
+                                        <input type="checkbox" id="aceite_termos" name="aceite_termos" value="1" required style="width: 16px;">
+                                        <span>Li e aceito os <a href="src/termos.php" target="_blank" rel="noopener noreferrer">termos e condições</a></span>
+                                    </label>
+                                </div>
                                 
                                 <div class="step-navigation">
                                     <button type="button" class="step-btn btn-prev" onclick="prevStep('comprador')">
@@ -584,10 +591,12 @@ require_once 'src/conexao.php';
                                     <input type="file" id="fotoDocumentoVersoVendedor" name="fotoDocumentoVersoVendedor" accept="image/*" required>
                                     <small class="form-help">Envie uma foto clara do verso do seu documento</small>
                                 </div>
-                                    </select>
-                                    <small class="form-help" style="color: #666; font-style: italic; display: block; margin-top: 5px;">
-                                        * Todos começam com plano gratuito. Você poderá alterar o plano posteriormente em seu painel.
-                                    </small>
+
+                                <div class="form-group" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+                                    <label for="aceite_termos" style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-weight:600; color:var(--dark-color);">
+                                        <input type="checkbox" id="aceite_termos" name="aceite_termos" value="1" required>
+                                        <span>Li e aceito os <a href="src/termos.php" target="_blank" rel="noopener noreferrer">termos e condições</a></span>
+                                    </label>
                                 </div>
                                 
                                 <div class="step-navigation">
@@ -729,6 +738,13 @@ require_once 'src/conexao.php';
                                     <label for="fotoDocumentoVersoTransportador" class="required">Documento - Verso </label>
                                     <input type="file" id="fotoDocumentoVersoTransportador" name="fotoDocumentoVersoTransportador" accept="image/*" required>
                                     <small class="form-help">Envie uma foto clara do verso do seu documento</small>
+                                </div>
+
+                                <div class="form-group" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+                                    <label for="aceite_termos" style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-weight:600; color:var(--dark-color);">
+                                        <input type="checkbox" id="aceite_termos" name="aceite_termos" value="1" required>
+                                        <span>Li e aceito os <a href="src/termos.php" target="_blank" rel="noopener noreferrer">termos e condições</a></span>
+                                    </label>
                                 </div>
                                 
                                 <div class="step-navigation">

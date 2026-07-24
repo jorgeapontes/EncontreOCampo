@@ -17,6 +17,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
+    if (empty($_POST['aceite_termos'])) {
+        $_SESSION['erro'] = "Você precisa aceitar os termos e condições para criar a conta.";
+        header("Location: index.php#contato");
+        exit();
+    }
+
     // Verificar se email já existe
     $query = "SELECT id FROM usuarios WHERE email = :email";
     $stmt = $db->prepare($query);

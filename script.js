@@ -775,6 +775,15 @@ async function submitForm(e) {
         alert('Por favor, selecione o tipo de cadastro.');
         return;
     }
+
+    const aceiteTermos = document.getElementById('aceite_termos');
+    if (!aceiteTermos || !aceiteTermos.checked) {
+        alert('Você precisa aceitar os termos e condições para criar a conta.');
+        if (aceiteTermos) {
+            aceiteTermos.focus();
+        }
+        return;
+    }
     
     let isValid = true;
     let submitButton = e.target;

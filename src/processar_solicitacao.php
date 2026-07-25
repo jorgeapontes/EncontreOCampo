@@ -65,7 +65,7 @@ function logError($message, $data = []) {
 }
 
 // ============================================================
-// 2. RATE LIMITING - Versão Melhorada com Arquivo
+// 2. RATE LIMITING POR IP
 // ============================================================
 
 function checkRateLimit($ip, $action = 'cadastro', $limit = 5, $timeWindow = 3600) {
@@ -73,7 +73,7 @@ function checkRateLimit($ip, $action = 'cadastro', $limit = 5, $timeWindow = 360
     if (!is_dir($rateLimitDir)) {
         if (!mkdir($rateLimitDir, 0755, true)) {
             logError("Falha ao criar diretório de rate limit", ['dir' => $rateLimitDir]);
-            return true; // Fallback: permitir se não conseguir criar
+            return true;
         }
     }
     
@@ -83,7 +83,6 @@ function checkRateLimit($ip, $action = 'cadastro', $limit = 5, $timeWindow = 360
     $now = time();
     $data = [];
     
-    // Tentar ler o arquivo com lock
     if (file_exists($filePath)) {
         $fp = fopen($filePath, 'r+');
         if (flock($fp, LOCK_EX)) {
@@ -93,10 +92,9 @@ function checkRateLimit($ip, $action = 'cadastro', $limit = 5, $timeWindow = 360
         } else {
             fclose($fp);
             logError("Falha ao obter lock no rate limit", ['ip' => $ip]);
-            return true; // Fallback: permitir se não conseguir ler
+            return true;
         }
         
-        // Limpar tentativas antigas
         if (isset($data['attempts'])) {
             $data['attempts'] = array_filter($data['attempts'], function($timestamp) use ($now, $timeWindow) {
                 return ($now - $timestamp) < $timeWindow;
@@ -108,7 +106,6 @@ function checkRateLimit($ip, $action = 'cadastro', $limit = 5, $timeWindow = 360
         $data['attempts'] = [];
     }
     
-    // Verificar limite
     if (count($data['attempts']) >= $limit) {
         logSecurityEvent('rate_limit_exceeded', "IP {$ip} excedeu limite de {$limit} tentativas em {$timeWindow}s", [
             'attempts' => count($data['attempts']),
@@ -117,10 +114,8 @@ function checkRateLimit($ip, $action = 'cadastro', $limit = 5, $timeWindow = 360
         return false;
     }
     
-    // Adicionar nova tentativa
     $data['attempts'][] = $now;
     
-    // Salvar com lock
     $fp = fopen($filePath, 'w+');
     if (flock($fp, LOCK_EX)) {
         fwrite($fp, json_encode($data));
@@ -134,7 +129,73 @@ function checkRateLimit($ip, $action = 'cadastro', $limit = 5, $timeWindow = 360
 }
 
 // ============================================================
-// 3. LIMITE DE UPLOADS POR USUÁRIO
+// 3. RATE LIMITING POR EMAIL (NOVO)
+// ============================================================
+
+function checkEmailRateLimit($email, $limit = 3, $timeWindow = 86400) {
+    $emailRateLimitDir = __DIR__ . '/../tmp/email_rate_limit/';
+    if (!is_dir($emailRateLimitDir)) {
+        if (!mkdir($emailRateLimitDir, 0755, true)) {
+            logError("Falha ao criar diretório de rate limit por email", ['dir' => $emailRateLimitDir]);
+            return true;
+        }
+    }
+    
+    $emailLower = strtolower(trim($email));
+    $key = md5('email_' . $emailLower);
+    $filePath = $emailRateLimitDir . $key . '.json';
+    
+    $now = time();
+    $data = [];
+    
+    if (file_exists($filePath)) {
+        $fp = fopen($filePath, 'r+');
+        if (flock($fp, LOCK_EX)) {
+            $content = fread($fp, filesize($filePath));
+            $data = json_decode($content, true) ?: [];
+            fclose($fp);
+        } else {
+            fclose($fp);
+            logError("Falha ao obter lock no rate limit por email", ['email' => $email]);
+            return true;
+        }
+        
+        if (isset($data['attempts'])) {
+            $data['attempts'] = array_filter($data['attempts'], function($timestamp) use ($now, $timeWindow) {
+                return ($now - $timestamp) < $timeWindow;
+            });
+        }
+    }
+    
+    if (!isset($data['attempts'])) {
+        $data['attempts'] = [];
+    }
+    
+    if (count($data['attempts']) >= $limit) {
+        logSecurityEvent('email_rate_limit_exceeded', "Email {$email} excedeu limite de {$limit} tentativas em {$timeWindow}s", [
+            'attempts' => count($data['attempts']),
+            'limit' => $limit,
+            'email' => $email
+        ]);
+        return false;
+    }
+    
+    $data['attempts'][] = $now;
+    
+    $fp = fopen($filePath, 'w+');
+    if (flock($fp, LOCK_EX)) {
+        fwrite($fp, json_encode($data));
+        fclose($fp);
+    } else {
+        fclose($fp);
+        logError("Falha ao salvar rate limit por email", ['email' => $email]);
+    }
+    
+    return true;
+}
+
+// ============================================================
+// 4. LIMITE DE UPLOADS POR IP
 // ============================================================
 
 function checkUploadLimit($ip, $maxUploads = 10, $timeWindow = 86400) {
@@ -142,7 +203,7 @@ function checkUploadLimit($ip, $maxUploads = 10, $timeWindow = 86400) {
     if (!is_dir($uploadLimitDir)) {
         if (!mkdir($uploadLimitDir, 0755, true)) {
             logError("Falha ao criar diretório de upload limit", ['dir' => $uploadLimitDir]);
-            return true; // Fallback: permitir se não conseguir criar
+            return true;
         }
     }
     
@@ -152,7 +213,6 @@ function checkUploadLimit($ip, $maxUploads = 10, $timeWindow = 86400) {
     $now = time();
     $data = [];
     
-    // Tentar ler o arquivo com lock
     if (file_exists($filePath)) {
         $fp = fopen($filePath, 'r+');
         if (flock($fp, LOCK_EX)) {
@@ -162,10 +222,9 @@ function checkUploadLimit($ip, $maxUploads = 10, $timeWindow = 86400) {
         } else {
             fclose($fp);
             logError("Falha ao obter lock no upload limit", ['ip' => $ip]);
-            return true; // Fallback: permitir se não conseguir ler
+            return true;
         }
         
-        // Limpar tentativas antigas
         if (isset($data['uploads'])) {
             $data['uploads'] = array_filter($data['uploads'], function($timestamp) use ($now, $timeWindow) {
                 return ($now - $timestamp) < $timeWindow;
@@ -177,7 +236,6 @@ function checkUploadLimit($ip, $maxUploads = 10, $timeWindow = 86400) {
         $data['uploads'] = [];
     }
     
-    // Verificar limite
     if (count($data['uploads']) >= $maxUploads) {
         logSecurityEvent('upload_limit_exceeded', "IP {$ip} excedeu limite de {$maxUploads} uploads em {$timeWindow}s", [
             'uploads' => count($data['uploads']),
@@ -229,7 +287,7 @@ function incrementUploadCount($ip) {
 }
 
 // ============================================================
-// 4. FUNÇÃO PARA SANITIZAR SAÍDA (XSS)
+// 5. FUNÇÃO PARA SANITIZAR SAÍDA (XSS)
 // ============================================================
 
 function sanitizeOutput($data) {
@@ -240,7 +298,7 @@ function sanitizeOutput($data) {
 }
 
 // ============================================================
-// 5. HONEYPOT - Proteção contra bots
+// 6. HONEYPOT - Proteção contra bots
 // ============================================================
 if (!empty($_POST['honeypot'])) {
     logSecurityEvent('honeypot_triggered', 'Bot detectado', ['ip' => $_SERVER['REMOTE_ADDR'] ?? '']);
@@ -252,10 +310,9 @@ if (!empty($_POST['honeypot'])) {
 }
 
 // ============================================================
-// 6. FUNÇÃO PARA ENVIAR RESPOSTA JSON
+// 7. FUNÇÃO PARA ENVIAR RESPOSTA JSON
 // ============================================================
 function sendJsonResponse($success, $message, $additionalData = []) {
-    // Sanitizar saída para prevenir XSS
     $message = sanitizeOutput($message);
     
     $response = array_merge([
@@ -268,7 +325,7 @@ function sendJsonResponse($success, $message, $additionalData = []) {
 }
 
 // ============================================================
-// 7. FUNÇÕES DE VALIDAÇÃO DE DOCUMENTOS
+// 8. FUNÇÕES DE VALIDAÇÃO DE DOCUMENTOS
 // ============================================================
 
 function validarCPF($cpf) {
@@ -335,20 +392,25 @@ function validarCNPJNumerico($cnpj) {
 }
 
 function validarCNPJ($cnpj) {
+    // Remove caracteres não alfanuméricos (permite letras para novo formato)
     $cnpj = preg_replace('/[^A-Za-z0-9]/', '', $cnpj);
     
     if (strlen($cnpj) != 14) {
         return false;
     }
     
+    // Se for totalmente numérico, validar com algoritmo tradicional
     if (ctype_digit($cnpj)) {
         return validarCNPJNumerico($cnpj);
     }
     
+    // CNPJ alfanumérico (novo formato) - validações básicas
+    // Verifica se tem pelo menos uma letra e números
     if (!preg_match('/[A-Za-z]/', $cnpj) || !preg_match('/[0-9]/', $cnpj)) {
         return false;
     }
     
+    // Verifica se não é uma sequência repetida
     if (preg_match('/(.)\1{13}/', $cnpj)) {
         return false;
     }
@@ -369,7 +431,7 @@ function validarCPFouCNPJ($documento, $tipo) {
 }
 
 // ============================================================
-// 8. FUNÇÃO DE UPLOAD COM VALIDAÇÃO COMPLETA
+// 9. FUNÇÃO DE UPLOAD COM VALIDAÇÃO COMPLETA
 // ============================================================
 
 function uploadFoto($file, $tipo_usuario, $tipo_foto) {
@@ -390,9 +452,7 @@ function uploadFoto($file, $tipo_usuario, $tipo_foto) {
         throw new Exception("Erro ao fazer upload do arquivo {$tipo_foto}: {$msg_erro}");
     }
     
-    // ==========================================================
     // VALIDAÇÃO REAL DA IMAGEM - getimagesize()
-    // ==========================================================
     $imageInfo = @getimagesize($file['tmp_name']);
     if ($imageInfo === false) {
         logSecurityEvent('invalid_image_upload', 'Tentativa de upload de arquivo não-imagem', [
@@ -403,9 +463,7 @@ function uploadFoto($file, $tipo_usuario, $tipo_foto) {
         throw new Exception("Arquivo não é uma imagem válida para {$tipo_foto}");
     }
     
-    // ==========================================================
     // VALIDAÇÃO DE DIMENSÕES MÁXIMAS
-    // ==========================================================
     $maxWidth = 4096;
     $maxHeight = 4096;
     $minWidth = 100;
@@ -496,7 +554,6 @@ function uploadFoto($file, $tipo_usuario, $tipo_foto) {
         throw new Exception("Erro ao salvar arquivo. Contate o suporte.");
     }
     
-    // Log de sucesso do upload
     logSecurityEvent('upload_success', 'Upload de imagem realizado com sucesso', [
         'tipo_foto' => $tipo_foto,
         'nome_arquivo' => $nome_arquivo,
@@ -507,7 +564,7 @@ function uploadFoto($file, $tipo_usuario, $tipo_foto) {
 }
 
 // ============================================================
-// 9. VALIDAÇÃO INICIAL
+// 10. VALIDAÇÃO INICIAL
 // ============================================================
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -519,13 +576,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
 $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
 
-// Log de início de tentativa
 logSecurityEvent('registration_attempt', 'Início de tentativa de cadastro', [
     'ip' => $ip,
     'user_agent' => $userAgent
 ]);
 
-// Aplicar rate limiting
+// Aplicar rate limiting por IP
 if (!checkRateLimit($ip)) {
     logSecurityEvent('rate_limit_blocked', 'Tentativa bloqueada por rate limit', ['ip' => $ip]);
     sendJsonResponse(false, 'Muitas tentativas de cadastro. Aguarde 1 hora e tente novamente.');
@@ -539,19 +595,8 @@ if (!checkUploadLimit($ip)) {
 
 $dados = $_POST;
 
-// Sanitizar entrada (XSS Prevention)
-$dadosSanitizados = [];
-foreach ($dados as $key => $value) {
-    if (is_string($value)) {
-        $dadosSanitizados[$key] = trim(strip_tags($value));
-    } else {
-        $dadosSanitizados[$key] = $value;
-    }
-}
-$dados = $dadosSanitizados;
-
 // ============================================================
-// 10. SANITIZAÇÃO E VALIDAÇÃO DOS DADOS
+// 11. SANITIZAÇÃO E VALIDAÇÃO DOS DADOS
 // ============================================================
 
 $camposObrigatorios = ['name', 'email', 'senha', 'confirma_senha', 'subject'];
@@ -578,6 +623,17 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     sendJsonResponse(false, 'Email inválido.');
 }
 
+// ============================================================
+// 12. RATE LIMITING POR EMAIL (NOVO)
+// ============================================================
+if (!checkEmailRateLimit($email)) {
+    logSecurityEvent('email_rate_limit_blocked', 'Tentativa bloqueada por rate limit de email', [
+        'email' => $email,
+        'ip' => $ip
+    ]);
+    sendJsonResponse(false, 'Este email já foi usado em muitas tentativas. Aguarde 24 horas e tente novamente.');
+}
+
 $domain = substr(strrchr($email, "@"), 1);
 if (!checkdnsrr($domain, 'MX')) {
     logSecurityEvent('registration_failed', 'Domínio de email inválido', ['domain' => $domain]);
@@ -597,7 +653,7 @@ if (strlen($dados['senha']) < 8) {
 $senhaHash = password_hash($dados['senha'], PASSWORD_DEFAULT);
 
 // ============================================================
-// 11. VALIDAÇÃO DO ACEITE_TERMOS
+// 13. VALIDAÇÃO DO ACEITE_TERMOS
 // ============================================================
 $aceite_termos_existe = isset($_POST['aceite_termos']);
 $aceite_termos_valor = $aceite_termos_existe ? $_POST['aceite_termos'] : '';
@@ -663,7 +719,7 @@ foreach ($camposNumericos as $campo) {
 $tipoUsuario = $dados['subject'];
 
 // ============================================================
-// 12. CONEXÃO COM BANCO DE DADOS
+// 14. CONEXÃO COM BANCO DE DADOS
 // ============================================================
 
 try {
@@ -675,7 +731,7 @@ try {
 }
 
 // ============================================================
-// 13. VERIFICAÇÕES DE DUPLICIDADE
+// 15. VERIFICAÇÕES DE DUPLICIDADE
 // ============================================================
 
 try {
@@ -694,7 +750,7 @@ try {
 }
 
 // ============================================================
-// 14. VALIDAÇÕES ESPECÍFICAS POR TIPO DE USUÁRIO
+// 16. VALIDAÇÕES ESPECÍFICAS POR TIPO DE USUÁRIO
 // ============================================================
 
 if ($tipoUsuario === 'comprador') {
@@ -775,7 +831,7 @@ if ($tipoUsuario === 'comprador') {
 }
 
 // ============================================================
-// 15. PROCESSAMENTO DE UPLOAD DAS FOTOS
+// 17. PROCESSAMENTO DE UPLOAD DAS FOTOS
 // ============================================================
 
 $fotos = [];
@@ -828,7 +884,7 @@ try {
 }
 
 // ============================================================
-// 16. INSERÇÃO NO BANCO DE DADOS (TRANSACTION)
+// 18. INSERÇÃO NO BANCO DE DADOS (TRANSACTION)
 // ============================================================
 
 try {
@@ -1025,7 +1081,6 @@ try {
     
     $conn->commit();
     
-    // Log de sucesso
     logSecurityEvent('registration_success', 'Cadastro realizado com sucesso', [
         'email' => $email,
         'tipo' => $tipoUsuario,

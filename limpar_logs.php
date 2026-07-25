@@ -1,5 +1,4 @@
 #!/usr/bin/php
-#!/usr/bin/php
 <?php
 // limpar_logs.php - Script para limpeza automática de logs
 
@@ -7,22 +6,14 @@
 // SEGURANÇA: BLOQUEAR ACESSO VIA NAVEGADOR
 // ============================================================
 if (php_sapi_name() !== 'cli') {
-    // Se for acessado via navegador, redireciona ou mostra erro
     header('HTTP/1.0 403 Forbidden');
     die('❌ Acesso negado. Este script só pode ser executado via linha de comando.');
 }
 
 // Configurações
 $logDir = __DIR__ . '/logs/';
-$diasParaManter = 30;
-$tamanhoMaximoArquivo = 50 * 1024 * 1024;
-
-// ... resto do script ...
-
-// Configurações
-$logDir = __DIR__ . '/logs/';
 $diasParaManter = 30; // Manter logs dos últimos 30 dias
-$tamanhoMaximoArquivo = 50 * 1024 * 1024; // 50MB por arquivo (opcional)
+$tamanhoMaximoArquivo = 50 * 1024 * 1024; // 50MB por arquivo
 
 echo "========================================\n";
 echo "  LIMPEZA AUTOMÁTICA DE LOGS\n";
@@ -49,14 +40,13 @@ foreach ($arquivos as $arquivo) {
     $nomeArquivo = basename($arquivo);
     $tamanho = filesize($arquivo);
     $dataModificacao = filemtime($arquivo);
-    $diasDesdeModificacao = (time() - $dataModificacao) / 86400; // 86400 segundos = 1 dia
+    $diasDesdeModificacao = (time() - $dataModificacao) / 86400;
     
     echo "📄 Analisando: " . $nomeArquivo . "\n";
     echo "   - Tamanho: " . round($tamanho / 1024 / 1024, 2) . " MB\n";
     echo "   - Última modificação: " . date('Y-m-d H:i:s', $dataModificacao) . "\n";
     echo "   - Dias desde modificação: " . round($diasDesdeModificacao, 1) . " dias\n";
     
-    // Verificar se o arquivo é antigo demais
     if ($diasDesdeModificacao > $diasParaManter) {
         echo "   ⚠️  Arquivo com mais de " . $diasParaManter . " dias - DELETANDO...\n";
         
@@ -68,16 +58,12 @@ foreach ($arquivos as $arquivo) {
         } else {
             echo "   ❌ Falha ao deletar arquivo!\n";
         }
-    } 
-    // Verificar se o arquivo é muito grande (opcional)
-    elseif ($tamanho > $tamanhoMaximoArquivo) {
+    } elseif ($tamanho > $tamanhoMaximoArquivo) {
         echo "   ⚠️  Arquivo muito grande (" . round($tamanho / 1024 / 1024, 2) . " MB) - ROTACIONANDO...\n";
         
-        // Rotacionar: renomear para .old e criar novo
         $arquivoOld = $arquivo . '.old';
         if (rename($arquivo, $arquivoOld)) {
             echo "   ✅ Arquivo rotacionado para: " . basename($arquivoOld) . "\n";
-            // Criar novo arquivo vazio
             touch($arquivo);
         } else {
             echo "   ❌ Falha ao rotacionar arquivo!\n";
@@ -98,20 +84,25 @@ echo "💾 Espaço liberado: " . round($totalEspacoLiberado / 1024 / 1024, 2) . 
 echo "✅ Limpeza concluída em: " . date('Y-m-d H:i:s') . "\n";
 echo "========================================\n";
 
-// Limpar também diretórios tmp (rate_limit e upload_limit)
+// ============================================================
+// LIMPEZA DOS DIRETÓRIOS TEMPORÁRIOS
+// ============================================================
 echo "\n🧹 Limpando diretórios temporários...\n";
 
 $tmpDirs = [
     __DIR__ . '/tmp/rate_limit/',
-    __DIR__ . '/tmp/upload_limit/'
+    __DIR__ . '/tmp/upload_limit/',
+    __DIR__ . '/tmp/email_rate_limit/'  // <-- NOVO DIRETÓRIO ADICIONADO!
 ];
 
 $totalTmpDeletados = 0;
+$diasParaManterTmp = 2; // Manter apenas arquivos dos últimos 2 dias
 
 foreach ($tmpDirs as $tmpDir) {
     if (is_dir($tmpDir)) {
         $arquivosTmp = glob($tmpDir . '*.json');
-        $diasParaManterTmp = 2; // Manter apenas arquivos dos últimos 2 dias
+        $qtdArquivos = count($arquivosTmp);
+        echo "📁 " . basename($tmpDir) . ": " . $qtdArquivos . " arquivos\n";
         
         foreach ($arquivosTmp as $arquivoTmp) {
             $dataModificacao = filemtime($arquivoTmp);
@@ -123,8 +114,10 @@ foreach ($tmpDirs as $tmpDir) {
                 }
             }
         }
+    } else {
+        echo "⚠️  Diretório não encontrado: " . $tmpDir . "\n";
     }
 }
 
-echo "🗑️  Arquivos temporários deletados: " . $totalTmpDeletados . "\n";
+echo "\n🗑️  Arquivos temporários deletados: " . $totalTmpDeletados . "\n";
 echo "✅ Limpeza completa!\n";

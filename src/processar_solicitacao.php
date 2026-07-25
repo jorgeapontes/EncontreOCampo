@@ -129,7 +129,7 @@ function checkRateLimit($ip, $action = 'cadastro', $limit = 5, $timeWindow = 360
 }
 
 // ============================================================
-// 3. RATE LIMITING POR EMAIL (NOVO)
+// 3. RATE LIMITING POR EMAIL
 // ============================================================
 
 function checkEmailRateLimit($email, $limit = 3, $timeWindow = 86400) {
@@ -298,7 +298,96 @@ function sanitizeOutput($data) {
 }
 
 // ============================================================
-// 6. HONEYPOT - Proteção contra bots
+// 6. FILTRO DE PALAVRAS OFENSIVAS (NOVO)
+// ============================================================
+
+function containsProfanity($text, &$palavrasEncontradas = []) {
+    // Lista de palavras ofensivas em português
+    $palavrasOfensivas = [
+        // Ofensas raciais
+        'nazista', 'racista', 'preto', 'macaco', 'macaca',
+        'negro', 'negra', 'branco', 'branca', 'amarelo', 'amarela',
+        'judeu', 'judia', 'muculmano', 'muculmana',
+        
+        // Palavrões
+        'foder', 'fode', 'fodendo', 'fudendo', 'fudido',
+        'porra', 'caralho', 'buceta', 'buceta', 'rabão',
+        'viado', 'viada', 'bixa', 'bicha', 'traveco',
+        'piranha', 'puta', 'puto', 'prostituta', 'garoto de programa',
+        'merda', 'bosta', 'cu', 'cuzão', 'cuzona',
+        'xota', 'xoxota', 'perereca', 'pepeca',
+        'pau', 'pinto', 'rola', 'piroca', 'cacete',
+        
+        // Ofensas em inglês
+        'fuck', 'shit', 'bitch', 'bastard', 'asshole',
+        'motherfucker', 'dick', 'pussy', 'cunt', 'whore',
+        'nigger', 'nigga', 'kike', 'chink', 'spic',
+        
+        // Ofensas variadas
+        'idiota', 'imbecil', 'retardado', 'retardada',
+        'burro', 'burra', 'analfabeto', 'analfabeta',
+        'corrupto', 'corrupta', 'bandido', 'bandida',
+        'ladrao', 'ladra', 'assassino', 'assassina',
+        'estuprador', 'estupradora', 'pedofilo', 'pedofila',
+        'palhaço', 'palhaça', 'otario', 'otaria',
+        
+        // Adicionar mais palavras conforme necessário
+    ];
+    
+    $palavrasEncontradas = [];
+    $texto = strtolower($text);
+    
+    foreach ($palavrasOfensivas as $palavra) {
+        $palavraLower = strtolower($palavra);
+        // Verificar se a palavra está no texto (como palavra completa)
+        if (preg_match('/\b' . preg_quote($palavraLower, '/') . '\b/', $texto)) {
+            $palavrasEncontradas[] = $palavra;
+        }
+    }
+    
+    return !empty($palavrasEncontradas);
+}
+
+function validateName($name) {
+    // Verificar se contém palavras ofensivas
+    $palavrasEncontradas = [];
+    if (containsProfanity($name, $palavrasEncontradas)) {
+        logSecurityEvent('profanity_detected', 'Nome contém palavras ofensivas', [
+            'nome' => $name,
+            'palavras' => $palavrasEncontradas
+        ]);
+        return [
+            'valid' => false,
+            'message' => 'O nome contém palavras ofensivas: ' . implode(', ', $palavrasEncontradas)
+        ];
+    }
+    
+    return ['valid' => true];
+}
+
+function validateEmail($email) {
+    // Verificar se o email contém palavras ofensivas
+    $palavrasEncontradas = [];
+    $emailParts = explode('@', $email);
+    $emailLocal = $emailParts[0] ?? '';
+    $emailDomain = $emailParts[1] ?? '';
+    
+    if (containsProfanity($emailLocal, $palavrasEncontradas)) {
+        logSecurityEvent('profanity_detected', 'Email contém palavras ofensivas', [
+            'email' => $email,
+            'palavras' => $palavrasEncontradas
+        ]);
+        return [
+            'valid' => false,
+            'message' => 'O email contém palavras ofensivas.'
+        ];
+    }
+    
+    return ['valid' => true];
+}
+
+// ============================================================
+// 7. HONEYPOT - Proteção contra bots
 // ============================================================
 if (!empty($_POST['honeypot'])) {
     logSecurityEvent('honeypot_triggered', 'Bot detectado', ['ip' => $_SERVER['REMOTE_ADDR'] ?? '']);
@@ -310,7 +399,7 @@ if (!empty($_POST['honeypot'])) {
 }
 
 // ============================================================
-// 7. FUNÇÃO PARA ENVIAR RESPOSTA JSON
+// 8. FUNÇÃO PARA ENVIAR RESPOSTA JSON
 // ============================================================
 function sendJsonResponse($success, $message, $additionalData = []) {
     $message = sanitizeOutput($message);
@@ -325,7 +414,7 @@ function sendJsonResponse($success, $message, $additionalData = []) {
 }
 
 // ============================================================
-// 8. FUNÇÕES DE VALIDAÇÃO DE DOCUMENTOS
+// 9. FUNÇÕES DE VALIDAÇÃO DE DOCUMENTOS
 // ============================================================
 
 function validarCPF($cpf) {
@@ -431,7 +520,7 @@ function validarCPFouCNPJ($documento, $tipo) {
 }
 
 // ============================================================
-// 9. FUNÇÃO DE UPLOAD COM VALIDAÇÃO COMPLETA
+// 10. FUNÇÃO DE UPLOAD COM VALIDAÇÃO COMPLETA
 // ============================================================
 
 function uploadFoto($file, $tipo_usuario, $tipo_foto) {
@@ -564,7 +653,7 @@ function uploadFoto($file, $tipo_usuario, $tipo_foto) {
 }
 
 // ============================================================
-// 10. VALIDAÇÃO INICIAL
+// 11. VALIDAÇÃO INICIAL
 // ============================================================
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -596,7 +685,7 @@ if (!checkUploadLimit($ip)) {
 $dados = $_POST;
 
 // ============================================================
-// 11. SANITIZAÇÃO E VALIDAÇÃO DOS DADOS
+// 12. SANITIZAÇÃO E VALIDAÇÃO DOS DADOS
 // ============================================================
 
 $camposObrigatorios = ['name', 'email', 'senha', 'confirma_senha', 'subject'];
@@ -615,6 +704,14 @@ if (!preg_match('/^[a-zA-ZÀ-ÿ\s]+$/', $dados['name'])) {
     logSecurityEvent('registration_failed', 'Nome contém caracteres inválidos', ['nome' => $dados['name']]);
     sendJsonResponse(false, 'Nome contém caracteres inválidos.');
 }
+
+// ============================================================
+// 13. CORREÇÃO: VALIDAÇÃO DE CONTEÚDO OFENSIVO NO NOME
+// ============================================================
+$nomeValidation = validateName($dados['name']);
+if (!$nomeValidation['valid']) {
+    sendJsonResponse(false, $nomeValidation['message']);
+}
 $nome = $dados['name'];
 
 $email = filter_var(trim($dados['email']), FILTER_SANITIZE_EMAIL);
@@ -624,7 +721,15 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 }
 
 // ============================================================
-// 12. RATE LIMITING POR EMAIL (NOVO)
+// 14. CORREÇÃO: VALIDAÇÃO DE CONTEÚDO OFENSIVO NO EMAIL
+// ============================================================
+$emailValidation = validateEmail($email);
+if (!$emailValidation['valid']) {
+    sendJsonResponse(false, $emailValidation['message']);
+}
+
+// ============================================================
+// 15. RATE LIMITING POR EMAIL
 // ============================================================
 if (!checkEmailRateLimit($email)) {
     logSecurityEvent('email_rate_limit_blocked', 'Tentativa bloqueada por rate limit de email', [
@@ -645,15 +750,67 @@ if ($dados['senha'] !== $dados['confirma_senha']) {
     sendJsonResponse(false, 'As senhas não coincidem.');
 }
 
-if (strlen($dados['senha']) < 8) {
-    logSecurityEvent('registration_failed', 'Senha muito curta', ['email' => $email]);
-    sendJsonResponse(false, 'A senha deve ter no mínimo 8 caracteres.');
+// ============================================================
+// 16. CORREÇÃO: VALIDAÇÃO DE SENHA FORTE
+// ============================================================
+function validarSenhaForte($senha, &$erros = []) {
+    $erros = [];
+    
+    // Verificar comprimento mínimo
+    if (strlen($senha) < 8) {
+        $erros[] = 'a senha deve ter no mínimo 8 caracteres';
+    }
+    
+    // Verificar se tem pelo menos uma letra maiúscula
+    if (!preg_match('/[A-Z]/', $senha)) {
+        $erros[] = 'a senha deve ter pelo menos uma letra maiúscula (A-Z)';
+    }
+    
+    // Verificar se tem pelo menos uma letra minúscula
+    if (!preg_match('/[a-z]/', $senha)) {
+        $erros[] = 'a senha deve ter pelo menos uma letra minúscula (a-z)';
+    }
+    
+    // Verificar se tem pelo menos um número
+    if (!preg_match('/[0-9]/', $senha)) {
+        $erros[] = 'a senha deve ter pelo menos um número (0-9)';
+    }
+    
+    // Verificar se tem pelo menos um caractere especial
+    if (!preg_match('/[@$!%*?&_\-.#]/', $senha)) {
+        $erros[] = 'a senha deve ter pelo menos um caractere especial (@$!%*?&_-#.)';
+    }
+    
+    // Verificar se não contém palavras comuns ou sequências
+    $padroesProibidos = [
+        '12345678', '123456789', 'senha', 'password', 'admin', 'root',
+        'qwerty', 'abcdef', 'abc123', 'teste', '123456', '654321',
+        '111111', '222222', '333333', '444444', '555555',
+        '000000', '999999', 'abcdefgh', 'qwertyui'
+    ];
+    
+    $senhaLower = strtolower($senha);
+    foreach ($padroesProibidos as $padrao) {
+        if (strpos($senhaLower, $padrao) !== false) {
+            $erros[] = 'a senha contém uma sequência muito comum ou fácil de adivinhar';
+            break;
+        }
+    }
+    
+    return empty($erros);
+}
+
+$errosSenha = [];
+if (!validarSenhaForte($dados['senha'], $errosSenha)) {
+    $mensagemErro = 'A senha não atende aos requisitos mínimos de segurança: ' . implode('; ', $errosSenha);
+    logSecurityEvent('registration_failed', 'Senha fraca', ['email' => $email, 'erros' => $errosSenha]);
+    sendJsonResponse(false, $mensagemErro);
 }
 
 $senhaHash = password_hash($dados['senha'], PASSWORD_DEFAULT);
 
 // ============================================================
-// 13. VALIDAÇÃO DO ACEITE_TERMOS
+// 17. VALIDAÇÃO DO ACEITE_TERMOS
 // ============================================================
 $aceite_termos_existe = isset($_POST['aceite_termos']);
 $aceite_termos_valor = $aceite_termos_existe ? $_POST['aceite_termos'] : '';
@@ -699,6 +856,19 @@ foreach ($camposParaSanitizar as $campo) {
         if (strlen($dados[$campo]) > 255) {
             $dados[$campo] = substr($dados[$campo], 0, 255);
         }
+        
+        // Verificar palavras ofensivas em campos de texto
+        if (!empty($dados[$campo])) {
+            $palavrasEncontradas = [];
+            if (containsProfanity($dados[$campo], $palavrasEncontradas)) {
+                logSecurityEvent('profanity_detected', "Campo {$campo} contém palavras ofensivas", [
+                    'campo' => $campo,
+                    'valor' => $dados[$campo],
+                    'palavras' => $palavrasEncontradas
+                ]);
+                sendJsonResponse(false, "O campo contém palavras ofensivas.");
+            }
+        }
     }
 }
 
@@ -719,7 +889,7 @@ foreach ($camposNumericos as $campo) {
 $tipoUsuario = $dados['subject'];
 
 // ============================================================
-// 14. CONEXÃO COM BANCO DE DADOS
+// 18. CONEXÃO COM BANCO DE DADOS
 // ============================================================
 
 try {
@@ -731,7 +901,7 @@ try {
 }
 
 // ============================================================
-// 15. VERIFICAÇÕES DE DUPLICIDADE
+// 19. VERIFICAÇÕES DE DUPLICIDADE
 // ============================================================
 
 try {
@@ -750,7 +920,7 @@ try {
 }
 
 // ============================================================
-// 16. VALIDAÇÕES ESPECÍFICAS POR TIPO DE USUÁRIO
+// 20. VALIDAÇÕES ESPECÍFICAS POR TIPO DE USUÁRIO
 // ============================================================
 
 if ($tipoUsuario === 'comprador') {
@@ -785,6 +955,18 @@ if ($tipoUsuario === 'comprador') {
         sendJsonResponse(false, 'Nome de exibição/empresa é obrigatório.');
     }
     
+    // Verificar palavras ofensivas no nome comercial
+    if (!empty($dados['nomeComercialComprador'])) {
+        $palavrasEncontradas = [];
+        if (containsProfanity($dados['nomeComercialComprador'], $palavrasEncontradas)) {
+            logSecurityEvent('profanity_detected', 'Nome comercial do comprador contém palavras ofensivas', [
+                'nome' => $dados['nomeComercialComprador'],
+                'palavras' => $palavrasEncontradas
+            ]);
+            sendJsonResponse(false, 'O nome comercial contém palavras ofensivas.');
+        }
+    }
+    
 } elseif ($tipoUsuario === 'vendedor') {
     $cpfCnpj = preg_replace('/[^A-Za-z0-9]/', '', $dados['cpfCnpjVendedor']);
     
@@ -816,6 +998,18 @@ if ($tipoUsuario === 'comprador') {
         sendJsonResponse(false, 'Nome comercial é obrigatório.');
     }
     
+    // Verificar palavras ofensivas no nome comercial
+    if (!empty($dados['nomeComercialVendedor'])) {
+        $palavrasEncontradas = [];
+        if (containsProfanity($dados['nomeComercialVendedor'], $palavrasEncontradas)) {
+            logSecurityEvent('profanity_detected', 'Nome comercial do vendedor contém palavras ofensivas', [
+                'nome' => $dados['nomeComercialVendedor'],
+                'palavras' => $palavrasEncontradas
+            ]);
+            sendJsonResponse(false, 'O nome comercial contém palavras ofensivas.');
+        }
+    }
+    
 } elseif ($tipoUsuario === 'transportador') {
     if (empty($dados['numeroANTT'])) {
         sendJsonResponse(false, 'Número ANTT é obrigatório.');
@@ -831,7 +1025,7 @@ if ($tipoUsuario === 'comprador') {
 }
 
 // ============================================================
-// 17. PROCESSAMENTO DE UPLOAD DAS FOTOS
+// 21. PROCESSAMENTO DE UPLOAD DAS FOTOS
 // ============================================================
 
 $fotos = [];
@@ -884,7 +1078,7 @@ try {
 }
 
 // ============================================================
-// 18. INSERÇÃO NO BANCO DE DADOS (TRANSACTION)
+// 22. INSERÇÃO NO BANCO DE DADOS (TRANSACTION)
 // ============================================================
 
 try {

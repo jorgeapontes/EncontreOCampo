@@ -20,79 +20,87 @@ error_reporting(E_ALL);
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 
-// Função para fazer upload de arquivo
-function uploadFoto($file, $tipo_usuario, $tipo_foto) {
-    // Validar se arquivo foi enviado
-    if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) {
-        $erro_code = $file['error'] ?? 'arquivo não encontrado';
-        $mensagens_erro = [
-            0 => 'Sem erro',
-            1 => 'Arquivo excede upload_max_filesize',
-            2 => 'Arquivo excede MAX_FILE_SIZE',
-            3 => 'Arquivo foi parcialmente enviado',
-            4 => 'Nenhum arquivo foi enviado',
-            6 => 'Falta pasta temporária',
-            7 => 'Erro ao escrever arquivo',
-            8 => 'Extensão PHP bloqueou upload',
-        ];
-        $msg_erro = isset($mensagens_erro[$erro_code]) ? $mensagens_erro[$erro_code] : 'Erro desconhecido';
-        throw new Exception("Erro ao fazer upload do arquivo {$tipo_foto}: {$msg_erro}");
-    }
-    
-    // Validar tipo de arquivo
-    $tipos_permitidos = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!in_array($file['type'], $tipos_permitidos)) {
-        throw new Exception("Tipo de arquivo não permitido para {$tipo_foto}. Use JPG, PNG ou WebP. Tipo recebido: {$file['type']}");
-    }
-    
-    // Validar tamanho (máximo 10MB)
-    $tamanho_maximo = 10 * 1024 * 1024; // 10MB
-    if ($file['size'] > $tamanho_maximo) {
-        throw new Exception("Arquivo {$tipo_foto} muito grande. Máximo permitido: 10MB. Tamanho: " . round($file['size'] / 1024 / 1024, 2) . "MB");
-    }
-    
-    // Criar diretório se não existir
-    $diretorio_base = __DIR__ . '/../uploads/documentos/';
-    if (!is_dir($diretorio_base)) {
-        if (!mkdir($diretorio_base, 0755, true)) {
-            throw new Exception("Não foi possível criar o diretório de uploads");
+// ============================================================
+// 1. RATE LIMITING - Proteção contra ataques de força bruta
+// ============================================================
+function checkRateLimit($ip, $action = 'cadastro', $limit = 5, $timeWindow = 3600) {
+    $rateLimitDir = __DIR__ . '/../tmp/rate_limit/';
+    if (!is_dir($rateLimitDir)) {
+        if (!mkdir($rateLimitDir, 0755, true)) {
+            return true;
         }
     }
     
-    // Validar permissões de escrita
-    if (!is_writable($diretorio_base)) {
-        throw new Exception("Sem permissão de escrita no diretório de uploads");
+    $key = md5($action . '_' . $ip);
+    $filePath = $rateLimitDir . $key . '.json';
+    
+    $now = time();
+    $data = [];
+    
+    if (file_exists($filePath)) {
+        $content = file_get_contents($filePath);
+        $data = json_decode($content, true) ?: [];
+        
+        if (isset($data['attempts'])) {
+            $data['attempts'] = array_filter($data['attempts'], function($timestamp) use ($now, $timeWindow) {
+                return ($now - $timestamp) < $timeWindow;
+            });
+        }
     }
     
-    // Gerar nome único para o arquivo
-    $extensao = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    $nome_arquivo = time() . '_' . uniqid() . '_' . $tipo_usuario . '_' . $tipo_foto . '.' . $extensao;
-    $caminho_arquivo = $diretorio_base . $nome_arquivo;
-    
-    // Mover arquivo enviado para o diretório de destino
-    if (!move_uploaded_file($file['tmp_name'], $caminho_arquivo)) {
-        throw new Exception("Erro ao salvar arquivo {$tipo_foto} no servidor. Arquivo temporário: {$file['tmp_name']}");
+    if (!isset($data['attempts'])) {
+        $data['attempts'] = [];
     }
     
-    // Retornar caminho relativo para salvar no BD
-    return 'uploads/documentos/' . $nome_arquivo;
+    if (count($data['attempts']) >= $limit) {
+        return false;
+    }
+    
+    $data['attempts'][] = $now;
+    file_put_contents($filePath, json_encode($data));
+    
+    return true;
 }
 
+// ============================================================
+// 2. HONEYPOT - Proteção contra bots
+// ============================================================
+if (!empty($_POST['honeypot'])) {
+    echo json_encode([
+        'success' => true,
+        'message' => 'Solicitação enviada com sucesso!'
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+// ============================================================
+// 3. FUNÇÃO PARA ENVIAR RESPOSTA JSON
+// ============================================================
+function sendJsonResponse($success, $message, $additionalData = []) {
+    $response = array_merge([
+        'success' => $success,
+        'message' => $message
+    ], $additionalData);
+    
+    echo json_encode($response, JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+// ============================================================
+// 4. FUNÇÕES DE VALIDAÇÃO DE DOCUMENTOS
+// ============================================================
+
 function validarCPF($cpf) {
-    // Remove caracteres não numéricos
     $cpf = preg_replace('/[^0-9]/', '', $cpf);
     
-    // Verifica se tem 11 dígitos
     if (strlen($cpf) != 11) {
         return false;
     }
     
-    // Verifica se é uma sequência de números repetidos
     if (preg_match('/(\d)\1{10}/', $cpf)) {
         return false;
     }
     
-    // Cálculo para validar CPF
     for ($t = 9; $t < 11; $t++) {
         for ($d = 0, $c = 0; $c < $t; $c++) {
             $d += $cpf[$c] * (($t + 1) - $c);
@@ -106,21 +114,7 @@ function validarCPF($cpf) {
     return true;
 }
 
-function validarCNPJ($cnpj) {
-    // Remove caracteres não numéricos
-    $cnpj = preg_replace('/[^0-9]/', '', $cnpj);
-    
-    // Verifica se tem 14 dígitos
-    if (strlen($cnpj) != 14) {
-        return false;
-    }
-    
-    // Verifica se é uma sequência de números repetidos
-    if (preg_match('/(\d)\1{13}/', $cnpj)) {
-        return false;
-    }
-    
-    // Cálculo para validar CNPJ
+function validarCNPJNumerico($cnpj) {
     $tamanho = strlen($cnpj) - 2;
     $numeros = substr($cnpj, 0, $tamanho);
     $digitos = substr($cnpj, $tamanho);
@@ -159,6 +153,28 @@ function validarCNPJ($cnpj) {
     return true;
 }
 
+function validarCNPJ($cnpj) {
+    $cnpj = preg_replace('/[^A-Za-z0-9]/', '', $cnpj);
+    
+    if (strlen($cnpj) != 14) {
+        return false;
+    }
+    
+    if (ctype_digit($cnpj)) {
+        return validarCNPJNumerico($cnpj);
+    }
+    
+    if (!preg_match('/[A-Za-z]/', $cnpj) || !preg_match('/[0-9]/', $cnpj)) {
+        return false;
+    }
+    
+    if (preg_match('/(.)\1{13}/', $cnpj)) {
+        return false;
+    }
+    
+    return true;
+}
+
 function validarCPFouCNPJ($documento, $tipo) {
     $documento = preg_replace('/[^0-9]/', '', $documento);
     
@@ -171,30 +187,108 @@ function validarCPFouCNPJ($documento, $tipo) {
     return false;
 }
 
-// Função para enviar resposta JSON de forma consistente
-function sendJsonResponse($success, $message, $additionalData = []) {
-    $response = array_merge([
-        'success' => $success,
-        'message' => $message
-    ], $additionalData);
+// ============================================================
+// 5. FUNÇÃO DE UPLOAD COM VALIDAÇÃO REAL DE IMAGEM
+// ============================================================
+
+function uploadFoto($file, $tipo_usuario, $tipo_foto) {
+    if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) {
+        $erro_code = $file['error'] ?? 'arquivo não encontrado';
+        $mensagens_erro = [
+            0 => 'Sem erro',
+            1 => 'Arquivo excede upload_max_filesize',
+            2 => 'Arquivo excede MAX_FILE_SIZE',
+            3 => 'Arquivo foi parcialmente enviado',
+            4 => 'Nenhum arquivo foi enviado',
+            6 => 'Falta pasta temporária',
+            7 => 'Erro ao escrever arquivo',
+            8 => 'Extensão PHP bloqueou upload',
+        ];
+        $msg_erro = isset($mensagens_erro[$erro_code]) ? $mensagens_erro[$erro_code] : 'Erro desconhecido';
+        throw new Exception("Erro ao fazer upload do arquivo {$tipo_foto}: {$msg_erro}");
+    }
     
-    echo json_encode($response, JSON_UNESCAPED_UNICODE);
-    exit;
+    $imageInfo = @getimagesize($file['tmp_name']);
+    if ($imageInfo === false) {
+        throw new Exception("Arquivo não é uma imagem válida para {$tipo_foto}");
+    }
+    
+    $extensao = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $extensoesPermitidas = ['jpg', 'jpeg', 'png', 'webp'];
+    
+    if (!in_array($extensao, $extensoesPermitidas)) {
+        throw new Exception("Extensão de arquivo não permitida para {$tipo_foto}. Use JPG, PNG ou WebP.");
+    }
+    
+    $mimePermitidos = [
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'webp' => 'image/webp'
+    ];
+    
+    $mimeTypeReal = $imageInfo['mime'];
+    
+    if ($mimePermitidos[$extensao] !== $mimeTypeReal) {
+        throw new Exception("Tipo de arquivo corrompido ou inválido para {$tipo_foto}");
+    }
+    
+    $tamanho_maximo = 10 * 1024 * 1024;
+    if ($file['size'] > $tamanho_maximo) {
+        throw new Exception("Arquivo {$tipo_foto} muito grande. Máximo: 10MB");
+    }
+    
+    $diretorio_base = __DIR__ . '/../uploads/documentos/';
+    if (!is_dir($diretorio_base)) {
+        if (!mkdir($diretorio_base, 0755, true)) {
+            error_log("Falha ao criar diretório: " . $diretorio_base);
+            throw new Exception("Erro ao processar arquivo. Contate o suporte.");
+        }
+    }
+    
+    if (!is_writable($diretorio_base)) {
+        error_log("Diretório sem permissão de escrita: " . $diretorio_base);
+        throw new Exception("Erro ao processar arquivo. Contate o suporte.");
+    }
+    
+    $nome_arquivo = bin2hex(random_bytes(16)) . '.' . $extensao;
+    $nome_arquivo = preg_replace('/[^a-zA-Z0-9_.-]/', '', $nome_arquivo);
+    if (strpos($nome_arquivo, '..') !== false) {
+        throw new Exception("Nome de arquivo inválido");
+    }
+    
+    $caminho_arquivo = $diretorio_base . $nome_arquivo;
+    
+    if (!move_uploaded_file($file['tmp_name'], $caminho_arquivo)) {
+        error_log("Falha ao mover arquivo: " . $file['tmp_name'] . " para " . $caminho_arquivo);
+        throw new Exception("Erro ao salvar arquivo. Contate o suporte.");
+    }
+    
+    return 'uploads/documentos/' . $nome_arquivo;
 }
 
-// Validação básica
+// ============================================================
+// 6. VALIDAÇÃO INICIAL
+// ============================================================
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     sendJsonResponse(false, 'Método não permitido');
 }
 
-// Obter dados do formulário
+$ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+if (!checkRateLimit($ip)) {
+    sendJsonResponse(false, 'Muitas tentativas de cadastro. Aguarde 1 hora e tente novamente.');
+}
+
 $dados = $_POST;
 
-// Log dos dados recebidos (apenas para debug)
 error_log("Dados recebidos: " . print_r($dados, true));
 
-// Validações obrigatórias
+// ============================================================
+// 7. SANITIZAÇÃO E VALIDAÇÃO DOS DADOS
+// ============================================================
+
 $camposObrigatorios = ['name', 'email', 'senha', 'confirma_senha', 'subject'];
 foreach ($camposObrigatorios as $campo) {
     if (empty($dados[$campo])) {
@@ -202,12 +296,25 @@ foreach ($camposObrigatorios as $campo) {
     }
 }
 
-// Validar email
-if (!filter_var($dados['email'], FILTER_VALIDATE_EMAIL)) {
+$dados['name'] = trim(strip_tags($dados['name']));
+if (strlen($dados['name']) < 2 || strlen($dados['name']) > 100) {
+    sendJsonResponse(false, 'Nome deve ter entre 2 e 100 caracteres.');
+}
+if (!preg_match('/^[a-zA-ZÀ-ÿ\s]+$/', $dados['name'])) {
+    sendJsonResponse(false, 'Nome contém caracteres inválidos.');
+}
+$nome = $dados['name'];
+
+$email = filter_var(trim($dados['email']), FILTER_SANITIZE_EMAIL);
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     sendJsonResponse(false, 'Email inválido.');
 }
 
-// Validar senha
+$domain = substr(strrchr($email, "@"), 1);
+if (!checkdnsrr($domain, 'MX')) {
+    sendJsonResponse(false, 'Domínio de email não existe ou não aceita emails.');
+}
+
 if ($dados['senha'] !== $dados['confirma_senha']) {
     sendJsonResponse(false, 'As senhas não coincidem.');
 }
@@ -216,41 +323,111 @@ if (strlen($dados['senha']) < 8) {
     sendJsonResponse(false, 'A senha deve ter no mínimo 8 caracteres.');
 }
 
-if (empty($dados['aceite_termos'])) {
+$senhaHash = password_hash($dados['senha'], PASSWORD_DEFAULT);
+
+// ============================================================
+// 8. CORREÇÃO: VALIDAÇÃO DO ACEITE_TERMOS
+// ============================================================
+$aceite_termos_existe = isset($_POST['aceite_termos']);
+$aceite_termos_valor = $aceite_termos_existe ? $_POST['aceite_termos'] : '';
+
+$checkbox_marcado = false;
+
+if ($aceite_termos_existe) {
+    $checkbox_marcado = true;
+}
+
+if (!$checkbox_marcado && !empty($aceite_termos_valor)) {
+    $checkbox_marcado = true;
+}
+
+if (!$checkbox_marcado && strtolower($aceite_termos_valor) === 'on') {
+    $checkbox_marcado = true;
+}
+
+if (!$checkbox_marcado && $aceite_termos_valor === '1') {
+    $checkbox_marcado = true;
+}
+
+error_log("ACEITE_TERMOS - Existe no POST: " . ($aceite_termos_existe ? 'SIM' : 'NÃO') . 
+          ", Valor: '" . $aceite_termos_valor . "', Marcado: " . ($checkbox_marcado ? 'SIM' : 'NÃO'));
+
+if (!$checkbox_marcado) {
     sendJsonResponse(false, 'Você precisa aceitar os termos e condições para criar a conta.');
 }
 
-// Conectar ao banco de dados
+$aceite_termos_db = $checkbox_marcado ? 1 : 0;
+
+// Sanitizar campos de texto
+$camposParaSanitizar = [
+    'nomeComercialComprador', 'nomeComercialVendedor', 
+    'ruaComprador', 'ruaVendedor', 'ruaTransportador',
+    'cidadeComprador', 'cidadeVendedor', 'cidadeTransportador',
+    'modeloVeiculo', 'descricaoVeiculo', 
+    'complementoComprador', 'complementoVendedor', 'complementoTransportador',
+    'cipComprador', 'cipVendedor'
+];
+
+foreach ($camposParaSanitizar as $campo) {
+    if (isset($dados[$campo])) {
+        $dados[$campo] = trim(strip_tags($dados[$campo]));
+        if (strlen($dados[$campo]) > 255) {
+            $dados[$campo] = substr($dados[$campo], 0, 255);
+        }
+    }
+}
+
+$camposNumericos = [
+    'numeroComprador', 'numeroVendedor', 'numeroTransportador',
+    'cepComprador', 'cepVendedor', 'cepTransportador',
+    'telefone1Comprador', 'telefone2Comprador',
+    'telefone1Vendedor', 'telefone2Vendedor',
+    'telefoneTransportador', 'numeroANTT'
+];
+
+foreach ($camposNumericos as $campo) {
+    if (isset($dados[$campo])) {
+        $dados[$campo] = preg_replace('/[^0-9\-() ]/', '', $dados[$campo]);
+    }
+}
+
+$tipoUsuario = $dados['subject'];
+
+// ============================================================
+// 9. CONEXÃO COM BANCO DE DADOS
+// ============================================================
+
 try {
     $database = new Database();
     $conn = $database->getConnection();
 } catch (Exception $e) {
-    sendJsonResponse(false, 'Erro de conexão com o banco de dados: ' . $e->getMessage());
+    error_log("Erro de conexão com BD: " . $e->getMessage());
+    sendJsonResponse(false, 'Erro interno no servidor. Tente novamente mais tarde.');
 }
 
-// Verificar se email já existe
+// ============================================================
+// 10. VERIFICAÇÕES DE DUPLICIDADE
+// ============================================================
+
 try {
     $sqlCheckEmail = "SELECT id FROM usuarios WHERE email = :email";
     $stmtCheckEmail = $conn->prepare($sqlCheckEmail);
-    $stmtCheckEmail->bindParam(':email', $dados['email']);
+    $stmtCheckEmail->bindParam(':email', $email, PDO::PARAM_STR);
     $stmtCheckEmail->execute();
     
     if ($stmtCheckEmail->rowCount() > 0) {
         sendJsonResponse(false, 'Este email já está cadastrado.');
     }
 } catch (Exception $e) {
-    sendJsonResponse(false, 'Erro ao verificar email: ' . $e->getMessage());
+    error_log("Erro ao verificar email: " . $e->getMessage());
+    sendJsonResponse(false, 'Erro ao processar solicitação. Contate o suporte.');
 }
 
-// Preparar dados comuns
-$nome = $dados['name'];
-$email = $dados['email'];
-$senhaHash = password_hash($dados['senha'], PASSWORD_DEFAULT);
-$tipoUsuario = $dados['subject'];
+// ============================================================
+// 11. VALIDAÇÕES ESPECÍFICAS POR TIPO DE USUÁRIO
+// ============================================================
 
-// Validações específicas por tipo
 if ($tipoUsuario === 'comprador') {
-    // Verificar tipo de pessoa
     if (empty($dados['tipoPessoaComprador'])) {
         sendJsonResponse(false, 'Selecione o tipo de pessoa (CPF ou CNPJ).');
     }
@@ -258,83 +435,77 @@ if ($tipoUsuario === 'comprador') {
     $tipoPessoa = $dados['tipoPessoaComprador'];
     $cpfCnpj = preg_replace('/[^0-9]/', '', $dados['cpfCnpjComprador']);
     
-    // Validar CPF/CNPJ
     if (!validarCPFouCNPJ($cpfCnpj, $tipoPessoa)) {
         sendJsonResponse(false, ($tipoPessoa === 'cpf' ? 'CPF' : 'CNPJ') . ' inválido.');
     }
     
-    // Verificar se CPF/CNPJ já existe para comprador
     try {
         $sqlCheckDoc = "SELECT id FROM compradores WHERE cpf_cnpj = :cpf_cnpj";
         $stmtCheckDoc = $conn->prepare($sqlCheckDoc);
-        $stmtCheckDoc->bindParam(':cpf_cnpj', $cpfCnpj);
+        $stmtCheckDoc->bindParam(':cpf_cnpj', $cpfCnpj, PDO::PARAM_STR);
         $stmtCheckDoc->execute();
         
         if ($stmtCheckDoc->rowCount() > 0) {
             sendJsonResponse(false, ($tipoPessoa === 'cpf' ? 'CPF' : 'CNPJ') . ' já cadastrado.');
         }
     } catch (Exception $e) {
-        sendJsonResponse(false, 'Erro ao verificar documento: ' . $e->getMessage());
+        error_log("Erro ao verificar documento: " . $e->getMessage());
+        sendJsonResponse(false, 'Erro ao processar solicitação. Contate o suporte.');
     }
     
-    // Verificar nome comercial
     if (empty($dados['nomeComercialComprador'])) {
         sendJsonResponse(false, 'Nome de exibição/empresa é obrigatório.');
     }
     
 } elseif ($tipoUsuario === 'vendedor') {
-    // Para vendedor, obrigatório CNPJ
-    $cpfCnpj = preg_replace('/[^0-9]/', '', $dados['cpfCnpjVendedor']);
+    $cpfCnpj = preg_replace('/[^A-Za-z0-9]/', '', $dados['cpfCnpjVendedor']);
     
-    // Validar CNPJ (14 dígitos)
     if (strlen($cpfCnpj) !== 14) {
-        sendJsonResponse(false, 'CNPJ deve ter 14 dígitos.');
+        sendJsonResponse(false, 'CNPJ deve ter 14 caracteres.');
     }
     
     if (!validarCNPJ($cpfCnpj)) {
         sendJsonResponse(false, 'CNPJ inválido.');
     }
     
-    // Verificar se CNPJ já existe para vendedor
     try {
         $sqlCheckDoc = "SELECT id FROM vendedores WHERE cpf_cnpj = :cpf_cnpj";
         $stmtCheckDoc = $conn->prepare($sqlCheckDoc);
-        $stmtCheckDoc->bindParam(':cpf_cnpj', $cpfCnpj);
+        $stmtCheckDoc->bindParam(':cpf_cnpj', $cpfCnpj, PDO::PARAM_STR);
         $stmtCheckDoc->execute();
         
         if ($stmtCheckDoc->rowCount() > 0) {
             sendJsonResponse(false, 'CNPJ já cadastrado.');
         }
     } catch (Exception $e) {
-        sendJsonResponse(false, 'Erro ao verificar CNPJ: ' . $e->getMessage());
+        error_log("Erro ao verificar CNPJ: " . $e->getMessage());
+        sendJsonResponse(false, 'Erro ao processar solicitação. Contate o suporte.');
     }
     
-    // Verificar nome comercial
     if (empty($dados['nomeComercialVendedor'])) {
         sendJsonResponse(false, 'Nome comercial é obrigatório.');
     }
     
 } elseif ($tipoUsuario === 'transportador') {
-    // Para transportador, validar número ANTT
     if (empty($dados['numeroANTT'])) {
         sendJsonResponse(false, 'Número ANTT é obrigatório.');
     }
     
-    // Validar placa do veículo (formato brasileiro)
     if (empty($dados['placaVeiculo'])) {
         sendJsonResponse(false, 'Placa do veículo é obrigatória.');
     }
     
-    // Validar modelo do veículo
     if (empty($dados['modeloVeiculo'])) {
         sendJsonResponse(false, 'Modelo do veículo é obrigatório.');
     }
 }
 
-// Validar e fazer upload das fotos
+// ============================================================
+// 12. PROCESSAMENTO DE UPLOAD DAS FOTOS
+// ============================================================
+
 $fotos = [];
 try {
-    // Mapear nomes de campos de fotos por tipo de usuário
     $campos_fotos = [
         'comprador' => [
             'fotoRostoComprador' => 'rosto',
@@ -361,29 +532,37 @@ try {
             
             if ($_FILES[$campo_form]['error'] !== UPLOAD_ERR_OK) {
                 $erro = $_FILES[$campo_form]['error'];
-                sendJsonResponse(false, "Erro ao enviar arquivo de {$tipo_foto}: código {$erro}");
+                error_log("Erro no upload do arquivo {$tipo_foto}: código {$erro}");
+                sendJsonResponse(false, "Erro ao enviar arquivo. Contate o suporte.");
             }
             
             $arquivo = $_FILES[$campo_form];
             try {
                 $fotos[$tipo_foto] = uploadFoto($arquivo, $tipoUsuario, $tipo_foto);
             } catch (Exception $e) {
+                error_log("Erro no upload: " . $e->getMessage());
                 sendJsonResponse(false, $e->getMessage());
             }
         }
     }
 } catch (Exception $e) {
-    sendJsonResponse(false, 'Erro ao processar fotos: ' . $e->getMessage());
+    error_log("Erro ao processar fotos: " . $e->getMessage());
+    sendJsonResponse(false, 'Erro ao processar fotos. Contate o suporte.');
 }
 
-// Iniciar transação
+// ============================================================
+// 13. INSERÇÃO NO BANCO DE DADOS (TRANSACTION)
+// ============================================================
+
 try {
     $conn->beginTransaction();
     
-    // Verificar e criar as colunas de foto se não existirem
     try {
-        $checkColumns = $conn->query("DESCRIBE usuarios");
-        $columns = $checkColumns->fetchAll(PDO::FETCH_COLUMN, 0);
+        $sql = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'usuarios'";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+        $columns = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
         
         if (!in_array('foto_rosto', $columns)) {
             $conn->exec("ALTER TABLE usuarios ADD COLUMN foto_rosto varchar(500) DEFAULT NULL COMMENT 'Caminho da foto do rosto do usuário'");
@@ -395,60 +574,40 @@ try {
             $conn->exec("ALTER TABLE usuarios ADD COLUMN foto_documento_verso varchar(500) DEFAULT NULL COMMENT 'Caminho da foto do documento (verso)'");
         }
     } catch (Exception $e) {
-        // Ignorar erros ao verificar/criar colunas, continuar mesmo assim
-        error_log("Erro ao verificar/criar colunas de foto: " . $e->getMessage());
+        error_log("Erro ao verificar colunas: " . $e->getMessage());
     }
     
-        $temAceiteTermos = in_array('aceite_termos', $columns, true);
-    
-    // Preparar variáveis de foto para bindParam (que requer referências)
     $foto_rosto = $fotos['rosto'] ?? null;
     $foto_documento_frente = $fotos['documento_frente'] ?? null;
     $foto_documento_verso = $fotos['documento_verso'] ?? null;
     
-    // 1. Inserir na tabela usuarios
-        $usuarioColumns = ['email', 'senha', 'tipo', 'nome', 'status', 'foto_rosto', 'foto_documento_frente', 'foto_documento_verso'];
-        $usuarioValues = [':email', ':senha', ':tipo', ':nome', "'pendente'", ':foto_rosto', ':foto_documento_frente', ':foto_documento_verso'];
-
-        if ($temAceiteTermos) {
-            $usuarioColumns[] = 'aceite_termos';
-            $usuarioValues[] = ':aceite_termos';
-        }
-
-        $sqlUsuario = "INSERT INTO usuarios (" . implode(', ', $usuarioColumns) . ") 
-                       VALUES (" . implode(', ', $usuarioValues) . ")";
+    $sqlUsuario = "INSERT INTO usuarios (email, senha, tipo, nome, status, foto_rosto, foto_documento_frente, foto_documento_verso) 
+                   VALUES (:email, :senha, :tipo, :nome, 'pendente', :foto_rosto, :foto_documento_frente, :foto_documento_verso)";
     $stmtUsuario = $conn->prepare($sqlUsuario);
-    $stmtUsuario->bindParam(':email', $email);
-    $stmtUsuario->bindParam(':senha', $senhaHash);
-    $stmtUsuario->bindParam(':tipo', $tipoUsuario);
-    $stmtUsuario->bindParam(':nome', $nome);
-    $stmtUsuario->bindParam(':foto_rosto', $foto_rosto);
-    $stmtUsuario->bindParam(':foto_documento_frente', $foto_documento_frente);
-    $stmtUsuario->bindParam(':foto_documento_verso', $foto_documento_verso);
-        if ($temAceiteTermos) {
-            $stmtUsuario->bindValue(':aceite_termos', 1, PDO::PARAM_INT);
-        }
+    $stmtUsuario->bindParam(':email', $email, PDO::PARAM_STR);
+    $stmtUsuario->bindParam(':senha', $senhaHash, PDO::PARAM_STR);
+    $stmtUsuario->bindParam(':tipo', $tipoUsuario, PDO::PARAM_STR);
+    $stmtUsuario->bindParam(':nome', $nome, PDO::PARAM_STR);
+    $stmtUsuario->bindParam(':foto_rosto', $foto_rosto, PDO::PARAM_STR);
+    $stmtUsuario->bindParam(':foto_documento_frente', $foto_documento_frente, PDO::PARAM_STR);
+    $stmtUsuario->bindParam(':foto_documento_verso', $foto_documento_verso, PDO::PARAM_STR);
     $stmtUsuario->execute();
     
     $usuarioId = $conn->lastInsertId();
     
-    // 2. Inserir dados específicos conforme o tipo
     $dadosSolicitacao = $dados;
     unset($dadosSolicitacao['senha']);
     unset($dadosSolicitacao['confirma_senha']);
     $dadosSolicitacao['senha_hash'] = $senhaHash;
     
     if ($tipoUsuario === 'comprador') {
-        // Inserir na tabela compradores
         $sqlComprador = "INSERT INTO compradores (usuario_id, tipo_pessoa, nome_comercial, cpf_cnpj, cip, cep, rua, numero, complemento, estado, cidade, telefone1, telefone2, plano) 
                          VALUES (:usuario_id, :tipo_pessoa, :nome_comercial, :cpf_cnpj, :cip, :cep, :rua, :numero, :complemento, :estado, :cidade, :telefone1, :telefone2, :plano)";
         $stmtComprador = $conn->prepare($sqlComprador);
         
-        // Formatar CPF/CNPJ
         $cpfCnpjFormatado = $dados['cpfCnpjComprador'];
         $cpfCnpjNumerico = preg_replace('/[^0-9]/', '', $cpfCnpjFormatado);
         
-        // Aplicar máscara baseada no tipo
         if ($dados['tipoPessoaComprador'] === 'cpf') {
             $cpfCnpjFormatado = preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $cpfCnpjNumerico);
         } else {
@@ -475,14 +634,16 @@ try {
         ]);
         
     } elseif ($tipoUsuario === 'vendedor') {
-        // Inserir na tabela vendedores
         $sqlVendedor = "INSERT INTO vendedores (usuario_id, tipo_pessoa, nome_comercial, cpf_cnpj, cip, cep, rua, numero, complemento, estado, cidade, telefone1, telefone2, plano) 
                         VALUES (:usuario_id, :tipo_pessoa, :nome_comercial, :cpf_cnpj, :cip, :cep, :rua, :numero, :complemento, :estado, :cidade, :telefone1, :telefone2, :plano)";
         $stmtVendedor = $conn->prepare($sqlVendedor);
         
-        // Formatar CNPJ
-        $cpfCnpjNumerico = preg_replace('/[^0-9]/', '', $dados['cpfCnpjVendedor']);
-        $cpfCnpjFormatado = preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $cpfCnpjNumerico);
+        $cpfCnpjNumerico = preg_replace('/[^A-Za-z0-9]/', '', $dados['cpfCnpjVendedor']);
+        if (ctype_digit($cpfCnpjNumerico)) {
+            $cpfCnpjFormatado = preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $cpfCnpjNumerico);
+        } else {
+            $cpfCnpjFormatado = $cpfCnpjNumerico;
+        }
         
         $plano = 'free';
         
@@ -504,7 +665,6 @@ try {
         ]);
         
     } elseif ($tipoUsuario === 'transportador') {
-        // Inserir na tabela transportadores
         $sqlTransportador = "INSERT INTO transportadores (usuario_id, nome_comercial, telefone, numero_antt, placa_veiculo, modelo_veiculo, descricao_veiculo, cep, rua, numero, complemento, estado, cidade, plano) 
                              VALUES (:usuario_id, :nome_comercial, :telefone, :numero_antt, :placa_veiculo, :modelo_veiculo, :descricao_veiculo, :cep, :rua, :numero, :complemento, :estado, :cidade, :plano)";
         $stmtTransportador = $conn->prepare($sqlTransportador);
@@ -530,11 +690,10 @@ try {
     }
     
     // 3. Inserir na tabela solicitacoes_cadastro
-    $sqlSolicitacao = "INSERT INTO solicitacoes_cadastro (usuario_id, nome, email, telefone, endereco, tipo_solicitacao, dados_json, status) 
-                       VALUES (:usuario_id, :nome, :email, :telefone, :endereco, :tipo_solicitacao, :dados_json, 'pendente')";
+    $sqlSolicitacao = "INSERT INTO solicitacoes_cadastro (usuario_id, nome, email, telefone, endereco, tipo_solicitacao, dados_json, status, aceite_termos) 
+                       VALUES (:usuario_id, :nome, :email, :telefone, :endereco, :tipo_solicitacao, :dados_json, 'pendente', :aceite_termos)";
     $stmtSolicitacao = $conn->prepare($sqlSolicitacao);
     
-    // Preparar endereço e telefone
     $telefone = '';
     $endereco = '';
     
@@ -565,7 +724,8 @@ try {
         ':telefone' => $telefone,
         ':endereco' => $endereco,
         ':tipo_solicitacao' => $tipoUsuario,
-        ':dados_json' => json_encode($dadosSolicitacao, JSON_UNESCAPED_UNICODE)
+        ':dados_json' => json_encode($dadosSolicitacao, JSON_UNESCAPED_UNICODE),
+        ':aceite_termos' => $aceite_termos_db
     ]);
     
     // 4. Criar notificação para admin
@@ -574,11 +734,12 @@ try {
     $stmtNotificacao = $conn->prepare($sqlNotificacao);
     
     $mensagemNotificacao = "Nova solicitação de cadastro de {$tipoUsuario}: {$nome}";
-    $stmtNotificacao->bindParam(':mensagem', $mensagemNotificacao);
+    $stmtNotificacao->bindParam(':mensagem', $mensagemNotificacao, PDO::PARAM_STR);
     $stmtNotificacao->execute();
     
-    // Confirmar transação
     $conn->commit();
+    
+    error_log("Cadastro realizado com sucesso: email={$email}, tipo={$tipoUsuario}, IP={$ip}, aceite_termos={$aceite_termos_db}");
     
     sendJsonResponse(
         true, 
@@ -591,5 +752,6 @@ try {
     }
     
     error_log("Erro ao processar solicitação: " . $e->getMessage() . "\n" . $e->getTraceAsString());
-    sendJsonResponse(false, 'Erro ao processar solicitação: ' . $e->getMessage());
+    sendJsonResponse(false, 'Erro ao processar solicitação. Tente novamente ou contate o suporte.');
 }
+?>

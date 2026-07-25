@@ -236,6 +236,17 @@ require_once 'src/conexao.php';
                         <label for="confirma_senha" class="required">Confirme a Senha </label>
                         <input type="password" id="confirma_senha" name="confirma_senha" required placeholder="Digite a senha novamente">
                     </div>
+                
+
+<!-- ===== NOVO CHECKBOX AQUI ===== -->
+<div class="form-group" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+    <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-weight:600; color:var(--dark-color);">
+        <input type="checkbox" id="aceite_termos" name="aceite_termos" value="1" required style="width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0;">
+        <span>Li e aceito os <a href="src/termos.php" target="_blank" rel="noopener noreferrer" style="color: #4CAF50; text-decoration: underline;">termos e condições</a> e a <a href="src/privacidade.php" target="_blank" rel="noopener noreferrer" style="color: #4CAF50; text-decoration: underline;">política de privacidade</a></span>
+    </label>
+    <small class="form-help" style="display: block; margin-top: 5px; color: #666;">Você precisa aceitar os termos para continuar</small>
+</div>
+
                     <div class="form-group">
                         <label for="subject" class="required">Quero me tornar: </label>
                         <select id="subject" name="subject" onchange="toggleAdditionalFields()" required>
@@ -409,13 +420,6 @@ require_once 'src/conexao.php';
                                     <label for="fotoDocumentoVersoComprador" class="required">Documento - Verso </label>
                                     <input type="file" id="fotoDocumentoVersoComprador" name="fotoDocumentoVersoComprador" accept="image/*" required>
                                     <small class="form-help">Envie uma foto clara do verso do seu documento</small>
-                                </div>
-
-                                <div class="form-group" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
-                                    <label for="aceite_termos" style="display:flex; align-items:flex-box; gap:8px; cursor:pointer; font-weight:600; color:var(--dark-color);">
-                                        <input type="checkbox" id="aceite_termos" name="aceite_termos" value="1" required style="width: 16px;">
-                                        <span>Li e aceito os <a href="src/termos.php" target="_blank" rel="noopener noreferrer">termos e condições</a></span>
-                                    </label>
                                 </div>
                                 
                                 <div class="step-navigation">
@@ -591,13 +595,6 @@ require_once 'src/conexao.php';
                                     <input type="file" id="fotoDocumentoVersoVendedor" name="fotoDocumentoVersoVendedor" accept="image/*" required>
                                     <small class="form-help">Envie uma foto clara do verso do seu documento</small>
                                 </div>
-
-                                <div class="form-group" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
-                                    <label for="aceite_termos" style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-weight:600; color:var(--dark-color);">
-                                        <input type="checkbox" id="aceite_termos" name="aceite_termos" value="1" required>
-                                        <span>Li e aceito os <a href="src/termos.php" target="_blank" rel="noopener noreferrer">termos e condições</a></span>
-                                    </label>
-                                </div>
                                 
                                 <div class="step-navigation">
                                     <button type="button" class="step-btn btn-prev" onclick="prevStep('vendedor')">
@@ -740,13 +737,6 @@ require_once 'src/conexao.php';
                                     <small class="form-help">Envie uma foto clara do verso do seu documento</small>
                                 </div>
 
-                                <div class="form-group" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
-                                    <label for="aceite_termos" style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-weight:600; color:var(--dark-color);">
-                                        <input type="checkbox" id="aceite_termos" name="aceite_termos" value="1" required>
-                                        <span>Li e aceito os <a href="src/termos.php" target="_blank" rel="noopener noreferrer">termos e condições</a></span>
-                                    </label>
-                                </div>
-                                
                                 <div class="step-navigation">
                                     <button type="button" class="step-btn btn-prev" onclick="prevStep('transportador')">
                                         ← Voltar

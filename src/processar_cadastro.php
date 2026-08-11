@@ -38,17 +38,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $db->beginTransaction();
 
+        $colunasUsuarios = $db->query("DESCRIBE usuarios")->fetchAll(PDO::FETCH_COLUMN, 0);
+        $temAceiteTermos = in_array('aceite_termos', $colunasUsuarios, true);
+
         // Criar senha temporária
         $senha_temporaria = bin2hex(random_bytes(8));
         $senha_hash = password_hash($senha_temporaria, PASSWORD_DEFAULT);
-        
-        $query = "INSERT INTO usuarios (email, senha, tipo, nome, status) 
-                  VALUES (:email, :senha, :tipo, :nome, 'pendente')";
+
+        $colunasInsert = ['email', 'senha', 'tipo', 'nome', 'status'];
+        $placeholdersInsert = [':email', ':senha', ':tipo', ':nome', "'pendente'"];
+
+        if ($temAceiteTermos) {
+            $colunasInsert[] = 'aceite_termos';
+            $placeholdersInsert[] = ':aceite_termos';
+        }
+
+        $query = "INSERT INTO usuarios (" . implode(', ', $colunasInsert) . ") 
+                  VALUES (" . implode(', ', $placeholdersInsert) . ")";
         $stmt = $db->prepare($query);
         $stmt->bindParam(':email', $email);
         $stmt->bindParam(':senha', $senha_hash);
         $stmt->bindParam(':tipo', $subject);
         $stmt->bindParam(':nome', $nome);
+        if ($temAceiteTermos) {
+            $stmt->bindValue(':aceite_termos', 1, PDO::PARAM_INT);
+        }
         $stmt->execute();
         
         $usuario_id = $db->lastInsertId();

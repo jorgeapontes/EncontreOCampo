@@ -776,14 +776,15 @@ async function submitForm(e) {
         return;
     }
 
-    const aceiteTermos = document.getElementById('aceite_termos');
-    if (!aceiteTermos || !aceiteTermos.checked) {
-        alert('Você precisa aceitar os termos e condições para criar a conta.');
-        if (aceiteTermos) {
-            aceiteTermos.focus();
-        }
-        return;
+// Na função submitForm(), localize esta parte:
+const aceiteTermos = document.getElementById('aceite_termos');
+if (!aceiteTermos || !aceiteTermos.checked) {
+    alert('Você precisa aceitar os termos e condições para criar a conta.');
+    if (aceiteTermos) {
+        aceiteTermos.focus();
     }
+    return;
+}
     
     let isValid = true;
     let submitButton = e.target;

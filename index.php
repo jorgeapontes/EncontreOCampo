@@ -2,24 +2,31 @@
 
 require_once 'src/conexao.php';
 
-    if (session_status() == PHP_SESSION_NONE) {
-        session_start();
-    }
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
+// ============================================================
+// CORREÇÃO XSS: Sanitizar saída de dados do usuário
+// ============================================================
+function safe($string) {
+    return htmlspecialchars((string)$string, ENT_QUOTES, 'UTF-8');
+}
+
+$button_text = 'Login';
+$button_action = 'src/login.php';
+
+if (isset($_SESSION['usuario_nome'])) {
+    // CORREÇÃO: Escapar o nome do usuário para evitar XSS
+    $button_text = 'Olá, ' . safe($_SESSION['usuario_nome']);
+    $usuario_tipo = isset($_SESSION['usuario_tipo']) ? safe($_SESSION['usuario_tipo']) : '';
+    $button_action = 'src/' . $usuario_tipo . '/dashboard.php';
+} else {
     $button_text = 'Login';
-
-    if (isset($_SESSION['usuario_nome'])) {
-        $button_text = 'Olá, '.$_SESSION['usuario_nome'];
-        $usuario_tipo = $_SESSION['usuario_tipo'];
-        $button_action = 'src/'.$_SESSION['usuario_tipo'].'/dashboard.php';
-        
-    } else {
-        $button_text = 'Login';
-        $button_action = 'src/login.php';
-    }
+    $button_action = 'src/login.php';
+}
 
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -32,6 +39,22 @@ require_once 'src/conexao.php';
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Estilos para mensagens de erro de arquivo */
+        .file-error {
+            color: #ff4444;
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: none;
+        }
+        .file-error.show {
+            display: block;
+        }
+        .file-input-error {
+            border-color: #ff4444 !important;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -73,7 +96,7 @@ require_once 'src/conexao.php';
                                     $stmt_nao_lidas->execute();
                                     $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
                                     if ($total_nao_lidas > 0) {
-                                        echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
+                                        echo '<span class="notificacao-badge">' . safe($total_nao_lidas) . '</span>';
                                     }
                                 }
                                 ?>
@@ -82,7 +105,8 @@ require_once 'src/conexao.php';
                     </li>
                     <?php endif; ?>
                     <li class="nav-item">
-                        <a href="<?= $button_action ?>" class="nav-link login-button no-underline"> <?= $button_text ?> </a>
+                        <!-- CORREÇÃO XSS: Escapar URLs e textos -->
+                        <a href="<?= safe($button_action) ?>" class="nav-link login-button no-underline"> <?= safe($button_text) ?> </a>
                     </li>
                 </ul>
                 <div class="hamburger">
@@ -106,41 +130,33 @@ require_once 'src/conexao.php';
     </section>
 
     <section id="comprar" class="section bg-light">
-    <div class="container">
-        <h2 class="section-title">Anúncios</h2>
-        
-        <!-- Carrossel  -->
-        <div class="carousel-container">
-            <div class="carousel-wrapper">
-                <div class="carousel-track" id="anunciosCarousel">
-                    <!-- Anúncios serão carregados aqui -->
-                    <div class="loading-state">
-                        <p>Carregando anúncios fresquinhos...</p>
+        <div class="container">
+            <h2 class="section-title">Anúncios</h2>
+            
+            <!-- Carrossel -->
+            <div class="carousel-container">
+                <div class="carousel-wrapper">
+                    <div class="carousel-track" id="anunciosCarousel">
+                        <div class="loading-state">
+                            <p>Carregando anúncios fresquinhos...</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Controles simplificados -->
-            <div class="carousel-nav">
-                <button class="nav-btn prev" onclick="prevSlide()" aria-label="Anterior">
-                    ‹
-                </button>
-                <div class="carousel-dots" id="carouselDots">
-                    <!-- Pontos de navegação -->
+                
+                <div class="carousel-nav">
+                    <button class="nav-btn prev" onclick="prevSlide()" aria-label="Anterior">‹</button>
+                    <div class="carousel-dots" id="carouselDots"></div>
+                    <button class="nav-btn next" onclick="nextSlide()" aria-label="Próximo">›</button>
                 </div>
-                <button class="nav-btn next" onclick="nextSlide()" aria-label="Próximo">
-                    ›
-                </button>
             </div>
-        </div>
 
-        <center>
-            <a href="src/anuncios.php" class="cta-button" style="display: inline-block; margin-top: 40px; text-decoration: none; width: 250px; text-align: center;">
-                Ver Todos os Anúncios
-            </a>
-        </center>
-    </div>
-</section>
+            <center>
+                <a href="src/anuncios.php" class="cta-button" style="display: inline-block; margin-top: 40px; text-decoration: none; width: 250px; text-align: center;">
+                    Ver Todos os Anúncios
+                </a>
+            </center>
+        </div>
+    </section>
 
     <section id="vender" class="section">
         <div class="container">
@@ -195,590 +211,544 @@ require_once 'src/conexao.php';
         </div>
     </section>
 
-  <section id="contato" class="section">
-    <div class="container">
-        <h2 class="section-title">Registre-se</h2>
-        <div class="contact-content">
-            <div class="contact-info">
-                <h3>Fale Conosco</h3>
-                <p>Estamos aqui para ajudar produtores e compradores a se conectarem.</p>
-                <div class="contact-details">
-                    <div class="contact-item">
-                        <h4>Email</h4>
-                        <p>contato@encontreocampo.com.br</p>
+    <section id="contato" class="section">
+        <div class="container">
+            <h2 class="section-title">Registre-se</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3>Fale Conosco</h3>
+                    <p>Estamos aqui para ajudar produtores e compradores a se conectarem.</p>
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <h4>Email</h4>
+                            <p>contato@encontreocampo.com.br</p>
+                        </div>
                     </div>
-                    <!-- <div class="contact-item">
-                        <h4>Telefone</h4>
-                        <p>(11) 3456-7890</p>
-                    </div>
-                    <div class="contact-item">
-                        <h4>Endereço</h4>
-                        <p>Rua das Frutas, 123 - Centro, São Paulo - SP</p>
-                    </div> -->
+                </div>
+                <div class="contact-form">
+                    <form id="mainForm" action="src/processar_solicitacao.php" method="POST" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="name" class="required">Nome </label>
+                            <input type="text" id="name" name="name" required placeholder="Seu nome completo">
+                        </div>
+                        <div class="form-group">
+                            <label for="email" class="required">Email </label>
+                            <input type="email" id="email" name="email" required placeholder="seu@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="senha" class="required">Senha </label>
+                            <input type="password" id="senha" name="senha" required minlength="8" placeholder="Mínimo 8 caracteres">
+                            <small class="form-help">Use pelo menos 8 caracteres com letras e números</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirma_senha" class="required">Confirme a Senha </label>
+                            <input type="password" id="confirma_senha" name="confirma_senha" required placeholder="Digite a senha novamente">
+                        </div>
+
+                        <!-- Checkbox de Termos -->
+                        <div class="form-group" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+                            <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-weight:600; color:var(--dark-color);">
+                                <input type="checkbox" id="aceite_termos" name="aceite_termos" value="1" required style="width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0;">
+                                <span>Li e aceito os <a href="src/termos.php" target="_blank" rel="noopener noreferrer" style="color: #4CAF50; text-decoration: underline;">termos e condições</a> e a <a href="src/privacidade.php" target="_blank" rel="noopener noreferrer" style="color: #4CAF50; text-decoration: underline;">política de privacidade</a></span>
+                            </label>
+                            <small class="form-help" style="display: block; margin-top: 5px; color: #666;">Você precisa aceitar os termos para continuar</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subject" class="required">Quero me tornar: </label>
+                            <select id="subject" name="subject" onchange="toggleAdditionalFields()" required>
+                                <option value="">Selecione...</option>
+                                <option value="comprador">Comprador</option>
+                                <option value="vendedor">Vendedor</option>
+                                <option value="transportador">Transportador</option>
+                            </select>
+                        </div>
+
+                        <!-- FORMULÁRIO DO COMPRADOR -->
+                        <div id="compradorFields" style="display: none;">
+                            <div class="multi-step-form">
+                                <div class="progress-indicator">
+                                    <div class="progress-step active" data-step="1">1</div>
+                                    <div class="progress-step" data-step="2">2</div>
+                                    <div class="progress-step" data-step="3">3</div>
+                                </div>
+
+                                <!-- PASSO 1 -->
+                                <div id="compradorStep1" class="step-content active">
+                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
+                                    
+                                    <div class="form-group">
+                                        <label class="required">Tipo de Pessoa:</label>
+                                        <div class="radio-group">
+                                            <label class="radio-label">
+                                                <input type="radio" name="tipoPessoaComprador" value="cpf" required checked>
+                                                <span class="radio-custom"></span>
+                                                <span class="radio-text">CPF</span>
+                                            </label>
+                                            <label class="radio-label">
+                                                <input type="radio" name="tipoPessoaComprador" value="cnpj" required>
+                                                <span class="radio-custom"></span>
+                                                <span class="radio-text">CNPJ</span>
+                                            </label>
+                                        </div>
+                                        <small class="form-help">CPF selecionado por padrão. Clique em CNPJ se for uma empresa.</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="cpfCnpjComprador" class="required">CPF/CNPJ </label>
+                                        <input type="text" id="cpfCnpjComprador" name="cpfCnpjComprador" required placeholder="000.000.000-00">
+                                        <small class="form-help">Digite apenas números para CPF ou letras e números para CNPJ; a pontuação será aplicada automaticamente</small>
+                                    </div>
+                                    
+                                    <div class="form-group" id="nomeComercialGroup">
+                                        <label id="labelNomeComercialComprador" for="nomeComercialComprador" class="required">Nome de Exibição </label>
+                                        <input type="text" id="nomeComercialComprador" name="nomeComercialComprador" required placeholder="Como você quer ser chamado na plataforma">
+                                        <small class="form-help">Esse nome será exibido para os outros usuários na plataforma.</small>
+                                    </div>
+                                    
+                                    <div class="step-navigation">
+                                        <div></div>
+                                        <button type="button" class="step-btn btn-next" onclick="nextStep('comprador')">
+                                            Próximo →
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- PASSO 2 -->
+                                <div id="compradorStep2" class="step-content" style="display: none;">
+                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
+                                    
+                                    <div class="form-group">
+                                        <label for="cepComprador">CEP (opcional)</label>
+                                        <div class="cep-container">
+                                            <input type="text" id="cepComprador" name="cepComprador" maxlength="9" placeholder="00000-000">
+                                            <button type="button" class="cep-btn" onclick="buscarCEPComprador()">Buscar CEP</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="ruaComprador" class="required">Rua </label>
+                                        <input type="text" id="ruaComprador" name="ruaComprador" required placeholder="Nome da rua">
+                                    </div>
+                                    
+                                    <div class="form-group-row">
+                                        <div class="form-group">
+                                            <label for="numeroComprador" class="required">Número </label>
+                                            <input type="text" id="numeroComprador" name="numeroComprador" required placeholder="Número">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="complementoComprador">Complemento (opcional)</label>
+                                            <input type="text" id="complementoComprador" name="complementoComprador" placeholder="Apto, Sala, etc.">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group-row">
+                                        <div class="form-group">
+                                            <label for="estadoComprador" class="required">Estado </label>
+                                            <select id="estadoComprador" name="estadoComprador" required>
+                                                <option value="">Selecione...</option>
+                                                <option value="AC">Acre</option>
+                                                <option value="AL">Alagoas</option>
+                                                <option value="AP">Amapá</option>
+                                                <option value="AM">Amazonas</option>
+                                                <option value="BA">Bahia</option>
+                                                <option value="CE">Ceará</option>
+                                                <option value="DF">Distrito Federal</option>
+                                                <option value="ES">Espírito Santo</option>
+                                                <option value="GO">Goiás</option>
+                                                <option value="MA">Maranhão</option>
+                                                <option value="MT">Mato Grosso</option>
+                                                <option value="MS">Mato Grosso do Sul</option>
+                                                <option value="MG">Minas Gerais</option>
+                                                <option value="PA">Pará</option>
+                                                <option value="PB">Paraíba</option>
+                                                <option value="PR">Paraná</option>
+                                                <option value="PE">Pernambuco</option>
+                                                <option value="PI">Piauí</option>
+                                                <option value="RJ">Rio de Janeiro</option>
+                                                <option value="RN">Rio Grande do Norte</option>
+                                                <option value="RS">Rio Grande do Sul</option>
+                                                <option value="RO">Rondônia</option>
+                                                <option value="RR">Roraima</option>
+                                                <option value="SC">Santa Catarina</option>
+                                                <option value="SP">São Paulo</option>
+                                                <option value="SE">Sergipe</option>
+                                                <option value="TO">Tocantins</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="cidadeComprador" class="required">Cidade </label>
+                                            <input type="text" id="cidadeComprador" name="cidadeComprador" required placeholder="Nome da cidade">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="step-navigation">
+                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('comprador')">← Voltar</button>
+                                        <button type="button" class="step-btn btn-next" onclick="nextStep('comprador')">Próximo →</button>
+                                    </div>
+                                </div>
+
+                                <!-- PASSO 3 -->
+                                <div id="compradorStep3" class="step-content" style="display: none;">
+                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Contato e Plano</h4>
+                                    
+                                    <div class="form-group-row">
+                                        <div class="form-group">
+                                            <label for="telefone1Comprador" class="required">Telefone/Celular </label>
+                                            <input type="text" id="telefone1Comprador" name="telefone1Comprador" maxlength="15" required placeholder="(11) 99999-9999">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="telefone2Comprador">Telefone/Celular (opcional)</label>
+                                            <input type="text" id="telefone2Comprador" name="telefone2Comprador" maxlength="15" placeholder="(11) 99999-9999">
+                                        </div>
+                                    </div>
+
+                                    <h4 style="margin-top: 30px; margin-bottom: 20px; color: var(--dark-color);">Documentação</h4>
+                                    <p style="color: #666; margin-bottom: 15px;">Para validar sua identidade, envie as fotos abaixo:</p>
+                                    
+                                    <div class="form-group">
+                                        <label for="fotoRostoComprador" class="required">Foto Facial</label>
+                                        <!-- CORREÇÃO: Validação frontend de arquivo -->
+                                        <input type="file" id="fotoRostoComprador" name="fotoRostoComprador" accept="image/jpeg,image/png,image/webp" required onchange="validarArquivo(this, 'Foto Facial')">
+                                        <div class="file-error" id="fotoRostoComprador-error"></div>
+                                        <small class="form-help">Envie uma foto clara do seu rosto. Formatos: JPG, PNG, WebP. Máx: 10MB</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="fotoDocumentoFrenteComprador" class="required">Documento - Frente </label>
+                                        <input type="file" id="fotoDocumentoFrenteComprador" name="fotoDocumentoFrenteComprador" accept="image/jpeg,image/png,image/webp" required onchange="validarArquivo(this, 'Documento Frente')">
+                                        <div class="file-error" id="fotoDocumentoFrenteComprador-error"></div>
+                                        <small class="form-help">Envie uma foto clara da frente do seu documento (RG, CNH ou Passaporte)</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="fotoDocumentoVersoComprador" class="required">Documento - Verso </label>
+                                        <input type="file" id="fotoDocumentoVersoComprador" name="fotoDocumentoVersoComprador" accept="image/jpeg,image/png,image/webp" required onchange="validarArquivo(this, 'Documento Verso')">
+                                        <div class="file-error" id="fotoDocumentoVersoComprador-error"></div>
+                                        <small class="form-help">Envie uma foto clara do verso do seu documento</small>
+                                    </div>
+                                    
+                                    <div class="step-navigation">
+                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('comprador')">← Voltar</button>
+                                        <button type="button" class="step-btn btn-ajax-submit">Finalizar Cadastro</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FORMULÁRIO DO VENDEDOR -->
+                        <div id="vendedorFields" style="display: none;">
+                            <div class="multi-step-form">
+                                <div class="progress-indicator">
+                                    <div class="progress-step active" data-step="1">1</div>
+                                    <div class="progress-step" data-step="2">2</div>
+                                    <div class="progress-step" data-step="3">3</div>
+                                </div>
+
+                                <div id="vendedorStep1" class="step-content active">
+                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados da Empresa</h4>
+                                    
+                                    <div class="form-group">
+                                        <label for="nomeComercialVendedor" class="required">Nome Comercial </label>
+                                        <input type="text" id="nomeComercialVendedor" name="nomeComercialVendedor" required placeholder="Nome da empresa/fazenda">
+                                        <small class="form-help">Esse será seu nome de exibição</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="cpfCnpjVendedor" class="required">CNPJ </label>
+                                        <input type="text" id="cpfCnpjVendedor" name="cpfCnpjVendedor" required placeholder="00.000.000/0000-00">
+                                        <small class="form-help">Para vendedor, é obrigatório CNPJ (14 caracteres)</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="cipVendedor">CIP (opcional)</label>
+                                        <input type="text" id="cipVendedor" name="cipVendedor" placeholder="Código de Identificação do Produtor">
+                                    </div>
+                                    
+                                    <div class="step-navigation">
+                                        <div></div>
+                                        <button type="button" class="step-btn btn-next" onclick="nextStep('vendedor')">Próximo →</button>
+                                    </div>
+                                </div>
+
+                                <div id="vendedorStep2" class="step-content" style="display: none;">
+                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
+                                    
+                                    <div class="form-group">
+                                        <label for="cepVendedor">CEP (opcional)</label>
+                                        <div class="cep-container">
+                                            <input type="text" id="cepVendedor" name="cepVendedor" maxlength="9" placeholder="00000-000">
+                                            <button type="button" class="cep-btn" onclick="buscarCEPVendedor()">Buscar CEP</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="ruaVendedor" class="required">Rua </label>
+                                        <input type="text" id="ruaVendedor" name="ruaVendedor" required placeholder="Nome da rua">
+                                    </div>
+                                    
+                                    <div class="form-group-row">
+                                        <div class="form-group">
+                                            <label for="numeroVendedor" class="required">Número </label>
+                                            <input type="text" id="numeroVendedor" name="numeroVendedor" required placeholder="Número">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="complementoVendedor">Complemento (opcional)</label>
+                                            <input type="text" id="complementoVendedor" name="complementoVendedor" placeholder="Apto, Sala, etc.">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group-row">
+                                        <div class="form-group">
+                                            <label for="estadoVendedor" class="required">Estado </label>
+                                            <select id="estadoVendedor" name="estadoVendedor" required>
+                                                <option value="">Selecione...</option>
+                                                <option value="AC">Acre</option>
+                                                <option value="AL">Alagoas</option>
+                                                <option value="AP">Amapá</option>
+                                                <option value="AM">Amazonas</option>
+                                                <option value="BA">Bahia</option>
+                                                <option value="CE">Ceará</option>
+                                                <option value="DF">Distrito Federal</option>
+                                                <option value="ES">Espírito Santo</option>
+                                                <option value="GO">Goiás</option>
+                                                <option value="MA">Maranhão</option>
+                                                <option value="MT">Mato Grosso</option>
+                                                <option value="MS">Mato Grosso do Sul</option>
+                                                <option value="MG">Minas Gerais</option>
+                                                <option value="PA">Pará</option>
+                                                <option value="PB">Paraíba</option>
+                                                <option value="PR">Paraná</option>
+                                                <option value="PE">Pernambuco</option>
+                                                <option value="PI">Piauí</option>
+                                                <option value="RJ">Rio de Janeiro</option>
+                                                <option value="RN">Rio Grande do Norte</option>
+                                                <option value="RS">Rio Grande do Sul</option>
+                                                <option value="RO">Rondônia</option>
+                                                <option value="RR">Roraima</option>
+                                                <option value="SC">Santa Catarina</option>
+                                                <option value="SP">São Paulo</option>
+                                                <option value="SE">Sergipe</option>
+                                                <option value="TO">Tocantins</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="cidadeVendedor" class="required">Cidade </label>
+                                            <input type="text" id="cidadeVendedor" name="cidadeVendedor" required placeholder="Nome da cidade">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="step-navigation">
+                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('vendedor')">← Voltar</button>
+                                        <button type="button" class="step-btn btn-next" onclick="nextStep('vendedor')">Próximo →</button>
+                                    </div>
+                                </div>
+
+                                <div id="vendedorStep3" class="step-content" style="display: none;">
+                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Contato e Plano</h4>
+                                    
+                                    <div class="form-group-row">
+                                        <div class="form-group">
+                                            <label for="telefone1Vendedor" class="required">Telefone/Celular </label>
+                                            <input type="text" id="telefone1Vendedor" name="telefone1Vendedor" maxlength="15" required placeholder="(11) 99999-9999">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="telefone2Vendedor">Telefone/Celular (opcional)</label>
+                                            <input type="text" id="telefone2Vendedor" name="telefone2Vendedor" maxlength="15" placeholder="(11) 99999-9999">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="planoVendedor">Plano</label>
+                                        <select id="planoVendedor" name="planoVendedor">
+                                            <option value="free" selected>Plano 1 - Grátis</option>
+                                        </select>
+                                        <small class="form-help" style="color: #666; font-style: italic; display: block; margin-top: 5px;">
+                                            * Todos começam com plano gratuito. Você poderá alterar o plano posteriormente em seu painel.
+                                        </small>
+                                    </div>
+
+                                    <h4 style="margin-top: 30px; margin-bottom: 20px; color: var(--dark-color);">Documentação</h4>
+                                    <p style="color: #666; margin-bottom: 15px;">Para validar sua identidade, envie as fotos abaixo:</p>
+                                    
+                                    <div class="form-group">
+                                        <label for="fotoRostoVendedor" class="required">Foto do Rosto </label>
+                                        <input type="file" id="fotoRostoVendedor" name="fotoRostoVendedor" accept="image/jpeg,image/png,image/webp" required onchange="validarArquivo(this, 'Foto do Rosto')">
+                                        <div class="file-error" id="fotoRostoVendedor-error"></div>
+                                        <small class="form-help">Envie uma foto clara do seu rosto. Formatos: JPG, PNG, WebP. Máx: 10MB</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="fotoDocumentoFrenteVendedor" class="required">Documento - Frente </label>
+                                        <input type="file" id="fotoDocumentoFrenteVendedor" name="fotoDocumentoFrenteVendedor" accept="image/jpeg,image/png,image/webp" required onchange="validarArquivo(this, 'Documento Frente')">
+                                        <div class="file-error" id="fotoDocumentoFrenteVendedor-error"></div>
+                                        <small class="form-help">Envie uma foto clara da frente do seu documento (RG, CNH ou Passaporte)</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="fotoDocumentoVersoVendedor" class="required">Documento - Verso </label>
+                                        <input type="file" id="fotoDocumentoVersoVendedor" name="fotoDocumentoVersoVendedor" accept="image/jpeg,image/png,image/webp" required onchange="validarArquivo(this, 'Documento Verso')">
+                                        <div class="file-error" id="fotoDocumentoVersoVendedor-error"></div>
+                                        <small class="form-help">Envie uma foto clara do verso do seu documento</small>
+                                    </div>
+                                    
+                                    <div class="step-navigation">
+                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('vendedor')">← Voltar</button>
+                                        <button type="button" class="step-btn btn-ajax-submit">Finalizar Cadastro</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FORMULÁRIO DO TRANSPORTADOR -->
+                        <div id="transportadorFields" style="display: none;">
+                            <div class="multi-step-form">
+                                <div class="progress-indicator">
+                                    <div class="progress-step active" data-step="1">1</div>
+                                    <div class="progress-step" data-step="2">2</div>
+                                    <div class="progress-step" data-step="3">3</div>
+                                </div>
+
+                                <div id="transportadorStep1" class="step-content active">
+                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
+                                    
+                                    <div class="form-group">
+                                        <label for="telefoneTransportador" class="required">Telefone/Celular </label>
+                                        <input type="text" id="telefoneTransportador" name="telefoneTransportador" maxlength="15" required placeholder="(11) 99999-9999">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="numeroANTT" class="required">Número ANTT </label>
+                                        <input type="text" id="numeroANTT" name="numeroANTT" required placeholder="Somente números - Registro na ANTT">
+                                        <small class="form-help">Digite apenas números (ex: 12345678901234)</small>
+                                    </div>
+                                    
+                                    <div class="step-navigation">
+                                        <div></div>
+                                        <button type="button" class="step-btn btn-next" onclick="nextStep('transportador')">Próximo →</button>
+                                    </div>
+                                </div>
+
+                                <div id="transportadorStep2" class="step-content" style="display: none;">
+                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados do Veículo</h4>
+                                    
+                                    <div class="form-group">
+                                        <label for="placaVeiculo" class="required">Placa do Veículo </label>
+                                        <div class="placa-container">
+                                            <input type="text" id="placaVeiculo" name="placaVeiculo" required placeholder="AAA-1234 ou AAA1B23" maxlength="8">
+                                        </div>
+                                        <small class="form-help">Formato aceito: AAA-1234 (antigo) ou AAA1B23 (Mercosul)</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="modeloVeiculo" class="required">Modelo do Veículo </label>
+                                        <input type="text" id="modeloVeiculo" name="modeloVeiculo" required placeholder="Ex: Mercedes-Benz Actros 2020">
+                                        <small class="form-help">Clique no botão "Buscar Info" acima para tentar preencher automaticamente</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="descricaoVeiculo" class="required">Descrição do Veículo </label>
+                                        <textarea id="descricaoVeiculo" name="descricaoVeiculo" rows="3" required placeholder="Ex: Caminhão baú refrigerado, capacidade 20 toneladas, 3 eixos"></textarea>
+                                        <small class="form-help">Descreva as características do veículo para melhor identificação</small>
+                                    </div>
+                                    
+                                    <div class="step-navigation">
+                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('transportador')">← Voltar</button>
+                                        <button type="button" class="step-btn btn-next" onclick="nextStep('transportador')">Próximo →</button>
+                                    </div>
+                                </div>
+
+                                <div id="transportadorStep3" class="step-content" style="display: none;">
+                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
+                                    
+                                    <div class="form-group">
+                                        <label for="cepTransportador">CEP (opcional)</label>
+                                        <div class="cep-container">
+                                            <input type="text" id="cepTransportador" name="cepTransportador" maxlength="9" placeholder="00000-000">
+                                            <button type="button" class="cep-btn" onclick="buscarCEPTransportador()">Buscar CEP</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="ruaTransportador" class="required">Rua </label>
+                                        <input type="text" id="ruaTransportador" name="ruaTransportador" required placeholder="Nome da rua">
+                                    </div>
+                                    
+                                    <div class="form-group-row">
+                                        <div class="form-group">
+                                            <label for="numeroTransportador" class="required">Número </label>
+                                            <input type="text" id="numeroTransportador" name="numeroTransportador" required placeholder="Número">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="complementoTransportador">Complemento (opcional)</label>
+                                            <input type="text" id="complementoTransportador" name="complementoTransportador" placeholder="Apto, Sala, etc.">
+                                        </div>
+                                    </div>
+                                    <div class="form-group-row">
+                                        <div class="form-group">
+                                            <label for="estadoTransportador" class="required">Estado </label>
+                                            <select id="estadoTransportador" name="estadoTransportador" required>
+                                                <option value="">Selecione o estado...</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="cidadeTransportador" class="required">Cidade </label>
+                                            <input type="text" id="cidadeTransportador" name="cidadeTransportador" required placeholder="Nome da cidade">
+                                        </div>
+                                    </div>
+
+                                    <h4 style="margin-top: 30px; margin-bottom: 20px; color: var(--dark-color);">Documentação</h4>
+                                    <p style="color: #666; margin-bottom: 15px;">Para validar sua identidade, envie as fotos abaixo:</p>
+                                    
+                                    <div class="form-group">
+                                        <label for="fotoRostoTransportador" class="required">Foto do Rosto </label>
+                                        <input type="file" id="fotoRostoTransportador" name="fotoRostoTransportador" accept="image/jpeg,image/png,image/webp" required onchange="validarArquivo(this, 'Foto do Rosto')">
+                                        <div class="file-error" id="fotoRostoTransportador-error"></div>
+                                        <small class="form-help">Envie uma foto clara do seu rosto. Formatos: JPG, PNG, WebP. Máx: 10MB</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="fotoDocumentoFrenteTransportador" class="required">Documento - Frente </label>
+                                        <input type="file" id="fotoDocumentoFrenteTransportador" name="fotoDocumentoFrenteTransportador" accept="image/jpeg,image/png,image/webp" required onchange="validarArquivo(this, 'Documento Frente')">
+                                        <div class="file-error" id="fotoDocumentoFrenteTransportador-error"></div>
+                                        <small class="form-help">Envie uma foto clara da frente do seu documento (RG, CNH ou Passaporte)</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="fotoDocumentoVersoTransportador" class="required">Documento - Verso </label>
+                                        <input type="file" id="fotoDocumentoVersoTransportador" name="fotoDocumentoVersoTransportador" accept="image/jpeg,image/png,image/webp" required onchange="validarArquivo(this, 'Documento Verso')">
+                                        <div class="file-error" id="fotoDocumentoVersoTransportador-error"></div>
+                                        <small class="form-help">Envie uma foto clara do verso do seu documento</small>
+                                    </div>
+
+                                    <div class="step-navigation">
+                                        <button type="button" class="step-btn btn-prev" onclick="prevStep('transportador')">← Voltar</button>
+                                        <button type="button" class="step-btn btn-ajax-submit">Finalizar Cadastro</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mensagem (opcional) -->
+                        <div class="form-group" id="messageGroup" style="display: none; margin-top: 20px;">
+                            <label for="message">Mensagem (opcional)</label>
+                            <textarea id="message" name="message" rows="4" placeholder="Conte-nos mais sobre o que você precisa..."></textarea>
+                        </div>
+                        
+                        <!-- Botão de envio genérico -->
+                        <div class="end" style="margin-top: 30px;">
+                            <button type="button" id="submitOther" class="cta-button" style="width: 100%; padding: 15px; font-size: 1.1em;">
+                                Enviar Solicitação de Cadastro
+                            </button>
+                            <small class="form-help" style="text-align: center; display: block; margin-top: 10px; color: #666;">
+                                * Campos obrigatórios
+                            </small>
+                        </div>
+                    </form>
                 </div>
             </div>
-            <div class="contact-form">
-                <form id="mainForm" action="src/processar_solicitacao.php" method="POST" enctype="multipart/form-data">
-                    <div class="form-group">
-                        <label for="name" class="required">Nome </label>
-                        <input type="text" id="name" name="name" required placeholder="Seu nome completo">
-                    </div>
-                    <div class="form-group">
-                        <label for="email" class="required">Email </label>
-                        <input type="email" id="email" name="email" required placeholder="seu@email.com">
-                    </div>
-                    <div class="form-group">
-                        <label for="senha" class="required">Senha </label>
-                        <input type="password" id="senha" name="senha" required minlength="8" placeholder="Mínimo 8 caracteres">
-                        <small class="form-help">Use pelo menos 8 caracteres com letras e números</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="confirma_senha" class="required">Confirme a Senha </label>
-                        <input type="password" id="confirma_senha" name="confirma_senha" required placeholder="Digite a senha novamente">
-                    </div>
-                    <div class="form-group">
-                        <label for="subject" class="required">Quero me tornar: </label>
-                        <select id="subject" name="subject" onchange="toggleAdditionalFields()" required>
-                            <option value="">Selecione...</option>
-                            <option value="comprador">Comprador</option>
-                            <option value="vendedor">Vendedor</option>
-                            <option value="transportador">Transportador</option>
-                        </select>
-                    </div>
-
-                    <!-- FORMULÁRIO DO COMPRADOR -->
-                    <div id="compradorFields" style="display: none;">
-                        <div class="multi-step-form">
-                            <div class="progress-indicator">
-                                <div class="progress-step active" data-step="1">1</div>
-                                <div class="progress-step" data-step="2">2</div>
-                                <div class="progress-step" data-step="3">3</div>
-                            </div>
-
-                            <!-- PASSO 1: Dados Pessoais -->
-                            <div id="compradorStep1" class="step-content active">
-                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
-                                
-                                <div class="form-group">
-                                    <label class="required">Tipo de Pessoa:</label>
-                                    <div class="radio-group">
-                                        <label class="radio-label">
-                                            <input type="radio" name="tipoPessoaComprador" value="cpf" required checked>
-                                            <span class="radio-custom"></span>
-                                            <span class="radio-text">CPF</span>
-                                        </label>
-                                        <label class="radio-label">
-                                            <input type="radio" name="tipoPessoaComprador" value="cnpj" required>
-                                            <span class="radio-custom"></span>
-                                            <span class="radio-text">CNPJ</span>
-                                        </label>
-                                    </div>
-                                    <small class="form-help">CPF selecionado por padrão. Clique em CNPJ se for uma empresa.</small>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="cpfCnpjComprador" class="required">CPF/CNPJ </label>
-                                    <input type="text" id="cpfCnpjComprador" name="cpfCnpjComprador" required placeholder="000.000.000-00">
-                                    <small class="form-help">Digite apenas números para CPF ou letras e números para CNPJ; a pontuação será aplicada automaticamente</small>
-                                </div>
-                                
-                                <div class="form-group" id="nomeComercialGroup">
-                                    <label id="labelNomeComercialComprador" for="nomeComercialComprador" class="required">Nome de Exibição </label>
-                                    <input type="text" id="nomeComercialComprador" name="nomeComercialComprador" required placeholder="Como você quer ser chamado na plataforma">
-                                    <small class="form-help">Esse nome será exibido para os outros usuários na plataforma.</small>
-                                </div>
-                                
-                                
-                                <div class="step-navigation">
-                                    <div></div>
-                                    <button type="button" class="step-btn btn-next" onclick="nextStep('comprador')">
-                                        Próximo →
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- PASSO 2: Endereço -->
-                            <div id="compradorStep2" class="step-content" style="display: none;">
-                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
-                                
-                                <div class="form-group">
-                                    <label for="cepComprador">CEP (opcional)</label>
-                                    <div class="cep-container">
-                                        <input type="text" id="cepComprador" name="cepComprador" maxlength="9" placeholder="00000-000">
-                                        <button type="button" class="cep-btn" onclick="buscarCEPComprador()">Buscar CEP</button>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="ruaComprador" class="required">Rua </label>
-                                    <input type="text" id="ruaComprador" name="ruaComprador" required placeholder="Nome da rua">
-                                </div>
-                                
-                                <div class="form-group-row">
-                                    <div class="form-group">
-                                        <label for="numeroComprador" class="required">Número </label>
-                                        <input type="text" id="numeroComprador" name="numeroComprador" required placeholder="Número">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="complementoComprador">Complemento (opcional)</label>
-                                        <input type="text" id="complementoComprador" name="complementoComprador" placeholder="Apto, Sala, etc.">
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group-row">
-                                    <div class="form-group">
-                                        <label for="estadoComprador" class="required">Estado </label>
-                                        <select id="estadoComprador" name="estadoComprador" required>
-                                            <option value="">Selecione...</option>
-                                            <option value="AC">Acre</option>
-                                            <option value="AL">Alagoas</option>
-                                            <option value="AP">Amapá</option>
-                                            <option value="AM">Amazonas</option>
-                                            <option value="BA">Bahia</option>
-                                            <option value="CE">Ceará</option>
-                                            <option value="DF">Distrito Federal</option>
-                                            <option value="ES">Espírito Santo</option>
-                                            <option value="GO">Goiás</option>
-                                            <option value="MA">Maranhão</option>
-                                            <option value="MT">Mato Grosso</option>
-                                            <option value="MS">Mato Grosso do Sul</option>
-                                            <option value="MG">Minas Gerais</option>
-                                            <option value="PA">Pará</option>
-                                            <option value="PB">Paraíba</option>
-                                            <option value="PR">Paraná</option>
-                                            <option value="PE">Pernambuco</option>
-                                            <option value="PI">Piauí</option>
-                                            <option value="RJ">Rio de Janeiro</option>
-                                            <option value="RN">Rio Grande do Norte</option>
-                                            <option value="RS">Rio Grande do Sul</option>
-                                            <option value="RO">Rondônia</option>
-                                            <option value="RR">Roraima</option>
-                                            <option value="SC">Santa Catarina</option>
-                                            <option value="SP">São Paulo</option>
-                                            <option value="SE">Sergipe</option>
-                                            <option value="TO">Tocantins</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="cidadeComprador" class="required">Cidade </label>
-                                        <input type="text" id="cidadeComprador" name="cidadeComprador" required placeholder="Nome da cidade">
-                                    </div>
-                                </div>
-                                
-                                <div class="step-navigation">
-                                    <button type="button" class="step-btn btn-prev" onclick="prevStep('comprador')">
-                                        ← Voltar
-                                    </button>
-                                    <button type="button" class="step-btn btn-next" onclick="nextStep('comprador')">
-                                        Próximo →
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- PASSO 3: Contato e Plano -->
-                            <div id="compradorStep3" class="step-content" style="display: none;">
-                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Contato e Plano</h4>
-                                
-                                <div class="form-group-row">
-                                    <div class="form-group">
-                                        <label for="telefone1Comprador" class="required">Telefone/Celular </label>
-                                        <input type="text" id="telefone1Comprador" name="telefone1Comprador" maxlength="15" required placeholder="(11) 99999-9999">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="telefone2Comprador">Telefone/Celular (opcional)</label>
-                                        <input type="text" id="telefone2Comprador" name="telefone2Comprador" maxlength="15" placeholder="(11) 99999-9999">
-                                    </div>
-                                </div>
-
-                                <h4 style="margin-top: 30px; margin-bottom: 20px; color: var(--dark-color);">Documentação</h4>
-                                <p style="color: #666; margin-bottom: 15px;">Para validar sua identidade, envie as fotos abaixo:</p>
-                                
-                                <div class="form-group">
-                                    <label for="fotoRostoComprador" class="required">Foto Facial</label>
-                                    <input type="file" id="fotoRostoComprador" name="fotoRostoComprador" accept="image/*" required>
-                                    <small class="form-help">Envie uma foto clara do seu rosto. Formatos: JPG, PNG</small>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="fotoDocumentoFrenteComprador" class="required">Documento - Frente </label>
-                                    <input type="file" id="fotoDocumentoFrenteComprador" name="fotoDocumentoFrenteComprador" accept="image/*" required>
-                                    <small class="form-help">Envie uma foto clara da frente do seu documento (RG, CNH ou Passaporte)</small>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="fotoDocumentoVersoComprador" class="required">Documento - Verso </label>
-                                    <input type="file" id="fotoDocumentoVersoComprador" name="fotoDocumentoVersoComprador" accept="image/*" required>
-                                    <small class="form-help">Envie uma foto clara do verso do seu documento</small>
-                                </div>
-
-                                <div class="form-group" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
-                                    <label for="aceite_termos" style="display:flex; align-items:flex-box; gap:8px; cursor:pointer; font-weight:600; color:var(--dark-color);">
-                                        <input type="checkbox" id="aceite_termos" name="aceite_termos" value="1" required style="width: 16px;">
-                                        <span>Li e aceito os <a href="src/termos.php" target="_blank" rel="noopener noreferrer">termos e condições</a></span>
-                                    </label>
-                                </div>
-                                
-                                <div class="step-navigation">
-                                    <button type="button" class="step-btn btn-prev" onclick="prevStep('comprador')">
-                                        ← Voltar
-                                    </button>
-                                    <button type="button" class="step-btn btn-ajax-submit">
-                                        Finalizar Cadastro
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- FORMULÁRIO DO VENDEDOR -->
-                    <div id="vendedorFields" style="display: none;">
-                        <div class="multi-step-form">
-                            <div class="progress-indicator">
-                                <div class="progress-step active" data-step="1">1</div>
-                                <div class="progress-step" data-step="2">2</div>
-                                <div class="progress-step" data-step="3">3</div>
-                            </div>
-
-                            <!-- PASSO 1: Dados da Empresa -->
-                            <div id="vendedorStep1" class="step-content active">
-                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados da Empresa</h4>
-                                
-                                <div class="form-group">
-                                    <label for="nomeComercialVendedor" class="required">Nome Comercial </label>
-                                    <input type="text" id="nomeComercialVendedor" name="nomeComercialVendedor" required placeholder="Nome da empresa/fazenda">
-                                    <small class="form-help">Esse será seu nome de exibição</small>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="cpfCnpjVendedor" class="required">CNPJ </label>
-                                    <input type="text" id="cpfCnpjVendedor" name="cpfCnpjVendedor" required placeholder="00.000.000/0000-00">
-                                    <small class="form-help">Para vendedor, é obrigatório CNPJ (14 caracteres)</small>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="cipVendedor">CIP (opcional)</label>
-                                    <input type="text" id="cipVendedor" name="cipVendedor" placeholder="Código de Identificação do Produtor">
-                                </div>
-                                
-                                <div class="step-navigation">
-                                    <div></div>
-                                    <button type="button" class="step-btn btn-next" onclick="nextStep('vendedor')">
-                                        Próximo →
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- PASSO 2: Endereço -->
-                            <div id="vendedorStep2" class="step-content" style="display: none;">
-                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
-                                
-                                <div class="form-group">
-                                    <label for="cepVendedor">CEP (opcional)</label>
-                                    <div class="cep-container">
-                                        <input type="text" id="cepVendedor" name="cepVendedor" maxlength="9" placeholder="00000-000">
-                                        <button type="button" class="cep-btn" onclick="buscarCEPVendedor()">Buscar CEP</button>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="ruaVendedor" class="required">Rua </label>
-                                    <input type="text" id="ruaVendedor" name="ruaVendedor" required placeholder="Nome da rua">
-                                </div>
-                                
-                                <div class="form-group-row">
-                                    <div class="form-group">
-                                        <label for="numeroVendedor" class="required">Número </label>
-                                        <input type="text" id="numeroVendedor" name="numeroVendedor" required placeholder="Número">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="complementoVendedor">Complemento (opcional)</label>
-                                        <input type="text" id="complementoVendedor" name="complementoVendedor" placeholder="Apto, Sala, etc.">
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group-row">
-                                    <div class="form-group">
-                                        <label for="estadoVendedor" class="required">Estado </label>
-                                        <select id="estadoVendedor" name="estadoVendedor" required>
-                                            <option value="">Selecione...</option>
-                                            <option value="AC">Acre</option>
-                                            <option value="AL">Alagoas</option>
-                                            <option value="AP">Amapá</option>
-                                            <option value="AM">Amazonas</option>
-                                            <option value="BA">Bahia</option>
-                                            <option value="CE">Ceará</option>
-                                            <option value="DF">Distrito Federal</option>
-                                            <option value="ES">Espírito Santo</option>
-                                            <option value="GO">Goiás</option>
-                                            <option value="MA">Maranhão</option>
-                                            <option value="MT">Mato Grosso</option>
-                                            <option value="MS">Mato Grosso do Sul</option>
-                                            <option value="MG">Minas Gerais</option>
-                                            <option value="PA">Pará</option>
-                                            <option value="PB">Paraíba</option>
-                                            <option value="PR">Paraná</option>
-                                            <option value="PE">Pernambuco</option>
-                                            <option value="PI">Piauí</option>
-                                            <option value="RJ">Rio de Janeiro</option>
-                                            <option value="RN">Rio Grande do Norte</option>
-                                            <option value="RS">Rio Grande do Sul</option>
-                                            <option value="RO">Rondônia</option>
-                                            <option value="RR">Roraima</option>
-                                            <option value="SC">Santa Catarina</option>
-                                            <option value="SP">São Paulo</option>
-                                            <option value="SE">Sergipe</option>
-                                            <option value="TO">Tocantins</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="cidadeVendedor" class="required">Cidade </label>
-                                        <input type="text" id="cidadeVendedor" name="cidadeVendedor" required placeholder="Nome da cidade">
-                                    </div>
-                                </div>
-                                
-                                <div class="step-navigation">
-                                    <button type="button" class="step-btn btn-prev" onclick="prevStep('vendedor')">
-                                        ← Voltar
-                                    </button>
-                                    <button type="button" class="step-btn btn-next" onclick="nextStep('vendedor')">
-                                        Próximo →
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- PASSO 3: Contato e Plano -->
-                            <div id="vendedorStep3" class="step-content" style="display: none;">
-                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Contato e Plano</h4>
-                                
-                                <div class="form-group-row">
-                                    <div class="form-group">
-                                        <label for="telefone1Vendedor" class="required">Telefone/Celular </label>
-                                        <input type="text" id="telefone1Vendedor" name="telefone1Vendedor" maxlength="15" required placeholder="(11) 99999-9999">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="telefone2Vendedor">Telefone/Celular (opcional)</label>
-                                        <input type="text" id="telefone2Vendedor" name="telefone2Vendedor" maxlength="15" placeholder="(11) 99999-9999">
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="planoVendedor">Plano</label>
-                                    <select id="planoVendedor" name="planoVendedor">
-                                        <option value="free" selected>Plano 1 - Grátis</option>
-                                    </select>
-                                    <small class="form-help" style="color: #666; font-style: italic; display: block; margin-top: 5px;">
-                                        * Todos começam com plano gratuito. Você poderá alterar o plano posteriormente em seu painel.
-                                    </small>
-                                </div>
-
-                                <h4 style="margin-top: 30px; margin-bottom: 20px; color: var(--dark-color);">Documentação</h4>
-                                <p style="color: #666; margin-bottom: 15px;">Para validar sua identidade, envie as fotos abaixo:</p>
-                                
-                                <div class="form-group">
-                                    <label for="fotoRostoVendedor" class="required">Foto do Rosto </label>
-                                    <input type="file" id="fotoRostoVendedor" name="fotoRostoVendedor" accept="image/*" required>
-                                    <small class="form-help">Envie uma foto clara do seu rosto. Formatos: JPG, PNG</small>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="fotoDocumentoFrenteVendedor" class="required">Documento - Frente </label>
-                                    <input type="file" id="fotoDocumentoFrenteVendedor" name="fotoDocumentoFrenteVendedor" accept="image/*" required>
-                                    <small class="form-help">Envie uma foto clara da frente do seu documento (RG, CNH ou Passaporte)</small>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="fotoDocumentoVersoVendedor" class="required">Documento - Verso </label>
-                                    <input type="file" id="fotoDocumentoVersoVendedor" name="fotoDocumentoVersoVendedor" accept="image/*" required>
-                                    <small class="form-help">Envie uma foto clara do verso do seu documento</small>
-                                </div>
-
-                                <div class="form-group" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
-                                    <label for="aceite_termos" style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-weight:600; color:var(--dark-color);">
-                                        <input type="checkbox" id="aceite_termos" name="aceite_termos" value="1" required>
-                                        <span>Li e aceito os <a href="src/termos.php" target="_blank" rel="noopener noreferrer">termos e condições</a></span>
-                                    </label>
-                                </div>
-                                
-                                <div class="step-navigation">
-                                    <button type="button" class="step-btn btn-prev" onclick="prevStep('vendedor')">
-                                        ← Voltar
-                                    </button>
-                                    <button type="button" class="step-btn btn-ajax-submit">
-                                        Finalizar Cadastro
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- FORMULÁRIO DO TRANSPORTADOR -->
-                    <div id="transportadorFields" style="display: none;">
-                        <div class="multi-step-form">
-                            <div class="progress-indicator">
-                                <div class="progress-step active" data-step="1">1</div>
-                                <div class="progress-step" data-step="2">2</div>
-                                <div class="progress-step" data-step="3">3</div>
-                            </div>
-
-                            <!-- PASSO 1: Dados Pessoais -->
-                            <div id="transportadorStep1" class="step-content active">
-                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
-                                
-                                <div class="form-group">
-                                    <label for="telefoneTransportador" class="required">Telefone/Celular </label>
-                                    <input type="text" id="telefoneTransportador" name="telefoneTransportador" maxlength="15" required placeholder="(11) 99999-9999">
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="numeroANTT" class="required">Número ANTT </label>
-                                    <input type="text" id="numeroANTT" name="numeroANTT" required placeholder="Somente números - Registro na ANTT">
-                                    <small class="form-help">Digite apenas números (ex: 12345678901234)</small>
-                                </div>
-                                
-                                <div class="step-navigation">
-                                    <div></div>
-                                    <button type="button" class="step-btn btn-next" onclick="nextStep('transportador')">
-                                        Próximo →
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- PASSO 2: Dados do Veículo -->
-                            <div id="transportadorStep2" class="step-content" style="display: none;">
-                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados do Veículo</h4>
-                                
-                                <div class="form-group">
-                                    <label for="placaVeiculo" class="required">Placa do Veículo </label>
-                                    <div class="placa-container">
-                                        <input type="text" id="placaVeiculo" name="placaVeiculo" required 
-                                               placeholder="AAA-1234 ou AAA1B23" maxlength="8">
-                                    </div>
-                                    <small class="form-help">Formato aceito: AAA-1234 (antigo) ou AAA1B23 (Mercosul)</small>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="modeloVeiculo" class="required">Modelo do Veículo </label>
-                                    <input type="text" id="modeloVeiculo" name="modeloVeiculo" required placeholder="Ex: Mercedes-Benz Actros 2020">
-                                    <small class="form-help">Clique no botão "Buscar Info" acima para tentar preencher automaticamente</small>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="descricaoVeiculo" class="required">Descrição do Veículo </label>
-                                    <textarea id="descricaoVeiculo" name="descricaoVeiculo" rows="3" required 
-                                              placeholder="Ex: Caminhão baú refrigerado, capacidade 20 toneladas, 3 eixos"></textarea>
-                                    <small class="form-help">Descreva as características do veículo para melhor identificação</small>
-                                </div>
-                                
-                                <div class="step-navigation">
-                                    <button type="button" class="step-btn btn-prev" onclick="prevStep('transportador')">
-                                        ← Voltar
-                                    </button>
-                                    <button type="button" class="step-btn btn-next" onclick="nextStep('transportador')">
-                                        Próximo →
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- PASSO 3: Localização -->
-                             <div id="transportadorStep3" class="step-content" style="display: none;">
-                                <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
-                                
-                                <div class="form-group">
-                                    <label for="cepTransportador">CEP (opcional)</label>
-                                    <div class="cep-container">
-                                        <input type="text" id="cepTransportador" name="cepTransportador" maxlength="9" placeholder="00000-000">
-                                        <button type="button" class="cep-btn" onclick="buscarCEPTransportador()">Buscar CEP</button>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="ruaTransportador" class="required">Rua </label>
-                                    <input type="text" id="ruaTransportador" name="ruaTransportador" required placeholder="Nome da rua">
-                                </div>
-                                
-                                <div class="form-group-row">
-                                    <div class="form-group">
-                                        <label for="numeroTransportador" class="required">Número </label>
-                                        <input type="text" id="numeroTransportador" name="numeroTransportador" required placeholder="Número">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="complementoTransportador">Complemento (opcional)</label>
-                                        <input type="text" id="complementoTransportador" name="complementoTransportador" placeholder="Apto, Sala, etc.">
-                                    </div>
-                                </div>
-                                <div class="form-group-row">
-                                    <div class="form-group">
-                                        <label for="estadoTransportador" class="required">Estado </label>
-                                        <select id="estadoTransportador" name="estadoTransportador" required>
-                                            <option value="">Selecione o estado...</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="cidadeTransportador" class="required">Cidade </label>
-                                        <input type="text" id="cidadeTransportador" name="cidadeTransportador" required placeholder="Nome da cidade">
-                                    </div>
-                                </div>
-
-                                <h4 style="margin-top: 30px; margin-bottom: 20px; color: var(--dark-color);">Documentação</h4>
-                                <p style="color: #666; margin-bottom: 15px;">Para validar sua identidade, envie as fotos abaixo:</p>
-                                
-                                <div class="form-group">
-                                    <label for="fotoRostoTransportador" class="required">Foto do Rosto </label>
-                                    <input type="file" id="fotoRostoTransportador" name="fotoRostoTransportador" accept="image/*" required>
-                                    <small class="form-help">Envie uma foto clara do seu rosto. Formatos: JPG, PNG</small>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="fotoDocumentoFrenteTransportador" class="required">Documento - Frente </label>
-                                    <input type="file" id="fotoDocumentoFrenteTransportador" name="fotoDocumentoFrenteTransportador" accept="image/*" required>
-                                    <small class="form-help">Envie uma foto clara da frente do seu documento (RG, CNH ou Passaporte)</small>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="fotoDocumentoVersoTransportador" class="required">Documento - Verso </label>
-                                    <input type="file" id="fotoDocumentoVersoTransportador" name="fotoDocumentoVersoTransportador" accept="image/*" required>
-                                    <small class="form-help">Envie uma foto clara do verso do seu documento</small>
-                                </div>
-
-                                <div class="form-group" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
-                                    <label for="aceite_termos" style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-weight:600; color:var(--dark-color);">
-                                        <input type="checkbox" id="aceite_termos" name="aceite_termos" value="1" required>
-                                        <span>Li e aceito os <a href="src/termos.php" target="_blank" rel="noopener noreferrer">termos e condições</a></span>
-                                    </label>
-                                </div>
-                                
-                                <div class="step-navigation">
-                                    <button type="button" class="step-btn btn-prev" onclick="prevStep('transportador')">
-                                        ← Voltar
-                                    </button>
-                                    <button type="button" class="step-btn btn-ajax-submit">
-                                        Finalizar Cadastro
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Mensagem (opcional) -->
-                    <div class="form-group" id="messageGroup" style="display: none; margin-top: 20px;">
-                        <label for="message">Mensagem (opcional)</label>
-                        <textarea id="message" name="message" rows="4" placeholder="Conte-nos mais sobre o que você precisa..."></textarea>
-                    </div>
-                    
-                    <!-- Botão de envio genérico -->
-                    <div class="end" style="margin-top: 30px;">
-                        <button type="button" id="submitOther" class="cta-button" style="width: 100%; padding: 15px; font-size: 1.1em;">
-                            Enviar Solicitação de Cadastro
-                        </button>
-                        <small class="form-help" style="text-align: center; display: block; margin-top: 10px; color: #666;">
-                            * Campos obrigatórios
-                        </small>
-                    </div>
-                </form>
-            </div>
         </div>
-    </div>
-</section>
+    </section>
 
     <footer class="footer">
         <div class="container">
@@ -825,6 +795,84 @@ require_once 'src/conexao.php';
     </footer>
 
     <script src="script.js"></script>
+    
+    <!-- ============================================================
+    CORREÇÃO: Validação Frontend de Arquivos
+    ============================================================ -->
+    <script>
+    function validarArquivo(input, nomeCampo) {
+        const errorDiv = document.getElementById(input.id + '-error');
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
+        
+        // Limpar erro anterior
+        errorDiv.classList.remove('show');
+        errorDiv.textContent = '';
+        input.classList.remove('file-input-error');
+        
+        // Verificar se há arquivo selecionado
+        if (input.files.length === 0) {
+            return;
+        }
+        
+        const file = input.files[0];
+        let erro = '';
+        
+        // Verificar tipo de arquivo
+        if (!tiposPermitidos.includes(file.type)) {
+            erro = '❌ Tipo de arquivo não permitido para "' + nomeCampo + '". Use JPG, PNG ou WebP.';
+        }
+        
+        // Verificar tamanho
+        if (!erro && file.size > maxSize) {
+            erro = '❌ Arquivo muito grande para "' + nomeCampo + '". Máximo permitido: 10MB.';
+        }
+        
+        // Verificar dimensões (opcional - apenas para imagens)
+        if (!erro) {
+            const img = new Image();
+            img.onload = function() {
+                if (this.width < 100 || this.height < 100) {
+                    erro = '❌ Imagem muito pequena para "' + nomeCampo + '". Mínimo: 100x100 pixels.';
+                    mostrarErro();
+                }
+                if (this.width > 4096 || this.height > 4096) {
+                    erro = '❌ Imagem muito grande para "' + nomeCampo + '". Máximo: 4096x4096 pixels.';
+                    mostrarErro();
+                }
+                if (this.width / this.height < 0.3 || this.width / this.height > 3.0) {
+                    erro = '❌ Proporção da imagem inválida para "' + nomeCampo + '". A imagem está muito distorcida.';
+                    mostrarErro();
+                }
+            };
+            img.src = URL.createObjectURL(file);
+        }
+        
+        function mostrarErro() {
+            if (erro) {
+                errorDiv.textContent = erro;
+                errorDiv.classList.add('show');
+                input.classList.add('file-input-error');
+                input.value = ''; // Limpar o input
+            }
+        }
+        
+        // Mostrar erro imediatamente para validações síncronas
+        if (erro) {
+            mostrarErro();
+        }
+    }
+    
+    // Adicionar validação para todos os inputs file
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('input[type="file"]').forEach(function(input) {
+            // Garantir que o atributo accept esteja correto
+            if (!input.getAttribute('accept')) {
+                input.setAttribute('accept', 'image/jpeg,image/png,image/webp');
+            }
+        });
+    });
+    </script>
     
 </body>
 </html>

@@ -1,0 +1,31 @@
+User-agent: *
+Allow: /
+
+# Áreas autenticadas / painéis por tipo de usuário
+Disallow: /src/admin/
+Disallow: /src/comprador/
+Disallow: /src/vendedor/
+Disallow: /src/transportador/
+
+# Chat (dados privados de conversas entre usuários)
+Disallow: /src/chat/
+Disallow: /src/chat_transportador/
+
+# Scripts internos, cron e processadores (não são páginas, são endpoints)
+Disallow: /src/scripts/
+Disallow: /src/cron/
+Disallow: /src/processar_*.php
+Disallow: /src/*/processar_*.php
+
+# Documentos de identidade e uploads de usuários (dados sensíveis/LGPD)
+Disallow: /uploads/documentos/
+Disallow: /uploads/chat/
+
+# Configuração e includes (não são páginas navegáveis)
+Disallow: /src/conexao.php
+Disallow: /includes/
+
+# Login (opcional bloquear — deixe liberado se quiser que apareça em buscas "encontre o campo login")
+# Disallow: /src/login.php
+
+Sitemap: https://encontreocampo.com.br/sitemap.xml

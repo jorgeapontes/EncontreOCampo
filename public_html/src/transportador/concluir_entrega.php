@@ -192,35 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Concluir Entrega - Encontre o Campo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root { --primary: #2E7D32; --dark: #1b5e20; --light: #f1f8e9; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
-        .container { max-width: 500px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: var(--primary); text-align: center; margin-bottom: 25px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; }
-        
-        /* Estilo da área de Assinatura */
-        .signature-wrapper {
-            border: 2px dashed #ccc;
-            background: #fafafa;
-            border-radius: 8px;
-            position: relative;
-            margin-bottom: 10px;
-            touch-action: none; /* Importante para mobile */
-        }
-        #signature-pad { width: 100%; height: 200px; cursor: crosshair; }
-        .signature-actions { display: flex; justify-content: flex-end; margin-top: 5px; }
-        .btn-clear { background: #f44336; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
-
-        input[type="file"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
-        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-submit:hover { background: var(--dark); }
-        .alert { padding: 12px; border-radius: 6px; margin-bottom: 20px; text-align: center; }
-        .alert-danger { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
-        #preview-container { margin-top: 10px; display: none; text-align: center; }
-        #preview-image { max-width: 100%; border-radius: 8px; max-height: 200px; }
-    </style>
+    <link rel="stylesheet" href="../css/transportador/concluir_entrega.css">
 </head>
 <body>
 
@@ -256,8 +228,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <i class="fas fa-truck-loading"></i> CONCLUIR ENTREGA
             </button>
             
-            <p style="text-align:center; margin-top:15px;">
-                <a href="entregas.php" style="color: #666; text-decoration:none;">Cancelar</a>
+            <p class="form-footer">
+                <a href="entregas.php" class="link-cancelar">Cancelar</a>
             </p>
         </form>
     </div>

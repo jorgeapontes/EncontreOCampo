@@ -61,6 +61,7 @@ if ($id > 0 && $transportador_id) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes da Entrega</title>
     <link rel="stylesheet" href="../css/transportador/dashboard.css">
+    <link rel="stylesheet" href="../css/transportador/entrega_detalhes.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
 </head>
@@ -69,7 +70,7 @@ if ($id > 0 && $transportador_id) {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index.php" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -94,10 +95,10 @@ if ($id > 0 && $transportador_id) {
     </header>
     <main class="main-content">
         <?php if ($entrega): ?>
-        <section class="entrega-detalhes" style="margin-top:48px;">
-            <div style="display:flex;justify-content:center;">
-                <div style="flex:1;max-width:1000px;">
-                    <div class="entrega-info entrega-info-destacada" style="margin:0;">
+        <section class="entrega-detalhes">
+            <div class="entrega-detalhes-wrap">
+                <div class="entrega-detalhes-col">
+                    <div class="entrega-info entrega-info-destacada">
                 <div class="entrega-info-header">
                     <h2>Entrega #<?php echo $entrega['id']; ?></h2>
                         <span class="status <?php echo $entrega['status']; ?>">Status: <?php echo ucfirst($entrega['status']); ?></span>
@@ -137,18 +138,18 @@ if ($id > 0 && $transportador_id) {
                         <div class="entrega-info-item"><span class="label">Data Limite de Entrega:</span> <span><?php echo $data_limite ? date('d/m/Y', strtotime($data_limite)) : '—'; ?></span></div>
 
                         <!-- Terceira linha: Endereços -->
-                        <div class="entrega-info-item" style="grid-column:1 / -1;"><span class="label">Coleta:</span> <span><?php echo htmlspecialchars($origem_full ?: '—'); ?></span></div>
-                        <div class="entrega-info-item" style="grid-column:1 / -1;"><span class="label">Destino:</span> <span><?php echo htmlspecialchars($destino_full ?: '—'); ?></span></div>
+                        <div class="entrega-info-item full-row"><span class="label">Coleta:</span> <span><?php echo htmlspecialchars($origem_full ?: '—'); ?></span></div>
+                        <div class="entrega-info-item full-row"><span class="label">Destino:</span> <span><?php echo htmlspecialchars($destino_full ?: '—'); ?></span></div>
 
                         <!-- Última linha: Produto clicável (ocupar largura) -->
-                        <div class="entrega-info-item" style="grid-column:1 / -1;"><span class="label">Produto:</span> <span><a href="<?php echo $produto_link; ?>"><?php echo htmlspecialchars($entrega['produto_nome']); ?></a></span></div>
+                        <div class="entrega-info-item full-row"><span class="label">Produto:</span> <span><a href="<?php echo $produto_link; ?>"><?php echo htmlspecialchars($entrega['produto_nome']); ?></a></span></div>
                 </div>
                     <?php
                         $origem = $origem_full;
                         $destino = $entrega['endereco_destino'] ?? '';
                         $google_maps_url = 'https://www.google.com/maps/dir/?api=1&origin=' . urlencode($origem) . '&destination=' . urlencode($destino) . '&travelmode=driving';
                     ?>
-                    <div class="entrega-info-actions" style="display:flex;justify-content:flex-end;gap:12px;">
+                    <div class="entrega-info-actions">
                         <a href="<?php echo $google_maps_url; ?>" class="cta-button" target="_blank"><i class="fas fa-route"></i> Ver rota</a>
                         <a href="#" class="cta-button btn-voltar" onclick="window.history.back();return false;"><i class="fas fa-arrow-left"></i> Voltar</a>
                     </div>
@@ -165,108 +166,6 @@ if ($id > 0 && $transportador_id) {
         </section>
         <?php endif; ?>
     </main>
-    <style>
-    .entrega-info-destacada {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-        padding: 32px 24px;
-        max-width: 900px;
-        margin: 48px auto 0 auto;
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-    }
-    .entrega-info-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-    }
-    .entrega-info-header h2 {
-        font-size: 2rem;
-        color: var(--primary-color, #4CAF50);
-        margin: 0;
-    }
-    .entrega-info-header .status {
-        font-weight: 600;
-        padding: 6px 16px;
-        border-radius: 8px;
-        background: var(--primary-light, #C8E6C9);
-        color: var(--primary-dark, #388E3C);
-        font-size: 1rem;
-    }
-    .entrega-info-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px 32px;
-    }
-    .entrega-info-item .label {
-        font-weight: 600;
-        color: var(--primary-color, #4CAF50);
-        margin-right: 6px;
-    }
-    .entrega-info-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 16px;
-    }
-    .cta-button {
-        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        padding: 12px 28px;
-        font-size: 1rem;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: background 0.2s, box-shadow 0.2s;
-        box-shadow: 0 2px 8px rgba(76,175,80,0.08);
-        cursor: pointer;
-    }
-    .cta-button:hover {
-        background: linear-gradient(135deg, #388E3C 0%, #4CAF50 100%);
-        color: #fff;
-        box-shadow: 0 4px 16px rgba(76,175,80,0.15);
-    }
-    .btn-voltar {
-        background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%);
-        color: #333;
-        border: none;
-        border-radius: 8px;
-        padding: 12px 28px;
-        font-size: 1rem;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: background 0.2s, box-shadow 0.2s;
-        box-shadow: 0 2px 8px rgba(160,160,160,0.08);
-        cursor: pointer;
-        margin-left: 12px;
-    }
-    .btn-voltar:hover {
-        background: linear-gradient(135deg, #bdbdbd 0%, #e0e0e0 100%);
-        color: #111;
-        box-shadow: 0 4px 16px rgba(160,160,160,0.15);
-    }
-    @media (max-width: 600px) {
-        .entrega-info-destacada {
-            padding: 16px 6px;
-        }
-        .entrega-info-grid {
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-        .entrega-info-header h2 {
-            font-size: 1.2rem;
-        }
-    }
-    </style>
     <script>
         const hamburger = document.querySelector(".hamburger");
         const navMenu = document.querySelector(".nav-menu");

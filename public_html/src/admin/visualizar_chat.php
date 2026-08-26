@@ -162,24 +162,24 @@ try {
 <body>
     <div class="container">
         <div class="top-controls">
-            <div style="display: flex; gap: 10px; align-items: center;">
+            <div class="controls-group align-center">
                 <a href="chats_admin.php" class="btn-back">
                     <i class="fas fa-arrow-left"></i> Voltar para Lista
                 </a>
-                
+
                 <?php if (count($acordos) > 0): ?>
                     <button id="btnOpenModal" class="btn-acordos">
                         <i class="fas fa-file-signature"></i> Ver Acordos de Compra
                         <span class="badge"><?php echo count($acordos); ?></span>
                     </button>
                 <?php else: ?>
-                    <button id="btnOpenModal" class="btn-acordos" style="opacity: 0.7; cursor: not-allowed;" disabled>
+                    <button id="btnOpenModal" class="btn-acordos disabled" disabled>
                         <i class="fas fa-file-signature"></i> Nenhum Acordo
                     </button>
                 <?php endif; ?>
             </div>
-            
-            <div style="display: flex; gap: 10px;">
+
+            <div class="controls-group">
                 <a href="exportar_pdf.php?conversa_id=<?php echo $conversa_id; ?>" target="_blank" class="btn-export">
                     <i class="fas fa-file-pdf"></i> Exportar PDF
                 </a>

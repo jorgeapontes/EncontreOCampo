@@ -382,6 +382,91 @@ th:last-child {
     filter: brightness(90%);
 }
 
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+/* Botões de link das entregas (Ver Detalhes / Concluir Entrega) */
+.actions-inline {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.entrega-link-btn {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.entrega-link-btn.card {
+    padding: 6px 10px;
+    border-radius: 8px;
+}
+
+.entrega-link-btn.neutral {
+    background: #eee;
+    color: #333;
+}
+
+.entrega-link-btn.primary {
+    background: #2196F3;
+    color: #fff;
+}
+
+/* Links/botões de comprovante e assinatura (historico.php) */
+.hist-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.hist-doc-btn {
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.hist-doc-btn.foto {
+    background: var(--primary-color);
+    margin-right: 8px;
+}
+
+.hist-doc-btn.assinatura {
+    background: var(--secondary-color);
+}
+
+.hist-doc-icon {
+    margin-right: 5px;
+}
+
+/* Cards de entregas para mobile (entregas.php) */
+@media (min-width: 801px) {
+    .entregas-cards {
+        display: none !important;
+    }
+}
+
+@media (max-width: 800px) {
+    .tabela-entregas table {
+        display: none !important;
+    }
+
+    .entregas-cards {
+        display: block !important;
+    }
+}
+
 /* Botão CTA (Nova Entrega) */
 .cta-button {
     display: inline-flex;

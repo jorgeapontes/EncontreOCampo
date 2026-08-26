@@ -1,0 +1,71 @@
+.acordos-disponiveis {
+    max-width: 1200px;
+    margin: 40px auto;
+    background: #f9f9f9;
+    border-radius: 16px;
+    box-shadow: 0 2px 18px rgba(0,0,0,0.06);
+    padding: 32px 24px 24px 24px;
+}
+.acordos-lista {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 28px;
+}
+.acordo-card {
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    padding: 20px 16px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 240px;
+    transition: box-shadow 0.18s, border 0.18s;
+    border: 1.5px solid #e6eaf0;
+    position: relative;
+}
+.acordo-card .thumb { width:100%;height:160px;overflow:hidden;margin-bottom:12px;border-radius:8px }
+.acordo-card .thumb img { width:100%;height:100%;object-fit:cover;display:block }
+.acordo-card h3 { margin:0 0 8px 0; font-size:1.08rem; font-weight:700 }
+.acordo-info { font-size:0.97rem; color:#444; margin-bottom:10px; width:100%; }
+.acordo-actions { margin-top: auto; width:100%; display:flex; flex-direction:column; gap:8px; }
+.acordo-btn { background: #3a7a4d; color:#fff; border:none; border-radius:7px; padding:10px 0; font-size:1rem; font-weight:600; cursor:pointer; width:100%; }
+.acordo-btn.ver-anuncio { background: #2566d6; text-decoration:none; display:inline-block; text-align:center }
+.acordo-btn.chat { background: #2E7D32; }
+.acordo-card:hover { box-shadow: 0 6px 18px rgba(60,180,120,0.10); border-color: #b6e2c6; }
+
+.fav-btn-wrap {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+}
+.fav-btn {
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.06);
+    padding: 6px;
+    border-radius: 8px;
+}
+
+.rota-info {
+    margin-top: 6px;
+    font-size: 0.95rem;
+}
+.rota-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+}
+.rota-icon {
+    flex: 0 0 16px;
+}
+
+@media (max-width: 900px) {
+    .acordos-lista { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+}
+@media (max-width: 600px) {
+    .acordos-disponiveis { padding: 10px 2vw; }
+    .acordos-lista { gap: 14px; }
+    .acordo-card { padding: 10px 6px; min-height: 160px; }
+    .acordo-card .thumb { height:120px }
+}

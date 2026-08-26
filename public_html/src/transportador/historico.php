@@ -61,7 +61,7 @@ try {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index.php" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -179,14 +179,14 @@ try {
                             
                             // Comprovante
                             if (!empty($e['foto_comprovante'])) {
-                                echo '<td><a href="../../uploads/entregas/' . htmlspecialchars($e['foto_comprovante']) . '" target="_blank" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Ver Foto</a></td>';
+                                echo '<td><a href="../../uploads/entregas/' . htmlspecialchars($e['foto_comprovante']) . '" target="_blank" class="hist-link">Ver Foto</a></td>';
                             } else {
                                 echo '<td>-</td>';
                             }
-                            
+
                             // Assinatura
                             if (!empty($e['assinatura_comprovante'])) {
-                                echo '<td><a href="../../uploads/entregas/' . htmlspecialchars($e['assinatura_comprovante']) . '" target="_blank" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Ver Assinatura</a></td>';
+                                echo '<td><a href="../../uploads/entregas/' . htmlspecialchars($e['assinatura_comprovante']) . '" target="_blank" class="hist-link">Ver Assinatura</a></td>';
                             } else {
                                 echo '<td>-</td>';
                             }
@@ -255,15 +255,15 @@ try {
                             
                             // Botão para ver foto do comprovante
                             if (!empty($e['foto_comprovante'])) {
-                                echo '<a href="../../uploads/entregas/' . htmlspecialchars($e['foto_comprovante']) . '" target="_blank" class="card-action-btn" style="padding: 8px 12px; border-radius: 6px; background: var(--primary-color); color: white; text-decoration: none; font-weight: 600; font-size: 0.85rem; margin-right: 8px;">';
-                                echo '<i class="fas fa-camera" style="margin-right: 5px;"></i>Foto';
+                                echo '<a href="../../uploads/entregas/' . htmlspecialchars($e['foto_comprovante']) . '" target="_blank" class="hist-doc-btn foto">';
+                                echo '<i class="fas fa-camera hist-doc-icon"></i>Foto';
                                 echo '</a>';
                             }
-                            
+
                             // Botão para ver assinatura
                             if (!empty($e['assinatura_comprovante'])) {
-                                echo '<a href="../../uploads/entregas/' . htmlspecialchars($e['assinatura_comprovante']) . '" target="_blank" class="card-action-btn" style="padding: 8px 12px; border-radius: 6px; background: var(--secondary-color); color: white; text-decoration: none; font-weight: 600; font-size: 0.85rem;">';
-                                echo '<i class="fas fa-signature" style="margin-right: 5px;"></i>Assinatura';
+                                echo '<a href="../../uploads/entregas/' . htmlspecialchars($e['assinatura_comprovante']) . '" target="_blank" class="hist-doc-btn assinatura">';
+                                echo '<i class="fas fa-signature hist-doc-icon"></i>Assinatura';
                                 echo '</a>';
                             }
                             

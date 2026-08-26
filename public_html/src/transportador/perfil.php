@@ -284,7 +284,7 @@ function getImagePath($path) {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index.php" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -340,7 +340,7 @@ function getImagePath($path) {
             </div>
 
     <form method="POST" action="perfil.php" class="perfil-form" enctype="multipart/form-data">
-                <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" style="display: none;">
+                <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" class="file-input-hidden">
                 <!-- Campo hidden para guardar o número original -->
                 <input type="hidden" id="numero_original" value="<?php echo htmlspecialchars($transportador['numero'] ?? ''); ?>">
                 <div class="forms-area">
@@ -390,7 +390,7 @@ function getImagePath($path) {
                         <textarea id="descricao_veiculo" name="descricao_veiculo" rows="4"><?php echo htmlspecialchars($transportador['descricao_veiculo'] ?? ''); ?></textarea>
                     </div>
 
-                    <h3 style="margin-top: 20px; color: #2d3436; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">Endereço</h3>
+                    <h3>Endereço</h3>
                     
                     <div class="form-group-row input-group-cep">
                         <div class="form-group form-group-cep">
@@ -399,7 +399,7 @@ function getImagePath($path) {
                             <div id="cep-message" class="cep-message"></div>
                         </div>
                         <button type="button" class="btn-buscar-cep" id="btn-buscar-cep" onclick="buscarCep()">
-                            <i class="fas fa-search" style="margin-right: 5px;"></i> Buscar
+                            <i class="fas fa-search"></i> Buscar
                         </button>
                         
                         <div class="form-group">
@@ -415,14 +415,14 @@ function getImagePath($path) {
                                 ?>
                             </select>
                         </div>
-                        <div class="form-group" style="flex: 2;">
+                        <div class="form-group flex-2">
                             <label for="cidade">Cidade</label>
                             <input type="text" id="cidade" name="cidade" value="<?php echo htmlspecialchars($transportador['cidade'] ?? ''); ?>">
                         </div>
                     </div>
 
                     <div class="form-group-row">
-                        <div class="form-group" style="flex: 3;">
+                        <div class="form-group flex-3">
                             <label for="rua">Rua/Logradouro</label>
                             <input type="text" id="rua" name="rua" value="<?php echo htmlspecialchars($transportador['rua'] ?? ''); ?>">
                         </div>
@@ -440,7 +440,7 @@ function getImagePath($path) {
                     <button type="submit" class="big-button"><i class="fas fa-save"></i> Salvar Alterações</button>
                     
                     <center>
-                        <a href="#" id="delete-account-link" style="display: inline-block; margin-top: 20px; color: #666; text-decoration: none; font-size: 0.9rem;">
+                        <a href="#" id="delete-account-link" class="delete-account-link">
                             <i class="fas fa-trash-alt"></i> Apagar minha conta
                         </a>
                     </center>
@@ -449,16 +449,16 @@ function getImagePath($path) {
         </section>
     </div>
 
-    <div id="delete-account-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
-        <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%;">
-            <h3 style="color: #c62828; margin-bottom: 15px;"><i class="fas fa-exclamation-triangle"></i> Confirmar exclusão</h3>
+    <div id="delete-account-modal" class="delete-account-modal">
+        <div class="delete-account-modal-content">
+            <h3><i class="fas fa-exclamation-triangle"></i> Confirmar exclusão</h3>
             <p>Tem certeza? Esta ação não pode ser desfeita.</p>
-            <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button id="cancel-delete" style="padding: 10px 20px; border: 1px solid #ddd; background: #f5f5f5; border-radius: 4px; cursor: pointer;">Cancelar</button>
-                <form id="delete-account-form" method="POST" action="deletar_conta.php" style="margin: 0;">
+            <div class="delete-account-modal-actions">
+                <button id="cancel-delete" class="btn-cancel-delete">Cancelar</button>
+                <form id="delete-account-form" method="POST" action="deletar_conta.php" class="delete-account-form">
                     <input type="hidden" name="usuario_id" value="<?php echo $usuario['id']; ?>">
                     <input type="hidden" name="transportador_id" value="<?php echo $transportador['id']; ?>">
-                    <button type="submit" style="padding: 10px 20px; background: #c62828; color: white; border: none; border-radius: 4px; cursor: pointer;">Sim, apagar</button>
+                    <button type="submit" class="btn-confirm-delete">Sim, apagar</button>
                 </form>
             </div>
         </div>

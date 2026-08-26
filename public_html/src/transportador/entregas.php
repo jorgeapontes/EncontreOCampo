@@ -61,7 +61,7 @@ try {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index.php" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -217,10 +217,10 @@ try {
                                     </span>
                                 </td>
                                 <td>
-                                    <div style="display:flex;gap:8px;align-items:center;">
-                                        <a href="entrega_detalhes.php?id=<?php echo $entrega['id']; ?>" class="action-btn" style="display:inline-block;padding:4px 8px;border-radius:6px;background:#eee;color:#333;text-decoration:none;font-weight:600;font-size:0.875rem;">Ver Detalhes</a>
+                                    <div class="actions-inline">
+                                        <a href="entrega_detalhes.php?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn neutral">Ver Detalhes</a>
                                         <?php if ($entrega['status'] == 'pendente' || $entrega['status'] == 'em_transporte'): ?>
-                                            <a href="concluir_entrega.php?id=<?php echo $entrega['id']; ?>" class="action-btn" style="display:inline-block;padding:4px 8px;border-radius:6px;background:#2196F3;color:#fff;text-decoration:none;font-weight:600;font-size:0.875rem;">Concluir Entrega</a>
+                                            <a href="concluir_entrega.php?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn primary">Concluir Entrega</a>
                                         <?php endif; ?>
                                     </div>
                                 </td>
@@ -230,15 +230,6 @@ try {
                     </table>
                     
                     <!-- Cards para mobile -->
-                    <style>
-                        @media (min-width: 801px) {
-                            .entregas-cards { display: none !important; }
-                        }
-                        @media (max-width: 800px) {
-                            .tabela-entregas table { display: none !important; }
-                            .entregas-cards { display: block !important; }
-                        }
-                    </style>
                     <div class="entregas-cards">
                         <?php foreach ($entregas as $entrega): 
                             $origem_full = '';
@@ -301,10 +292,10 @@ try {
                                     <i class="far fa-calendar"></i> <?php echo date('d/m/Y', strtotime($entrega['data_solicitacao'])); ?>
                                 </div>
                             </div>
-                            <div class="card-entrega-actions" style="display:flex;gap:8px;">
-                                <a href="entrega_detalhes.php?id=<?php echo $entrega['id']; ?>" class="card-action-btn" style="padding:6px 10px;border-radius:8px;background:#eee;color:#333;text-decoration:none;font-weight:600;font-size:0.875rem;">Ver Detalhes</a>
+                            <div class="card-entrega-actions">
+                                <a href="entrega_detalhes.php?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn card neutral">Ver Detalhes</a>
                                 <?php if ($entrega['status'] == 'pendente' || $entrega['status'] == 'em_transporte'): ?>
-                                    <a href="concluir_entrega.php?id=<?php echo $entrega['id']; ?>" class="card-action-btn" style="padding:6px 10px;border-radius:8px;background:#2196F3;color:#fff;text-decoration:none;font-weight:600;font-size:0.875rem;">Concluir Entrega</a>
+                                    <a href="concluir_entrega.php?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn card primary">Concluir Entrega</a>
                                 <?php endif; ?>
                             </div>
                         </div>

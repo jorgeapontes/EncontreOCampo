@@ -297,11 +297,11 @@ try {
                                         <strong>Comprador:</strong>
                                         <?php echo htmlspecialchars($conversa['comprador_nome']); ?>
                                     </div>
-                                    <div style="margin-left: 20px;">
+                                    <div class="usuario-email">
                                         <?php echo htmlspecialchars($conversa['comprador_email']); ?>
                                     </div>
                                     <?php if ($conversa['comprador_cpf_cnpj']): ?>
-                                        <div class="cpf-cnpj" style="margin-left: 20px;">
+                                        <div class="cpf-cnpj">
                                             <i class="fas fa-id-card"></i>
                                             <?php echo htmlspecialchars($conversa['comprador_cpf_cnpj']); ?>
                                         </div>
@@ -319,11 +319,11 @@ try {
                                         <?php endif; ?>
                                         <?php echo htmlspecialchars($conversa['outro_participante_nome']); ?>
                                     </div>
-                                    <div style="margin-left: 20px;">
+                                    <div class="usuario-email">
                                         <?php echo htmlspecialchars($conversa['outro_participante_email']); ?>
                                     </div>
                                     <?php if ($conversa['outro_participante_cpf_cnpj']): ?>
-                                        <div class="cpf-cnpj" style="margin-left: 20px;">
+                                        <div class="cpf-cnpj">
                                             <i class="fas fa-id-card"></i>
                                             <?php echo htmlspecialchars($conversa['outro_participante_cpf_cnpj']); ?>
                                         </div>
@@ -338,7 +338,7 @@ try {
                                 <i class="fas fa-eye"></i> Visualizar Completo
                             </a>
                             
-                            <form method="POST" style="margin: 0;" onsubmit="return confirmarExclusaoPermanente();">
+                            <form method="POST" class="delete-form" onsubmit="return confirmarExclusaoPermanente();">
                                 <input type="hidden" name="conversa_id" value="<?php echo $conversa['conversa_id']; ?>">
                                 <button type="submit" name="excluir_conversa" class="btn btn-delete">
                                     <i class="fas fa-trash"></i> Excluir 

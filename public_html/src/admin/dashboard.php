@@ -53,7 +53,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index.php" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -334,28 +334,28 @@ document.addEventListener("DOMContentLoaded", function () {
                                 <span class="container-header-icon">📸</span>
                                 <h4>Fotos de Documentação</h4>
                             </div>
-                            <div class="data-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                            <div class="data-grid fotos-grid">
                                 ${fotoRosto ? `
-                                    <div class="data-field" style="text-align: center; padding: 15px; background: white; border: 2px solid #e0e0e0; border-radius: 8px;">
-                                        <div class="field-label" style="margin-bottom: 12px; color: #555; font-weight: 600;">Foto do Rosto</div>
-                                        <div style="display: flex; justify-content: center; background: #f5f5f5; padding: 10px; border-radius: 6px;">
-                                            <img src="ver_documento.php?usuario_id=${usuarioId}&tipo=rosto" alt="Foto do Rosto" style="max-width: 100%; height: auto; max-height: 300px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;" onclick="abrirImagemGrande('ver_documento.php?usuario_id=${usuarioId}&tipo=rosto', 'Foto do Rosto')">
+                                    <div class="data-field foto-doc-field">
+                                        <div class="field-label foto-doc-label">Foto do Rosto</div>
+                                        <div class="foto-doc-preview">
+                                            <img src="ver_documento.php?usuario_id=${usuarioId}&tipo=rosto" alt="Foto do Rosto" class="foto-doc-img" onclick="abrirImagemGrande('ver_documento.php?usuario_id=${usuarioId}&tipo=rosto', 'Foto do Rosto')">
                                         </div>
                                     </div>
                                 ` : ''}
                                 ${fotoFrente ? `
-                                    <div class="data-field" style="text-align: center; padding: 15px; background: white; border: 2px solid #e0e0e0; border-radius: 8px;">
-                                        <div class="field-label" style="margin-bottom: 12px; color: #555; font-weight: 600;">Documento - Frente</div>
-                                        <div style="display: flex; justify-content: center; background: #f5f5f5; padding: 10px; border-radius: 6px;">
-                                            <img src="ver_documento.php?usuario_id=${usuarioId}&tipo=frente" alt="Documento Frente" style="max-width: 100%; height: auto; max-height: 300px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;" onclick="abrirImagemGrande('ver_documento.php?usuario_id=${usuarioId}&tipo=frente', 'Documento - Frente')">
+                                    <div class="data-field foto-doc-field">
+                                        <div class="field-label foto-doc-label">Documento - Frente</div>
+                                        <div class="foto-doc-preview">
+                                            <img src="ver_documento.php?usuario_id=${usuarioId}&tipo=frente" alt="Documento Frente" class="foto-doc-img" onclick="abrirImagemGrande('ver_documento.php?usuario_id=${usuarioId}&tipo=frente', 'Documento - Frente')">
                                         </div>
                                     </div>
                                 ` : ''}
                                 ${fotoVerso ? `
-                                    <div class="data-field" style="text-align: center; padding: 15px; background: white; border: 2px solid #e0e0e0; border-radius: 8px;">
-                                        <div class="field-label" style="margin-bottom: 12px; color: #555; font-weight: 600;">Documento - Verso</div>
-                                        <div style="display: flex; justify-content: center; background: #f5f5f5; padding: 10px; border-radius: 6px;">
-                                            <img src="ver_documento.php?usuario_id=${usuarioId}&tipo=verso" alt="Documento Verso" style="max-width: 100%; height: auto; max-height: 300px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;" onclick="abrirImagemGrande('ver_documento.php?usuario_id=${usuarioId}&tipo=verso', 'Documento - Verso')">
+                                    <div class="data-field foto-doc-field">
+                                        <div class="field-label foto-doc-label">Documento - Verso</div>
+                                        <div class="foto-doc-preview">
+                                            <img src="ver_documento.php?usuario_id=${usuarioId}&tipo=verso" alt="Documento Verso" class="foto-doc-img" onclick="abrirImagemGrande('ver_documento.php?usuario_id=${usuarioId}&tipo=verso', 'Documento - Verso')">
                                         </div>
                                     </div>
                                 ` : ''}
@@ -385,7 +385,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             <div class="data-field">
                                 <div class="field-label">Tipo de Usuário</div>
                                 <div class="field-value">
-                                    <span style="background: #667eea; color: white; padding: 4px 12px; border-radius: 20px; display: inline-block; font-size: 0.9rem;">
+                                    <span class="tipo-usuario-badge">
                                         ${tipo}
                                     </span>
                                 </div>
@@ -617,14 +617,14 @@ document.addEventListener("DOMContentLoaded", function () {
 // Função para abrir imagem em tamanho grande (reusável)
 function abrirImagemGrande(src, titulo) {
     const modalImg = document.createElement('div');
-    modalImg.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 9999; cursor: pointer;';
+    modalImg.className = 'imagem-grande-overlay';
     const img = document.createElement('img');
     img.src = src;
-    img.style.cssText = 'max-width: 90%; max-height: 90%; border-radius: 8px;';
+    img.className = 'imagem-grande-img';
     img.title = 'Clique para fechar';
     const titulo_div = document.createElement('div');
     titulo_div.textContent = titulo;
-    titulo_div.style.cssText = 'position: absolute; top: 20px; left: 50%; transform: translateX(-50%); color: white; font-size: 1.2rem; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 4px;';
+    titulo_div.className = 'imagem-grande-titulo';
     modalImg.appendChild(img);
     modalImg.appendChild(titulo_div);
     modalImg.addEventListener('click', () => modalImg.remove());

@@ -89,289 +89,24 @@ if (isset($_SESSION['usuario_id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard do Transportador - Encontre Ocampo</title>
     <link rel="stylesheet" href="../css/transportador/dashboard.css">
+    <link rel="stylesheet" href="../css/transportador/disponiveis.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-    <style>
-        .acordos-disponiveis {
-            max-width: 1200px;
-            margin: 40px auto;
-            background: #f9f9f9;
-            border-radius: 16px;
-            box-shadow: 0 2px 18px rgba(0,0,0,0.06);
-            padding: 32px 24px 24px 24px;
-        }
-        .acordos-lista {
-            display: grid;
-            /* limitar largura máxima dos cards para evitar que um único card fique enorme
-               e centralizar a grade quando houver poucas colunas */
-            grid-template-columns: repeat(auto-fit, minmax(260px, 320px));
-            gap: 28px;
-            justify-content: center;
-        }
-        .acordo-card {
-            border-radius: 12px;
-            background: #fff;
-            box-shadow: 0 1px 6px rgba(0,0,0,0.04);
-            padding: 20px 16px 16px 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            min-height: 240px;
-            transition: box-shadow 0.18s, border 0.18s;
-            border: 1.5px solid #e6eaf0;
-            position: relative;
-            max-width: 320px;
-            width: 100%;
-        }
-        .fav-btn {
-            position: absolute;
-            right: 12px;
-            top: 12px;
-            background: rgba(255,255,255,0.95);
-            border: 1px solid rgba(0,0,0,0.06);
-            cursor: pointer;
-            width: 34px;
-            height: 34px;
-            padding: 6px;
-            border-radius: 8px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.12s, transform 0.08s;
-            z-index: 1200;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-        }
-        .fav-btn:hover {
-            background: rgba(0,0,0,0.04);
-            transform: translateY(-1px);
-        }
-        .fav-btn .heart {
-            color: #888;
-            font-size: 18px;
-        }
-        .fav-btn.favorited .heart {
-            color: #e74c3c;
-        }
-        .acordo-card:hover {
-            box-shadow: 0 6px 18px rgba(60,180,120,0.10);
-            border-color: #b6e2c6;
-        }
-        .acordo-header {
-            font-size: 1.08rem;
-            font-weight: 700;
-            color: #222;
-            margin-bottom: 8px;
-            letter-spacing: 0.01em;
-        }
-        .acordo-info {
-            font-size: 0.97rem;
-            color: #444;
-            margin-bottom: 10px;
-            width: 100%;
-        }
-        .acordo-info strong {
-            color: #3a7a4d;
-            font-weight: 600;
-        }
-        .acordo-actions {
-            margin-top: auto;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .acordo-btn {
-            background: #3a7a4d;
-            color: #fff;
-            border: none;
-            border-radius: 7px;
-            padding: 10px 0;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: background 0.18s;
-            box-shadow: 0 1px 4px rgba(60,180,120,0.07);
-        }
-        .acordo-btn:hover {
-            background: #256c3b;
-        }
-        .acordo-card a {
-            color: #2566d6;
-            text-decoration: none;
-            font-size: 0.97rem;
-            margin-bottom: 2px;
-            word-break: break-all;
-            transition: color 0.15s;
-        }
-        .acordo-card a:hover {
-            text-decoration: underline;
-            color: #1741a6;
-        }
-        @media (max-width: 900px) {
-            .acordos-lista {
-                grid-template-columns: repeat(auto-fit, minmax(220px, 280px));
-                justify-content: center;
-            }
-        }
-        @media (max-width: 600px) {
-            .acordos-disponiveis {
-                padding: 10px 2vw;
-            }
-            .acordos-lista {
-                gap: 14px;
-            }
-            .acordo-card {
-                padding: 10px 6px;
-                min-height: 160px;
-                width: 100%;
-                position: flex;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .acordo-card {
-                width: 100% !important; /* Largura total menos 10px (5px de cada lado) */
-                margin: 5px !important; /* Margem de 5px em todos os lados */
-                padding: 15px !important;
-                max-width: none !important;
-                border-radius: 8px !important;
-                box-sizing: border-box !important;
-            }
-
-            .acordos-lista {
-                grid-template-columns: 1fr;
-                gap: 0;
-                padding: 0;
-                margin: 0;
-            }
-
-            .acordo-card > div[style*="width:100%;height:160px"] {
-                height: 220px !important;
-                margin-bottom: 8px !important;
-            }
-            
-            /* Ajuste para a imagem dentro do card */
-            .acordo-card img {
-                height: 220px !important;
-                object-fit: cover !important;
-                border-radius: 6px !important;
-            }
-
-            /* Contêiner dos filtros */
-            .filters-inline {
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-            }
-
-            /* Cada dropdown deve ocupar 100% da largura */
-            .dropdown {
-                width: 100%;
-            }
-
-            /* Botões dos filtros */
-            .filtro-btn {
-                width: 100%;
-                justify-content: space-between;
-                padding: 12px 15px;
-                box-sizing: border-box;
-                border-radius: 8px;
-                font-size: 1rem;
-            }
-
-            /* Conteúdo do dropdown (lista de estados) */
-            .dropdown-content {
-                width: 100% !important;
-                left: 10px !important;
-                right: 10px !important;
-                position: fixed !important;
-                top: auto !important;
-                /* bottom: 0 !important; */
-                justify-content: center !important;
-                text-align: center !important;
-                border-radius: 16px 16px 0 0 !important;
-                box-shadow: 0 -4px 20px rgba(0,0,0,0.15) !important;
-                max-height: 70vh !important;
-                max-width: 410px;
-                overflow-y: auto !important;
-            }
-
-            /* Ajuste para a grade de estados dentro do dropdown */
-            .estados-grid {
-                max-width: 100%;
-                display: grid !important;
-                grid-template-columns: repeat(5, 1fr) !important;
-                gap: 8px !important;
-                justify-content: center !important;
-            }
-
-            /* Opções de estado */
-            .estado-option {
-                padding: 8px 8px !important;
-                justify-content: center !important;
-                text-align: center !important;
-                border: 1px solid #e0e0e0 !important;
-                border-radius: 6px !important;
-                font-size: 0.9rem !important;
-            }
-
-            /* Formulário dentro do dropdown */
-            .filtro-form {
-                padding: 15px !important;
-                gap: 15px !important;
-            }
-
-            /* Cabeçalho do filtro */
-            .filtro-header {
-                flex-direction: column !important;
-                gap: 10px !important;
-                margin-bottom: 15px !important;
-                justify-content: center !important;
-            }
-
-            /* Indicador de filtro ativo */
-            .filtro-ativo-indicator {
-                width: 10px !important;
-                height: 10px !important;
-            }
-        }
-
-        /* Dropdown filtros (estados) similar a anuncios.php */
-        :root{ --accent-color: #3a7a4d; }
-        .filtros-simples { margin: 12px 0 20px; }
-        .dropdown { position: relative; display: inline-block; }
-        .filtro-btn { background: #f3f4f6; border: 1px solid #e6eaf0; padding: 8px 12px; border-radius: 8px; cursor: pointer; display:inline-flex;align-items:center;gap:8px; }
-        .filtro-btn .fas { color: var(--accent-color); }
-        .filtro-ativo-indicator { width:8px;height:8px;background: var(--accent-color);border-radius:50%;display:inline-block;margin-left:6px; }
-        .filtro-btn .caret { margin-left:6px; font-size:0.85rem; color: #666; transition: transform 0.12s ease; }
-        .dropdown.open .filtro-btn .caret { transform: rotate(180deg); }
-        .dropdown-content { position: absolute; top: calc(100% + 8px); left: 0; background: #fff; border: 1px solid #e6eaf0; box-shadow: 0 8px 24px rgba(0,0,0,0.06); padding: 14px; border-radius: 10px; min-width: 320px; display:none; z-index:1300; }
-        .dropdown.open .dropdown-content { display:block; }
-        .filtro-form { display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap; }
-        .filtro-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
-        .estados-grid { display:flex; gap:8px; flex-wrap:wrap; max-width:560px; }
-        .estado-option { display:inline-flex; align-items:center; gap:6px; border-radius:6px; padding:6px 8px; cursor:pointer; }
-        .estado-option input { margin-right:6px; }
-        .remove-filtro { color: var(--accent-color); font-size:0.92rem; text-decoration:none; }
-        @media (max-width:600px) { .dropdown-content { left:0; right:0; min-width:auto; } .filtro-form{flex-direction:column;} }
-    </style>
 </head>
 <body>
     <?php if (isset($_GET['erro']) && $_GET['erro']): ?>
-    <div id="popup-erro" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.18);">
-        <div style="background:#fff;border-radius:14px;box-shadow:0 4px 32px rgba(220,60,60,0.13);padding:38px 32px 28px 32px;max-width:95vw;width:400px;text-align:center;position:relative;">
-            <div style="font-size:1.18rem;font-weight:600;color:#b3261e;margin-bottom:10px;">Erro ao enviar proposta</div>
-            <div style="color:#444;font-size:1.05rem;margin-bottom:18px;"><?php echo htmlspecialchars($_GET['erro']); ?></div>
-            <div style="margin-bottom:10px;color:#b3261e;font-size:0.98rem;">Este aviso será fechado automaticamente em <span id='popup-timer-erro'>10</span>s.</div>
-            <div style="width:100%;height:7px;background:#fbeaea;border-radius:4px;overflow:hidden;margin-bottom:0;">
-                <div id="popup-bar-erro" style="height:100%;background:#b3261e;width:100%;transition:width 0.2s;"></div>
+    <div id="popup-erro" class="popup-aviso-overlay">
+        <div class="popup-aviso-box erro">
+            <div class="popup-aviso-title erro">Erro ao enviar proposta</div>
+            <div class="popup-aviso-message"><?php echo htmlspecialchars($_GET['erro']); ?></div>
+            <div class="popup-aviso-timer erro">Este aviso será fechado automaticamente em <span id='popup-timer-erro'>10</span>s.</div>
+            <div class="popup-aviso-progress-track erro">
+                <div id="popup-bar-erro" class="popup-aviso-progress-bar erro"></div>
             </div>
-            <button onclick="fecharPopupErro()" style="margin-top:18px;background:#b3261e;color:#fff;border:none;border-radius:6px;padding:8px 22px;font-size:1rem;font-weight:500;cursor:pointer;">Fechar agora</button>
+            <button onclick="fecharPopupErro()" class="popup-aviso-btn erro">Fechar agora</button>
         </div>
     </div>
     <script>
@@ -393,15 +128,15 @@ if (isset($_SESSION['usuario_id'])) {
     <?php endif; ?>
 
     <?php if (isset($_GET['sucesso']) && $_GET['sucesso']): ?>
-    <div id="popup-sucesso" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.18);">
-        <div style="background:#fff;border-radius:14px;box-shadow:0 4px 32px rgba(60,180,120,0.13);padding:38px 32px 28px 32px;max-width:95vw;width:400px;text-align:center;position:relative;">
-            <div style="font-size:1.25rem;font-weight:600;color:#256c3b;margin-bottom:10px;">Proposta de frete enviada!</div>
-            <div style="color:#444;font-size:1.05rem;margin-bottom:18px;">Para ver, editar ou cancelar sua proposta, acesse <a href='entregas.php' style='color:#2566d6;text-decoration:underline;'>Minhas Entregas</a>.</div>
-            <div style="margin-bottom:10px;color:#256c3b;font-size:0.98rem;">Este aviso será fechado automaticamente em <span id='popup-timer'>10</span>s.</div>
-            <div style="width:100%;height:7px;background:#e6f9ed;border-radius:4px;overflow:hidden;margin-bottom:0;">
-                <div id="popup-bar" style="height:100%;background:#3a7a4d;width:100%;transition:width 0.2s;"></div>
+    <div id="popup-sucesso" class="popup-aviso-overlay">
+        <div class="popup-aviso-box sucesso">
+            <div class="popup-aviso-title sucesso">Proposta de frete enviada!</div>
+            <div class="popup-aviso-message">Para ver, editar ou cancelar sua proposta, acesse <a href='entregas.php' class="popup-aviso-link">Minhas Entregas</a>.</div>
+            <div class="popup-aviso-timer sucesso">Este aviso será fechado automaticamente em <span id='popup-timer'>10</span>s.</div>
+            <div class="popup-aviso-progress-track sucesso">
+                <div id="popup-bar" class="popup-aviso-progress-bar sucesso"></div>
             </div>
-            <button onclick="fecharPopup()" style="margin-top:18px;background:#256c3b;color:#fff;border:none;border-radius:6px;padding:8px 22px;font-size:1rem;font-weight:500;cursor:pointer;">Fechar agora</button>
+            <button onclick="fecharPopup()" class="popup-aviso-btn sucesso">Fechar agora</button>
         </div>
     </div>
     <script>
@@ -426,7 +161,7 @@ if (isset($_SESSION['usuario_id'])) {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index.php" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -480,9 +215,9 @@ if (isset($_SESSION['usuario_id'])) {
         <?php endif; ?>
 
         <section class="acordos-disponiveis">
-            <div class="acordos-header" style="display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:24px;">
-                <h2 style="margin:0;">Entregas disponíveis</h2>
-                <div class="filters-inline" style="display:flex;gap:12px;align-items:center;">
+            <div class="acordos-header">
+                <h2>Entregas disponíveis</h2>
+                <div class="filters-inline">
                     <!-- Retirada (origem) dropdown -->
                     <div class="dropdown" id="filtro-origem">
                         <button type="button" class="filtro-btn">
@@ -627,29 +362,29 @@ if (isset($_SESSION['usuario_id'])) {
                             <strong>Quantidade:</strong> <?php echo htmlspecialchars($acordo['quantidade']); ?><br>
                         </div>
                         <?php $img = $acordo['produto_imagem'] ? htmlspecialchars($acordo['produto_imagem']) : '../../img/placeholder.png'; ?>
-                        <div style="width:100%;height:160px;overflow:hidden;margin-bottom:12px;border-radius:8px;">
+                        <div class="acordo-img-wrap">
                             <a href="../visualizar_anuncio.php?anuncio_id=<?php echo intval($acordo['produto_id']); ?>">
-                                <img src="<?php echo $img; ?>" alt="<?php echo htmlspecialchars($acordo['produto_nome']); ?>" style="width:100%;height:160px;object-fit:cover;display:block;border-radius:8px;">
+                                <img src="<?php echo $img; ?>" alt="<?php echo htmlspecialchars($acordo['produto_nome']); ?>" class="acordo-img">
                             </a>
                         </div>
                         <div class="acordo-info">
                             Retirada: <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($origem); ?>" target="_blank"><?php echo htmlspecialchars($origem); ?></a><br>
                             Entrega: <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($destino); ?>" target="_blank"><?php echo htmlspecialchars($destino); ?></a><br>
-                            <a href="<?php echo $google_maps_url; ?>" target="_blank" style="display:inline-flex;align-items:center;gap:8px;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="flex:0 0 16px;" aria-hidden="true">
+                            <a href="<?php echo $google_maps_url; ?>" target="_blank" class="rota-link">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="rota-icon" aria-hidden="true">
                                     <path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/>
                                 </svg>
                                 Ver rota no Google Maps
                             </a>
                         </div>
                         <div class="acordo-actions">
-                            <button type="button" class="acordo-btn" style="background:#2E7D32;color:#fff;margin-top:6px;" onclick="startChat(<?php echo $acordo['proposta_id']; ?>)">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:8px;display:inline-block;">
+                            <button type="button" class="acordo-btn chat" onclick="startChat(<?php echo $acordo['proposta_id']; ?>)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="chat-icon">
                                     <path d="M20 2H4a2 2 0 0 0-2 2v14l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/>
                                 </svg>
                                 Iniciar chat com <?php echo htmlspecialchars($acordo['comprador_nome']); ?>
                             </button>
-                            <a href="../visualizar_anuncio.php?anuncio_id=<?php echo intval($acordo['produto_id']); ?>" class="acordo-btn" style="background:#2566d6;color:#fff;text-align:center;text-decoration:none;">Ver anúncio</a>
+                            <a href="../visualizar_anuncio.php?anuncio_id=<?php echo intval($acordo['produto_id']); ?>" class="acordo-btn ver-anuncio">Ver anúncio</a>
                         </div>
                     </div>
             <?php

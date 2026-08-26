@@ -1,0 +1,425 @@
+.acordos-disponiveis {
+    max-width: 1200px;
+    margin: 40px auto;
+    background: #f9f9f9;
+    border-radius: 16px;
+    box-shadow: 0 2px 18px rgba(0,0,0,0.06);
+    padding: 32px 24px 24px 24px;
+}
+.acordos-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+.acordos-header h2 {
+    margin: 0;
+}
+.acordos-lista {
+    display: grid;
+    /* limitar largura máxima dos cards para evitar que um único card fique enorme
+       e centralizar a grade quando houver poucas colunas */
+    grid-template-columns: repeat(auto-fit, minmax(260px, 320px));
+    gap: 28px;
+    justify-content: center;
+}
+.acordo-card {
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    padding: 20px 16px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 240px;
+    transition: box-shadow 0.18s, border 0.18s;
+    border: 1.5px solid #e6eaf0;
+    position: relative;
+    max-width: 320px;
+    width: 100%;
+}
+.fav-btn {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    background: rgba(255,255,255,0.95);
+    border: 1px solid rgba(0,0,0,0.06);
+    cursor: pointer;
+    width: 34px;
+    height: 34px;
+    padding: 6px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.12s, transform 0.08s;
+    z-index: 1200;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+.fav-btn:hover {
+    background: rgba(0,0,0,0.04);
+    transform: translateY(-1px);
+}
+.fav-btn .heart {
+    color: #888;
+    font-size: 18px;
+}
+.fav-btn.favorited .heart {
+    color: #e74c3c;
+}
+.acordo-card:hover {
+    box-shadow: 0 6px 18px rgba(60,180,120,0.10);
+    border-color: #b6e2c6;
+}
+.acordo-header {
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 8px;
+    letter-spacing: 0.01em;
+}
+.acordo-info {
+    font-size: 0.97rem;
+    color: #444;
+    margin-bottom: 10px;
+    width: 100%;
+}
+.acordo-info strong {
+    color: #3a7a4d;
+    font-weight: 600;
+}
+.acordo-actions {
+    margin-top: auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.acordo-btn {
+    background: #3a7a4d;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 10px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.18s;
+    box-shadow: 0 1px 4px rgba(60,180,120,0.07);
+}
+.acordo-btn:hover {
+    background: #256c3b;
+}
+.acordo-btn.chat {
+    background: #2E7D32;
+    margin-top: 6px;
+}
+.acordo-btn.ver-anuncio {
+    background: #2566d6;
+    text-align: center;
+    text-decoration: none;
+}
+.acordo-card a {
+    color: #2566d6;
+    text-decoration: none;
+    font-size: 0.97rem;
+    margin-bottom: 2px;
+    word-break: break-all;
+    transition: color 0.15s;
+}
+.acordo-card a:hover {
+    text-decoration: underline;
+    color: #1741a6;
+}
+
+/* Imagem do produto no card */
+.acordo-img-wrap {
+    width: 100%;
+    height: 160px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    border-radius: 8px;
+}
+.acordo-img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+    border-radius: 8px;
+}
+
+/* Link "Ver rota no Google Maps" */
+.rota-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.rota-icon {
+    flex: 0 0 16px;
+}
+
+/* Ícone do botão de iniciar chat */
+.chat-icon {
+    vertical-align: middle;
+    margin-right: 8px;
+    display: inline-block;
+}
+
+/* Filtros (Retirada/Entrega) */
+.filters-inline {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Popups de aviso (erro/sucesso ao enviar proposta) */
+.popup-aviso-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.18);
+}
+.popup-aviso-box {
+    background: #fff;
+    border-radius: 14px;
+    padding: 38px 32px 28px 32px;
+    max-width: 95vw;
+    width: 400px;
+    text-align: center;
+    position: relative;
+}
+.popup-aviso-box.erro {
+    box-shadow: 0 4px 32px rgba(220,60,60,0.13);
+}
+.popup-aviso-box.sucesso {
+    box-shadow: 0 4px 32px rgba(60,180,120,0.13);
+}
+.popup-aviso-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+.popup-aviso-title.erro {
+    font-size: 1.18rem;
+    color: #b3261e;
+}
+.popup-aviso-title.sucesso {
+    font-size: 1.25rem;
+    color: #256c3b;
+}
+.popup-aviso-message {
+    color: #444;
+    font-size: 1.05rem;
+    margin-bottom: 18px;
+}
+.popup-aviso-link {
+    color: #2566d6;
+    text-decoration: underline;
+}
+.popup-aviso-timer {
+    margin-bottom: 10px;
+    font-size: 0.98rem;
+}
+.popup-aviso-timer.erro {
+    color: #b3261e;
+}
+.popup-aviso-timer.sucesso {
+    color: #256c3b;
+}
+.popup-aviso-progress-track {
+    width: 100%;
+    height: 7px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0;
+}
+.popup-aviso-progress-track.erro {
+    background: #fbeaea;
+}
+.popup-aviso-progress-track.sucesso {
+    background: #e6f9ed;
+}
+.popup-aviso-progress-bar {
+    height: 100%;
+    width: 100%;
+    transition: width 0.2s;
+}
+.popup-aviso-progress-bar.erro {
+    background: #b3261e;
+}
+.popup-aviso-progress-bar.sucesso {
+    background: #3a7a4d;
+}
+.popup-aviso-btn {
+    margin-top: 18px;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 22px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.popup-aviso-btn.erro {
+    background: #b3261e;
+}
+.popup-aviso-btn.sucesso {
+    background: #256c3b;
+}
+
+@media (max-width: 900px) {
+    .acordos-lista {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 280px));
+        justify-content: center;
+    }
+}
+@media (max-width: 600px) {
+    .acordos-disponiveis {
+        padding: 10px 2vw;
+    }
+    .acordos-lista {
+        gap: 14px;
+    }
+    .acordo-card {
+        padding: 10px 6px;
+        min-height: 160px;
+        width: 100%;
+        position: flex;
+    }
+}
+
+@media (max-width: 480px) {
+    .acordo-card {
+        width: 100% !important; /* Largura total menos 10px (5px de cada lado) */
+        margin: 5px !important; /* Margem de 5px em todos os lados */
+        padding: 15px !important;
+        max-width: none !important;
+        border-radius: 8px !important;
+        box-sizing: border-box !important;
+    }
+
+    .acordos-lista {
+        grid-template-columns: 1fr;
+        gap: 0;
+        padding: 0;
+        margin: 0;
+    }
+
+    .acordo-card > .acordo-img-wrap {
+        height: 220px !important;
+        margin-bottom: 8px !important;
+    }
+
+    /* Ajuste para a imagem dentro do card */
+    .acordo-card img {
+        height: 220px !important;
+        object-fit: cover !important;
+        border-radius: 6px !important;
+    }
+
+    /* Contêiner dos filtros */
+    .filters-inline {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    /* Cada dropdown deve ocupar 100% da largura */
+    .dropdown {
+        width: 100%;
+    }
+
+    /* Botões dos filtros */
+    .filtro-btn {
+        width: 100%;
+        justify-content: space-between;
+        padding: 12px 15px;
+        box-sizing: border-box;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    /* Conteúdo do dropdown (lista de estados) */
+    .dropdown-content {
+        width: 100% !important;
+        left: 10px !important;
+        right: 10px !important;
+        position: fixed !important;
+        top: auto !important;
+        /* bottom: 0 !important; */
+        justify-content: center !important;
+        text-align: center !important;
+        border-radius: 16px 16px 0 0 !important;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.15) !important;
+        max-height: 70vh !important;
+        max-width: 410px;
+        overflow-y: auto !important;
+    }
+
+    /* Ajuste para a grade de estados dentro do dropdown */
+    .estados-grid {
+        max-width: 100%;
+        display: grid !important;
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 8px !important;
+        justify-content: center !important;
+    }
+
+    /* Opções de estado */
+    .estado-option {
+        padding: 8px 8px !important;
+        justify-content: center !important;
+        text-align: center !important;
+        border: 1px solid #e0e0e0 !important;
+        border-radius: 6px !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* Formulário dentro do dropdown */
+    .filtro-form {
+        padding: 15px !important;
+        gap: 15px !important;
+    }
+
+    /* Cabeçalho do filtro */
+    .filtro-header {
+        flex-direction: column !important;
+        gap: 10px !important;
+        margin-bottom: 15px !important;
+        justify-content: center !important;
+    }
+
+    /* Indicador de filtro ativo */
+    .filtro-ativo-indicator {
+        width: 10px !important;
+        height: 10px !important;
+    }
+}
+
+/* Dropdown filtros (estados) similar a anuncios.php */
+:root{ --accent-color: #3a7a4d; }
+.filtros-simples { margin: 12px 0 20px; }
+.dropdown { position: relative; display: inline-block; }
+.filtro-btn { background: #f3f4f6; border: 1px solid #e6eaf0; padding: 8px 12px; border-radius: 8px; cursor: pointer; display:inline-flex;align-items:center;gap:8px; }
+.filtro-btn .fas { color: var(--accent-color); }
+.filtro-ativo-indicator { width:8px;height:8px;background: var(--accent-color);border-radius:50%;display:inline-block;margin-left:6px; }
+.filtro-btn .caret { margin-left:6px; font-size:0.85rem; color: #666; transition: transform 0.12s ease; }
+.dropdown.open .filtro-btn .caret { transform: rotate(180deg); }
+.dropdown-content { position: absolute; top: calc(100% + 8px); left: 0; background: #fff; border: 1px solid #e6eaf0; box-shadow: 0 8px 24px rgba(0,0,0,0.06); padding: 14px; border-radius: 10px; min-width: 320px; display:none; z-index:1300; }
+.dropdown.open .dropdown-content { display:block; }
+.filtro-form { display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap; }
+.filtro-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+.estados-grid { display:flex; gap:8px; flex-wrap:wrap; max-width:560px; }
+.estado-option { display:inline-flex; align-items:center; gap:6px; border-radius:6px; padding:6px 8px; cursor:pointer; }
+.estado-option input { margin-right:6px; }
+.remove-filtro { color: var(--accent-color); font-size:0.92rem; text-decoration:none; }
+@media (max-width:600px) { .dropdown-content { left:0; right:0; min-width:auto; } .filtro-form{flex-direction:column;} }

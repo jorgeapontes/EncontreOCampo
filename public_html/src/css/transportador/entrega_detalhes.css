@@ -1,0 +1,117 @@
+.entrega-detalhes {
+    margin-top: 48px;
+}
+
+.entrega-detalhes-wrap {
+    display: flex;
+    justify-content: center;
+}
+
+.entrega-detalhes-col {
+    flex: 1;
+    max-width: 1000px;
+}
+
+.entrega-info-destacada {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 32px 24px;
+    max-width: 900px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+.entrega-info-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+.entrega-info-header h2 {
+    font-size: 2rem;
+    color: var(--primary-color, #4CAF50);
+    margin: 0;
+}
+.entrega-info-header .status {
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 8px;
+    background: var(--primary-light, #C8E6C9);
+    color: var(--primary-dark, #388E3C);
+    font-size: 1rem;
+}
+.entrega-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 32px;
+}
+.entrega-info-item .label {
+    font-weight: 600;
+    color: var(--primary-color, #4CAF50);
+    margin-right: 6px;
+}
+.entrega-info-item.full-row {
+    grid-column: 1 / -1;
+}
+.entrega-info-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+.cta-button {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 28px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(76,175,80,0.08);
+    cursor: pointer;
+}
+.cta-button:hover {
+    background: linear-gradient(135deg, #388E3C 0%, #4CAF50 100%);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(76,175,80,0.15);
+}
+.btn-voltar {
+    background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%);
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 28px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(160,160,160,0.08);
+    cursor: pointer;
+    margin-left: 12px;
+}
+.btn-voltar:hover {
+    background: linear-gradient(135deg, #bdbdbd 0%, #e0e0e0 100%);
+    color: #111;
+    box-shadow: 0 4px 16px rgba(160,160,160,0.15);
+}
+@media (max-width: 600px) {
+    .entrega-info-destacada {
+        padding: 16px 6px;
+    }
+    .entrega-info-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .entrega-info-header h2 {
+        font-size: 1.2rem;
+    }
+}

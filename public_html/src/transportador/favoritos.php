@@ -61,13 +61,14 @@ if ($transportador_id) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Favoritos - Transportador</title>
     <link rel="stylesheet" href="../css/transportador/dashboard.css">
+    <link rel="stylesheet" href="../css/transportador/favoritos.css">
 </head>
 <body>
     <header>
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index.php" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -111,52 +112,6 @@ if ($transportador_id) {
     </header>
     <div class="main-content">
         <section class="acordos-disponiveis">
-            <style>
-            .acordos-disponiveis {
-                max-width: 1200px;
-                margin: 40px auto;
-                background: #f9f9f9;
-                border-radius: 16px;
-                box-shadow: 0 2px 18px rgba(0,0,0,0.06);
-                padding: 32px 24px 24px 24px;
-            }
-            .acordos-lista {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-                gap: 28px;
-            }
-            .acordo-card {
-                border-radius: 12px;
-                background: #fff;
-                box-shadow: 0 1px 6px rgba(0,0,0,0.04);
-                padding: 20px 16px 16px 16px;
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-                min-height: 240px;
-                transition: box-shadow 0.18s, border 0.18s;
-                border: 1.5px solid #e6eaf0;
-                position: relative;
-            }
-            .acordo-card .thumb { width:100%;height:160px;overflow:hidden;margin-bottom:12px;border-radius:8px }
-            .acordo-card .thumb img { width:100%;height:100%;object-fit:cover;display:block }
-            .acordo-card h3 { margin:0 0 8px 0; font-size:1.08rem; font-weight:700 }
-            .acordo-info { font-size:0.97rem; color:#444; margin-bottom:10px; width:100%; }
-            .acordo-actions { margin-top: auto; width:100%; display:flex; flex-direction:column; gap:8px; }
-            .acordo-btn { background: #3a7a4d; color:#fff; border:none; border-radius:7px; padding:10px 0; font-size:1rem; font-weight:600; cursor:pointer; width:100%; }
-            .acordo-btn[style*="#2566d6"] { text-decoration:none; display:inline-block; text-align:center }
-            .acordo-card:hover { box-shadow: 0 6px 18px rgba(60,180,120,0.10); border-color: #b6e2c6; }
-            @media (max-width: 900px) {
-                .acordos-lista { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-            }
-            @media (max-width: 600px) {
-                .acordos-disponiveis { padding: 10px 2vw; }
-                .acordos-lista { gap: 14px; }
-                .acordo-card { padding: 10px 6px; min-height: 160px; }
-                .acordo-card .thumb { height:120px }
-            }
-            </style>
-
             <h2>Favoritos</h2>
             <?php if (empty($favoritos)): ?>
                 <p>Você ainda não favoritou nenhuma entrega.</p>
@@ -168,8 +123,8 @@ if ($transportador_id) {
                         $img = $f['produto_imagem'] ? htmlspecialchars($f['produto_imagem']) : '../../img/placeholder.png';
                     ?>
                     <div class="acordo-card" data-proposta-id="<?php echo $proposta_id; ?>">
-                        <div style="position:absolute;right:12px;top:12px;">
-                            <button class="fav-btn favorited" data-proposta-id="<?php echo $proposta_id; ?>" title="Remover favorito" style="background:#fff;border:1px solid rgba(0,0,0,0.06);padding:6px;border-radius:8px;">
+                        <div class="fav-btn-wrap">
+                            <button class="fav-btn favorited" data-proposta-id="<?php echo $proposta_id; ?>" title="Remover favorito">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="#e74c3c" xmlns="http://www.w3.org/2000/svg"><path d="M12.1 21.35l-1.1-1.02C5.14 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4c1.74 0 3.41.81 4.5 2.09C12.09 4.81 13.76 4 15.5 4 18 4 20 6 20 8.5c0 3.78-3.14 6.86-8.9 11.83l-1 .02z"/></svg>
                             </button>
                         </div>
@@ -186,17 +141,17 @@ if ($transportador_id) {
                             $destino = ($f['comprador_rua'] ?? '') . ', ' . ($f['comprador_numero'] ?? '') . ' - ' . ($f['comprador_cidade'] ?? '') . '/' . ($f['comprador_estado'] ?? '') . ' - CEP: ' . ($f['comprador_cep'] ?? '');
                             $maps = 'https://www.google.com/maps/dir/?api=1&origin=' . urlencode($origem) . '&destination=' . urlencode($destino) . '&travelmode=driving';
                         ?>
-                        <div style="margin-top:6px;font-size:0.95rem;">
+                        <div class="rota-info">
                             Retirada: <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($origem); ?>" target="_blank"><?php echo htmlspecialchars($origem); ?></a><br>
                             Entrega: <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($destino); ?>" target="_blank"><?php echo htmlspecialchars($destino); ?></a><br>
-                            <a href="<?php echo $maps; ?>" target="_blank" style="display:inline-flex;align-items:center;gap:8px;margin-top:6px;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="flex:0 0 16px;" aria-hidden="true"><path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+                            <a href="<?php echo $maps; ?>" target="_blank" class="rota-link">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="rota-icon" aria-hidden="true"><path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
                                 Ver rota no Google Maps
                             </a>
                         </div>
                         <div class="acordo-actions">
-                            <a href="../visualizar_anuncio.php?anuncio_id=<?php echo $produto_id; ?>" class="acordo-btn" style="background:#2566d6">Ver anúncio</a>
-                            <button class="acordo-btn" onclick="startChat(<?php echo $proposta_id; ?>)" style="background:#2E7D32">Abrir chat</button>
+                            <a href="../visualizar_anuncio.php?anuncio_id=<?php echo $produto_id; ?>" class="acordo-btn ver-anuncio">Ver anúncio</a>
+                            <button class="acordo-btn chat" onclick="startChat(<?php echo $proposta_id; ?>)">Abrir chat</button>
                             <button class="acordo-btn remover-fav" data-proposta-id="<?php echo $proposta_id; ?>">Remover</button>
                         </div>
                     </div>

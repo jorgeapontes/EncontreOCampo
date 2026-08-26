@@ -208,7 +208,7 @@ try {
         <div class="toolbar-filters">
             <input type="date" name="data_inicio" class="filter-select" value="<?php echo htmlspecialchars($data_inicio ?? ''); ?>">
             <input type="date" name="data_fim" class="filter-select" value="<?php echo htmlspecialchars($data_fim ?? ''); ?>">
-            <button type="submit" class="filter-select" style="background:#4CAF50;color:#fff;border:none;">Aplicar</button>
+            <button type="submit" class="filter-select btn-apply">Aplicar</button>
         </div>
     </form>
 
@@ -235,7 +235,7 @@ try {
             <!-- ABA ENTREGA -->
             <?php if (empty($comprovantes)): ?>
                 <div class="no-data">
-                    <i class="fas fa-inbox" style="font-size: 48px; color: #ccc; margin-bottom: 15px;"></i>
+                    <i class="fas fa-inbox"></i>
                     <p>Nenhum comprovante de entrega encontrado.</p>
                 </div>
             <?php else: ?>
@@ -326,7 +326,7 @@ try {
             <!-- ABA ACORDO DE COMPRA -->
             <?php if (empty($propostas)): ?>
                 <div class="no-data">
-                    <i class="fas fa-file-signature" style="font-size: 48px; color: #ccc; margin-bottom: 15px;"></i>
+                    <i class="fas fa-file-signature"></i>
                     <p>Nenhum acordo de compra assinado encontrado.</p>
                 </div>
             <?php else: ?>
@@ -351,23 +351,23 @@ try {
                                 <td>#<?php echo $proposta['proposta_id']; ?></td>
                                 <td>
                                     <strong><?php echo htmlspecialchars($proposta['produto_nome'] ?? '—'); ?></strong><br>
-                                    <small style="color: #666;"><?php echo $proposta['quantidade_proposta']; ?> unidades</small>
+                                    <small class="text-muted"><?php echo $proposta['quantidade_proposta']; ?> unidades</small>
                                 </td>
                                 <td>
                                     <?php echo htmlspecialchars($proposta['comprador_nome'] ?? '—'); ?><br>
                                     <?php if (!empty($proposta['comprador_telefone'])): ?>
-                                        <small style="color: #666;"><?php echo $proposta['comprador_telefone']; ?></small>
+                                        <small class="text-muted"><?php echo $proposta['comprador_telefone']; ?></small>
                                     <?php endif; ?>
                                 </td>
                                 <td>
                                     <?php echo htmlspecialchars($proposta['vendedor_nome'] ?? '—'); ?><br>
-                                    <small style="color: #666;">
+                                    <small class="text-muted">
                                         <?php echo $proposta['vendedor_cidade'] ?? ''; ?>/<?php echo $proposta['vendedor_estado'] ?? ''; ?>
                                     </small>
                                 </td>
                                 <td>
                                     <strong>R$ <?php echo number_format($proposta['valor_total'] ?? 0, 2, ',', '.'); ?></strong><br>
-                                    <small style="color: #666;">
+                                    <small class="text-muted">
                                         Preço unit.: R$ <?php echo number_format($proposta['preco_proposto'] ?? 0, 2, ',', '.'); ?>
                                     </small>
                                 </td>
@@ -385,13 +385,13 @@ try {
                                     <span class="status-badge <?php echo $status_class; ?>">
                                         <?php echo ucfirst($status_text); ?>
                                     </span><br>
-                                    <small style="color: #666;">
+                                    <small class="text-muted">
                                         <?php echo $proposta['forma_pagamento'] ?? ''; ?>
                                     </small>
                                 </td>
                                 <td>
                                     <?php echo date('d/m/Y', strtotime($proposta['data_inicio'])); ?><br>
-                                    <small style="color: #666;">
+                                    <small class="text-muted">
                                         Atualizado: <?php echo date('d/m/Y', strtotime($proposta['data_atualizacao'])); ?>
                                     </small>
                                 </td>
@@ -432,17 +432,16 @@ try {
                                                     </div>
                                                 <?php else: ?>
                                                     <!-- Mostrar ícone quando não houver imagem -->
-                                                    <div style="width: 60px; height: 45px; background: #eee; border-radius: 4px; 
-                                                                display: flex; align-items: center; justify-content: center;">
-                                                        <i class="fas fa-signature" style="color: #999;"></i>
+                                                    <div class="assinatura-placeholder">
+                                                        <i class="fas fa-signature"></i>
                                                     </div>
                                                 <?php endif; ?>
                                             <?php endforeach; ?>
                                         <?php else: ?>
-                                            <span style="color: #999; font-style: italic;">Nenhuma</span>
+                                            <span class="text-empty">Nenhuma</span>
                                         <?php endif; ?>
                                     </div>
-                                    <small style="color: #666; display: block; margin-top: 5px;">
+                                    <small class="text-muted mt-block">
                                         <?php echo $proposta['total_assinaturas']; ?> assinatura(s)
                                     </small>
                                 </td>
@@ -567,16 +566,16 @@ try {
                 const dataAssinatura = new Date(assinatura.data_assinatura);
                 
                 card.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <h4 style="margin: 0;">${assinatura.nome_assinante || 'Não informado'}</h4>
-                        <span class="badge-tipo ${badgeClass}" style="position: relative; top: 0; right: 0;">
+                    <div class="assinatura-card-header">
+                        <h4>${assinatura.nome_assinante || 'Não informado'}</h4>
+                        <span class="badge-tipo ${badgeClass} badge-tipo-standalone">
                             ${badgeText}
                         </span>
                     </div>
-                    <p style="margin: 5px 0; font-size: 13px; color: #666;">
+                    <p class="assinatura-card-text">
                         <strong>Tipo:</strong> ${assinatura.tipo_assinante || 'Não informado'}
                     </p>
-                    ${assinatura.assinatura_imagem ? 
+                    ${assinatura.assinatura_imagem ?
                         (function() {
                             // Corrigir o formato base64 se necessário
                             let imagemSrc = assinatura.assinatura_imagem;
@@ -584,12 +583,12 @@ try {
                                 imagemSrc = 'data:image/png;base64,' + imagemSrc;
                             }
                             return `<img class="assinatura-img" src="${imagemSrc}" alt="Assinatura de ${assinatura.nome_assinante}">`;
-                        })() : 
-                        '<div style="padding: 20px; background: #eee; text-align: center; border-radius: 5px; margin: 10px 0;">' +
-                        '<i class="fas fa-signature" style="font-size: 40px; color: #999;"></i><br>' +
-                        '<span style="color: #999;">Assinatura sem imagem</span></div>'
+                        })() :
+                        '<div class="assinatura-sem-imagem">' +
+                        '<i class="fas fa-signature"></i><br>' +
+                        '<span>Assinatura sem imagem</span></div>'
                     }
-                    <p style="margin: 5px 0; font-size: 12px; color: #666;">
+                    <p class="assinatura-card-date">
                         <strong>Data:</strong> ${dataAssinatura.toLocaleDateString('pt-BR')} ${dataAssinatura.toLocaleTimeString('pt-BR')}
                     </p>
                 `;
@@ -597,7 +596,7 @@ try {
                 container.appendChild(card);
             });
         } else {
-            container.innerHTML = '<p style="color: #999; font-style: italic; text-align: center; padding: 20px;">Nenhuma assinatura encontrada para esta proposta.</p>';
+            container.innerHTML = '<p class="empty-assinaturas-msg">Nenhuma assinatura encontrada para esta proposta.</p>';
         }
         
         // Mostrar modal

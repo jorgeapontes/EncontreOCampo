@@ -264,6 +264,15 @@ body {
     font-size: 12px;
     color: #666;
     font-family: monospace;
+    margin-left: 20px;
+}
+
+.usuario-email {
+    margin-left: 20px;
+}
+
+.delete-form {
+    margin: 0;
 }
 
 .badge {

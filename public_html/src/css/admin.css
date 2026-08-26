@@ -859,6 +859,15 @@ body {
     color: #bdc3c7;
 }
 
+.empty-state i {
+    color: #ccc;
+    margin-bottom: 15px;
+}
+
+.empty-state .btn-primary {
+    margin-top: 15px;
+}
+
 .text-muted {
     color: #95a5a6 !important;
     font-style: italic;

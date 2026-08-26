@@ -4,7 +4,32 @@ Thumbs.db
 *.log
 /vendor/
 .env
+.env.*
+!.env.example
 
-# ARQUIVOS DE CONFIGURAÇÃO DE SEGURANÇA (CRUCIAL!)
-# Não envie credenciais do banco de dados
+# Editores/IDE
+.vscode/
+.idea/
+
+# ARQUIVOS DE CONFIGURAÇÃO DE SEGURANÇA
+# Não enviar credenciais do banco de dados
 /src/conexao.php
+/.htaccess
+
+# Composer (instalador, não precisa ir para o repositório)
+composer.phar
+
+# Dumps de banco de dados na raiz (podem conter dados reais de usuários)
+/*.sql
+
+# Logs e diretórios temporários/rate-limit
+/logs/
+/tmp/
+/src/scripts/logs/
+/src/vendedor/logs/
+/src/webhooks/*.log
+
+# Uploads de usuários (fotos de perfil, documentos, comprovantes, chat, etc.)
+# Contêm dados pessoais/sensíveis e não devem ser versionados
+/uploads/
+/src/uploads/

@@ -1,0 +1,11 @@
+# Bloqueia TODO acesso direto a esta pasta (fotos de documento/identidade).
+# As imagens só podem ser vistas através de src/admin/ver_documento.php,
+# que exige login de admin antes de servir o arquivo.
+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>

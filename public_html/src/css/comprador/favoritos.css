@@ -18,6 +18,14 @@ html {
     scrollbar-gutter: stable;
 }
 
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
 * {
     margin: 0;
     padding: 0;

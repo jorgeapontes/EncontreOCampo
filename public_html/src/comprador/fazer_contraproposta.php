@@ -186,7 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                <a href="../../index.php" class="logo-link">
                     <img src="../../img/logo-nova.png" alt="Logo">
                     <div>
                         <h1>ENCONTRE</h1>

@@ -108,7 +108,7 @@ try {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index.php" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -140,7 +140,7 @@ try {
             <center><h1>Histórico de Compras</h1></center>
         </section>
 
-        <form id="periodForm" method="get" style="margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+        <form id="periodForm" method="get" class="period-form">
             <label for="period_select">Período:</label>
             <select id="period_select" name="period" onchange="document.getElementById('periodForm').submit()">
                 <?php
@@ -169,10 +169,10 @@ try {
         </section>
 
         <section class="section-anuncios">
-            <div id="header" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-                <div class="status" style="display:flex;align-items:center;gap:16px;">
-                    <h2 style="margin:0;">Compras (<?php echo count($propostas); ?>)</h2>
-                    <form id="filterForm" method="get" style="margin:0;display:flex;align-items:center;gap:8px;">
+            <div id="header" class="negociacoes-header-row">
+                <div class="status status-row">
+                    <h2>Compras (<?php echo count($propostas); ?>)</h2>
+                    <form id="filterForm" method="get" class="filter-form-inline">
                         <label for="status_filter">Status:</label>
                         <select id="status_filter" name="status_filter" onchange="document.getElementById('filterForm').submit()">
                             <option value="all" <?php echo ($status_filter==='all')?'selected':''; ?>>Todos</option>

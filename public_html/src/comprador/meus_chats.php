@@ -183,7 +183,7 @@ try {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index.php" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -308,9 +308,9 @@ try {
                              id="conversa-<?php echo $conversa['conversa_id']; ?>">
                             
                             <?php if (!$mostrar_arquivados && !$esta_arquivado): ?>
-                                <a href="<?php echo $chat_url; ?>" style="display: flex; gap: 1.5rem; align-items: center; text-decoration: none; color: inherit; flex: 1;">
+                                <a href="<?php echo $chat_url; ?>" class="conversa-card-link">
                             <?php else: ?>
-                                <div style="display: flex; gap: 1.5rem; align-items: center; flex: 1; cursor: default;">
+                                <div class="conversa-card-link static">
                             <?php endif; ?>
                                 
                                 <div class="produto-thumb">
@@ -408,14 +408,14 @@ try {
             <div class="modal-header"><h3><i class="fas fa-archive"></i> Arquivar Conversa</h3></div>
             <div class="modal-body">
                 <p>Tem certeza que deseja arquivar esta conversa? <strong>Após arquivar:</strong></p>
-                <ul style="margin-left: 20px; margin-top: 10px; color: #666;">
+                <ul class="modal-list">
                     <li>A conversa será movida para a seção "Arquivadas"</li>
                     <li>Para voltar a conversar, será necessário restaurar a conversa</li>
                 </ul>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-cancel" onclick="fecharModal('arquivar')">Cancelar</button>
-                <form id="arquivarForm" method="POST" style="display: inline;">
+                <form id="arquivarForm" method="POST" class="form-inline">
                     <input type="hidden" name="action" value="arquivar_conversa">
                     <input type="hidden" id="conversa_id_arquivar" name="conversa_id">
                     <button type="submit" class="btn-confirm-arquivar"><i class="fas fa-archive"></i> Sim, Arquivar</button>
@@ -432,7 +432,7 @@ try {
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-cancel" onclick="fecharModal('restaurar')">Cancelar</button>
-                <form id="restaurarForm" method="POST" style="display: inline;">
+                <form id="restaurarForm" method="POST" class="form-inline">
                     <input type="hidden" name="action" value="restaurar_conversa">
                     <input type="hidden" id="conversa_id_restaurar" name="conversa_id">
                     <button type="submit" class="btn-confirm-restaurar"><i class="fas fa-box-open"></i> Sim, Restaurar</button>
@@ -446,7 +446,7 @@ try {
             <div class="modal-header"><h3><i class="fas fa-trash"></i> Excluir Conversa</h3></div>
             <div class="modal-body">
                 <p>Tem certeza que deseja excluir esta conversa?</p>
-                <ul style="margin-left: 20px; margin-top: 10px; color: #666;">
+                <ul class="modal-list">
                     <li>A conversa sumirá da sua lista <strong>permanentemente</strong>.</li>
                     <li>O vendedor ainda poderá ver a conversa.</li>
                     <li>O administrador ainda poderá auditar a conversa.</li>
@@ -454,7 +454,7 @@ try {
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-cancel" onclick="fecharModal('excluir')">Cancelar</button>
-                <form id="excluirForm" method="POST" style="display: inline;">
+                <form id="excluirForm" method="POST" class="form-inline">
                     <input type="hidden" name="action" value="excluir_conversa">
                     <input type="hidden" id="conversa_id_excluir" name="conversa_id">
                     <button type="submit" class="btn-confirm-excluir"><i class="fas fa-trash"></i> Sim, Excluir</button>
@@ -670,12 +670,11 @@ function atualizarBadgeConversa(conversaId, quantidade) {
         
         if (badge) {
             badge.textContent = `${quantidade} nova${quantidade > 1 ? 's' : ''}`;
-            badge.style.display = 'inline-block';
-            
+
             // Animação sutil
-            badge.style.animation = 'pulse 1s ease-in-out';
+            badge.classList.add('pulsando');
             setTimeout(() => {
-                badge.style.animation = '';
+                badge.classList.remove('pulsando');
             }, 1000);
         }
     } else {
@@ -724,74 +723,16 @@ function mostrarNotificacaoNovasMensagens(quantidade) {
         <button onclick="this.parentElement.remove()">&times;</button>
     `;
     
-    // Estilos
-    notif.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: #28a745;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        z-index: 9999;
-        animation: slideInRight 0.3s ease-out;
-    `;
-    
     document.body.appendChild(notif);
-    
+
     // Remover automaticamente após 5 segundos
     setTimeout(() => {
         if (notif.parentElement) {
-            notif.style.animation = 'slideOutRight 0.3s ease-in';
+            notif.classList.add('saindo');
             setTimeout(() => notif.remove(), 300);
         }
     }, 5000);
 }
-
-// Adicionar estilos CSS para animações
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes pulse {
-        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
-        50% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
-        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
-    }
-    
-    @keyframes slideInRight {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    
-    @keyframes slideOutRight {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-    }
-    
-    .notificacao-flutuante {
-        font-size: 14px;
-        font-weight: 500;
-    }
-    
-    .notificacao-flutuante button {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 20px;
-        cursor: pointer;
-        padding: 0;
-        margin-left: 10px;
-    }
-    
-    .conversa-card.nao-lida {
-        background-color: #f0f9ff !important;
-        border-left: 4px solid #2196F3 !important;
-    }
-`;
-document.head.appendChild(style);
 
 // Iniciar polling quando a página carregar
 document.addEventListener('DOMContentLoaded', function() {

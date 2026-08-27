@@ -188,7 +188,7 @@ function responderContraproposta(negociacaoId, acao) {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index.php" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -282,7 +282,7 @@ function responderContraproposta(negociacaoId, acao) {
                 ?>
                     <div class="proposta-card <?php echo $status_info['class']; ?>">
                         <!-- DEBUG - remover depois -->
-                        <div class="debug-info" style="display: none;">
+                        <div class="debug-info">
                             <?php echo $debug_info; ?>
                         </div>
                         

@@ -382,7 +382,8 @@ body {
 }
 
 .conversa-card.nao-lida {
-    background: #e8f5e9;
+    background-color: #f0f9ff;
+    border-left: 4px solid #2196F3;
 }
 
 .produto-thumb {
@@ -580,6 +581,11 @@ body {
     padding: 3px 8px;
     border-radius: 12px;
     font-weight: 600;
+    display: inline-block;
+}
+
+.badge-novo.pulsando {
+    animation: pulse 1s ease-in-out;
 }
 
 .badge-tipo {
@@ -969,4 +975,84 @@ html {
     0% { background-color: #e8f5e9; }
     50% { background-color: #c8e6c9; }
     100% { background-color: inherit; }
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+.conversa-card-link {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    flex: 1;
+    text-decoration: none;
+    color: inherit;
+}
+
+.conversa-card-link.static {
+    cursor: default;
+}
+
+.modal-list {
+    margin-left: 20px;
+    margin-top: 10px;
+    color: #666;
+}
+
+.form-inline {
+    display: inline;
+}
+
+/* Notificação flutuante de novas mensagens (via polling AJAX) */
+.notificacao-flutuante {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    background: #28a745;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 9999;
+    animation: slideInRight 0.3s ease-out;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.notificacao-flutuante button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 10px;
+}
+
+.notificacao-flutuante.saindo {
+    animation: slideOutRight 0.3s ease-in;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+    50% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
 }

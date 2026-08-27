@@ -138,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                <a href="../../index.php" class="logo-link">
                     <div>
                         <h1>ENCONTRE</h1>
                         <h2>OCAMPO</h2>
@@ -203,8 +203,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <label for="cpf_cnpj">CPF/CNPJ</label>
                                 <input type="text" id="cpf_cnpj" name="cpf_cnpj" 
                                        value="<?php echo htmlspecialchars($comprador_data['cpf_cnpj']); ?>" 
-                                       readonly style="background-color: #f8f9fa;">
-                                <small style="color: #6c757d; font-size: 0.9em;">CPF/CNPJ não pode ser alterado</small>
+                                       readonly>
+                                <small class="cpf-note">CPF/CNPJ não pode ser alterado</small>
                             </div>
                             <div class="form-group">
                                 <label for="nome_comercial">Nome Comercial (Opcional)</label>

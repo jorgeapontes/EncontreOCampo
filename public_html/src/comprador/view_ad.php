@@ -356,202 +356,13 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-    <style>
-        .preco-dinamico .valor-unitario { font-size: 14px; color: #666; margin-top: 5px; font-style: italic; }
-        .preco-dinamico .valor-total-label { font-size: 14px; color: #2E7D32; margin-top: 5px; font-weight: 600; }
-        .btn-disabled { opacity: 0.6 !important; cursor: not-allowed !important; pointer-events: none !important; filter: grayscale(30%) !important; }
-        .status-info, .status-alert { padding: 8px 12px; margin-top: 10px; }
-        .aviso-pendente { background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border: 1px solid #ffc107; border-radius: 8px; padding: 15px; margin: 20px 0; color: #856404; text-align: center; }
-        .aviso-estoque { background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); border: 1px solid #f5a6af; border-radius: 8px; padding: 15px; margin: 20px 0; color: #721c24; text-align: center; font-weight: 700; }
-        
-        /* Carrossel */
-        .carrossel-container { position: relative; width: 100%; height: 400px; border-radius: var(--radius); overflow: hidden; background: var(--gray); }
-        .carrossel-slides { display: flex; width: 100%; height: 100%; transition: transform 0.5s ease-in-out; }
-        .carrossel-slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-        .carrossel-slide img { width: 100%; height: 100%; object-fit: cover; }
-        .carrossel-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(76, 175, 80, 0.9); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; transition: all 0.3s ease; z-index: 10; box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
-        .carrossel-btn:hover { background: var(--primary-color); transform: translateY(-50%) scale(1.1); }
-        .carrossel-btn.prev { left: 15px; }
-        .carrossel-btn.next { right: 15px; }
-        .carrossel-btn:disabled { background: rgba(76, 175, 80, 0.5); cursor: not-allowed; }
-        .carrossel-indicators { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; }
-        .carrossel-indicator { width: 12px; height: 12px; border-radius: 50%; background: rgba(255, 255, 255, 0.5); cursor: pointer; transition: all 0.3s ease; }
-        .carrossel-indicator.active { background: var(--primary-color); transform: scale(1.2); }
-        .carrossel-counter { position: absolute; top: 15px; right: 15px; background: rgba(0, 0, 0, 0.6); color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.9rem; font-weight: 600; z-index: 10; }
-        .badge-desconto { position: absolute; top: 15px; left: 15px; background: var(--primary-color); color: var(--white); padding: 8px 15px; border-radius: 20px; font-weight: 700; font-size: 1rem; z-index: 11; }
-        .carrossel-miniaturas { display: flex; gap: 10px; margin-top: 15px; overflow-x: auto; padding: 5px 0; }
-        .miniatura { width: 80px; height: 60px; border-radius: 6px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: all 0.3s ease; flex-shrink: 0; }
-        .miniatura.active { border-color: var(--primary-color); box-shadow: 0 3px 8px rgba(76, 175, 80, 0.3); }
-        .miniatura img { width: 100%; height: 100%; object-fit: cover; }
-        .single-image .carrossel-btn, .single-image .carrossel-indicators, .single-image .carrossel-counter { display: none; }
-        
-        /* Estilos para seção de avaliações (ADICIONADO) */
-        .avaliacoes-section {
-            background: #f9f9f9;
-            border-radius: 10px;
-            padding: 30px;
-            margin: 30px 0;
-            border-left: 5px solid #4CAF50;
-        }
-        
-        .avaliacoes-header {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-        
-        .media-avaliacao {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .numero-media {
-            font-size: 3em;
-            font-weight: 700;
-            color: #4CAF50;
-        }
-        
-        .estrelas-media {
-            display: flex;
-            gap: 5px;
-            font-size: 1.2em;
-        }
-        
-        .estrela-cheia {
-            color: #ffc107;
-        }
-        
-        .estrela-vazia {
-            color: #ddd;
-        }
-        
-        .total-avaliacoes {
-            color: #666;
-            font-size: 0.95em;
-        }
-        
-        .avaliacoes-info {
-            flex: 1;
-        }
-        
-        .avaliacoes-info h3 {
-            margin-top: 0;
-            color: #333;
-            font-size: 1.3em;
-        }
-        
-        .avaliacoes-info p {
-            color: #666;
-            margin: 5px 0;
-        }
-        
-        .avaliacoes-lista {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .avaliacao-item {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        
-        .avaliacao-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        .avaliador-nome {
-            font-weight: 600;
-            color: #333;
-            font-size: 0.95em;
-        }
-        
-        .avaliacao-data {
-            color: #999;
-            font-size: 0.85em;
-        }
-        
-        .avaliacao-nota {
-            display: flex;
-            gap: 3px;
-            font-size: 1.1em;
-        }
-        
-        .avaliacao-comentario {
-            color: #555;
-            line-height: 1.6;
-            margin-top: 10px;
-            font-size: 0.95em;
-        }
-        
-        .sem-avaliacoes {
-            text-align: center;
-            padding: 40px 20px;
-            color: #999;
-        }
-        
-        .sem-avaliacoes i {
-            font-size: 3em;
-            margin-bottom: 15px;
-            color: #ddd;
-        }
-        
-        .botao-avaliar {
-            margin-top: 15px;
-            text-align: center;
-        }
-        
-        .botao-avaliar .btn-avaliar {
-            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-        }
-        
-        .botao-avaliar .btn-avaliar:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(255, 152, 0, 0.3);
-        }
-        
-        @media (max-width: 768px) { 
-            .carrossel-container { height: 300px; } 
-            .carrossel-btn { width: 40px; height: 40px; font-size: 16px; } 
-            .social-links { align-items: center; gap: 10px; margin-bottom: 10px; padding-left: 25px; }
-            .avaliacoes-header {
-                flex-direction: column;
-                text-align: center;
-                gap: 15px;
-            }
-        }
-    </style>
 </head>
 <body>
     <header>
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index.php" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div><h1>ENCONTRE</h1><h2>O CAMPO</h2></div>
                     </a>
@@ -714,7 +525,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                                     <a href="../chat/chat.php?produto_id=<?php echo $anuncio_id; ?>" class="btn-chat"><i class="fas fa-comments"></i> Conversar com o Vendedor</a>
                                 <?php else: ?>
                                     <a type="button" class="btn-chat btn-disabled" disabled><i class="fas fa-comments"></i> Conversar com o Vendedor</a>
-                                    <div class="status-info" style="color: #ff6b6b; font-size: 0.9em; margin-top: 5px;"><i class="fas fa-info-circle"></i> Aguarde a aprovação</div>
+                                    <div class="status-info alerta"><i class="fas fa-info-circle"></i> Aguarde a aprovação</div>
                                 <?php endif; ?>
                                 <p class="proposta-text">Negocie diretamente com o vendedor</p>
                             </div>

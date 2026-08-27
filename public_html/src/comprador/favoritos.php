@@ -83,7 +83,7 @@ try {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index.php" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -150,13 +150,13 @@ try {
         </div>
 
         <?php if (!empty($mensagem)): ?>
-            <div class="alert-message <?php echo $tipo_mensagem === 'erro' ? 'alert-error' : 'alert-success'; ?>" style="padding: 15px; margin: 20px auto; border-radius: 5px; text-align: center; max-width: 600px; background-color: <?php echo $tipo_mensagem === 'erro' ? '#f8d7da' : '#d4edda'; ?>; color: <?php echo $tipo_mensagem === 'erro' ? '#721c24' : '#155724'; ?>; border: 1px solid <?php echo $tipo_mensagem === 'erro' ? '#f5c6cb' : '#c3e6cb'; ?>;">
+            <div class="alert-message <?php echo $tipo_mensagem === 'erro' ? 'alert-error' : 'alert-success'; ?>">
                 <?php echo htmlspecialchars($mensagem); ?>
             </div>
         <?php endif; ?>
 
         <?php if (isset($erro)): ?>
-            <div class="alert-message alert-error" style="padding: 15px; margin: 20px auto; border-radius: 5px; text-align: center; max-width: 600px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;">
+            <div class="alert-message alert-error">
                 <?php echo $erro; ?>
             </div>
         <?php endif; ?>
@@ -259,14 +259,13 @@ try {
                             </div>
                             
                             <div class="card-actions">
-                                <div style="display: flex; gap: 10px; width: 100%;">
-                                    <a href="view_ad.php?anuncio_id=<?php echo $produto['id']; ?>" class="btn btn-primary" style="flex: 2;">
+                                <div class="card-actions-row">
+                                    <a href="view_ad.php?anuncio_id=<?php echo $produto['id']; ?>" class="btn btn-primary">
                                         <i class="fas fa-eye"></i> Ver Detalhes
                                     </a>
-                                    <a href="remover_favorito.php?favorito_id=<?php echo $produto['favorito_id']; ?>" 
-                                       class="btn btn-remover-favorito" 
-                                       onclick="return confirm('Tem certeza que deseja remover este item dos favoritos?');"
-                                       style="flex: 1; background-color: #dc3545; color: white; text-decoration: none; text-align: center;">
+                                    <a href="remover_favorito.php?favorito_id=<?php echo $produto['favorito_id']; ?>"
+                                       class="btn btn-remover-favorito"
+                                       onclick="return confirm('Tem certeza que deseja remover este item dos favoritos?');">
                                         <i class="fas fa-xmark"></i>
                                     </a>
                                 </div>

@@ -102,6 +102,11 @@ html {
             cursor: not-allowed;
         }
 
+        .cpf-note {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
         .form-actions {
             display: flex;
             gap: 15px;

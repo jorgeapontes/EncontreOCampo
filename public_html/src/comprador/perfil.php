@@ -222,7 +222,7 @@ if (isset($_GET['success']) && $_GET['success'] == '1') {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index.php" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -294,7 +294,7 @@ if (isset($_GET['success']) && $_GET['success'] == '1') {
 
             <form method="POST" action="" class="perfil-form" enctype="multipart/form-data">
                 <input type="hidden" name="atualizar_perfil" value="1">
-                <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" style="display: none;">
+                <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" class="file-input-hidden">
                 
                 <div class="perfil-header-info">
                     <center>

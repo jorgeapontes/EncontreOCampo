@@ -931,3 +931,44 @@ th:last-child {
             font-style: italic;
             margin-top: 10px;
         }
+
+/* Usadas em comprador/negociacoes.php (histórico de compras) */
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+.period-form {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.negociacoes-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.status-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.status-row h2 {
+    margin: 0;
+}
+
+.filter-form-inline {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}

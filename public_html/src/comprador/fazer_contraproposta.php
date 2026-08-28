@@ -6,7 +6,7 @@ require_once __DIR__ . '/../../includes/send_notification.php';
 
 // 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA
 if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['comprador', 'vendedor'])) {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador ou Vendedor."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Comprador ou Vendedor."));
     exit();
 }
 
@@ -186,7 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <a href="../../index.php" class="logo-link">
+                <a href="../../index" class="logo-link">
                     <img src="../../img/logo-nova.png" alt="Logo">
                     <div>
                         <h1>ENCONTRE</h1>
@@ -196,9 +196,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <ul class="nav-menu">
                 <li class="nav-item"><a href="dashboard" class="nav-link">Dashboard</a></li>
-                <li class="nav-item"><a href="../anuncios.php" class="nav-link">Comprar</a></li>
+                <li class="nav-item"><a href="../anuncios" class="nav-link">Comprar</a></li>
                 <li class="nav-item"><a href="minhas_propostas" class="nav-link active">Minhas Propostas</a></li>
-                <li class="nav-item"><a href="../logout.php" class="nav-link logout">Sair</a></li>
+                <li class="nav-item"><a href="../logout" class="nav-link logout">Sair</a></li>
             </ul>
         </div>
     </nav>

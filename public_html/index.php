@@ -14,7 +14,7 @@ function safe($string) {
 }
 
 $button_text = 'Login';
-$button_action = 'src/login.php';
+$button_action = 'src/login';
 
 if (isset($_SESSION['usuario_nome'])) {
     // CORREÇÃO: Escapar o nome do usuário para evitar XSS
@@ -23,7 +23,7 @@ if (isset($_SESSION['usuario_nome'])) {
     $button_action = 'src/' . $usuario_tipo . '/dashboard.php';
 } else {
     $button_text = 'Login';
-    $button_action = 'src/login.php';
+    $button_action = 'src/login';
 }
 
 ?>
@@ -82,7 +82,7 @@ if (isset($_SESSION['usuario_nome'])) {
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
-                        <a href="src/notificacoes.php" class="nav-link no-underline">
+                        <a href="src/notificacoes" class="nav-link no-underline">
                             <span class="icon-wrapper">
                                 <i class="fas fa-bell"></i>
                                 <?php
@@ -151,7 +151,7 @@ if (isset($_SESSION['usuario_nome'])) {
             </div>
 
             <center>
-                <a href="src/anuncios.php" class="cta-button" style="display: inline-block; margin-top: 40px; text-decoration: none; width: 250px; text-align: center;">
+                <a href="src/anuncios" class="cta-button" style="display: inline-block; margin-top: 40px; text-decoration: none; width: 250px; text-align: center;">
                     Ver Todos os Anúncios
                 </a>
             </center>
@@ -226,7 +226,7 @@ if (isset($_SESSION['usuario_nome'])) {
                     </div>
                 </div>
                 <div class="contact-form">
-                    <form id="mainForm" action="src/processar_solicitacao.php" method="POST" enctype="multipart/form-data">
+                    <form id="mainForm" action="src/processar_solicitacao" method="POST" enctype="multipart/form-data">
                         <div class="form-group">
                             <label for="name" class="required">Nome </label>
                             <input type="text" id="name" name="name" required placeholder="Seu nome completo">
@@ -249,7 +249,7 @@ if (isset($_SESSION['usuario_nome'])) {
                         <div class="form-group" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
                             <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-weight:600; color:var(--dark-color);">
                                 <input type="checkbox" id="aceite_termos" name="aceite_termos" value="1" required style="width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0;">
-                                <span>Li e aceito os <a href="src/termos.php" target="_blank" rel="noopener noreferrer" style="color: #4CAF50; text-decoration: underline;">termos e condições</a> e a <a href="src/privacidade.php" target="_blank" rel="noopener noreferrer" style="color: #4CAF50; text-decoration: underline;">política de privacidade</a></span>
+                                <span>Li e aceito os <a href="src/termos" target="_blank" rel="noopener noreferrer" style="color: #4CAF50; text-decoration: underline;">termos e condições</a> e a <a href="src/privacidade" target="_blank" rel="noopener noreferrer" style="color: #4CAF50; text-decoration: underline;">política de privacidade</a></span>
                             </label>
                             <small class="form-help" style="display: block; margin-top: 5px; color: #666;">Você precisa aceitar os termos para continuar</small>
                         </div>
@@ -766,17 +766,17 @@ if (isset($_SESSION['usuario_nome'])) {
                             <li><a href="#comprar">Comprar</a></li>
                             <li><a href="#vender">Vender</a></li>
                             <li><a href="#transporte">Transporte</a></li>
-                            <li><a href="src/anuncios.php">Anúncios</a>
+                            <li><a href="src/anuncios">Anúncios</a>
                         </ul>
                     </div>
                     <div class="footer-column">
                         <h4>Suporte</h4>
                         <ul>
                             <li><a href="#contato">Contato</a></li>
-                            <li><a href="src/faq.php">FAQ</a></li>
-                            <li><a href="src/sobre.php">Sobre Nós</a></li>
-                            <li><a href="src/termos.php">Termos de Uso</a></li>
-                            <li><a href="src/privacidade.php">Política de Privacidade</a></li>
+                            <li><a href="src/faq">FAQ</a></li>
+                            <li><a href="src/sobre">Sobre Nós</a></li>
+                            <li><a href="src/termos">Termos de Uso</a></li>
+                            <li><a href="src/privacidade">Política de Privacidade</a></li>
                         </ul>
                     </div>
                     <div class="footer-column">

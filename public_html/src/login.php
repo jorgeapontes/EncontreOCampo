@@ -190,23 +190,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 case 'vendedor':
                                 case 'transportador':
                                     if ($usuario['status'] === 'pendente') {
-                                        header("Location: ../index.php");
+                                        header("Location: ../index");
                                     } else {
                                         switch ($usuario['tipo']) {
                                             case 'comprador':
-                                                header("Location: anuncios.php");
+                                                header("Location: anuncios");
                                                 break;
                                             case 'vendedor':
-                                                header("Location: vendedor/dashboard.php");
+                                                header("Location: vendedor/dashboard");
                                                 break;
                                             case 'transportador':
-                                                header("Location: transportador/dashboard.php");
+                                                header("Location: transportador/dashboard");
                                                 break;
                                         }
                                     }
                                     break;
                                 default:
-                                    header("Location: ../index.php");
+                                    header("Location: ../index");
                             }
                             exit();
                         } else {
@@ -338,7 +338,7 @@ function registrarLogAcesso($db, $usuarioId, $email, $ip, $sucesso, $motivoFalha
                 <div class="alert alert-danger"><?php echo escapeHtml($erro); ?></div>
             <?php endif; ?>
 
-            <form method="POST" action="login.php">
+            <form method="POST" action="login">
                 <input type="hidden" name="csrf_token" value="<?php echo escapeHtml($_SESSION['csrf_token']); ?>">
 
                 <div class="form-group">
@@ -356,16 +356,16 @@ function registrarLogAcesso($db, $usuarioId, $email, $ip, $sucesso, $motivoFalha
                         <input type="checkbox" id="remember" name="remember">
                         <label for="remember">Lembrar-me</label>
                     </div>
-                    <a href="../includes/forgot_password.php" class="forgot-password">Esqueceu a senha?</a>
+                    <a href="../includes/forgot_password" class="forgot-password">Esqueceu a senha?</a>
                 </div>
 
                 <button type="submit" class="login-button">Entrar</button>
 
                 <div class="register-link">
-                    Não tem uma conta? <a href="../index.php#contato">Registre-se</a>
+                    Não tem uma conta? <a href="../index#contato">Registre-se</a>
                 </div>
                 <div class="register-link">
-                    <a href="../index.php">
+                    <a href="../index">
                         <i class="fas fa-home"></i> Home
                     </a>
                 </div>

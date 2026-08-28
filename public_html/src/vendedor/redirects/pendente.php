@@ -40,7 +40,7 @@ require_once '../../conexao.php'
         <p>Você receberá uma notificação por email quando o pagamento for confirmado.</p>
         
         <div style="margin-top: 30px;">
-            <a href="../perfil.php" class="btn-voltar">Voltar para o Perfil</a>
+            <a href="../perfil" class="btn-voltar">Voltar para o Perfil</a>
         </div>
     </div>
 </body>

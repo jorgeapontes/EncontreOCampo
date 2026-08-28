@@ -128,7 +128,7 @@ if ($viewer_id) {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
                         <img src="../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -138,26 +138,26 @@ if ($viewer_id) {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="../index.php" class="nav-link">Home</a>
+                        <a href="../index" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="anuncios.php" class="nav-link">Anúncios</a>
+                        <a href="anuncios" class="nav-link">Anúncios</a>
                     </li>
                     <li class="nav-item">
-                        <a href="vendedor/dashboard.php" class="nav-link">Painel</a>
+                        <a href="vendedor/dashboard" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">
-                        <a href="vendedor/perfil.php" class="nav-link">Meu Perfil</a>
+                        <a href="vendedor/perfil" class="nav-link">Meu Perfil</a>
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
-                        <a href="notificacoes.php" class="nav-link no-underline">
+                        <a href="notificacoes" class="nav-link no-underline">
                             <i class="fas fa-bell"></i>
                         </a>
                     </li>
                     <?php endif; ?>
                     <li class="nav-item">
-                        <a href="logout.php" class="nav-link exit-button no-underline">Sair</a>
+                        <a href="logout" class="nav-link exit-button no-underline">Sair</a>
                     </li>
                 </ul>
                 <div class="hamburger">
@@ -338,7 +338,7 @@ if ($viewer_id) {
                 </div>
             </div>
             <div style="margin-top: 8px;">
-                <a href="avaliacoes.php?tipo=<?php echo $tipo_avaliacao; ?>&id=<?php echo urlencode($profile_id); ?>" 
+                <a href="avaliacoes?tipo=<?php echo $tipo_avaliacao; ?>&id=<?php echo urlencode($profile_id); ?>" 
                    style="font-size: 0.85em; color: #007bff; text-decoration: none;">
                     Ver todas as avaliações <i class="fas fa-external-link-alt" ></i>
                 </a>

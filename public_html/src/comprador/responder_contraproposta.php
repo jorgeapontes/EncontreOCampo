@@ -5,7 +5,7 @@ require_once __DIR__ . '/../conexao.php'; // inicia a sessão certa (EOC_SESSID)
 
 // 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA
 if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['comprador', 'vendedor'])) {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador ou Vendedor."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Comprador ou Vendedor."));
     exit();
 }
 

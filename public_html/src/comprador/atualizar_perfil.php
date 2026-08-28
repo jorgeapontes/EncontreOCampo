@@ -5,7 +5,7 @@ require_once __DIR__ . '/../conexao.php';
 
 // 1. VERIFICAÇÃO DE ACESSO
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprador') {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Comprador."));
     exit();
 }
 

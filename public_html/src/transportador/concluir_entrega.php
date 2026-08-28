@@ -6,7 +6,7 @@ require_once __DIR__ . '/../../includes/send_notification.php';
 require_once __DIR__ . '/../funcoes_notificacoes.php';
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'transportador') {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Transportador."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Transportador."));
     exit();
 }
 

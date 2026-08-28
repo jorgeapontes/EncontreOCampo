@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $_SESSION['message'] = "Email inválido!";
         $_SESSION['message_type'] = 'error';
-        header('Location: forgot_password.php');
+        header('Location: forgot_password');
         exit;
     }
 
@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['message_type'] = 'success';
     }
     $conn = null;
-    header('Location: forgot_password.php');
+    header('Location: forgot_password');
     exit;
 }
 ?>

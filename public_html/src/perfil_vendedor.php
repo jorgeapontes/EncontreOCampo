@@ -4,7 +4,7 @@ require_once 'conexao.php';
 
 // Verificar se o vendedor_id (que na verdade é o usuario_id do vendedor) foi passado
 if (!isset($_GET['vendedor_id'])) {
-    header('Location: anuncios.php');
+    header('Location: anuncios');
     exit();
 }
 
@@ -218,7 +218,7 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
                         <img src="../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -228,20 +228,20 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="../index.php" class="nav-link">Home</a>
+                        <a href="../index" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="anuncios.php" class="nav-link">Anúncios</a>
+                        <a href="anuncios" class="nav-link">Anúncios</a>
                     </li>
                     <?php if ($is_logged_in): ?>
                         <li class="nav-item"><a href="<?= $usuario_tipo ?>/dashboard.php" class="nav-link">Painel</a></li>
                         <li class="nav-item"><a href="<?= $usuario_tipo ?>/perfil.php" class="nav-link">Meu Perfil</a></li>
                         <li class="nav-item">
-                            <a href="logout.php" class="nav-link exit-button no-underline">Sair</a>
+                            <a href="logout" class="nav-link exit-button no-underline">Sair</a>
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
-                            <a href="login.php" class="nav-link login-button no-underline">Login</a>
+                            <a href="login" class="nav-link login-button no-underline">Login</a>
                         </li>
                     <?php endif; ?>
                 </ul>
@@ -384,7 +384,7 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                                     </div>
                                     <div class="card-actions">
                                         <?php if ($is_comprador): ?>
-                                            <a href="comprador/proposta_nova.php?anuncio_id=<?php echo $anuncio['id']; ?>" class="btn btn-primary">
+                                            <a href="comprador/proposta_nova?anuncio_id=<?php echo $anuncio['id']; ?>" class="btn btn-primary">
                                                 <i class="fas fa-handshake"></i> Comprar
                                             </a>
                                         <?php else: ?>
@@ -407,7 +407,7 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
             <span class="modal-close">&times;</span>
             <h3>Acesso Negociador</h3>
             <p>É necessário estar logado como Comprador para fazer uma proposta.</p>
-            <form action="login.php" method="POST">
+            <form action="login" method="POST">
                 <div class="form-group">
                     <label for="modal-email">Email</label>
                     <input type="email" id="modal-email" name="email" required>
@@ -418,7 +418,7 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                 </div>
                 <button type="submit" class="btn btn-primary">Entrar</button>
                 <div style="text-align: center; margin-top: 15px;">
-                    Não tem conta? <a href="../index.php#contato" target="_blank">Registre-se</a>
+                    Não tem conta? <a href="../index#contato" target="_blank">Registre-se</a>
                 </div>
             </form>
         </div>
@@ -438,11 +438,11 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
     function redirectToVendorReviews(vendedorUsuarioId, isLoggedIn) {
     if (isLoggedIn) {
         // Usuário logado: redireciona diretamente para a página de avaliações
-        window.location.href = 'avaliacoes.php?tipo=vendedor&id=' + vendedorUsuarioId;
+        window.location.href = 'avaliacoes?tipo=vendedor&id=' + vendedorUsuarioId;
     } else {
         // Usuário não logado: redireciona para login com parâmetro de redirecionamento
         const redirectUrl = encodeURIComponent('avaliacoes.php?tipo=vendedor&id=' + vendedorUsuarioId);
-        window.location.href = 'login.php?redirect=' + redirectUrl;
+        window.location.href = 'login?redirect=' + redirectUrl;
     }
 }
 

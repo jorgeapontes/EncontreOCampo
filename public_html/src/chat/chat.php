@@ -5,7 +5,7 @@ require_once __DIR__ . '/chat_config.php';
 
 // Verificar se está logado
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: ../login.php");
+    header("Location: ../login");
     exit();
 }
 
@@ -18,7 +18,7 @@ $conversa_id_get = isset($_GET['conversa_id']) ? (int)$_GET['conversa_id'] : 0;
 $referrer = isset($_GET['ref']) ? $_GET['ref'] : '';
 
 if ($produto_id <= 0) {
-    header("Location: ../anuncios.php?erro=" . urlencode("Produto não encontrado"));
+    header("Location: ../anuncios?erro=" . urlencode("Produto não encontrado"));
     exit();
 }
 
@@ -39,7 +39,7 @@ $stmt->execute();
 $produto = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$produto) {
-    header("Location: ../anuncios.php?erro=" . urlencode("Produto não encontrado"));
+    header("Location: ../anuncios?erro=" . urlencode("Produto não encontrado"));
     exit();
 }
 
@@ -530,7 +530,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                                 </div>
                             <?php endif; ?>
                         </div>
-                        <a href="../verperfil.php?usuario_id=<?php echo $outro_usuario_id; ?>" 
+                        <a href="../verperfil?usuario_id=<?php echo $outro_usuario_id; ?>" 
                             style="text-decoration: none; color: inherit;"
                             title="Ver perfil de <?php echo htmlspecialchars($outro_usuario_nome); ?>">
                             <div class="name-and-type" style="cursor: pointer;">
@@ -3250,11 +3250,11 @@ function redirectToUserReviews(usuarioId, tipoUsuario) {
     
     if (isLoggedIn) {
         // Usuário logado: redireciona diretamente para a página de avaliações
-        window.location.href = '../avaliacoes.php?tipo=' + tipoAvaliacao + '&id=' + usuarioId;
+        window.location.href = '../avaliacoes?tipo=' + tipoAvaliacao + '&id=' + usuarioId;
     } else {
         // Usuário não logado: redireciona para login com parâmetro de redirecionamento
         const redirectUrl = encodeURIComponent('../avaliacoes.php?tipo=' + tipoAvaliacao + '&id=' + usuarioId);
-        window.location.href = '../login.php?redirect=' + redirectUrl;
+        window.location.href = '../login?redirect=' + redirectUrl;
     }
 }
     </script>

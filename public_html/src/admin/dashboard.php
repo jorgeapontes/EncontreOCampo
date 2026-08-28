@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../conexao.php'; 
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
-    header("Location: ../index.php"); 
+    header("Location: ../index"); 
     exit();
 }
 
@@ -53,7 +53,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link">
+                    <a href="../../index" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -83,11 +83,11 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="../../index.php" class="nav-link">
+                        <a href="../../index" class="nav-link">
                             Home
                         </a>
                     </li>
-                    <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
+                    <li class="nav-item"><a href="../logout" class="nav-link exit-button no-underline">Sair</a></li>
                 </ul>
                 <div class="hamburger">
                     <span class="bar"></span>

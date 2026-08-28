@@ -4,7 +4,7 @@ require_once '../conexao.php';
 
 // Verificar se o usuário está logado como vendedor
 if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'vendedor') {
-    header('Location: ../index.php');
+    header('Location: ../index');
     exit();
 }
 
@@ -33,7 +33,7 @@ if ($dados_vendedor) {
     $nome_plano_atual = $dados_vendedor['nome_plano'] ?? 'Plano Básico';
 } else {
     // Se não achar vendedor, redireciona
-    header('Location: ../index.php');
+    header('Location: ../index');
     exit();
 }
 
@@ -98,7 +98,7 @@ try {
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                <a href="../../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
                     <img src="../../img/logo-nova.png" alt="Logo">
                     <div>
                         <h1>ENCONTRE</h1>
@@ -111,7 +111,7 @@ try {
                 <li class="nav-item"><a href="dashboard" class="nav-link">Dashboard</a></li>
                 <li class="nav-item"><a href="anuncios" class="nav-link active">Meus Anúncios</a></li>
                 <li class="nav-item"><a href="perfil" class="nav-link">Perfil</a></li>
-                <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
+                <li class="nav-item"><a href="../logout" class="nav-link exit-button no-underline">Sair</a></li>
             </ul>
 
             <div class="hamburger">

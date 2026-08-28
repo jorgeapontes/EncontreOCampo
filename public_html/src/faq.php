@@ -12,11 +12,11 @@ if ($is_logged_in) {
     if ($usuario_tipo == 'admin') {
         $button_action = 'admin/dashboard';
     } elseif ($usuario_tipo == 'comprador') {
-        $button_action = 'comprador/dashboard.php';
+        $button_action = 'comprador/dashboard';
     } elseif ($usuario_tipo == 'vendedor') {
-        $button_action = 'vendedor/dashboard.php';
+        $button_action = 'vendedor/dashboard';
     } elseif ($usuario_tipo == 'transportador') {
-        $button_action = 'transportador/dashboard.php';
+        $button_action = 'transportador/dashboard';
     } else {
         $button_action = '#'; // Fallback
     }
@@ -45,7 +45,7 @@ if ($is_logged_in) {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
                         <img src="../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -63,10 +63,10 @@ if ($is_logged_in) {
                 
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="../index.php" class="nav-link">Home</a>
+                        <a href="../index" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="anuncios.php" class="nav-link">Comprar</a>
+                        <a href="anuncios" class="nav-link">Comprar</a>
                     </li>
                     <li class="nav-item">
                         <a href="<?php echo htmlspecialchars($button_action); ?>" 
@@ -77,7 +77,7 @@ if ($is_logged_in) {
                     </li>
                     <?php if ($is_logged_in): ?>
                         <li class="nav-item">
-                            <a href="logout.php" class="nav-link exit-button no-underline">Sair</a>
+                            <a href="logout" class="nav-link exit-button no-underline">Sair</a>
                         </li>
                     <?php endif; ?>
                 </ul>
@@ -298,7 +298,7 @@ if ($is_logged_in) {
                     <a href="mailto:suporte@encontreocampo.com.br" class="btn btn-primary">
                         <i class="fas fa-envelope"></i> Enviar Email
                     </a>
-                    <a href="../index.php#contato" class="btn btn-secondary">
+                    <a href="../index#contato" class="btn btn-secondary">
                         <i class="fas fa-phone"></i> Outros Contatos
                     </a>
                 </div>
@@ -313,7 +313,7 @@ if ($is_logged_in) {
             <h3>Acesso à Plataforma</h3>
             <p>Faça login para acessar todas as funcionalidades</p>
             
-            <form action="login.php" method="POST">
+            <form action="login" method="POST">
                 <div class="form-group">
                     <label for="modal-email">Email</label>
                     <input type="email" id="modal-email" name="email" required>
@@ -324,7 +324,7 @@ if ($is_logged_in) {
                 </div>
                 <button type="submit" class="btn btn-primary">Entrar</button>
                 <div style="text-align: center; margin-top: 15px;">
-                    Não tem conta? <a href="../index.php#contato" target="_blank">Registre-se</a>
+                    Não tem conta? <a href="../index#contato" target="_blank">Registre-se</a>
                 </div>
             </form>
         </div>

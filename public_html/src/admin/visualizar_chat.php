@@ -4,7 +4,7 @@ require_once __DIR__ . '/../conexao.php';
 
 // Verificar se é admin
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
-    header("Location: ../login.php");
+    header("Location: ../login");
     exit();
 }
 

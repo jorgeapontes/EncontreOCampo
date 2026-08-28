@@ -3,7 +3,7 @@ require_once __DIR__ . '/../permissions.php';
 require_once __DIR__ . '/../conexao.php';
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'transportador') {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Transportador."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Transportador."));
     exit();
 }
 
@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $proposta_id = intval($_POST['proposta_id'] ?? 0);
     $valor_frete = floatval($_POST['valor_frete'] ?? 0);
     if ($proposta_id <= 0 || $valor_frete <= 0) {
-        header('Location: ../transportador/disponiveis.php?erro=Dados inválidos.');
+        header('Location: ../transportador/disponiveis?erro=Dados inválidos.');
         exit();
     }
 
@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute();
     $transportador = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$transportador) {
-        header('Location: ../transportador/disponiveis.php?erro=Transportador não encontrado.');
+        header('Location: ../transportador/disponiveis?erro=Transportador não encontrado.');
         exit();
     }
     $transportador_id = $transportador['id'];
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute();
     $proposta = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$proposta) {
-        header('Location: ../transportador/disponiveis.php?erro=Proposta não encontrada.');
+        header('Location: ../transportador/disponiveis?erro=Proposta não encontrada.');
         exit();
     }
     $entrega_id = $proposta['entrega_id'];
@@ -84,8 +84,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // TODO: Notificar comprador
 
-    header('Location: ../chat/negociacao_chat.php?chat_id=' . $chat_id);
+    header('Location: ../chat/negociacao_chat?chat_id=' . $chat_id);
     exit();
 }
-header('Location: ../transportador/disponiveis.php');
+header('Location: ../transportador/disponiveis');
 exit();

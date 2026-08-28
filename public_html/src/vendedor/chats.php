@@ -448,7 +448,7 @@ try {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -458,9 +458,9 @@ try {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="../../index.php" class="nav-link">Home</a>
+                        <a href="../../index" class="nav-link">Home</a>
                     </li>
-                    <li class="nav-item"><a href="../anuncios.php" class="nav-link">Anúncios</a></li>
+                    <li class="nav-item"><a href="../anuncios" class="nav-link">Anúncios</a></li>
                     <li class="nav-item">
                         <a href="dashboard" class="nav-link">Painel</a>
                     </li>
@@ -472,7 +472,7 @@ try {
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
-                        <a href="../notificacoes.php" class="nav-link no-underline">
+                        <a href="../notificacoes" class="nav-link no-underline">
                             <i class="fas fa-bell"></i>
                             <?php
                             // Contar notificações não lidas
@@ -491,7 +491,7 @@ try {
                     </li>
                     <?php endif; ?>
                     <li class="nav-item">
-                        <a href="../logout.php" class="nav-link exit-button no-underline">Sair</a>
+                        <a href="../logout" class="nav-link exit-button no-underline">Sair</a>
                     </li>
                 </ul>
                 <div class="hamburger">

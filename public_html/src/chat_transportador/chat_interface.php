@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../conexao.php';
 
 if (!isset($_SESSION['usuario_id'])) {
-    header('Location: ../login.php');
+    header('Location: ../login');
     exit();
 }
 
@@ -373,7 +373,7 @@ try {
                     <div class="avatar-container">
                         <img id="outro-avatar" src="<?php echo htmlspecialchars($foto_perfil); ?>" alt="Avatar" style="width:56px;height:56px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid #eee;">
                     </div>
-                    <a href="../verperfil.php?usuario_id=<?php echo $outro_usuario_id; ?>" 
+                    <a href="../verperfil?usuario_id=<?php echo $outro_usuario_id; ?>" 
                             style="text-decoration: none; color: inherit;"
                             title="Ver perfil de <?php echo htmlspecialchars($outro_usuario_nome); ?>">
                         <div class="name-and-type" style="cursor: pointer;">
@@ -519,7 +519,7 @@ try {
                 // ignore
             }
             // fallback
-            window.location.href = '../transportador/meus_chats.php';
+            window.location.href = '../transportador/meus_chats';
         }
         
         // Variáveis globais
@@ -842,7 +842,7 @@ try {
         
         // Redirecionar para minhas compras
         document.getElementById('btn-ver-compras')?.addEventListener('click', () => {
-            window.location.href = '../comprador/dashboard.php';
+            window.location.href = '../comprador/dashboard';
         });
     
     // Função para redirecionar para avaliações do usuário - CORRIGIDA
@@ -855,11 +855,11 @@ function redirectToUserReviews(usuarioId, tipoUsuario) {
     
     if (isLoggedIn) {
         // Usuário logado: redireciona diretamente para a página de avaliações
-        window.location.href = '../avaliacoes.php?tipo=' + tipoAvaliacao + '&id=' + usuarioId;
+        window.location.href = '../avaliacoes?tipo=' + tipoAvaliacao + '&id=' + usuarioId;
     } else {
         // Usuário não logado (fallback - não deveria acontecer pois está no chat)
         const redirectUrl = encodeURIComponent('../avaliacoes.php?tipo=' + tipoAvaliacao + '&id=' + usuarioId);
-        window.location.href = '../login.php?redirect=' + redirectUrl;
+        window.location.href = '../login?redirect=' + redirectUrl;
     }
 }
     </script>

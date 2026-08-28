@@ -6,7 +6,7 @@ require_once __DIR__ . '/../permissions.php';
 
 // 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprador') {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Comprador."));
     exit();
 }
 
@@ -202,7 +202,7 @@ try {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link">
+                    <a href="../../index" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -212,10 +212,10 @@ try {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="../../index.php" class="nav-link">Home</a>
+                        <a href="../../index" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="../anuncios.php" class="nav-link">Anúncios</a>
+                        <a href="../anuncios" class="nav-link">Anúncios</a>
                     </li>
                     <li class="nav-item">
                         <a href="" class="nav-link active">Painel</a>
@@ -228,7 +228,7 @@ try {
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
-                        <a href="../notificacoes.php" class="nav-link no-underline">
+                        <a href="../notificacoes" class="nav-link no-underline">
                             <i class="fas fa-bell"></i>
                             <?php
                             $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
@@ -244,7 +244,7 @@ try {
                     </li>
                     <?php endif; ?>
                     <li class="nav-item">
-                        <a href="../logout.php" class="nav-link exit-button no-underline">Sair</a>
+                        <a href="../logout" class="nav-link exit-button no-underline">Sair</a>
                     </li>
                 </ul>
                 <div class="hamburger">
@@ -295,7 +295,7 @@ try {
                     </div>
                 </a>
 
-                <a href="../procurando_transportador.php">
+                <a href="../procurando_transportador">
                     <div class="card">
                         <i class="fa-solid fa-magnifying-glass"></i>
                         <h3>Procurando transportador </h3>
@@ -334,7 +334,7 @@ try {
         </section>
 
         <section class="acoes-rapidas">
-    <a href="../anuncios.php">
+    <a href="../anuncios">
         <i class="fa-solid fa-dollar-sign"></i>
         <span>Ver Anúncios</span>
             </a>

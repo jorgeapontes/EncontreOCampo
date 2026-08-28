@@ -12,7 +12,7 @@ function redirecionar($id, $tipo, $mensagem) {
 
 // 1. VERIFICAÇÃO DE ACESSO
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor') {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Vendedor."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Vendedor."));
     exit();
 }
 

@@ -3,14 +3,14 @@ require_once __DIR__ . '/../permissions.php';
 require_once __DIR__ . '/../conexao.php';
 
 if (!isset($_SESSION['usuario_id'])) {
-    header('Location: ../login.php?erro=Acesso restrito.');
+    header('Location: ../login?erro=Acesso restrito.');
     exit();
 }
 $usuario_id = $_SESSION['usuario_id'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $proposta_id = intval($_POST['proposta_id'] ?? 0);
     if ($proposta_id <= 0) {
-        header('Location: negociacao_chat.php?erro=Proposta inválida.');
+        header('Location: negociacao_chat?erro=Proposta inválida.');
         exit();
     }
     $database = new Database();
@@ -22,13 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute();
     $proposta = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$proposta) {
-        header('Location: negociacao_chat.php?erro=Proposta não encontrada.');
+        header('Location: negociacao_chat?erro=Proposta não encontrada.');
         exit();
     }
     // Só o destinatário pode aceitar
     $destinatario_id = ($proposta['remetente_id'] == $proposta['comprador_id']) ? $proposta['transportador_id'] : $proposta['comprador_id'];
     if ($usuario_id != $destinatario_id) {
-        header('Location: negociacao_chat.php?chat_id=' . $proposta['chat_id'] . '&erro=Sem permissão.');
+        header('Location: negociacao_chat?chat_id=' . $proposta['chat_id'] . '&erro=Sem permissão.');
         exit();
     }
     // Atualizar status
@@ -49,8 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bindParam(':remetente_id', $usuario_id, PDO::PARAM_INT);
     $stmt->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
     $stmt->execute();
-    header('Location: negociacao_chat.php?chat_id=' . $proposta['chat_id']);
+    header('Location: negociacao_chat?chat_id=' . $proposta['chat_id']);
     exit();
 }
-header('Location: ../login.php');
+header('Location: ../login');
 exit();

@@ -5,7 +5,7 @@ require_once '../../config/StripeConfig.php'; // Inclui a configuração do Stri
 
 // Verificar se é vendedor
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor') {
-    header("Location: ../login.php?erro=Acesso restrito");
+    header("Location: ../login?erro=Acesso restrito");
     exit();
 }
 
@@ -125,7 +125,7 @@ try {
     session_destroy();
     
     // Redirecionar para home com mensagem
-    header("Location: ../../index.php?sucesso=Conta de vendedor apagada com sucesso. Seus anúncios foram removidos, mas os chats permanecem disponíveis.");
+    header("Location: ../../index?sucesso=Conta de vendedor apagada com sucesso. Seus anúncios foram removidos, mas os chats permanecem disponíveis.");
     exit();
     
 } catch (Exception $e) {

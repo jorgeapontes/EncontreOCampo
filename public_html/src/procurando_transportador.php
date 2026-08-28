@@ -5,7 +5,7 @@ require_once __DIR__ . '/permissions.php';
 
 // Permitir acesso a usuários logados como comprador ou vendedor (vendedores podem também comprar)
 if (!isset($_SESSION['usuario_id']) || !in_array($_SESSION['usuario_tipo'] ?? '', ['comprador', 'vendedor'])) {
-    header("Location: login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador ou Vendedor."));
+    header("Location: login?erro=" . urlencode("Acesso restrito. Faça login como Comprador ou Vendedor."));
     exit();
 }
 
@@ -614,7 +614,7 @@ try {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                    <a href="../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                         <img src="../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -629,11 +629,11 @@ try {
                     <span class="bar"></span>
                 </div>
                 <ul class="nav-menu">
-                    <li class="nav-item"><a href="../index.php" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="comprador/dashboard.php" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="comprador/perfil.php" class="nav-link">Meu Perfil</a></li>
-                    <li class="nav-item"><a href="comprador/chats.php" class="nav-link">Chats</a></li>
-                    <li class="nav-item"><a href="logout.php" class="nav-link exit-button no-underline">Sair</a></li>
+                    <li class="nav-item"><a href="../index" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="comprador/dashboard" class="nav-link">Painel</a></li>
+                    <li class="nav-item"><a href="comprador/perfil" class="nav-link">Meu Perfil</a></li>
+                    <li class="nav-item"><a href="comprador/chats" class="nav-link">Chats</a></li>
+                    <li class="nav-item"><a href="logout" class="nav-link exit-button no-underline">Sair</a></li>
                 </ul>
             </div>
         </nav>
@@ -694,7 +694,7 @@ try {
             const loadingEl = document.getElementById('loadingConversas');
             const conversasList = document.getElementById('conversasList');
             
-            fetch(`carregar_conversas_transportador_ajax.php?aba=${abaAtiva}`, {
+            fetch(`carregar_conversas_transportador_ajax?aba=${abaAtiva}`, {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(response => response.json())
@@ -937,7 +937,7 @@ try {
             
             estaVerificando = true;
             
-            fetch(`atualizar_transportador_ajax.php?aba=${abaAtiva}&ultima_verificacao=${ultimaVerificacao}`, {
+            fetch(`atualizar_transportador_ajax?aba=${abaAtiva}&ultima_verificacao=${ultimaVerificacao}`, {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(response => {

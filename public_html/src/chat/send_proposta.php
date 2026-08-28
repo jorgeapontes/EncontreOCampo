@@ -3,7 +3,7 @@ require_once __DIR__ . '/../permissions.php';
 require_once __DIR__ . '/../conexao.php';
 
 if (!isset($_SESSION['usuario_id'])) {
-    header('Location: ../login.php?erro=Acesso restrito.');
+    header('Location: ../login?erro=Acesso restrito.');
     exit();
 }
 $usuario_id = $_SESSION['usuario_id'];
@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $prazo = trim($_POST['prazo'] ?? '');
     $observacoes = trim($_POST['observacoes'] ?? '');
     if ($chat_id <= 0 || $valor <= 0 || $prazo === '') {
-        header('Location: negociacao_chat.php?chat_id=' . $chat_id . '&erro=Dados inválidos.');
+        header('Location: negociacao_chat?chat_id=' . $chat_id . '&erro=Dados inválidos.');
         exit();
     }
     $database = new Database();
@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bindParam(':uid', $usuario_id, PDO::PARAM_INT);
     $stmt->execute();
     if (!$stmt->fetch()) {
-        header('Location: ../login.php?erro=Acesso negado.');
+        header('Location: ../login?erro=Acesso negado.');
         exit();
     }
     // Inserir proposta
@@ -45,8 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bindParam(':remetente_id', $usuario_id, PDO::PARAM_INT);
     $stmt->bindParam(':proposta_id', $proposta_id, PDO::PARAM_INT);
     $stmt->execute();
-    header('Location: negociacao_chat.php?chat_id=' . $chat_id);
+    header('Location: negociacao_chat?chat_id=' . $chat_id);
     exit();
 }
-header('Location: ../login.php');
+header('Location: ../login');
 exit();

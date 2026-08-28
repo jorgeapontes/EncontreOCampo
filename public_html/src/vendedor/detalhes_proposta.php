@@ -5,7 +5,7 @@ require_once __DIR__ . '/../conexao.php';
 
 // 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor') {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Vendedor."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Vendedor."));
     exit();
 }
 
@@ -300,7 +300,7 @@ if ($ultima_proposta_vendedor) {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -310,7 +310,7 @@ if ($ultima_proposta_vendedor) {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="../../index.php" class="nav-link">Home</a>
+                        <a href="../../index" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
                         <a href="dashboard" class="nav-link">Painel</a>
@@ -322,13 +322,13 @@ if ($ultima_proposta_vendedor) {
                         <a href="propostas" class="nav-link active">Propostas</a>
                     </li>
                     <li class="nav-item">
-                        <a href="precos.php" class="nav-link">Médias de Preços</a>
+                        <a href="precos" class="nav-link">Médias de Preços</a>
                     </li>
                     <li class="nav-item">
                         <a href="perfil" class="nav-link">Meu Perfil</a>
                     </li>
                     <li class="nav-item">
-                        <a href="../logout.php" class="nav-link login-button no-underline">Sair</a>
+                        <a href="../logout" class="nav-link login-button no-underline">Sair</a>
                     </li>
                 </ul>
                 <div class="hamburger">

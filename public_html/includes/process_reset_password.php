@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (count($result) !== 1) {
         $_SESSION['message'] = "Token inválido ou expirado!";
         $_SESSION['message_type'] = 'error';
-        header('Location: forgot_password.php');
+        header('Location: forgot_password');
         exit;
     }
     
@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (strlen($nova_senha) < 8) {
         $_SESSION['message'] = "A senha deve ter pelo menos 8 caracteres!";
         $_SESSION['message_type'] = 'error';
-        header("Location: ../src/reset_senha.php?token=$token");
+        header("Location: ../src/reset_senha?token=$token");
         exit;
     }
     
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $conn = null;
     
-    header('Location: ../src/login.php'); // Sua página de login
+    header('Location: ../src/login'); // Sua página de login
     exit;
 }
 ?>

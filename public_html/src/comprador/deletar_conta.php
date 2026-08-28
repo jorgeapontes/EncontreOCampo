@@ -5,7 +5,7 @@ require_once __DIR__ . '/../../includes/send_notification.php';
 
 // Verificar se é comprador
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprador') {
-    header("Location: ../login.php?erro=Acesso restrito");
+    header("Location: ../login?erro=Acesso restrito");
     exit();
 }
 
@@ -86,7 +86,7 @@ try {
     session_destroy();
     
     // Redirecionar para home com mensagem
-    header("Location: ../../index.php?sucesso=Conta apagada com sucesso. Seus chats permanecem disponíveis.");
+    header("Location: ../../index?sucesso=Conta apagada com sucesso. Seus chats permanecem disponíveis.");
     exit();
     
 } catch (Exception $e) {

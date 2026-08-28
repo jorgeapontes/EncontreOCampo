@@ -167,7 +167,7 @@ $conn = $database->getConnection();
             <p>Digite seu email cadastrado. Enviaremos um link para redefinir sua senha.</p>
         </div>
         
-        <form action="send_reset_email.php" method="POST">
+        <form action="send_reset_email" method="POST">
             <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" required placeholder="seu@email.com">
@@ -177,7 +177,7 @@ $conn = $database->getConnection();
         </form>
         
         <div class="back-link">
-            <a href="../src/login.php">← Voltar para o Login</a>
+            <a href="../src/login">← Voltar para o Login</a>
         </div>
     </div>
 </body>

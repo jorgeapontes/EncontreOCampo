@@ -31,9 +31,9 @@ if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['
     // Em vez de redirecionar para login, vamos redirecionar de volta com erro
     $produto_id = isset($_POST['produto_id']) ? $_POST['produto_id'] : null;
     if ($produto_id) {
-        header("Location: proposta_nova.php?anuncio_id={$produto_id}&erro=" . urlencode("Sessão expirada. Faça login novamente."));
+        header("Location: proposta_nova?anuncio_id={$produto_id}&erro=" . urlencode("Sessão expirada. Faça login novamente."));
     } else {
-        header("Location: ../login.php?erro=" . urlencode("Sessão expirada. Faça login novamente."));
+        header("Location: ../login?erro=" . urlencode("Sessão expirada. Faça login novamente."));
     }
     exit();
 }

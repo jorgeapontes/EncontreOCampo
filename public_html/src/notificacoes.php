@@ -3,7 +3,7 @@
 require_once 'conexao.php';
 
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: src/login.php");
+    header("Location: src/login");
     exit();
 }
 
@@ -19,7 +19,7 @@ if (isset($_GET['ler'])) {
     $stmt_ler->bindParam(':id', $notificacao_id, PDO::PARAM_INT);
     $stmt_ler->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
     $stmt_ler->execute();
-    header("Location: notificacoes.php");
+    header("Location: notificacoes");
     exit();
 }
 
@@ -29,7 +29,7 @@ if (isset($_GET['ler_todas'])) {
     $stmt_ler_todas = $conn->prepare($sql_ler_todas);
     $stmt_ler_todas->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
     $stmt_ler_todas->execute();
-    header("Location: notificacoes.php");
+    header("Location: notificacoes");
     exit();
 }
 
@@ -48,14 +48,14 @@ $stmt_nao_lidas->execute();
 $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
 
 if($_SESSION['usuario_tipo'] == 'vendedor') {
-    $painel_href = 'vendedor/dashboard.php';
-    $perfil_href = 'vendedor/perfil.php';
+    $painel_href = 'vendedor/dashboard';
+    $perfil_href = 'vendedor/perfil';
 } else if ($_SESSION['usuario_tipo'] == 'comprador') {
-    $painel_href = 'comprador/dashboard.php';
-    $perfil_href = 'comprador/perfil.php';
+    $painel_href = 'comprador/dashboard';
+    $perfil_href = 'comprador/perfil';
 } else if ($_SESSION['usuario_tipo'] == 'transportador') {
-    $painel_href = 'transportador/dashboard.php';
-    $perfil_href = 'transportador/perfil.php';
+    $painel_href = 'transportador/dashboard';
+    $perfil_href = 'transportador/perfil';
 }
 ?>
 
@@ -77,7 +77,7 @@ if($_SESSION['usuario_tipo'] == 'vendedor') {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
                         <img src="../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -87,7 +87,7 @@ if($_SESSION['usuario_tipo'] == 'vendedor') {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="../index.php" class="nav-link">Home</a>
+                        <a href="../index" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
                         <a href="<?= $painel_href ?>?>" class="nav-link">Painel</a>
@@ -96,7 +96,7 @@ if($_SESSION['usuario_tipo'] == 'vendedor') {
                         <a href="<?= $perfil_href ?>?>" class="nav-link">Meu Perfil</a>
                     </li>
                     <li class="nav-item">
-                        <a href="notificacoes.php" class="nav-link active no-underline">
+                        <a href="notificacoes" class="nav-link active no-underline">
                             <i class="fas fa-bell"></i>
                             <?php if ($total_nao_lidas > 0): ?>
                                 <span class="notificacao-badge"><?php echo $total_nao_lidas; ?></span>
@@ -105,11 +105,11 @@ if($_SESSION['usuario_tipo'] == 'vendedor') {
                     </li>
                     <li class="nav-item">
                         <?php if (isset($_SESSION['usuario_nome'])): ?>
-                            <a href="logout.php" class="nav-link exit-button no-underline">
+                            <a href="logout" class="nav-link exit-button no-underline">
                                 Sair
                             </a>
                         <?php else: ?>
-                            <a href="src/login.php" class="nav-link login-button no-underline">Login</a>
+                            <a href="src/login" class="nav-link login-button no-underline">Login</a>
                         <?php endif; ?>
                     </li>
                 </ul>
@@ -127,7 +127,7 @@ if($_SESSION['usuario_tipo'] == 'vendedor') {
             <div class="header">
                 <h1>Suas Notificações</h1>
                 <?php if ($total_nao_lidas > 0): ?>
-                    <a href="notificacoes.php?ler_todas=1" class="btn-ler-todas">Marcar todas como lidas</a>
+                    <a href="notificacoes?ler_todas=1" class="btn-ler-todas">Marcar todas como lidas</a>
                 <?php endif; ?>
             </div>
         </center>
@@ -150,7 +150,7 @@ if($_SESSION['usuario_tipo'] == 'vendedor') {
                         </div>
                         <div class="notificacao-actions">
                             <?php if (!$notificacao['lida']): ?>
-                                <a href="notificacoes.php?ler=<?php echo $notificacao['id']; ?>">Marcar como lida</a>
+                                <a href="notificacoes?ler=<?php echo $notificacao['id']; ?>">Marcar como lida</a>
                             <?php endif; ?>
                             <?php if ($notificacao['url']): ?>
                                 <a href="<?php echo htmlspecialchars($notificacao['url']); ?>">Ver</a>

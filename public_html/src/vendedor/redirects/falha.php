@@ -55,8 +55,8 @@ require_once __DIR__ . '/../../config/Database.php';
         </ul>
         
         <div style="margin-top: 30px;">
-            <a href="../escolher_plano.php" class="btn-tentar">Tentar Novamente</a>
-            <a href="../perfil.php" class="btn-voltar">Voltar para o Perfil</a>
+            <a href="../escolher_plano" class="btn-tentar">Tentar Novamente</a>
+            <a href="../perfil" class="btn-voltar">Voltar para o Perfil</a>
         </div>
     </div>
 </body>

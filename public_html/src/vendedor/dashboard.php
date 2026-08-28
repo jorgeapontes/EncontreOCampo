@@ -5,7 +5,7 @@ require_once __DIR__ . '/../conexao.php';
 
 // 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor') {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Vendedor."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Vendedor."));
     exit();
 }
 
@@ -183,7 +183,7 @@ try {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -192,14 +192,14 @@ try {
                     </a>
                 </div>
                 <ul class="nav-menu">
-                    <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="../anuncios.php" class="nav-link">Anúncios</a></li>
+                    <li class="nav-item"><a href="../../index" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="../anuncios" class="nav-link">Anúncios</a></li>
                     <li class="nav-item"><a href="" class="nav-link active">Painel</a></li>
                     <li class="nav-item"><a href="chats" class="nav-link">Chats</a></li>
                     <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
-                        <a href="../notificacoes.php" class="nav-link no-underline">
+                        <a href="../notificacoes" class="nav-link no-underline">
                             <i class="fas fa-bell"></i>
                             <?php
                             if (isset($_SESSION['usuario_id'])) {
@@ -214,7 +214,7 @@ try {
                         </a>
                     </li>
                     <?php endif; ?>
-                    <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
+                    <li class="nav-item"><a href="../logout" class="nav-link exit-button no-underline">Sair</a></li>
                 </ul>
                 <div class="hamburger">
                     <span class="bar"></span>
@@ -290,7 +290,7 @@ try {
                         <p><?php echo $total_mensagens_nao_lidas; ?> não lidas</p>
                     </div>
                 </a>
-                <a href="../procurando_transportador.php">
+                <a href="../procurando_transportador">
                     <div class="card">
                         <i class="fa-solid fa-magnifying-glass"></i>
                         <h3>Procurando transportador </h3>
@@ -318,7 +318,7 @@ try {
                         <p>Ver</p> 
                     </div> 
                 </a>
-                <a href="../comprador/favoritos.php">
+                <a href="../comprador/favoritos">
                     <div class="card">
                         <i class="fas fa-heart"></i>
                         <h3>Favoritos</h3>

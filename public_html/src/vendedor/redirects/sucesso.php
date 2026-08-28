@@ -174,7 +174,7 @@ if ($session_id) {
                 </div>
             </div>
 
-            <a href="../perfil.php" class="btn-green">Ir para o meu Painel</a>
+            <a href="../perfil" class="btn-green">Ir para o meu Painel</a>
 
         <?php else: ?>
             <div class="icon-container icon-error">
@@ -189,7 +189,7 @@ if ($session_id) {
                 </p>
             </div>
 
-            <a href="../escolher_plano.php" class="btn-green" style="background: #636e72;">Tentar Novamente</a>
+            <a href="../escolher_plano" class="btn-green" style="background: #636e72;">Tentar Novamente</a>
         <?php endif; ?>
     </div>
 

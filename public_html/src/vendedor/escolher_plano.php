@@ -166,25 +166,25 @@ $result = $db->query($query);
                 <div class="footer-section">
                     <h4>Encontre o Campo</h4>
                     <ul>
-                        <li><a href="../../index.php">Página Inicial</a></li>
-                        <li><a href="../anuncios.php">Ver Anúncios</a></li>
-                        <li><a href="../comprador/favoritos.php">Meus Favoritos</a></li>
+                        <li><a href="../../index">Página Inicial</a></li>
+                        <li><a href="../anuncios">Ver Anúncios</a></li>
+                        <li><a href="../comprador/favoritos">Meus Favoritos</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Suporte</h4>
                     <ul>
-                        <li><a href="../ajuda.php">Central de Ajuda</a></li>
-                        <li><a href="../contato.php">Fale Conosco</a></li>
-                        <li><a href="../sobre.php">Sobre Nós</a></li>
+                        <li><a href="../ajuda">Central de Ajuda</a></li>
+                        <li><a href="../contato">Fale Conosco</a></li>
+                        <li><a href="../sobre">Sobre Nós</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Legal</h4>
                     <ul>
-                        <li><a href="../faq.php">FAQ</a></li>
-                        <li><a href="../termos.php">Termos de Uso</a></li>
-                        <li><a href="../privacidade.php">Política de Privacidade</a></li>
+                        <li><a href="../faq">FAQ</a></li>
+                        <li><a href="../termos">Termos de Uso</a></li>
+                        <li><a href="../privacidade">Política de Privacidade</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">

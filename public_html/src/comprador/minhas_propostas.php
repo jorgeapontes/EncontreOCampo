@@ -8,7 +8,7 @@ $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : 
 // 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA
 // Permite compradores e vendedores (vendedores também podem fazer propostas)
 if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['comprador', 'vendedor'])) {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login."));
     exit();
 }
 
@@ -188,7 +188,7 @@ function responderContraproposta(negociacaoId, acao) {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link">
+                    <a href="../../index" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -198,7 +198,7 @@ function responderContraproposta(negociacaoId, acao) {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="../../index.php" class="nav-link">Home</a>
+                        <a href="../../index" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
                         <a href="dashboard" class="nav-link">Painel</a>
@@ -208,7 +208,7 @@ function responderContraproposta(negociacaoId, acao) {
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
-                        <a href="../notificacoes.php" class="nav-link no-underline">
+                        <a href="../notificacoes" class="nav-link no-underline">
                             <i class="fas fa-bell"></i>
                             <?php
                             // Contar notificações não lidas
@@ -229,7 +229,7 @@ function responderContraproposta(negociacaoId, acao) {
                     </li>
                     <?php endif; ?>
                     <li class="nav-item">
-                        <a href="../logout.php" class="nav-link exit-button no-underline">Sair</a>
+                        <a href="../logout" class="nav-link exit-button no-underline">Sair</a>
                     </li>
                 </ul>
                 <div class="hamburger">
@@ -267,7 +267,7 @@ function responderContraproposta(negociacaoId, acao) {
         <?php if (empty($propostas)): ?>
             <div class="empty-state">
                 <h3>Você ainda não enviou nenhuma proposta.</h3>
-                <p>Navegue em <a href="../anuncios.php">Anúncios Ativos</a> para começar a negociar!</p>
+                <p>Navegue em <a href="../anuncios">Anúncios Ativos</a> para começar a negociar!</p>
             </div>
         <?php else: ?>
             <div class="propostas-list">

@@ -271,7 +271,7 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div><h1>ENCONTRE</h1><h2>O CAMPO</h2></div>
                     </a>

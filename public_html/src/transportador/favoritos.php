@@ -4,7 +4,7 @@ require_once __DIR__ . '/../permissions.php';
 require_once __DIR__ . '/../conexao.php';
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'transportador') {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Transportador."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Transportador."));
     exit();
 }
 
@@ -68,7 +68,7 @@ if ($transportador_id) {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link">
+                    <a href="../../index" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -77,13 +77,13 @@ if ($transportador_id) {
                     </a>
                 </div>
                 <ul class="nav-menu">
-                    <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="../../index" class="nav-link">Home</a></li>
                     <li class="nav-item"><a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/dashboard.php' : 'dashboard'; ?>" class="nav-link">Painel</a></li>
                     <li class="nav-item"><a href="favoritos" class="nav-link active">Favoritos</a></li>
                     <li class="nav-item"><a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/perfil.php' : 'perfil'; ?>" class="nav-link">Meu Perfil</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
-                        <a href="../notificacoes.php" class="nav-link no-underline">
+                        <a href="../notificacoes" class="nav-link no-underline">
                             <i class="fas fa-bell"></i>
                             <?php
                             if (isset($_SESSION['usuario_id'])) {
@@ -100,7 +100,7 @@ if ($transportador_id) {
                         </a>
                     </li>
                     <?php endif; ?>
-                    <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
+                    <li class="nav-item"><a href="../logout" class="nav-link exit-button no-underline">Sair</a></li>
                 </ul>
                 <div class="hamburger">
                     <span class="bar"></span>
@@ -130,7 +130,7 @@ if ($transportador_id) {
                         </div>
                         <h3>Pedido #<?php echo $proposta_id; ?> &bull; <?php echo htmlspecialchars($f['produto_nome']); ?></h3>
                         <div class="thumb">
-                            <a href="../visualizar_anuncio.php?anuncio_id=<?php echo $produto_id; ?>">
+                            <a href="../visualizar_anuncio?anuncio_id=<?php echo $produto_id; ?>">
                                 <img src="<?php echo $img; ?>" alt="<?php echo htmlspecialchars($f['produto_nome']); ?>">
                             </a>
                         </div>
@@ -150,7 +150,7 @@ if ($transportador_id) {
                             </a>
                         </div>
                         <div class="acordo-actions">
-                            <a href="../visualizar_anuncio.php?anuncio_id=<?php echo $produto_id; ?>" class="acordo-btn ver-anuncio">Ver anúncio</a>
+                            <a href="../visualizar_anuncio?anuncio_id=<?php echo $produto_id; ?>" class="acordo-btn ver-anuncio">Ver anúncio</a>
                             <button class="acordo-btn chat" onclick="startChat(<?php echo $proposta_id; ?>)">Abrir chat</button>
                             <button class="acordo-btn remover-fav" data-proposta-id="<?php echo $proposta_id; ?>">Remover</button>
                         </div>
@@ -182,14 +182,14 @@ if ($transportador_id) {
             try{
                 const form = new URLSearchParams();
                 form.append('proposta_id', propostaId);
-                const res = await fetch('../chat/create_conversa_transportador.php', {
+                const res = await fetch('../chat/create_conversa_transportador', {
                     method: 'POST',
                     headers: {'Content-Type':'application/x-www-form-urlencoded'},
                     body: form
                 });
                 const data = await res.json();
                 if(data.success && data.conversa_id){
-                    window.location.href = '../chat_transportador/chat_interface.php?conversa_id=' + data.conversa_id;
+                    window.location.href = '../chat_transportador/chat_interface?conversa_id=' + data.conversa_id;
                 } else {
                     alert(data.erro || 'Erro ao iniciar chat');
                 }

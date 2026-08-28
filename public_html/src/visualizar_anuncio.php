@@ -5,7 +5,7 @@ require_once 'conexao.php';
 
 // 1. OBTENÇÃO DO ID DO ANÚNCIO
 if (!isset($_GET['anuncio_id']) || !is_numeric($_GET['anuncio_id'])) {
-    header("Location: anuncios.php?erro=" . urlencode("Anúncio não especificado ou inválido."));
+    header("Location: anuncios?erro=" . urlencode("Anúncio não especificado ou inválido."));
     exit();
 }
 
@@ -69,7 +69,7 @@ try {
     $anuncio = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$anuncio) {
-        header("Location: anuncios.php?erro=" . urlencode("Anúncio não encontrado ou inativo."));
+        header("Location: anuncios?erro=" . urlencode("Anúncio não encontrado ou inativo."));
         exit();
     }
 } catch (PDOException $e) {
@@ -741,7 +741,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
                         <img src="../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -751,10 +751,10 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="../index.php" class="nav-link">Home</a>
+                        <a href="../index" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="anuncios.php" class="nav-link">Anúncios</a>
+                        <a href="anuncios" class="nav-link">Anúncios</a>
                     </li>
                     <?php if ($is_logged_in): ?>
                         <li class="nav-item">
@@ -764,11 +764,11 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                             <a href="<?= $usuario_tipo ?>/perfil.php" class="nav-link">Meu Perfil</a>
                         </li>
                         <li class="nav-item">
-                            <a href="logout.php" class="nav-link exit-button no-underline">Sair</a>
+                            <a href="logout" class="nav-link exit-button no-underline">Sair</a>
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
-                            <a href="login.php" class="nav-link login-button no-underline">Login</a>
+                            <a href="login" class="nav-link login-button no-underline">Login</a>
                         </li>
                     <?php endif; ?>
                 </ul>
@@ -789,10 +789,10 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
             <h3><i class="fas fa-info-circle"></i> Acesso Limitado</h3>
             <p>Você está visualizando este anúncio como visitante. Para fazer negócios, conversar com o vendedor ou fazer propostas, você precisa ter uma conta ativa.</p>
             <div class="botoes-login">
-                <a href="login.php?redirect=visualizar_anuncio.php?anuncio_id=<?php echo $anuncio_id; ?>" class="btn-login-cta">
+                <a href="login?redirect=visualizar_anuncio.php?anuncio_id=<?php echo $anuncio_id; ?>" class="btn-login-cta">
                     <i class="fas fa-sign-in-alt"></i> Fazer Login
                 </a>
-                <a href="../index.php#contato" class="btn-register-cta">
+                <a href="../index#contato" class="btn-register-cta">
                     <i class="fas fa-user-plus"></i> Criar Conta
                 </a>
             </div>
@@ -926,12 +926,12 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                         <div class="botoes-compra <?php echo !$is_logged_in ? 'botoes-compra-desativados' : ''; ?>">
                             <?php if ($is_logged_in && $usuario_status === 'ativo'): ?>
                                 <!-- BOTÃO DE COMPRA COMENTADO PARA USO FUTURO -->
-                                <!-- <a href="comprador/proposta_nova.php?anuncio_id=<?php echo $anuncio_id; ?>" class="btn-comprar">
+                                <!-- <a href="comprador/proposta_nova?anuncio_id=<?php echo $anuncio_id; ?>" class="btn-comprar">
                                     <i class="fas fa-shopping-cart"></i>
                                     Comprar Agora
                                 </a> -->
                                 
-                                <a href="chat/chat.php?produto_id=<?php echo $anuncio_id; ?>" class="btn-chat">
+                                <a href="chat/chat?produto_id=<?php echo $anuncio_id; ?>" class="btn-chat">
                                     <i class="fas fa-comments"></i>
                                     Conversar com o Vendedor
                                 </a>
@@ -982,7 +982,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                                 }
 
                                 if ($mostrar_avaliar) {
-                                    echo '<div style="margin-top:10px;"><a href="avaliar.php?tipo=produto&produto_id='.urlencode($anuncio_id).'" class="btn btn-info">Avaliar este produto</a></div>';
+                                    echo '<div style="margin-top:10px;"><a href="avaliar?tipo=produto&produto_id='.urlencode($anuncio_id).'" class="btn btn-info">Avaliar este produto</a></div>';
                                 }
                             } catch (Exception $e) {
                                 // não bloquear a exibição do anúncio em caso de erro na verificação
@@ -993,7 +993,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                             <div class="aviso-acao">
                                 <p class="status-info" style="color: #ff6b6b; font-size: 0.9em; margin-top: 5px;">
                                     <i class="fas fa-exclamation-triangle"></i>
-                                    Para realizar ações neste anúncio, <a href="login.php?redirect=visualizar_anuncio.php?anuncio_id=<?php echo $anuncio_id; ?>"><strong>faça login</strong></a> ou <a href="../index.php#contato"><strong>crie uma conta</strong></a>.
+                                    Para realizar ações neste anúncio, <a href="login?redirect=visualizar_anuncio.php?anuncio_id=<?php echo $anuncio_id; ?>"><strong>faça login</strong></a> ou <a href="../index#contato"><strong>crie uma conta</strong></a>.
                                 </p>
                             </div>
                         <?php endif; ?>
@@ -1086,11 +1086,11 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                     <?php if ($total_avaliacoes > 3): ?>
                         <div class="ver-mais-avaliacoes" style="text-align: center; margin-top: 20px;">
                             <?php if ($is_logged_in): ?>
-                                <a href="avaliacoes.php?tipo=produto&id=<?php echo $anuncio_id; ?>" class="btn-ver-mais" style="background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; transition: all 0.3s;">
+                                <a href="avaliacoes?tipo=produto&id=<?php echo $anuncio_id; ?>" class="btn-ver-mais" style="background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; transition: all 0.3s;">
                                     <i class="fas fa-eye"></i> Ver todas as <?php echo $total_avaliacoes; ?> avaliações
                                 </a>
                             <?php else: ?>
-                                <a href="login.php?redirect=avaliacoes.php?tipo=produto&id=<?php echo $anuncio_id; ?>" class="btn-ver-mais" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; transition: all 0.3s;">
+                                <a href="login?redirect=avaliacoes.php?tipo=produto&id=<?php echo $anuncio_id; ?>" class="btn-ver-mais" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; transition: all 0.3s;">
                                     <i class="fas fa-sign-in-alt"></i> Faça login para ver todas as <?php echo $total_avaliacoes; ?> avaliações
                                 </a>
                             <?php endif; ?>
@@ -1124,7 +1124,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                         }
                     ?>
                         <div class="anuncio-card <?php echo $desc_rel['ativo'] ? 'card-desconto' : ''; ?>">
-                            <a href="visualizar_anuncio.php?anuncio_id=<?php echo $produto['id']; ?>" class="produto-link">
+                            <a href="visualizar_anuncio?anuncio_id=<?php echo $produto['id']; ?>" class="produto-link">
                                 <div class="card-image">
                                     <?php if ($desc_rel['ativo']): ?>
                                         <div class="badge-desconto">-<?php echo $desc_rel['porcentagem']; ?>%</div>
@@ -1171,27 +1171,27 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                 <div class="footer-section">
                     <h4>Encontre o Campo</h4>
                     <ul>
-                        <li><a href="../../index.php">Página Inicial</a></li>
-                        <li><a href="../anuncios.php">Ver Anúncios</a></li>
-                        <li><a href="favoritos.php">Meus Favoritos</a></li>
+                        <li><a href="../../index">Página Inicial</a></li>
+                        <li><a href="../anuncios">Ver Anúncios</a></li>
+                        <li><a href="favoritos">Meus Favoritos</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-section">
                     <h4>Suporte</h4>
                     <ul>
-                        <li><a href="ajuda.php">Central de Ajuda</a></li>
-                        <li><a href="contato.php">Fale Conosco</a></li>
-                        <li><a href="sobre.php">Sobre Nós</a></li>
+                        <li><a href="ajuda">Central de Ajuda</a></li>
+                        <li><a href="contato">Fale Conosco</a></li>
+                        <li><a href="sobre">Sobre Nós</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-section">
                     <h4>Legal</h4>
                     <ul>
-                        <li><a href="faq.php">FAQ</a></li>
-                        <li><a href="termos.php">Termos de Uso</a></li>
-                        <li><a href="privacidade.php">Política de Privacidade</a></li>
+                        <li><a href="faq">FAQ</a></li>
+                        <li><a href="termos">Termos de Uso</a></li>
+                        <li><a href="privacidade">Política de Privacidade</a></li>
                     </ul>
                 </div>
                 

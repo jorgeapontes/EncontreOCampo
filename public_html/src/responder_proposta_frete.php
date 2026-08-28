@@ -5,12 +5,12 @@ require_once __DIR__ . '/funcoes_notificacoes.php';
 require_once __DIR__ . '/../includes/send_notification.php';
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprador') {
-    header("Location: login.php?erro=" . urlencode("Acesso restrito."));
+    header("Location: login?erro=" . urlencode("Acesso restrito."));
     exit();
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: procurando_transportador.php?erro=" . urlencode("Requisição inválida."));
+    header("Location: procurando_transportador?erro=" . urlencode("Requisição inválida."));
     exit();
 }
 
@@ -19,7 +19,7 @@ $acao = filter_input(INPUT_POST, 'acao', FILTER_SANITIZE_STRING);
 $novo_valor = filter_input(INPUT_POST, 'novo_valor', FILTER_VALIDATE_FLOAT);
 
 if (!$proposta_frete_id || !$acao) {
-    header("Location: procurando_transportador.php?erro=" . urlencode("Dados inválidos."));
+    header("Location: procurando_transportador?erro=" . urlencode("Dados inválidos."));
     exit();
 }
 
@@ -48,13 +48,13 @@ try {
     
     if (!$proposta) {
         $db->rollBack();
-        header("Location: procurando_transportador.php?erro=" . urlencode("Proposta não encontrada."));
+        header("Location: procurando_transportador?erro=" . urlencode("Proposta não encontrada."));
         exit();
     }
     
     if ($proposta['comprador_id'] != $_SESSION['usuario_id']) {
         $db->rollBack();
-        header("Location: procurando_transportador.php?erro=" . urlencode("Você não tem permissão para esta ação."));
+        header("Location: procurando_transportador?erro=" . urlencode("Você não tem permissão para esta ação."));
         exit();
     }
     
@@ -164,7 +164,7 @@ try {
         case 'contraproposta':
             if ($novo_valor === false || $novo_valor < 0) {
                 $db->rollBack();
-                header("Location: procurando_transportador.php?erro=" . urlencode("Valor inválido para contraproposta."));
+                header("Location: procurando_transportador?erro=" . urlencode("Valor inválido para contraproposta."));
                 exit();
             }
             
@@ -192,7 +192,7 @@ try {
             
         default:
             $db->rollBack();
-            header("Location: procurando_transportador.php?erro=" . urlencode("Ação inválida."));
+            header("Location: procurando_transportador?erro=" . urlencode("Ação inválida."));
             exit();
     }
     
@@ -204,13 +204,13 @@ try {
         'contraproposta' => 'Contraproposta enviada!'
     ];
     
-    header("Location: procurando_transportador.php?sucesso=" . urlencode($mensagens_sucesso[$acao]));
+    header("Location: procurando_transportador?sucesso=" . urlencode($mensagens_sucesso[$acao]));
     exit();
     
 } catch (PDOException $e) {
     $db->rollBack();
     error_log("Erro ao responder proposta de frete: " . $e->getMessage());
-    header("Location: procurando_transportador.php?erro=" . urlencode("Erro ao processar. Tente novamente."));
+    header("Location: procurando_transportador?erro=" . urlencode("Erro ao processar. Tente novamente."));
     exit();
 }
 ?>

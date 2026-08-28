@@ -15,7 +15,7 @@ if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor
     session_destroy();
 
     // Redireciona para a raiz
-    header("Location: ../../index.php");
+    header("Location: ../../index");
     exit();
 }
 

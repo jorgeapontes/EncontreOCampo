@@ -11,7 +11,7 @@ if (isset($_GET['return_from_stripe']) && $_GET['return_from_stripe'] == '1') {
         exit();
     } else {
         // Se perdeu a sessão, redireciona para login
-        header("Location: ../../login.php?msg=sessao_expirada");
+        header("Location: ../../login?msg=sessao_expirada");
         exit();
     }
 }

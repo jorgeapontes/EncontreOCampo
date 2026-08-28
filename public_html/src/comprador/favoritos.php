@@ -4,13 +4,13 @@ require_once __DIR__ . '/../conexao.php';
 
 // Verificação mais robusta de sessão
 if (!isset($_SESSION['usuario_id']) || !isset($_SESSION['usuario_tipo'])) {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Comprador."));
     exit();
 }
 
 // Verificação adicional se o tipo de usuário é válido
 if (!in_array($_SESSION['usuario_tipo'], ['comprador', 'vendedor'])) {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Comprador."));
     exit();
 }
 
@@ -83,7 +83,7 @@ try {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link">
+                    <a href="../../index" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -93,10 +93,10 @@ try {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="../../index.php" class="nav-link">Home</a>
+                        <a href="../../index" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="../anuncios.php" class="nav-link">Anúncios</a>
+                        <a href="../anuncios" class="nav-link">Anúncios</a>
                     </li>
                     <li class="nav-item">
                         <a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/dashboard.php' : 'dashboard'; ?>" class="nav-link">Painel</a>
@@ -109,7 +109,7 @@ try {
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
-                        <a href="../notificacoes.php" class="nav-link no-underline">
+                        <a href="../notificacoes" class="nav-link no-underline">
                             <i class="fas fa-bell"></i>
                             <?php
                             // Contar notificações não lidas
@@ -128,7 +128,7 @@ try {
                     </li>
                     <?php endif; ?>
                     <li class="nav-item">
-                        <a href="../logout.php" class="nav-link exit-button no-underline">Sair</a>
+                        <a href="../logout" class="nav-link exit-button no-underline">Sair</a>
                     </li>
                 </ul>
                 <div class="hamburger">
@@ -213,7 +213,7 @@ try {
                             <div class="card-header">
                                 <h3><?php echo htmlspecialchars($produto['nome']); ?></h3>
                                 <span class="vendedor">
-                                    por <a href="../perfil_vendedor.php?vendedor_id=<?php echo $produto['vendedor_id']; ?>">
+                                    por <a href="../perfil_vendedor?vendedor_id=<?php echo $produto['vendedor_id']; ?>">
                                         <?php echo htmlspecialchars($produto['nome_vendedor']); ?>
                                     </a>
                                 </span>

@@ -5,13 +5,13 @@ require_once __DIR__ . '/permissions.php';
 
 // Verificar acesso
 if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['comprador', 'vendedor','transportador'])) {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador ou Vendedor."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Comprador ou Vendedor."));
     exit();
 }
 
 // Verificar parâmetros obrigatórios
 if (!isset($_GET['tipo']) || !isset($_GET['id'])) {
-    header("Location: dashboard.php?erro=" . urlencode("Parâmetros inválidos."));
+    header("Location: dashboard?erro=" . urlencode("Parâmetros inválidos."));
     exit();
 }
 
@@ -85,7 +85,7 @@ switch ($tipo_avaliacao) {
                     }
                 }
             } else {
-                header("Location: dashboard.php?erro=" . urlencode("Produto não encontrado."));
+                header("Location: dashboard?erro=" . urlencode("Produto não encontrado."));
                 exit();
             }
         } catch (PDOException $e) {
@@ -127,7 +127,7 @@ switch ($tipo_avaliacao) {
                     }
                 }
             } else {
-                header("Location: dashboard.php?erro=" . urlencode("Vendedor não encontrado."));
+                header("Location: dashboard?erro=" . urlencode("Vendedor não encontrado."));
                 exit();
             }
         } catch (PDOException $e) {
@@ -178,7 +178,7 @@ switch ($tipo_avaliacao) {
                     }
                 }
             } else {
-                header("Location: dashboard.php?erro=" . urlencode("Comprador não encontrado."));
+                header("Location: dashboard?erro=" . urlencode("Comprador não encontrado."));
                 exit();
             }
         } catch (PDOException $e) {
@@ -220,7 +220,7 @@ switch ($tipo_avaliacao) {
                     }
                 }
             } else {
-                header("Location: dashboard.php?erro=" . urlencode("Transportador não encontrado."));
+                header("Location: dashboard?erro=" . urlencode("Transportador não encontrado."));
                 exit();
             }
         } catch (PDOException $e) {
@@ -229,7 +229,7 @@ switch ($tipo_avaliacao) {
         break;
         
     default:
-        header("Location: dashboard.php?erro=" . urlencode("Tipo de avaliação inválido."));
+        header("Location: dashboard?erro=" . urlencode("Tipo de avaliação inválido."));
         exit();
 }
 
@@ -602,7 +602,7 @@ try {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
                         <img src="../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -612,26 +612,26 @@ try {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="../index.php" class="nav-link">Home</a>
+                        <a href="../index" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="anuncios.php" class="nav-link">Anúncios</a>
+                        <a href="anuncios" class="nav-link">Anúncios</a>
                     </li>
                     <li class="nav-item">
-                        <a href="vendedor/dashboard.php" class="nav-link">Painel</a>
+                        <a href="vendedor/dashboard" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">
-                        <a href="vendedor/perfil.php" class="nav-link">Meu Perfil</a>
+                        <a href="vendedor/perfil" class="nav-link">Meu Perfil</a>
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
-                        <a href="notificacoes.php" class="nav-link no-underline">
+                        <a href="notificacoes" class="nav-link no-underline">
                             <i class="fas fa-bell"></i>
                         </a>
                     </li>
                     <?php endif; ?>
                     <li class="nav-item">
-                        <a href="logout.php" class="nav-link exit-button no-underline">Sair</a>
+                        <a href="logout" class="nav-link exit-button no-underline">Sair</a>
                     </li>
                 </ul>
                 <div class="hamburger">
@@ -701,25 +701,25 @@ try {
                     </div>
                     <?php if ($tipo_avaliacao === 'produto' && $mostrar_botao_avaliar): ?>
                         <div class="botao-avaliar">
-                            <a href="./avaliar.php?tipo=produto&produto_id=<?php echo $id_referencia; ?>" class="btn-avaliar">
+                            <a href="./avaliar?tipo=produto&produto_id=<?php echo $id_referencia; ?>" class="btn-avaliar">
                             <i class="fas fa-star"></i> Avaliar este produto
                         </a>
                     </div>
                     <?php elseif ($tipo_avaliacao === 'vendedor' && $mostrar_botao_avaliar): ?>
                         <div class="botao-avaliar">
-                            <a href="./avaliar.php?tipo=vendedor&vendedor_id=<?php echo $id_referencia; ?>" class="btn-avaliar">
+                            <a href="./avaliar?tipo=vendedor&vendedor_id=<?php echo $id_referencia; ?>" class="btn-avaliar">
                             <i class="fas fa-star"></i> Avaliar este vendedor
                         </a>
                     </div>
                     <?php elseif ($tipo_avaliacao === 'transportador' && $mostrar_botao_avaliar): ?>
                         <div class="botao-avaliar">
-                            <a href="./avaliar.php?tipo=transportador&transportador_id=<?php echo $id_referencia; ?>" class="btn-avaliar">
+                            <a href="./avaliar?tipo=transportador&transportador_id=<?php echo $id_referencia; ?>" class="btn-avaliar">
                             <i class="fas fa-star"></i> Avaliar este transportador
                         </a>
                     </div>
                     <?php elseif ($tipo_avaliacao === 'comprador' && $mostrar_botao_avaliar): ?>
                         <div class="botao-avaliar">
-                            <a href="./avaliar.php?tipo=comprador&comprador_id=<?php echo $id_referencia; ?>" class="btn-avaliar">
+                            <a href="./avaliar?tipo=comprador&comprador_id=<?php echo $id_referencia; ?>" class="btn-avaliar">
                             <i class="fas fa-star"></i> Avaliar este comprador
                         </a>
                     </div>
@@ -831,7 +831,7 @@ try {
                                 <?php foreach ($compradores as $comp): ?>
                                     <div style="border: 1px solid #e3e3e3; padding: 15px; border-radius: 6px; text-align: center;">
                                         <div style="font-weight: 600; margin-bottom: 10px;"><?php echo htmlspecialchars($comp['nome'] ?? $comp['nome_comercial']); ?></div>
-                                        <a href="./avaliacoes.php?tipo=comprador&id=<?php echo $comp['usuario_id']; ?>" style="color: #4CAF50; text-decoration: none; font-weight: 500;">Ver avaliações</a>
+                                        <a href="./avaliacoes?tipo=comprador&id=<?php echo $comp['usuario_id']; ?>" style="color: #4CAF50; text-decoration: none; font-weight: 500;">Ver avaliações</a>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
@@ -891,7 +891,7 @@ try {
                                         <?php foreach ($compradores_transp as $comp): ?>
                                             <div style="border: 1px solid #e3e3e3; padding: 15px; border-radius: 6px; text-align: center;">
                                                 <div style="font-weight: 600; margin-bottom: 10px;"><?php echo htmlspecialchars($comp['nome'] ?? $comp['nome_comercial']); ?></div>
-                                                <a href="./avaliacoes.php?tipo=comprador&id=<?php echo $comp['usuario_id']; ?>" style="color: #4CAF50; text-decoration: none; font-weight: 500;">Ver avaliações</a>
+                                                <a href="./avaliacoes?tipo=comprador&id=<?php echo $comp['usuario_id']; ?>" style="color: #4CAF50; text-decoration: none; font-weight: 500;">Ver avaliações</a>
                                             </div>
                                         <?php endforeach; ?>
                                     </div>
@@ -905,7 +905,7 @@ try {
                                         <?php foreach ($vendedores_transp as $vend): ?>
                                             <div style="border: 1px solid #e3e3e3; padding: 15px; border-radius: 6px; text-align: center;">
                                                 <div style="font-weight: 600; margin-bottom: 10px;"><?php echo htmlspecialchars($vend['nome'] ?? $vend['nome_comercial']); ?></div>
-                                                <a href="./avaliacoes.php?tipo=vendedor&id=<?php echo $vend['usuario_id']; ?>" style="color: #4CAF50; text-decoration: none; font-weight: 500;">Ver avaliações</a>
+                                                <a href="./avaliacoes?tipo=vendedor&id=<?php echo $vend['usuario_id']; ?>" style="color: #4CAF50; text-decoration: none; font-weight: 500;">Ver avaliações</a>
                                             </div>
                                         <?php endforeach; ?>
                                     </div>

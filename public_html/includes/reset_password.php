@@ -199,7 +199,7 @@ if ($token) {
         <?php if ($erro): ?>
             <div class="message error">
                 <?php echo $erro; ?>
-                <p style="margin-top: 10px;"><a href="forgot_password.php">Solicitar novo link</a></p>
+                <p style="margin-top: 10px;"><a href="forgot_password">Solicitar novo link</a></p>
             </div>
         <?php elseif (!$valido): ?>
             <div class="message error">
@@ -211,7 +211,7 @@ if ($token) {
             <p>Digite sua nova senha para a conta: <strong><?php echo htmlspecialchars($email); ?></strong></p>
         </div>
         
-        <form id="resetForm" action="process_reset_password.php" method="POST">
+        <form id="resetForm" action="process_reset_password" method="POST">
             <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">
             
             <div class="form-group">
@@ -245,7 +245,7 @@ if ($token) {
         <?php endif; ?>
         
         <div class="back-link">
-            <a href="login.php">← Voltar para o Login</a>
+            <a href="login">← Voltar para o Login</a>
         </div>
     </div>
     

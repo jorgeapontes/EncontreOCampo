@@ -450,7 +450,7 @@ foreach ($anuncios as &$a) {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
                         <img src="../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -460,7 +460,7 @@ foreach ($anuncios as &$a) {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="../index.php" class="nav-link">Home</a>
+                        <a href="../index" class="nav-link">Home</a>
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                         <li class="nav-item">
@@ -476,7 +476,7 @@ foreach ($anuncios as &$a) {
                             <a href="<?= $_SESSION['usuario_tipo'] ?>/perfil.php" class="nav-link">Meu Perfil</a>
                         </li>
                         <li class="nav-item">
-                            <a href="notificacoes.php" class="nav-link no-underline">
+                            <a href="notificacoes" class="nav-link no-underline">
                                 <i class="fas fa-bell"></i>
                                 <?php
                                 $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
@@ -489,11 +489,11 @@ foreach ($anuncios as &$a) {
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="logout.php" class="nav-link exit-button no-underline">Sair</a>
+                            <a href="logout" class="nav-link exit-button no-underline">Sair</a>
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
-                            <a href="login.php" class="nav-link login-button no-underline">Login</a>
+                            <a href="login" class="nav-link login-button no-underline">Login</a>
                         </li>
                     <?php endif; ?>
                 </ul>
@@ -533,7 +533,7 @@ foreach ($anuncios as &$a) {
 
         <div class="search-filters-area">
             <div class="search-container">
-                <form action="anuncios.php" method="GET" class="search-form">
+                <form action="anuncios" method="GET" class="search-form">
                     <div class="search-box">
                         <input type="text" 
                                name="pesquisa" 
@@ -541,7 +541,7 @@ foreach ($anuncios as &$a) {
                                value="<?php echo htmlspecialchars($termo_pesquisa); ?>"
                                class="search-input">
                         <?php if (!empty($termo_pesquisa)): ?>
-                            <a href="anuncios.php" class="btn-clear-search">
+                            <a href="anuncios" class="btn-clear-search">
                                 <i class="fas fa-times"></i>
                             </a>
                         <?php endif; ?>
@@ -563,7 +563,7 @@ foreach ($anuncios as &$a) {
                             <?php endif; ?>
                         </button>
                         <div class="dropdown-content filtro-dropdown">
-                            <form method="GET" action="anuncios.php" class="filtro-form">
+                            <form method="GET" action="anuncios" class="filtro-form">
                                 <?php if (!empty($termo_pesquisa)): ?> <input type="hidden" name="pesquisa" value="<?= htmlspecialchars($termo_pesquisa) ?>"> <?php endif; ?>
                                 <?php if (!empty($filtro_estado)): ?> <input type="hidden" name="estado" value="<?= htmlspecialchars($filtro_estado) ?>"> <?php endif; ?>
                                 <input type="hidden" name="ordenacao" value="<?= htmlspecialchars($ordenacao) ?>">
@@ -571,7 +571,7 @@ foreach ($anuncios as &$a) {
                                 <div class="filtro-header">
                                     <span><i class="fas fa-apple-alt"></i> Categorias</span>
                                     <?php if (!empty($filtro_categoria)): ?>
-                                        <a href="anuncios.php?<?= http_build_query(array_merge($_GET, ['categoria' => null])) ?>" class="remove-filtro">Limpar</a>
+                                        <a href="anuncios?<?= http_build_query(array_merge($_GET, ['categoria' => null])) ?>" class="remove-filtro">Limpar</a>
                                     <?php endif; ?>
                                 </div>
                                 <div class="categorias-list">
@@ -596,7 +596,7 @@ foreach ($anuncios as &$a) {
                             <?php endif; ?>
                         </button>
                         <div class="dropdown-content localizacao-dropdown">
-                            <form method="GET" action="anuncios.php" class="filtro-form">
+                            <form method="GET" action="anuncios" class="filtro-form">
                                 <?php if (!empty($termo_pesquisa)): ?> <input type="hidden" name="pesquisa" value="<?= htmlspecialchars($termo_pesquisa) ?>"> <?php endif; ?>
                                 <?php if (!empty($filtro_categoria)): ?> <input type="hidden" name="categoria" value="<?= htmlspecialchars($filtro_categoria) ?>"> <?php endif; ?>
                                 <input type="hidden" name="ordenacao" value="<?= htmlspecialchars($ordenacao) ?>">
@@ -604,7 +604,7 @@ foreach ($anuncios as &$a) {
                                 <div class="filtro-header">
                                     <span><i class="fas fa-map"></i> Estados</span>
                                     <?php if (!empty($filtro_estado)): ?>
-                                        <a href="anuncios.php?<?= http_build_query(array_merge($_GET, ['estado' => null])) ?>" class="remove-filtro">Limpar</a>
+                                        <a href="anuncios?<?= http_build_query(array_merge($_GET, ['estado' => null])) ?>" class="remove-filtro">Limpar</a>
                                     <?php endif; ?>
                                 </div>
                                 <div class="estados-grid">
@@ -626,7 +626,7 @@ foreach ($anuncios as &$a) {
                             Ordenar
                         </button>
                         <div class="dropdown-content">
-                            <form method="GET" action="anuncios.php">
+                            <form method="GET" action="anuncios">
                                 <?php foreach($_GET as $key => $val): if($key != 'ordenacao') echo "<input type='hidden' name='$key' value='$val'>"; endforeach; ?>
                                 <div class="ordenacao-options">
                                     <label class="ordenacao-option">
@@ -652,18 +652,18 @@ foreach ($anuncios as &$a) {
                         <?php if (!empty($filtro_categoria)): ?>
                             <span class="filtro-ativo-tag">
                                 <?= htmlspecialchars($filtro_categoria) ?>
-                                <a href="anuncios.php?<?= http_build_query(array_merge($_GET, ['categoria' => null])) ?>"><i class="fas fa-times"></i></a>
+                                <a href="anuncios?<?= http_build_query(array_merge($_GET, ['categoria' => null])) ?>"><i class="fas fa-times"></i></a>
                             </span>
                         <?php endif; ?>
                         
                         <?php if (!empty($filtro_estado)): ?>
                             <span class="filtro-ativo-tag">
                                 <?= htmlspecialchars($filtro_estado) ?>
-                                <a href="anuncios.php?<?= http_build_query(array_merge($_GET, ['estado' => null])) ?>"><i class="fas fa-times"></i></a>
+                                <a href="anuncios?<?= http_build_query(array_merge($_GET, ['estado' => null])) ?>"><i class="fas fa-times"></i></a>
                             </span>
                         <?php endif; ?>
                         
-                        <a href="anuncios.php" class="limpar-todos">Limpar tudo</a>
+                        <a href="anuncios" class="limpar-todos">Limpar tudo</a>
                     </div>
                 <?php endif; ?>
             </div>
@@ -674,7 +674,7 @@ foreach ($anuncios as &$a) {
                 <div class="empty-search">
                     <i class="fas fa-search fa-3x"></i>
                     <h3>Nenhum resultado encontrado</h3>
-                    <p>Tente outros filtros ou <a href="anuncios.php">veja todos os anúncios</a></p>
+                    <p>Tente outros filtros ou <a href="anuncios">veja todos os anúncios</a></p>
                 </div>
             </div>
         <?php else: ?>
@@ -739,14 +739,14 @@ foreach ($anuncios as &$a) {
                         <div class="card-actions">
                             <?php if ($is_logged_in): ?>
                                 <?php if ($usuario_tipo === 'comprador' || $usuario_tipo === 'vendedor'): ?>
-                                    <a href="comprador/view_ad.php?anuncio_id=<?= $anuncio['id'] ?>" class="btn btn-primary">
+                                    <a href="comprador/view_ad?anuncio_id=<?= $anuncio['id'] ?>" class="btn btn-primary">
                                         <i class="fas fa-handshake"></i> Comprar
                                     </a>
                                 <?php else: ?>
                                     <button class="btn btn-primary" disabled>Apenas Compradores</button>
                                 <?php endif; ?>
                             <?php else: ?>
-                                <a href="visualizar_anuncio.php?anuncio_id=<?= $anuncio['id'] ?>" class="btn btn-primary">
+                                <a href="visualizar_anuncio?anuncio_id=<?= $anuncio['id'] ?>" class="btn btn-primary">
                                     <i class="fas fa-eye"></i> Ver Detalhes
                                 </a>
                             <?php endif; ?>
@@ -777,7 +777,7 @@ foreach ($anuncios as &$a) {
             <span class="modal-close">&times;</span>
             <h3>Acesso Negociador</h3>
             <p>Faça login para continuar.</p>
-            <form action="login.php" method="POST">
+            <form action="login" method="POST">
                 <div class="form-group"><label>Email</label><input type="email" name="email" required></div>
                 <div class="form-group"><label>Senha</label><input type="password" name="password" required></div>
                 <button type="submit" class="btn btn-primary">Entrar</button>
@@ -791,26 +791,26 @@ foreach ($anuncios as &$a) {
                 <div class="footer-section">
                     <h4>Encontre o Campo</h4>
                     <ul>
-                        <li><a href="../index.php">Página Inicial</a></li>
-                        <li><a href="anuncios.php">Ver Anúncios</a></li>
+                        <li><a href="../index">Página Inicial</a></li>
+                        <li><a href="anuncios">Ver Anúncios</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-section">
                     <h4>Suporte</h4>
                     <ul>
-                        <li><a href="../ajuda.php">Central de Ajuda</a></li>
-                        <li><a href="../contato.php">Fale Conosco</a></li>
-                        <li><a href="sobre.php">Sobre Nós</a></li>
+                        <li><a href="../ajuda">Central de Ajuda</a></li>
+                        <li><a href="../contato">Fale Conosco</a></li>
+                        <li><a href="sobre">Sobre Nós</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-section">
                     <h4>Legal</h4>
                     <ul>
-                        <li><a href="faq.php">FAQ</a></li>
-                        <li><a href="termos.php">Termos de Uso</a></li>
-                        <li><a href="privacidade.php">Política de Privacidade</a></li>
+                        <li><a href="faq">FAQ</a></li>
+                        <li><a href="termos">Termos de Uso</a></li>
+                        <li><a href="privacidade">Política de Privacidade</a></li>
                     </ul>
                 </div>
                 

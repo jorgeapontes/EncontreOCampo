@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../conexao.php';
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
-    header("Location: ../index.php");
+    header("Location: ../index");
     exit();
 }
 
@@ -172,8 +172,8 @@ try {
             <a href="todos_usuarios" class="nav-link">Todos os Usuários</a>
             <a href="chats_admin" class="nav-link">Chats</a>
             <a href="manage_comprovantes" class="nav-link active">Comprovantes</a>
-            <a href="../../index.php" class="nav-link">Home</a>
-            <a href="../logout.php" class="nav-link logout">Sair</a>
+            <a href="../../index" class="nav-link">Home</a>
+            <a href="../logout" class="nav-link logout">Sair</a>
         </div>
     </div>
 </nav>

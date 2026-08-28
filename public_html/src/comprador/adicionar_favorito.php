@@ -6,7 +6,7 @@ require_once __DIR__ . '/../conexao.php';
 if (!isset($_SESSION['usuario_id']) ) {
     $_SESSION['mensagem'] = "Faça login como comprador para adicionar aos favoritos.";
     $_SESSION['tipo_mensagem'] = "erro";
-    header("Location: ../login.php");
+    header("Location: ../login");
     exit();
 }
 
@@ -14,7 +14,7 @@ if (!isset($_SESSION['usuario_id']) ) {
 if (!isset($_GET['produto_id']) || empty($_GET['produto_id'])) {
     $_SESSION['mensagem'] = "ID do produto não informado.";
     $_SESSION['tipo_mensagem'] = "erro";
-    header("Location: ../anuncios.php");
+    header("Location: ../anuncios");
     exit();
 }
 
@@ -35,7 +35,7 @@ try {
     if ($stmt_verificar_produto->rowCount() === 0) {
         $_SESSION['mensagem'] = "Produto não encontrado ou não está disponível.";
         $_SESSION['tipo_mensagem'] = "erro";
-        header("Location: ../anuncios.php");
+        header("Location: ../anuncios");
         exit();
     }
     

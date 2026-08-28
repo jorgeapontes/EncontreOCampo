@@ -5,7 +5,7 @@ require_once __DIR__ . '/fpdf/fpdf.php';
 
 // 1. Verificar permissões
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
-    header("Location: ../login.php");
+    header("Location: ../login");
     exit();
 }
 

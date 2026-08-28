@@ -13,13 +13,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validar dados básicos
     if (empty($nome) || empty($email) || empty($subject)) {
         $_SESSION['erro'] = "Por favor, preencha todos os campos obrigatórios.";
-        header("Location: index.php#contato");
+        header("Location: index#contato");
         exit();
     }
 
     if (empty($_POST['aceite_termos'])) {
         $_SESSION['erro'] = "Você precisa aceitar os termos e condições para criar a conta.";
-        header("Location: index.php#contato");
+        header("Location: index#contato");
         exit();
     }
 
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if ($stmt->rowCount() > 0) {
         $_SESSION['erro'] = "Este email já está cadastrado em nosso sistema.";
-        header("Location: index.php#contato");
+        header("Location: index#contato");
         exit();
     }
 
@@ -132,17 +132,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Enviar email com senha temporária (implementar função de email)
         $_SESSION['sucesso'] = "Solicitação de cadastro enviada com sucesso! Aguarde a aprovação do administrador. Sua senha temporária é: " . $senha_temporaria;
-        header("Location: index.php#contato");
+        header("Location: index#contato");
         exit();
 
     } catch (Exception $e) {
         $db->rollBack();
         $_SESSION['erro'] = "Erro ao processar cadastro: " . $e->getMessage();
-        header("Location: index.php#contato");
+        header("Location: index#contato");
         exit();
     }
 } else {
-    header("Location: index.php");
+    header("Location: index");
     exit();
 }
 ?>

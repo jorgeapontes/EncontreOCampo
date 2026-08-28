@@ -5,7 +5,7 @@ require_once __DIR__ . '/../conexao.php';
 
 // 1. VERIFICAÇÃO DE ACESSO
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprador') {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Comprador."));
     exit();
 }
 
@@ -138,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <a href="../../index.php" class="logo-link">
+                <a href="../../index" class="logo-link">
                     <div>
                         <h1>ENCONTRE</h1>
                         <h2>OCAMPO</h2>
@@ -147,11 +147,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <ul class="nav-menu">
                 <li class="nav-item"><a href="dashboard" class="nav-link">Dashboard</a></li>
-                <li class="nav-item"><a href="../anuncios.php" class="nav-link">Ver Anúncios</a></li>
+                <li class="nav-item"><a href="../anuncios" class="nav-link">Ver Anúncios</a></li>
                 <li class="nav-item"><a href="minhas_propostas" class="nav-link">Minhas Propostas</a></li>
                 <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
                 <li class="nav-item"><a href="editar_perfil" class="nav-link active">Editar Perfil</a></li>
-                <li class="nav-item"><a href="../logout.php" class="nav-link logout">Sair</a></li>
+                <li class="nav-item"><a href="../logout" class="nav-link logout">Sair</a></li>
             </ul>
         </div>
     </nav>

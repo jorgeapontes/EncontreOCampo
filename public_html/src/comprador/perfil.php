@@ -5,7 +5,7 @@ require_once __DIR__ . '/../conexao.php';
 
 // 1. VERIFICAÇÃO DE ACESSO
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprador') {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Comprador."));
     exit();
 }
 
@@ -222,7 +222,7 @@ if (isset($_GET['success']) && $_GET['success'] == '1') {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link">
+                    <a href="../../index" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -232,10 +232,10 @@ if (isset($_GET['success']) && $_GET['success'] == '1') {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="../../index.php" class="nav-link">Home</a>
+                        <a href="../../index" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="../anuncios.php" class="nav-link">Anúncios</a>
+                        <a href="../anuncios" class="nav-link">Anúncios</a>
                     </li>
                     <li class="nav-item">
                         <a href="dashboard" class="nav-link">Painel</a>
@@ -248,7 +248,7 @@ if (isset($_GET['success']) && $_GET['success'] == '1') {
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
-                        <a href="../notificacoes.php" class="nav-link no-underline">
+                        <a href="../notificacoes" class="nav-link no-underline">
                             <i class="fas fa-bell"></i>
                             <?php
                             // Contar notificações não lidas
@@ -267,7 +267,7 @@ if (isset($_GET['success']) && $_GET['success'] == '1') {
                     </li>
                     <?php endif; ?>
                     <li class="nav-item">
-                        <a href="../logout.php" class="nav-link exit-button no-underline">Sair</a>
+                        <a href="../logout" class="nav-link exit-button no-underline">Sair</a>
                     </li>
                 </ul>
                 <div class="hamburger">

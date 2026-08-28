@@ -5,7 +5,7 @@ require_once __DIR__ . '/../permissions.php';
 
 // 1. VERIFICAÇÃO DE ACESSO E SEGURANÇA
 if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['comprador', 'vendedor'])) {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Comprador ou Vendedor."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Comprador ou Vendedor."));
     exit();
 }
 
@@ -111,7 +111,7 @@ if ($usuario_tipo === 'vendedor') {
         $stmt_verifica->execute();
         
         if ($stmt_verifica->rowCount() > 0) {
-            header("Location: ../anuncios.php?erro=" . urlencode("Você não pode comprar ou fazer proposta para seu próprio anúncio."));
+            header("Location: ../anuncios?erro=" . urlencode("Você não pode comprar ou fazer proposta para seu próprio anúncio."));
             exit();
         }
     } catch (PDOException $e) {
@@ -204,11 +204,11 @@ try {
                 if ($stmt_criar->execute()) {
                     $comprador_id = $conn->lastInsertId();
                 } else {
-                    header("Location: ../anuncios.php?erro=" . urlencode("Erro ao configurar perfil."));
+                    header("Location: ../anuncios?erro=" . urlencode("Erro ao configurar perfil."));
                     exit();
                 }
             } else {
-                header("Location: ../anuncios.php?erro=" . urlencode("Perfil incompleto."));
+                header("Location: ../anuncios?erro=" . urlencode("Perfil incompleto."));
                 exit();
             }
         } else {
@@ -362,19 +362,19 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link">
+                    <a href="../../index" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div><h1>ENCONTRE</h1><h2>O CAMPO</h2></div>
                     </a>
                 </div>
                 <ul class="nav-menu">
-                    <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="../anuncios.php" class="nav-link">Anúncios</a></li>
+                    <li class="nav-item"><a href="../../index" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="../anuncios" class="nav-link">Anúncios</a></li>
                     <li class="nav-item"><a href="dashboard" class="nav-link">Painel</a></li>
                     <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
-                        <a href="../notificacoes.php" class="nav-link no-underline">
+                        <a href="../notificacoes" class="nav-link no-underline">
                             <i class="fas fa-bell"></i>
                             <?php
                             if (isset($_SESSION['usuario_id'])) {
@@ -391,7 +391,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                         </a>
                     </li>
                     <?php endif; ?>
-                    <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
+                    <li class="nav-item"><a href="../logout" class="nav-link exit-button no-underline">Sair</a></li>
                 </ul>
                 <div class="hamburger"><span class="bar"></span><span class="bar"></span><span class="bar"></span></div>
             </div>
@@ -462,7 +462,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                             <h2><?php echo htmlspecialchars($anuncio['produto']); ?></h2>
                             <div class="vendedor-info">
                                 <span class="vendedor-label">Vendido por:</span>
-                                <a href="../perfil_vendedor.php?vendedor_id=<?php echo $anuncio['vendedor_usuario_id']; ?>" class="vendedor-nome">
+                                <a href="../perfil_vendedor?vendedor_id=<?php echo $anuncio['vendedor_usuario_id']; ?>" class="vendedor-nome">
                                     <?php echo htmlspecialchars($anuncio['nome_vendedor']); ?> <i class="fas fa-external-link-alt"></i>
                                 </a>
                                 <span class="vendedor-local">
@@ -522,7 +522,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                             
                             <div class="proposta-option">
                                 <?php if (isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo'): ?>
-                                    <a href="../chat/chat.php?produto_id=<?php echo $anuncio_id; ?>" class="btn-chat"><i class="fas fa-comments"></i> Conversar com o Vendedor</a>
+                                    <a href="../chat/chat?produto_id=<?php echo $anuncio_id; ?>" class="btn-chat"><i class="fas fa-comments"></i> Conversar com o Vendedor</a>
                                 <?php else: ?>
                                     <a type="button" class="btn-chat btn-disabled" disabled><i class="fas fa-comments"></i> Conversar com o Vendedor</a>
                                     <div class="status-info alerta"><i class="fas fa-info-circle"></i> Aguarde a aprovação</div>
@@ -615,7 +615,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
 
                                     if ($mostrar_avaliar) {
                                         echo '<div class="botao-avaliar">';
-                                        echo '<a href="../avaliar.php?tipo=produto&produto_id='.urlencode($anuncio_id).'" class="btn-avaliar">';
+                                        echo '<a href="../avaliar?tipo=produto&produto_id='.urlencode($anuncio_id).'" class="btn-avaliar">';
                                         echo '<i class="fas fa-star"></i>Avaliar este produto';
                                         echo '</a>';
                                         echo '</div>';
@@ -672,7 +672,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                     </div>
                     <?php if ($total_avaliacoes > 3): ?>
                         <div class="ver-mais-avaliacoes">
-                            <a href="../avaliacoes.php?tipo=produto&id=<?php echo $anuncio_id; ?>" class="btn-ver-mais">
+                            <a href="../avaliacoes?tipo=produto&id=<?php echo $anuncio_id; ?>" class="btn-ver-mais">
                                 <i class="fas fa-eye"></i> Ver todas as <?php echo $total_avaliacoes; ?> avaliações
                             </a>
                         </div>
@@ -760,25 +760,25 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                 <div class="footer-section">
                     <h4>Encontre o Campo</h4>
                     <ul>
-                        <li><a href="../../index.php">Página Inicial</a></li>
-                        <li><a href="../anuncios.php">Ver Anúncios</a></li>
+                        <li><a href="../../index">Página Inicial</a></li>
+                        <li><a href="../anuncios">Ver Anúncios</a></li>
                         <li><a href="favoritos">Meus Favoritos</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Suporte</h4>
                     <ul>
-                        <li><a href="../ajuda.php">Central de Ajuda</a></li>
-                        <li><a href="../contato.php">Fale Conosco</a></li>
-                        <li><a href="../sobre.php">Sobre Nós</a></li>
+                        <li><a href="../ajuda">Central de Ajuda</a></li>
+                        <li><a href="../contato">Fale Conosco</a></li>
+                        <li><a href="../sobre">Sobre Nós</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Legal</h4>
                     <ul>
-                        <li><a href="../faq.php">FAQ</a></li>
-                        <li><a href="../termos.php">Termos de Uso</a></li>
-                        <li><a href="../privacidade.php">Política de Privacidade</a></li>
+                        <li><a href="../faq">FAQ</a></li>
+                        <li><a href="../termos">Termos de Uso</a></li>
+                        <li><a href="../privacidade">Política de Privacidade</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">

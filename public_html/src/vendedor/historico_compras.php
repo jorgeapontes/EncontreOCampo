@@ -6,7 +6,7 @@ if (session_status() == PHP_SESSION_NONE) session_start();
 
 // Verifica se é vendedor
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor') {
-    header("Location: ../../login.php?erro=" . urlencode("Acesso restrito. Faça login como Vendedor."));
+    header("Location: ../../login?erro=" . urlencode("Acesso restrito. Faça login como Vendedor."));
     exit();
 }
 
@@ -105,7 +105,7 @@ try {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -114,14 +114,14 @@ try {
                     </a>
                 </div>
                 <ul class="nav-menu">
-                    <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="../anuncios.php" class="nav-link">Anúncios</a></li>
+                    <li class="nav-item"><a href="../../index" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="../anuncios" class="nav-link">Anúncios</a></li>
                     <li class="nav-item"><a href="dashboard" class="nav-link">Painel</a></li>
                     <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
-                    <li class="nav-item"><a href="../notificacoes.php" class="nav-link no-underline"><i class="fas fa-bell"></i></a></li>
+                    <li class="nav-item"><a href="../notificacoes" class="nav-link no-underline"><i class="fas fa-bell"></i></a></li>
                     <?php endif; ?>
-                    <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
+                    <li class="nav-item"><a href="../logout" class="nav-link exit-button no-underline">Sair</a></li>
                 </ul>
                 <div class="hamburger">
                     <span class="bar"></span>
@@ -212,7 +212,7 @@ try {
                                     <div class="card-grid">
                                         <div><strong>Vendedor</strong><div>
                                             <?php if (!empty($p['vendedor_id'])): ?>
-                                                <a href="../verperfil.php?usuario_id=<?php echo intval($p['vendedor_id']); ?>"><?php echo htmlspecialchars($p['vendedor_nome'] ?? '—'); ?></a>
+                                                <a href="../verperfil?usuario_id=<?php echo intval($p['vendedor_id']); ?>"><?php echo htmlspecialchars($p['vendedor_nome'] ?? '—'); ?></a>
                                             <?php else: ?>
                                                 <?php echo htmlspecialchars($p['vendedor_nome'] ?? '—'); ?>
                                             <?php endif; ?>

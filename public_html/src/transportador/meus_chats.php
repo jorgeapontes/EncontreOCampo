@@ -4,7 +4,7 @@ require_once __DIR__ . '/../conexao.php';
 
 // Verificar se está logado como transportador
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'transportador') {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito. Faça login como Transportador."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Transportador."));
     exit();
 }
 
@@ -191,7 +191,7 @@ try {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link">
+                    <a href="../../index" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -200,13 +200,13 @@ try {
                     </a>
                 </div>
                 <ul class="nav-menu">
-                    <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="../../index" class="nav-link">Home</a></li>
                     <li class="nav-item"><a href="dashboard" class="nav-link">Painel</a></li>
                     <li class="nav-item"><a href="meus_chats" class="nav-link active">Chats</a></li>
                     <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
-                        <a href="../notificacoes.php" class="nav-link">
+                        <a href="../notificacoes" class="nav-link">
                             <i class="fas fa-bell"></i>
                             <?php
                             $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
@@ -219,7 +219,7 @@ try {
                         </a>
                     </li>
                     <?php endif; ?>
-                    <li class="nav-item"><a href="../logout.php" class="nav-link exit-button">Sair</a></li>
+                    <li class="nav-item"><a href="../logout" class="nav-link exit-button">Sair</a></li>
                 </ul>
                 <div class="hamburger">
                     <span class="bar"></span><span class="bar"></span><span class="bar"></span>

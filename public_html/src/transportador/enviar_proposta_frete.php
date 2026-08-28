@@ -6,7 +6,7 @@ require_once __DIR__ . '/../../includes/send_notification.php';
 
 // Verificar se é transportador
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'transportador') {
-    header("Location: ../login.php?erro=" . urlencode("Acesso restrito."));
+    header("Location: ../login?erro=" . urlencode("Acesso restrito."));
     exit();
 }
 

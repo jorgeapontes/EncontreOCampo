@@ -284,7 +284,7 @@ function getImagePath($path) {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index.php" class="logo-link">
+                    <a href="../../index" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -293,12 +293,12 @@ function getImagePath($path) {
                     </a>
                 </div>
                 <ul class="nav-menu">
-                    <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="../anuncios.php" class="nav-link">Anúncios</a></li>
+                    <li class="nav-item"><a href="../../index" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="../anuncios" class="nav-link">Anúncios</a></li>
                     <li class="nav-item"><a href="dashboard" class="nav-link">Painel</a></li>
                     <li class="nav-item"><a href="" class="nav-link active">Meu Perfil</a></li>
                     <li class="nav-item">
-                        <a href="../logout.php" class="nav-link exit-button no-underline">Sair</a>
+                        <a href="../logout" class="nav-link exit-button no-underline">Sair</a>
                     </li>
                 </ul>
                 <div class="hamburger">
@@ -455,7 +455,7 @@ function getImagePath($path) {
             <p>Tem certeza? Esta ação não pode ser desfeita.</p>
             <div class="delete-account-modal-actions">
                 <button id="cancel-delete" class="btn-cancel-delete">Cancelar</button>
-                <form id="delete-account-form" method="POST" action="deletar_conta.php" class="delete-account-form">
+                <form id="delete-account-form" method="POST" action="deletar_conta" class="delete-account-form">
                     <input type="hidden" name="usuario_id" value="<?php echo $usuario['id']; ?>">
                     <input type="hidden" name="transportador_id" value="<?php echo $transportador['id']; ?>">
                     <button type="submit" class="btn-confirm-delete">Sim, apagar</button>

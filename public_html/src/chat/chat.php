@@ -963,7 +963,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
             carregandoMensagens = true;
             
             // IMPORTANTE: Seu get_messages.php deve retornar a coluna 'tipo' agora
-            fetch(`get_messages.php?conversa_id=${conversaId}&ultimo_id=${ultimaMensagemId}`)
+            fetch(`get_messages?conversa_id=${conversaId}&ultimo_id=${ultimaMensagemId}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.mensagens.length > 0) {
@@ -1050,7 +1050,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
             
             if (!mensagem) return;
             
-            fetch('send_message.php', {
+            fetch('send_message', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                 body: `conversa_id=${conversaId}&mensagem=${encodeURIComponent(mensagem)}`
@@ -1088,7 +1088,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
             formData.append('imagem', file);
             formData.append('conversa_id', conversaId);
 
-            fetch('upload_image.php', {
+            fetch('upload_image', {
                 method: 'POST',
                 body: formData
             })
@@ -1502,7 +1502,7 @@ function enviarNegociacao(dados) {
             dados.proposta_id = propostaAtualId;
         }
         
-        fetchJSON('salvar_negociacao.php', {
+        fetchJSON('salvar_negociacao', {
             method: 'POST',
             body: JSON.stringify(dados)
         })
@@ -1596,7 +1596,7 @@ function carregarProposta(force = false) {
     
     carregamentoPropostaEmAndamento = true;
     
-    fetchJSON(`carregar_proposta.php?produto_id=<?php echo $produto_id; ?>&conversa_id=${conversaId}`)
+    fetchJSON(`carregar_proposta?produto_id=<?php echo $produto_id; ?>&conversa_id=${conversaId}`)
         .then(data => {
             if (!data.success) {
                 console.error('Erro ao carregar proposta:', data.error);
@@ -1945,7 +1945,7 @@ function resetarDelegacaoEventos() {
 function verificarAtualizacoesProposta() {
     if (!propostaAtualId) return;
     
-    fetch(`verificar_proposta_v2.php?produto_id=<?php echo $produto_id; ?>&ultima_data=${encodeURIComponent(propostaAtualDataAtualizacao)}`)
+    fetch(`verificar_proposta_v2?produto_id=<?php echo $produto_id; ?>&ultima_data=${encodeURIComponent(propostaAtualDataAtualizacao)}`)
         .then(res => res.json())
         .then(data => {
             if (data.atualizacao && data.proposta) {
@@ -1989,7 +1989,7 @@ function verificarAtualizacoesPropostaEficiente() {
     // Usar timestamp do servidor ou data atual
     const ultimaData = ultimaDataAtualizacaoServidor || propostaAtualDataAtualizacao;
     
-    fetchJSON(`verificar_atualizacoes_proposta.php?produto_id=<?php echo $produto_id; ?>&ultima_data=${encodeURIComponent(ultimaData)}`)
+    fetchJSON(`verificar_atualizacoes_proposta?produto_id=<?php echo $produto_id; ?>&ultima_data=${encodeURIComponent(ultimaData)}`)
         .then(data => {
             if (data.atualizacao) {
                 // Houve atualização, recarregar proposta
@@ -2027,7 +2027,7 @@ function abrirModalNegociacao(produtoId, propostaIdExistente = null) {
 }
 
 function buscarDadosPropostaParaEdicao(propostaId) {
-    return fetchJSON(`buscar_dados_proposta.php?id=${propostaId}`)
+    return fetchJSON(`buscar_dados_proposta?id=${propostaId}`)
         .then(data => {
             if (!data.success) {
                 throw new Error(data.error || 'Erro ao buscar dados da proposta');
@@ -2037,7 +2037,7 @@ function buscarDadosPropostaParaEdicao(propostaId) {
 }
 
 function buscarInformacoesAssinaturas(propostaId) {
-    return fetchJSON(`buscar_assinaturas.php?proposta_id=${propostaId}`)
+    return fetchJSON(`buscar_assinaturas?proposta_id=${propostaId}`)
         .then(data => {
             if (!data.success) {
                 throw new Error(data.error || 'Erro ao buscar assinaturas');
@@ -2048,7 +2048,7 @@ function buscarInformacoesAssinaturas(propostaId) {
 
 function abrirModalEdicao(propostaId) {
     // Primeiro, buscar dados da proposta para preencher o modal
-    fetch(`buscar_dados_proposta.php?id=${propostaId}`)
+    fetch(`buscar_dados_proposta?id=${propostaId}`)
         .then(res => res.json())
         .then(data => {
             if (data.success) {
@@ -2233,7 +2233,7 @@ function inicializarElementosProposta() {
 function verificarNovaProposta() {
     if (!conversaId || !propostaAtualId) return;
     
-    fetch(`verificar_proposta_v2.php?conversa_id=${conversaId}&produto_id=${<?php echo $produto_id; ?>}&ultima_data=${encodeURIComponent(propostaAtualDataAtualizacao)}`)
+    fetch(`verificar_proposta_v2?conversa_id=${conversaId}&produto_id=${<?php echo $produto_id; ?>}&ultima_data=${encodeURIComponent(propostaAtualDataAtualizacao)}`)
         .then(res => res.json())
         .then(data => {
             if (data.atualizacao && data.proposta) {
@@ -2385,7 +2385,7 @@ function responderProposta(acao, propostaId) {
     
     const acaoMapeada = acao === 'aceitar' ? 'aceitar_para_assinatura' : acao;
     
-    fetchJSON('responder_proposta.php', {
+    fetchJSON('responder_proposta', {
         method: 'POST',
         body: JSON.stringify({
             acao: acaoMapeada,
@@ -2416,7 +2416,7 @@ function responderProposta(acao, propostaId) {
 
 // Nova função para buscar proposta atualizada
 function buscarPropostaAtualizada(propostaId) {
-    return fetch(`buscar_proposta.php?id=${propostaId}`)
+    return fetch(`buscar_proposta?id=${propostaId}`)
         .then(res => res.json());
 }
 
@@ -2432,7 +2432,7 @@ function cancelarProposta(propostaId) {
         botao.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelando...';
     }
     
-    fetchJSON('responder_proposta.php', {
+    fetchJSON('responder_proposta', {
         method: 'POST',
         body: JSON.stringify({
             acao: 'cancelar',
@@ -3023,7 +3023,7 @@ function fecharModalAssinatura() {
 }
 
 function buscarInformacoesAssinaturas(propostaId) {
-    fetch(`buscar_assinaturas.php?proposta_id=${propostaId}`)
+    fetch(`buscar_assinaturas?proposta_id=${propostaId}`)
         .then(res => res.json())
         .then(data => {
             if (data.success) {
@@ -3089,7 +3089,7 @@ function confirmarAssinatura() {
     const base64Image = signatureData.split(',')[1];
     
     // Enviar para o servidor usando fetchJSON
-    fetchJSON('salvar_assinatura.php', {
+    fetchJSON('salvar_assinatura', {
         method: 'POST',
         body: JSON.stringify({
             proposta_id: propostaParaAssinar,
@@ -3146,7 +3146,7 @@ function aceitarPropostaParaAssinatura(propostaId) {
         botao.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
     }
     
-    fetchJSON('responder_proposta.php', {
+    fetchJSON('responder_proposta', {
         method: 'POST',
         body: JSON.stringify({
             acao: 'aceitar_para_assinatura',

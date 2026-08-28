@@ -541,7 +541,7 @@ try {
         // 1. Carregar mensagens
         async function carregarMensagens() {
             try {
-                const res = await fetch(`get_messages.php?conversa_id=${conversaId}&ultimo_id=${ultimaMensagemId}`);
+                const res = await fetch(`get_messages?conversa_id=${conversaId}&ultimo_id=${ultimaMensagemId}`);
                 const data = await res.json();
                 if (data.success && data.mensagens.length) {
                     const container = document.getElementById('chat-messages');
@@ -637,7 +637,7 @@ try {
                     status = propostasProcessadas.get(propostaId);
                 } else {
                     try {
-                        const res = await fetch('get_proposta_status.php?id=' + propostaId);
+                        const res = await fetch('get_proposta_status?id=' + propostaId);
                         const data = await res.json();
                         status = data.status || 'pendente';
                         propostasProcessadas.set(propostaId, status);
@@ -749,7 +749,7 @@ try {
             });
 
             try {
-                const res = await fetch('responder_proposta.php', {
+                const res = await fetch('responder_proposta', {
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'}, 
                     body: JSON.stringify({acao: acao, id: id})
@@ -800,7 +800,7 @@ try {
             form.append('conversa_id', conversaId);
             form.append('mensagem', input.value);
             try {
-                await fetch('send_message.php', {method:'POST', body: form});
+                await fetch('send_message', {method:'POST', body: form});
                 input.value = '';
                 carregarMensagens();
             } catch(e){}
@@ -831,7 +831,7 @@ try {
             form.append('valor', v);
             form.append('data_entrega', d);
             
-            await fetch('send_proposal.php', { method: 'POST', body: form });
+            await fetch('send_proposal', { method: 'POST', body: form });
             modalProp.style.display = 'none';
             carregarMensagens();
         });

@@ -11,7 +11,7 @@ if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['
 }
 
 if (!isset($_GET['id'])) {
-    header("Location: minhas_propostas.php?erro=" . urlencode("ID da proposta não informado."));
+    header("Location: minhas_propostas?erro=" . urlencode("ID da proposta não informado."));
     exit();
 }
 
@@ -54,7 +54,7 @@ try {
     $proposta = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$proposta) {
-        header("Location: minhas_propostas.php?erro=" . urlencode("Proposta não encontrada."));
+        header("Location: minhas_propostas?erro=" . urlencode("Proposta não encontrada."));
         exit();
     }
     
@@ -63,7 +63,7 @@ try {
     // 2. Status na proposta do comprador deve ser 'enviada'
     if ($proposta['negociacao_status'] !== 'negociacao' || $proposta['status_comprador'] !== 'enviada') {
         $status_msg = "Negociação: {$proposta['negociacao_status']}, Proposta: {$proposta['status_comprador']}";
-        header("Location: minhas_propostas.php?erro=" . urlencode("Esta proposta não pode ser editada. " . $status_msg));
+        header("Location: minhas_propostas?erro=" . urlencode("Esta proposta não pode ser editada. " . $status_msg));
         exit();
     }
     
@@ -145,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
             }
             
-            header("Location: minhas_propostas.php?sucesso=" . urlencode("Proposta atualizada com sucesso!"));
+            header("Location: minhas_propostas?sucesso=" . urlencode("Proposta atualizada com sucesso!"));
             exit();
             
         } catch (PDOException $e) {
@@ -179,9 +179,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </a>
             </div>
             <ul class="nav-menu">
-                <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>
+                <li class="nav-item"><a href="dashboard" class="nav-link">Dashboard</a></li>
                 <li class="nav-item"><a href="../anuncios.php" class="nav-link">Comprar</a></li>
-                <li class="nav-item"><a href="minhas_propostas.php" class="nav-link active">Minhas Propostas</a></li>
+                <li class="nav-item"><a href="minhas_propostas" class="nav-link active">Minhas Propostas</a></li>
                 <li class="nav-item"><a href="../logout.php" class="nav-link logout">Sair</a></li>
             </ul>
         </div>
@@ -243,7 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <i class="fas fa-check"></i>
                         Atualizar Proposta
                     </button>
-                    <a href="minhas_propostas.php" class="btn btn-cancelar">Cancelar</a>
+                    <a href="minhas_propostas" class="btn btn-cancelar">Cancelar</a>
                 </div>
             </form>
         </div>

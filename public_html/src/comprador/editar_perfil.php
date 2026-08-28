@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Validações básicas
     if (!$nome_usuario || !$email) {
-        header("Location: editar_perfil.php?erro=" . urlencode("Nome e email são obrigatórios."));
+        header("Location: editar_perfil?erro=" . urlencode("Nome e email são obrigatórios."));
         exit();
     }
 
@@ -109,14 +109,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Atualizar sessão com novo nome
         $_SESSION['usuario_nome'] = $nome_usuario;
 
-        header("Location: perfil.php?sucesso=" . urlencode("Perfil atualizado com sucesso!"));
+        header("Location: perfil?sucesso=" . urlencode("Perfil atualizado com sucesso!"));
         exit();
 
     } catch (PDOException $e) {
         // Rollback em caso de erro
         $conn->rollBack();
         error_log("Erro ao atualizar perfil: " . $e->getMessage());
-        header("Location: editar_perfil.php?erro=" . urlencode("Erro ao atualizar perfil. Tente novamente."));
+        header("Location: editar_perfil?erro=" . urlencode("Erro ao atualizar perfil. Tente novamente."));
         exit();
     }
 }
@@ -146,11 +146,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </a>
             </div>
             <ul class="nav-menu">
-                <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>
+                <li class="nav-item"><a href="dashboard" class="nav-link">Dashboard</a></li>
                 <li class="nav-item"><a href="../anuncios.php" class="nav-link">Ver Anúncios</a></li>
-                <li class="nav-item"><a href="minhas_propostas.php" class="nav-link">Minhas Propostas</a></li>
-                <li class="nav-item"><a href="perfil.php" class="nav-link">Meu Perfil</a></li>
-                <li class="nav-item"><a href="editar_perfil.php" class="nav-link active">Editar Perfil</a></li>
+                <li class="nav-item"><a href="minhas_propostas" class="nav-link">Minhas Propostas</a></li>
+                <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
+                <li class="nav-item"><a href="editar_perfil" class="nav-link active">Editar Perfil</a></li>
                 <li class="nav-item"><a href="../logout.php" class="nav-link logout">Sair</a></li>
             </ul>
         </div>
@@ -183,7 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="editar-body">
-                <form action="editar_perfil.php" method="POST">
+                <form action="editar_perfil" method="POST">
                     <div class="form-section">
                         <h3><i class="fas fa-id-card"></i> Informações Pessoais</h3>
                         <div class="form-grid">
@@ -314,7 +314,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <i class="fas fa-save"></i>
                             Salvar Alterações
                         </button>
-                        <a href="perfil.php" class="btn-cancel">
+                        <a href="perfil" class="btn-cancel">
                             <i class="fas fa-times"></i>
                             Cancelar
                         </a>

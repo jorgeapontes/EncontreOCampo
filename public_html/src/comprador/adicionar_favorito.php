@@ -20,7 +20,7 @@ if (!isset($_GET['produto_id']) || empty($_GET['produto_id'])) {
 
 $produto_id = intval($_GET['produto_id']);
 $usuario_id = $_SESSION['usuario_id'];
-$redirect_url = $_GET['redirect'] ?? 'favoritos.php';
+$redirect_url = $_GET['redirect'] ?? 'favoritos';
 
 $database = new Database();
 $conn = $database->getConnection();

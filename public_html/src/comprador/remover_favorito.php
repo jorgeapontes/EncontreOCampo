@@ -12,7 +12,7 @@ if (!isset($_SESSION['usuario_id']) ) {
 if (!isset($_GET['favorito_id']) || empty($_GET['favorito_id'])) {
     $_SESSION['mensagem'] = "ID do favorito não informado.";
     $_SESSION['tipo_mensagem'] = "erro";
-    header("Location: favoritos.php");
+    header("Location: favoritos");
     exit();
 }
 
@@ -33,7 +33,7 @@ try {
     if ($stmt_verificar->rowCount() === 0) {
         $_SESSION['mensagem'] = "Favorito não encontrado ou você não tem permissão para removê-lo.";
         $_SESSION['tipo_mensagem'] = "erro";
-        header("Location: favoritos.php");
+        header("Location: favoritos");
         exit();
     }
     
@@ -56,6 +56,6 @@ try {
 }
 
 // Redirecionar de volta para a página de favoritos
-header("Location: favoritos.php");
+header("Location: favoritos");
 exit();
 ?>

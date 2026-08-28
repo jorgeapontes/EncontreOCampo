@@ -10,7 +10,7 @@ if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['
 }
 
 if (!isset($_GET['id']) || !isset($_GET['acao'])) {
-    header("Location: minhas_propostas.php?erro=" . urlencode("Parâmetros inválidos."));
+    header("Location: minhas_propostas?erro=" . urlencode("Parâmetros inválidos."));
     exit();
 }
 
@@ -18,6 +18,6 @@ $negociacao_id = $_GET['id'];
 $acao = $_GET['acao'];
 
 // Redireciona para o novo processador
-header("Location: processar_resposta.php?id=" . urlencode($negociacao_id) . "&action=" . urlencode($acao));
+header("Location: processar_resposta?id=" . urlencode($negociacao_id) . "&action=" . urlencode($acao));
 exit();
 ?>

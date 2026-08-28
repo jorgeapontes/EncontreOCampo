@@ -8,9 +8,9 @@ $conn = $database->getConnection();
 
 function redirecionar($negociacao_id, $tipo, $mensagem) {
     if ($tipo === 'sucesso') {
-        header("Location: minhas_propostas.php?sucesso=" . urlencode($mensagem));
+        header("Location: minhas_propostas?sucesso=" . urlencode($mensagem));
     } else {
-        header("Location: editar_proposta.php?id={$negociacao_id}&erro=" . urlencode($mensagem));
+        header("Location: editar_proposta?id={$negociacao_id}&erro=" . urlencode($mensagem));
     }
     exit();
 }

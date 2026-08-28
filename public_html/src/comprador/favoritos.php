@@ -99,13 +99,13 @@ try {
                         <a href="../anuncios.php" class="nav-link">Anúncios</a>
                     </li>
                     <li class="nav-item">
-                        <a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/dashboard.php' : 'dashboard.php'; ?>" class="nav-link">Painel</a>
+                        <a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/dashboard.php' : 'dashboard'; ?>" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">
-                        <a href="meus_chats.php" class="nav-link">Chats</a>
+                        <a href="meus_chats" class="nav-link">Chats</a>
                     </li>
                     <li class="nav-item">
-                        <a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/perfil.php' : 'perfil.php'; ?>" class="nav-link">Meu Perfil</a>
+                        <a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/perfil.php' : 'perfil'; ?>" class="nav-link">Meu Perfil</a>
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
@@ -260,10 +260,10 @@ try {
                             
                             <div class="card-actions">
                                 <div class="card-actions-row">
-                                    <a href="view_ad.php?anuncio_id=<?php echo $produto['id']; ?>" class="btn btn-primary">
+                                    <a href="view_ad?anuncio_id=<?php echo $produto['id']; ?>" class="btn btn-primary">
                                         <i class="fas fa-eye"></i> Ver Detalhes
                                     </a>
-                                    <a href="remover_favorito.php?favorito_id=<?php echo $produto['favorito_id']; ?>"
+                                    <a href="remover_favorito?favorito_id=<?php echo $produto['favorito_id']; ?>"
                                        class="btn btn-remover-favorito"
                                        onclick="return confirm('Tem certeza que deseja remover este item dos favoritos?');">
                                         <i class="fas fa-xmark"></i>

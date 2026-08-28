@@ -159,13 +159,13 @@ function temContrapropostaVendedor($proposta) {
 <script>
 function confirmarExclusao(negociacaoId) {
     if (confirm('Tem certeza que deseja excluir esta proposta?\n\nEsta ação não pode ser desfeita.')) {
-        window.location.href = 'excluir_proposta.php?id=' + negociacaoId;
+        window.location.href = 'excluir_proposta?id=' + negociacaoId;
     }
 }
 
 function responderContraproposta(negociacaoId, acao) {
     if (confirm('Tem certeza que deseja ' + acao + ' esta contraproposta?')) {
-        window.location.href = 'processar_resposta.php?id=' + negociacaoId + '&action=' + acao;
+        window.location.href = 'processar_resposta?id=' + negociacaoId + '&action=' + acao;
     }
 }
 </script>
@@ -201,10 +201,10 @@ function responderContraproposta(negociacaoId, acao) {
                         <a href="../../index.php" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="dashboard.php" class="nav-link">Painel</a>
+                        <a href="dashboard" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">
-                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
+                        <a href="perfil" class="nav-link">Meu Perfil</a>
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
@@ -347,7 +347,7 @@ function responderContraproposta(negociacaoId, acao) {
                             <?php if ($status_negociacao === 'negociacao'): ?>
                                 <?php if ($status_comprador === 'enviada'): ?>
                                     <!-- Comprador aguardando resposta do vendedor -->
-                                    <a href="editar_proposta.php?id=<?php echo $proposta['negociacao_id']; ?>" class="btn btn-edit">
+                                    <a href="editar_proposta?id=<?php echo $proposta['negociacao_id']; ?>" class="btn btn-edit">
                                         <i class="fas fa-edit"></i>
                                         Alterar Detalhes
                                     </a>
@@ -366,7 +366,7 @@ function responderContraproposta(negociacaoId, acao) {
                                             <i class="fas fa-times"></i>
                                             Recusar
                                         </button>
-                                        <a href="fazer_contraproposta.php?id=<?php echo $proposta['negociacao_id']; ?>" class="btn btn-info">
+                                        <a href="fazer_contraproposta?id=<?php echo $proposta['negociacao_id']; ?>" class="btn btn-info">
                                             <i class="fas fa-edit"></i>
                                             Fazer Contraproposta
                                         </a>

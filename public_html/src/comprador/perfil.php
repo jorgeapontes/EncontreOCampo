@@ -238,13 +238,13 @@ if (isset($_GET['success']) && $_GET['success'] == '1') {
                         <a href="../anuncios.php" class="nav-link">Anúncios</a>
                     </li>
                     <li class="nav-item">
-                        <a href="dashboard.php" class="nav-link">Painel</a>
+                        <a href="dashboard" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">
-                        <a href="meus_chats.php" class="nav-link">Chats</a>
+                        <a href="meus_chats" class="nav-link">Chats</a>
                     </li>
                     <li class="nav-item">
-                        <a href="perfil.php" class="nav-link active">Meu Perfil</a>
+                        <a href="perfil" class="nav-link active">Meu Perfil</a>
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">

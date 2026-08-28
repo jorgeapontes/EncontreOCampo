@@ -144,7 +144,7 @@ try {
     $_SESSION['usuario_nome'] = $nome;
 
     // Redirecionar com mensagem de sucesso
-    header("Location: perfil.php?sucesso=" . urlencode("Perfil atualizado com sucesso!"));
+    header("Location: perfil?sucesso=" . urlencode("Perfil atualizado com sucesso!"));
     exit();
 
 } catch (Exception $e) {
@@ -154,7 +154,7 @@ try {
     }
     
     // Redirecionar com mensagem de erro
-    header("Location: perfil.php?erro=" . urlencode($e->getMessage()));
+    header("Location: perfil?erro=" . urlencode($e->getMessage()));
     exit();
 }
 ?>

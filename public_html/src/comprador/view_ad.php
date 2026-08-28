@@ -11,7 +11,7 @@ if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['
 
 // 2. OBTENÇÃO DO ID DO ANÚNCIO
 if (!isset($_GET['anuncio_id']) || !is_numeric($_GET['anuncio_id'])) {
-    header("Location: dashboard.php?erro=" . urlencode("Anúncio não especificado ou inválido."));
+    header("Location: dashboard?erro=" . urlencode("Anúncio não especificado ou inválido."));
     exit();
 }
 
@@ -74,7 +74,7 @@ try {
     $anuncio = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$anuncio) {
-        header("Location: dashboard.php?erro=" . urlencode("Anúncio não encontrado ou inativo."));
+        header("Location: dashboard?erro=" . urlencode("Anúncio não encontrado ou inativo."));
         exit();
     }
 } catch (PDOException $e) {
@@ -212,12 +212,12 @@ try {
                 exit();
             }
         } else {
-            header("Location: dashboard.php?erro=" . urlencode("Perfil de comprador incompleto."));
+            header("Location: dashboard?erro=" . urlencode("Perfil de comprador incompleto."));
             exit();
         }
     }
 } catch (PDOException $e) {
-    header("Location: dashboard.php?erro=" . urlencode("Erro temporário no sistema."));
+    header("Location: dashboard?erro=" . urlencode("Erro temporário no sistema."));
     exit();
 }
 
@@ -370,8 +370,8 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                 <ul class="nav-menu">
                     <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
                     <li class="nav-item"><a href="../anuncios.php" class="nav-link">Anúncios</a></li>
-                    <li class="nav-item"><a href="dashboard.php" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="perfil.php" class="nav-link">Meu Perfil</a></li>
+                    <li class="nav-item"><a href="dashboard" class="nav-link">Painel</a></li>
+                    <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
                         <a href="../notificacoes.php" class="nav-link no-underline">
@@ -444,11 +444,11 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                     
                     <div class="produto-actions">
                         <?php if ($is_favorito && $favorito_id): ?>
-                            <a href="remover_favorito.php?favorito_id=<?php echo $favorito_id; ?>&redirect=view_ad.php?anuncio_id=<?php echo $anuncio_id; ?>" class="btn-action favoritado">
+                            <a href="remover_favorito?favorito_id=<?php echo $favorito_id; ?>&redirect=view_ad.php?anuncio_id=<?php echo $anuncio_id; ?>" class="btn-action favoritado">
                                 <i class="fas fa-heart"></i><span>Remover dos Favoritos</span>
                             </a>
                         <?php else: ?>
-                            <a href="adicionar_favorito.php?produto_id=<?php echo $anuncio_id; ?>&redirect=view_ad.php?anuncio_id=<?php echo $anuncio_id; ?>" class="btn-action">
+                            <a href="adicionar_favorito?produto_id=<?php echo $anuncio_id; ?>&redirect=view_ad.php?anuncio_id=<?php echo $anuncio_id; ?>" class="btn-action">
                                 <i class="far fa-heart"></i><span>Adicionar aos Favoritos</span>
                             </a>
                         <?php endif; ?>
@@ -687,7 +687,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
 
             <div class="proposta-section" id="proposta-section">
                 <div class="section-header"><h3><i class="fas fa-handshake"></i> Fazer Proposta</h3><p>Preencha os detalhes</p></div>
-                <form action="processar_proposta.php" method="POST" class="proposta-form">
+                <form action="processar_proposta" method="POST" class="proposta-form">
                     <input type="hidden" name="produto_id" value="<?php echo $anuncio_id; ?>">
                     <input type="hidden" name="comprador_id" value="<?php echo $comprador_id; ?>">
                     <input type="hidden" name="usuario_tipo" value="<?php echo $usuario_tipo; ?>">
@@ -724,7 +724,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                         $imagem_produto = $produto['imagem_url'] ? htmlspecialchars($produto['imagem_url']) : '../../img/placeholder.png';
                     ?>
                         <div class="anuncio-card <?php echo $desc_rel['ativo'] ? 'card-desconto' : ''; ?>">
-                            <a href="view_ad.php?anuncio_id=<?php echo $produto['id']; ?>" class="produto-link">
+                            <a href="view_ad?anuncio_id=<?php echo $produto['id']; ?>" class="produto-link">
                                 <div class="card-image">
                                     <?php if ($desc_rel['ativo']): ?><div class="badge-desconto">-<?php echo $desc_rel['porcentagem']; ?>%</div><?php endif; ?>
                                     <img src="<?php echo $imagem_produto; ?>" alt="<?php echo htmlspecialchars($produto['nome']); ?>">
@@ -762,7 +762,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                     <ul>
                         <li><a href="../../index.php">Página Inicial</a></li>
                         <li><a href="../anuncios.php">Ver Anúncios</a></li>
-                        <li><a href="favoritos.php">Meus Favoritos</a></li>
+                        <li><a href="favoritos">Meus Favoritos</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">

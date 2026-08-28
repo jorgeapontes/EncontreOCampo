@@ -14,7 +14,7 @@ function redirecionar($tipo, $mensagem, $anuncio_id = null) {
         if (!isset($_SESSION['usuario_tipo'])) {
             error_log("AVISO: Sessão perdida ao redirecionar para sucesso!");
         }
-        header("Location: minhas_propostas.php?sucesso=" . urlencode($mensagem));
+        header("Location: minhas_propostas?sucesso=" . urlencode($mensagem));
     } else {
         $url = $anuncio_id ? "proposta_nova.php?anuncio_id={$anuncio_id}&erro=" . urlencode($mensagem) 
                            : "../anuncios.php?erro=" . urlencode($mensagem);
@@ -177,7 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         error_log("usuario_id: " . (isset($_SESSION['usuario_id']) ? $_SESSION['usuario_id'] : 'NÃO DEFINIDO'));
         
         // Redireciona com sucesso
-        header("Location: minhas_propostas.php?sucesso=" . urlencode("Proposta enviada com sucesso! Aguarde a resposta do vendedor."));
+        header("Location: minhas_propostas?sucesso=" . urlencode("Proposta enviada com sucesso! Aguarde a resposta do vendedor."));
         exit();
         
     } catch (PDOException $e) {

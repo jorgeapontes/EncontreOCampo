@@ -11,7 +11,7 @@ if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['
 }
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: minhas_propostas.php?erro=" . urlencode("ID da negociação inválido."));
+    header("Location: minhas_propostas?erro=" . urlencode("ID da negociação inválido."));
     exit();
 }
 
@@ -56,13 +56,13 @@ try {
     $negociacao = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$negociacao) {
-        header("Location: minhas_propostas.php?erro=" . urlencode("Negociação não encontrada."));
+        header("Location: minhas_propostas?erro=" . urlencode("Negociação não encontrada."));
         exit();
     }
     
     // Verificar se pode fazer contraproposta
     if ($negociacao['status'] !== 'negociacao' || $negociacao['status_comprador'] !== 'pendente') {
-        header("Location: minhas_propostas.php?erro=" . urlencode("Esta negociação não permite contraproposta no momento."));
+        header("Location: minhas_propostas?erro=" . urlencode("Esta negociação não permite contraproposta no momento."));
         exit();
     }
     
@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
             }
             
-            header("Location: minhas_propostas.php?sucesso=" . urlencode("Contraproposta enviada com sucesso! Aguarde a resposta do vendedor."));
+            header("Location: minhas_propostas?sucesso=" . urlencode("Contraproposta enviada com sucesso! Aguarde a resposta do vendedor."));
             exit();
             
         } catch (PDOException $e) {
@@ -195,9 +195,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </a>
             </div>
             <ul class="nav-menu">
-                <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>
+                <li class="nav-item"><a href="dashboard" class="nav-link">Dashboard</a></li>
                 <li class="nav-item"><a href="../anuncios.php" class="nav-link">Comprar</a></li>
-                <li class="nav-item"><a href="minhas_propostas.php" class="nav-link active">Minhas Propostas</a></li>
+                <li class="nav-item"><a href="minhas_propostas" class="nav-link active">Minhas Propostas</a></li>
                 <li class="nav-item"><a href="../logout.php" class="nav-link logout">Sair</a></li>
             </ul>
         </div>
@@ -267,7 +267,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <i class="fas fa-reply"></i>
                         Enviar Contraproposta
                     </button>
-                    <a href="minhas_propostas.php" class="btn btn-cancelar">Cancelar</a>
+                    <a href="minhas_propostas" class="btn btn-cancelar">Cancelar</a>
                 </div>
             </form>
         </div>

@@ -10,7 +10,7 @@ if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'comprado
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: perfil.php?erro=Método inválido");
+    header("Location: perfil?erro=Método inválido");
     exit();
 }
 
@@ -18,7 +18,7 @@ $usuario_id = $_SESSION['usuario_id'];
 $comprador_id = $_POST['comprador_id'] ?? null;
 
 if (!$comprador_id) {
-    header("Location: perfil.php?erro=ID do comprador não especificado");
+    header("Location: perfil?erro=ID do comprador não especificado");
     exit();
 }
 
@@ -94,6 +94,6 @@ try {
         $conn->rollBack();
     }
     error_log("Erro ao apagar conta: " . $e->getMessage());
-    header("Location: perfil.php?erro=Erro ao apagar conta. Tente novamente.");
+    header("Location: perfil?erro=Erro ao apagar conta. Tente novamente.");
     exit();
 }

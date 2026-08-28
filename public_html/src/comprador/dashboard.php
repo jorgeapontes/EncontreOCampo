@@ -221,10 +221,10 @@ try {
                         <a href="" class="nav-link active">Painel</a>
                     </li>
                     <li class="nav-item">
-                        <a href="meus_chats.php" class="nav-link">Chats</a>
+                        <a href="meus_chats" class="nav-link">Chats</a>
                     </li>
                     <li class="nav-item">
-                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
+                        <a href="perfil" class="nav-link">Meu Perfil</a>
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
@@ -279,7 +279,7 @@ try {
         <section class="info-cards">
             <?php if (!$is_pendente): ?>
                 <!-- Cards apenas para usuários ativos -->
-                <a href="meus_chats.php">
+                <a href="meus_chats">
                     <div class="card">
                         <i class="fas fa-comments"></i>
                         <h3>Meus Chats</h3>
@@ -287,7 +287,7 @@ try {
                     </div>
                 </a>
 
-                <a href="meus_chats.php?filtro=nao-lidos">
+                <a href="meus_chats?filtro=nao-lidos">
                     <div class="card">
                         <i class="fas fa-envelope"></i>
                         <h3>Mensagens Novas</h3>
@@ -308,7 +308,7 @@ try {
                     </div>
                 </a>
 
-                <a href="negociacoes.php">
+                <a href="negociacoes">
                     <div class="card">
                         <i class="fa-solid fa-bag-shopping"></i>
                         <h3>Compras realizadas</h3>
@@ -318,7 +318,7 @@ try {
             <?php endif; ?>
             
             <!-- Card de favoritos - disponível para todos -->
-            <a href="favoritos.php">
+            <a href="favoritos">
                 <div class="card">
                     <i class="fas fa-heart"></i>
                     <h3>Favoritos</h3>
@@ -341,13 +341,13 @@ try {
             
             <?php if (!$is_pendente): ?>
                 <!-- Apenas para usuários ativos -->
-                <a href="meus_chats.php">
+                <a href="meus_chats">
                     <i class="fas fa-comments"></i>
                     <span>Meus chats</span>
                 </a>
             <?php endif; ?>
             
-            <a href="perfil.php">
+            <a href="perfil">
                 <i class="fas fa-user-circle"></i>
                 <span>Dados</span>
             </a>

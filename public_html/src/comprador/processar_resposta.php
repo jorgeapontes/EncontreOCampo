@@ -7,7 +7,7 @@ $database = new Database();
 $conn = $database->getConnection();
 
 function redirecionar($tipo, $mensagem) {
-    header("Location: minhas_propostas.php?{$tipo}=" . urlencode($mensagem));
+    header("Location: minhas_propostas?{$tipo}=" . urlencode($mensagem));
     exit();
 }
 

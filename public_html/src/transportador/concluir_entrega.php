@@ -37,7 +37,7 @@ $stmt->execute();
 $entrega = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$entrega) {
-    header("Location: entregas.php?erro=" . urlencode("Entrega não encontrada ou já concluída."));
+    header("Location: entregas?erro=" . urlencode("Entrega não encontrada ou já concluída."));
     exit();
 }
 
@@ -174,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
 
-                header("Location: historico.php?sucesso=" . urlencode("Entrega concluída com sucesso!"));
+                header("Location: historico?sucesso=" . urlencode("Entrega concluída com sucesso!"));
                 exit();
             } else {
                 $erro = "Erro ao salvar a foto no servidor.";
@@ -229,7 +229,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </button>
             
             <p class="form-footer">
-                <a href="entregas.php" class="link-cancelar">Cancelar</a>
+                <a href="entregas" class="link-cancelar">Cancelar</a>
             </p>
         </form>
     </div>

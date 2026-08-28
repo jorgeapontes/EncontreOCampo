@@ -71,9 +71,9 @@ try {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="entregas.php" class="nav-link">Entregas</a></li>
-                    <li class="nav-item"><a href="dashboard.php" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="perfil.php" class="nav-link">Meu Perfil</a></li>
+                    <li class="nav-item"><a href="entregas" class="nav-link">Entregas</a></li>
+                    <li class="nav-item"><a href="dashboard" class="nav-link">Painel</a></li>
+                    <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
                         <a href="../notificacoes.php" class="nav-link no-underline">
@@ -133,7 +133,7 @@ try {
                                 <div class="empty-state-icon"><i class="fas fa-history"></i></div>
                                 <h3>Nenhuma entrega finalizada</h3>
                                 <p>Quando você finalizar entregas, elas aparecerão aqui.</p>
-                                <a href="disponiveis.php" class="empty-state-button"><i class="fas fa-search"></i> Buscar Entregas Disponíveis</a>
+                                <a href="disponiveis" class="empty-state-button"><i class="fas fa-search"></i> Buscar Entregas Disponíveis</a>
                               </div>';
                     } else {
                         // Tabela para desktop
@@ -278,7 +278,7 @@ try {
                             <div class="empty-state-icon"><i class="fas fa-history"></i></div>
                             <h3>Nenhuma entrega finalizada</h3>
                             <p>Quando você finalizar entregas, elas aparecerão aqui.</p>
-                            <a href="disponiveis.php" class="empty-state-button"><i class="fas fa-search"></i> Buscar Entregas Disponíveis</a>
+                            <a href="disponiveis" class="empty-state-button"><i class="fas fa-search"></i> Buscar Entregas Disponíveis</a>
                           </div>';
                 }
                 ?>

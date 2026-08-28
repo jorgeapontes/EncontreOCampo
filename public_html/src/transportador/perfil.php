@@ -295,7 +295,7 @@ function getImagePath($path) {
                 <ul class="nav-menu">
                     <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
                     <li class="nav-item"><a href="../anuncios.php" class="nav-link">Anúncios</a></li>
-                    <li class="nav-item"><a href="dashboard.php" class="nav-link">Painel</a></li>
+                    <li class="nav-item"><a href="dashboard" class="nav-link">Painel</a></li>
                     <li class="nav-item"><a href="" class="nav-link active">Meu Perfil</a></li>
                     <li class="nav-item">
                         <a href="../logout.php" class="nav-link exit-button no-underline">Sair</a>
@@ -339,7 +339,7 @@ function getImagePath($path) {
                 </center>
             </div>
 
-    <form method="POST" action="perfil.php" class="perfil-form" enctype="multipart/form-data">
+    <form method="POST" action="perfil" class="perfil-form" enctype="multipart/form-data">
                 <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" class="file-input-hidden">
                 <!-- Campo hidden para guardar o número original -->
                 <input type="hidden" id="numero_original" value="<?php echo htmlspecialchars($transportador['numero'] ?? ''); ?>">
@@ -528,7 +528,7 @@ function getImagePath($path) {
             formData.append('buscar_cep', 'true');
             formData.append('cep', cep);
             
-            fetch('perfil.php', {
+            fetch('perfil', {
                 method: 'POST',
                 body: formData
             })

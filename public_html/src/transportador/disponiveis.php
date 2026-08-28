@@ -131,7 +131,7 @@ if (isset($_SESSION['usuario_id'])) {
     <div id="popup-sucesso" class="popup-aviso-overlay">
         <div class="popup-aviso-box sucesso">
             <div class="popup-aviso-title sucesso">Proposta de frete enviada!</div>
-            <div class="popup-aviso-message">Para ver, editar ou cancelar sua proposta, acesse <a href='entregas.php' class="popup-aviso-link">Minhas Entregas</a>.</div>
+            <div class="popup-aviso-message">Para ver, editar ou cancelar sua proposta, acesse <a href='entregas' class="popup-aviso-link">Minhas Entregas</a>.</div>
             <div class="popup-aviso-timer sucesso">Este aviso será fechado automaticamente em <span id='popup-timer'>10</span>s.</div>
             <div class="popup-aviso-progress-track sucesso">
                 <div id="popup-bar" class="popup-aviso-progress-bar sucesso"></div>
@@ -171,9 +171,9 @@ if (isset($_SESSION['usuario_id'])) {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="entregas.php" class="nav-link">Entregas</a></li>
-                    <li class="nav-item"><a href="dashboard.php" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="perfil.php" class="nav-link">Meu Perfil</a></li>
+                    <li class="nav-item"><a href="entregas" class="nav-link">Entregas</a></li>
+                    <li class="nav-item"><a href="dashboard" class="nav-link">Painel</a></li>
+                    <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
                         <a href="../notificacoes.php" class="nav-link no-underline">
@@ -227,10 +227,10 @@ if (isset($_SESSION['usuario_id'])) {
                             <span class="caret">▾</span>
                         </button>
                         <div class="dropdown-content" role="dialog" aria-label="Estados de retirada">
-                            <form method="GET" action="disponiveis.php" class="filtro-form">
+                            <form method="GET" action="disponiveis" class="filtro-form">
                                 <?php if (!empty($filtro_estado_destino)): ?><input type="hidden" name="estado_destino" value="<?= htmlspecialchars($filtro_estado_destino) ?>"><?php endif; ?>
                                 <div>
-                                    <div class="filtro-header"><span>Escolha o estado de retirada</span><?php if (!empty($filtro_estado_origem)): ?><a class="remove-filtro" href="disponiveis.php">Limpar</a><?php endif; ?></div>
+                                    <div class="filtro-header"><span>Escolha o estado de retirada</span><?php if (!empty($filtro_estado_origem)): ?><a class="remove-filtro" href="disponiveis">Limpar</a><?php endif; ?></div>
                                     <div class="estados-grid">
                                         <?php foreach ($estados_disponiveis as $est): ?>
                                             <label class="estado-option">
@@ -253,10 +253,10 @@ if (isset($_SESSION['usuario_id'])) {
                             <span class="caret">▾</span>
                         </button>
                         <div class="dropdown-content" role="dialog" aria-label="Estados de entrega">
-                            <form method="GET" action="disponiveis.php" class="filtro-form">
+                            <form method="GET" action="disponiveis" class="filtro-form">
                                 <?php if (!empty($filtro_estado_origem)): ?><input type="hidden" name="estado_origem" value="<?= htmlspecialchars($filtro_estado_origem) ?>"><?php endif; ?>
                                 <div>
-                                    <div class="filtro-header"><span>Escolha o estado de entrega</span><?php if (!empty($filtro_estado_destino)): ?><a class="remove-filtro" href="disponiveis.php">Limpar</a><?php endif; ?></div>
+                                    <div class="filtro-header"><span>Escolha o estado de entrega</span><?php if (!empty($filtro_estado_destino)): ?><a class="remove-filtro" href="disponiveis">Limpar</a><?php endif; ?></div>
                                     <div class="estados-grid">
                                         <?php foreach ($estados_disponiveis as $est): ?>
                                             <label class="estado-option">
@@ -402,7 +402,7 @@ if (isset($_SESSION['usuario_id'])) {
                 e.preventDefault();
                 const propostaId = btn.getAttribute('data-proposta-id');
                 try {
-                    const res = await fetch('toggle_favorito.php', {
+                    const res = await fetch('toggle_favorito', {
                         method: 'POST',
                         headers: {'Content-Type':'application/json'},
                         body: JSON.stringify({proposta_id: propostaId})

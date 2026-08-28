@@ -179,9 +179,9 @@ if (!$is_pendente && $transportador_id) {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="entregas.php" class="nav-link">Entregas</a></li>
+                    <li class="nav-item"><a href="entregas" class="nav-link">Entregas</a></li>
                     <li class="nav-item"><a href="" class="nav-link active">Painel</a></li>
-                    <li class="nav-item"><a href="perfil.php" class="nav-link">Meu Perfil</a></li>
+                    <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
                         <a href="../notificacoes.php" class="nav-link no-underline">
@@ -229,35 +229,35 @@ if (!$is_pendente && $transportador_id) {
         
         <section class="info-cards">
             <?php if (!$is_pendente): ?>
-                <a href="disponiveis.php">
+                <a href="disponiveis">
                     <div class="card">
                         <i class="fas fa-truck-moving"></i>
                         <h3>Entregas disponíveis</h3>
                         <p>Ver</p>
                     </div>
                 </a>
-                <a href="meus_chats.php">
+                <a href="meus_chats">
                     <div class="card">
                         <i class="fas fa-comments"></i>
                         <h3>Chats</h3>
                         <p><?php echo $total_mensagens_nao_lidas; ?> não lidas</p>
                     </div>
                 </a>
-                <a href="entregas.php">
+                <a href="entregas">
                     <div class="card">
                         <i class="fas fa-clock"></i>
                         <h3>Minhas entregas</h3>
                         <p><?php echo $total_entregas_pendentes; ?></p>
                     </div>
                 </a>
-                <a href="historico.php">
+                <a href="historico">
                     <div class="card">
                         <i class="fas fa-book"></i>
                         <h3>Histórico</h3>
                         <p>Ver</p>
                     </div>
                 </a>
-                <a href="favoritos.php">
+                <a href="favoritos">
                     <div class="card">
                         <i class="fas fa-heart"></i>
                         <h3>Favoritas</h3>
@@ -271,7 +271,7 @@ if (!$is_pendente && $transportador_id) {
             <section class="section-entregas">
                 <div id="header">
                     <h2>Minhas Entregas Recentes</h2>
-                    <a href="entregas.php" class="cta-button"><i class="fas fa-list"></i> Ver Todas</a>
+                    <a href="entregas" class="cta-button"><i class="fas fa-list"></i> Ver Todas</a>
                 </div>
                 
                 <div class="tabela-entregas">
@@ -330,9 +330,9 @@ if (!$is_pendente && $transportador_id) {
                                     </td>
                                     <td>
                                         <div class="actions-inline">
-                                            <a href="entrega_detalhes.php?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn neutral">Ver Detalhes</a>
+                                            <a href="entrega_detalhes?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn neutral">Ver Detalhes</a>
                                             <?php if ($entrega['status'] == 'pendente' || $entrega['status'] == 'em_transporte'): ?>
-                                                <a href="concluir_entrega.php?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn primary">Concluir Entrega</a>
+                                                <a href="concluir_entrega?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn primary">Concluir Entrega</a>
                                             <?php endif; ?>
                                         </div>
                                     </td>
@@ -405,9 +405,9 @@ if (!$is_pendente && $transportador_id) {
                                 </div>
                                 
                                 <div class="card-entrega-actions">
-                                    <a href="entrega_detalhes.php?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn card neutral">Ver Detalhes</a>
+                                    <a href="entrega_detalhes?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn card neutral">Ver Detalhes</a>
                                     <?php if ($entrega['status'] == 'pendente' || $entrega['status'] == 'em_transporte'): ?>
-                                        <a href="concluir_entrega.php?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn card primary">Concluir Entrega</a>
+                                        <a href="concluir_entrega?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn card primary">Concluir Entrega</a>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -418,7 +418,7 @@ if (!$is_pendente && $transportador_id) {
                             <div class="empty-state-icon"><i class="fas fa-truck"></i></div>
                             <h3>Você ainda não tem entregas</h3>
                             <p>Quando aceitar uma entrega, ela aparecerá aqui.</p>
-                            <a href="disponiveis.php" class="empty-state-button"><i class="fas fa-search"></i> Buscar Entregas Disponíveis</a>
+                            <a href="disponiveis" class="empty-state-button"><i class="fas fa-search"></i> Buscar Entregas Disponíveis</a>
                         </div>
                     <?php endif; ?>
                 </div>

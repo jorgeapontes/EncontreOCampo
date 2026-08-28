@@ -78,9 +78,9 @@ if ($transportador_id) {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/dashboard.php' : 'dashboard.php'; ?>" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="favoritos.php" class="nav-link active">Favoritos</a></li>
-                    <li class="nav-item"><a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/perfil.php' : 'perfil.php'; ?>" class="nav-link">Meu Perfil</a></li>
+                    <li class="nav-item"><a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/dashboard.php' : 'dashboard'; ?>" class="nav-link">Painel</a></li>
+                    <li class="nav-item"><a href="favoritos" class="nav-link active">Favoritos</a></li>
+                    <li class="nav-item"><a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/perfil.php' : 'perfil'; ?>" class="nav-link">Meu Perfil</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
                         <a href="../notificacoes.php" class="nav-link no-underline">
@@ -167,7 +167,7 @@ if ($transportador_id) {
             btn.addEventListener('click', async (e)=>{
                 const pid = btn.getAttribute('data-proposta-id');
                 try{
-                    const res = await fetch('toggle_favorito.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({proposta_id: pid}) });
+                    const res = await fetch('toggle_favorito', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({proposta_id: pid}) });
                     const data = await res.json();
                     if(data.success){
                         // remover card da UI

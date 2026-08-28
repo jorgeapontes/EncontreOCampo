@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt_audit->bindParam(':detalhes', $detalhes_final);
                     $stmt_audit->execute();
                     
-                    header("Location: meus_chats.php?aba=" . $aba . "&success=1&msg=" . urlencode($mensagem_sucesso));
+                    header("Location: meus_chats?aba=" . $aba . "&success=1&msg=" . urlencode($mensagem_sucesso));
                     exit();
                 }
             } catch (PDOException $e) {
@@ -201,9 +201,9 @@ try {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="dashboard.php" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="meus_chats.php" class="nav-link active">Chats</a></li>
-                    <li class="nav-item"><a href="perfil.php" class="nav-link">Meu Perfil</a></li>
+                    <li class="nav-item"><a href="dashboard" class="nav-link">Painel</a></li>
+                    <li class="nav-item"><a href="meus_chats" class="nav-link active">Chats</a></li>
+                    <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
                         <a href="../notificacoes.php" class="nav-link">
@@ -260,10 +260,10 @@ try {
         <?php endif; ?>
 
         <div class="abas-container">
-            <button class="aba <?php echo !$mostrar_arquivados ? 'active' : ''; ?>" onclick="window.location.href='meus_chats.php?aba=ativos'">
+            <button class="aba <?php echo !$mostrar_arquivados ? 'active' : ''; ?>" onclick="window.location.href='meus_chats?aba=ativos'">
                 <i class="fas fa-comments"></i> Conversas Ativas
             </button>
-            <button class="aba <?php echo $mostrar_arquivados ? 'active' : ''; ?>" onclick="window.location.href='meus_chats.php?aba=arquivados'">
+            <button class="aba <?php echo $mostrar_arquivados ? 'active' : ''; ?>" onclick="window.location.href='meus_chats?aba=arquivados'">
                 <i class="fas fa-archive"></i> Arquivadas
                 <?php if ($total_arquivadas > 0): ?><span class="badge-aba"><?php echo $total_arquivadas; ?></span><?php endif; ?>
             </button>
@@ -413,9 +413,9 @@ try {
                             <?php endif; ?>
                         </p>
                         <?php if (!$mostrar_arquivados && $filtro === 'todas'): ?>
-                            <a href="disponiveis.php" class="btn-anuncios"><i class="fa-solid fa-truck"></i> Ver Entregas</a>
+                            <a href="disponiveis" class="btn-anuncios"><i class="fa-solid fa-truck"></i> Ver Entregas</a>
                         <?php elseif (!$mostrar_arquivados && $filtro === 'nao-lidos'): ?>
-                            <a href="meus_chats.php?aba=ativos" class="btn-anuncios">Ver Todas as Conversas</a>
+                            <a href="meus_chats?aba=ativos" class="btn-anuncios">Ver Todas as Conversas</a>
                         <?php endif; ?>
                     </div>
                 <?php endif; ?>
@@ -603,7 +603,7 @@ function verificarAtualizacoes() {
     
     estaVerificando = true;
     
-    fetch(`atualizar_chats_ajax.php?aba=<?php echo $aba; ?>&ultima_verificacao=${ultimaVerificacao}`, {
+    fetch(`atualizar_chats_ajax?aba=<?php echo $aba; ?>&ultima_verificacao=${ultimaVerificacao}`, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
         }

@@ -71,9 +71,9 @@ try {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="entregas.php" class="nav-link active">Entregas</a></li>
-                    <li class="nav-item"><a href="dashboard.php" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="perfil.php" class="nav-link">Meu Perfil</a></li>
+                    <li class="nav-item"><a href="entregas" class="nav-link active">Entregas</a></li>
+                    <li class="nav-item"><a href="dashboard" class="nav-link">Painel</a></li>
+                    <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
                         <a href="../notificacoes.php" class="nav-link no-underline">
@@ -123,7 +123,7 @@ try {
             <div id="header">
                 <h2>Minhas Entregas</h2>
                 <?php if (!$is_pendente && $transportador_id): ?>
-                    <a href="disponiveis.php" class="cta-button"><i class="fas fa-search"></i> Buscar Entregas</a>
+                    <a href="disponiveis" class="cta-button"><i class="fas fa-search"></i> Buscar Entregas</a>
                 <?php endif; ?>
             </div>
             
@@ -218,9 +218,9 @@ try {
                                 </td>
                                 <td>
                                     <div class="actions-inline">
-                                        <a href="entrega_detalhes.php?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn neutral">Ver Detalhes</a>
+                                        <a href="entrega_detalhes?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn neutral">Ver Detalhes</a>
                                         <?php if ($entrega['status'] == 'pendente' || $entrega['status'] == 'em_transporte'): ?>
-                                            <a href="concluir_entrega.php?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn primary">Concluir Entrega</a>
+                                            <a href="concluir_entrega?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn primary">Concluir Entrega</a>
                                         <?php endif; ?>
                                     </div>
                                 </td>
@@ -293,9 +293,9 @@ try {
                                 </div>
                             </div>
                             <div class="card-entrega-actions">
-                                <a href="entrega_detalhes.php?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn card neutral">Ver Detalhes</a>
+                                <a href="entrega_detalhes?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn card neutral">Ver Detalhes</a>
                                 <?php if ($entrega['status'] == 'pendente' || $entrega['status'] == 'em_transporte'): ?>
-                                    <a href="concluir_entrega.php?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn card primary">Concluir Entrega</a>
+                                    <a href="concluir_entrega?id=<?php echo $entrega['id']; ?>" class="entrega-link-btn card primary">Concluir Entrega</a>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -307,7 +307,7 @@ try {
                         <h3>Você ainda não tem entregas</h3>
                         <p>Quando aceitar uma entrega, ela aparecerá aqui.</p>
                         <?php if (!$is_pendente && $transportador_id): ?>
-                            <a href="disponiveis.php" class="empty-state-button"><i class="fas fa-search"></i> Buscar Entregas Disponíveis</a>
+                            <a href="disponiveis" class="empty-state-button"><i class="fas fa-search"></i> Buscar Entregas Disponíveis</a>
                         <?php endif; ?>
                     </div>
                 <?php endif; ?>

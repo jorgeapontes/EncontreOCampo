@@ -12,7 +12,7 @@ if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'transpor
 
 // Verificar se recebeu os dados do formulário
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: dashboard.php?erro=" . urlencode("Requisição inválida."));
+    header("Location: dashboard?erro=" . urlencode("Requisição inválida."));
     exit();
 }
 
@@ -20,7 +20,7 @@ $proposta_id = filter_input(INPUT_POST, 'proposta_id', FILTER_VALIDATE_INT);
 $valor_frete = filter_input(INPUT_POST, 'valor_frete', FILTER_VALIDATE_FLOAT);
 
 if (!$proposta_id || $valor_frete === false || $valor_frete < 0) {
-    header("Location: dashboard.php?erro=" . urlencode("Dados inválidos."));
+    header("Location: dashboard?erro=" . urlencode("Dados inválidos."));
     exit();
 }
 
@@ -39,7 +39,7 @@ try {
     $transportador = $stmt_transportador->fetch(PDO::FETCH_ASSOC);
     
     if (!$transportador) {
-        header("Location: dashboard.php?erro=" . urlencode("Transportador não encontrado."));
+        header("Location: dashboard?erro=" . urlencode("Transportador não encontrado."));
         exit();
     }
     
@@ -67,7 +67,7 @@ try {
     $proposta = $stmt_verifica->fetch(PDO::FETCH_ASSOC);
     
     if (!$proposta) {
-        header("Location: dashboard.php?erro=" . urlencode("Proposta não encontrada ou não disponível."));
+        header("Location: dashboard?erro=" . urlencode("Proposta não encontrada ou não disponível."));
         exit();
     }
     
@@ -81,7 +81,7 @@ try {
     $stmt_check->execute();
     
     if ($stmt_check->rowCount() > 0) {
-        header("Location: dashboard.php?erro=" . urlencode("Você já enviou uma proposta para este pedido."));
+        header("Location: dashboard?erro=" . urlencode("Você já enviou uma proposta para este pedido."));
         exit();
     }
     
@@ -132,11 +132,11 @@ try {
         );
     }
     
-    header("Location: dashboard.php?sucesso=1");
+    header("Location: dashboard?sucesso=1");
     exit();
     
 } catch (PDOException $e) {
     error_log("Erro ao enviar proposta de frete: " . $e->getMessage());
-    header("Location: dashboard.php?erro=" . urlencode("Erro ao enviar proposta. Tente novamente."));
+    header("Location: dashboard?erro=" . urlencode("Erro ao enviar proposta. Tente novamente."));
     exit();
 }

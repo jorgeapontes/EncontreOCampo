@@ -80,9 +80,9 @@ if ($id > 0 && $transportador_id) {
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="entregas.php" class="nav-link">Entregas</a></li>
-                    <li class="nav-item"><a href="dashboard.php" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="perfil.php" class="nav-link">Meu Perfil</a></li>
+                    <li class="nav-item"><a href="entregas" class="nav-link">Entregas</a></li>
+                    <li class="nav-item"><a href="dashboard" class="nav-link">Painel</a></li>
+                    <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
                     <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
                 </ul>
                 <div class="hamburger">

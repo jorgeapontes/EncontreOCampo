@@ -169,8 +169,8 @@ $estados_brasil = [
                 <ul class="nav-menu">
                     <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
                     <li class="nav-item"><a href="../anuncios.php" class="nav-link">Anúncios</a></li>
-                    <li class="nav-item"><a href="dashboard.php" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="perfil.php" class="nav-link">Meu Perfil</a></li>
+                    <li class="nav-item"><a href="dashboard" class="nav-link">Painel</a></li>
+                    <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
                         <a href="../notificacoes.php" class="nav-link no-underline">
@@ -265,7 +265,7 @@ $estados_brasil = [
                 
                 <div class="acoes-inferiores">
                     <div class="grupo-esquerda">
-                        <a href="dashboard.php" class="botao-acao">
+                        <a href="dashboard" class="botao-acao">
                             <i class="fas fa-arrow-left"></i>
                             Voltar ao Painel
                         </a>
@@ -390,7 +390,7 @@ $estados_brasil = [
             // Botão de fechar também funciona com tecla ESC
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
-                    window.location.href = 'dashboard.php';
+                    window.location.href = 'dashboard';
                 }
             });
 

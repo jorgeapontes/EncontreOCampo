@@ -11,7 +11,7 @@ if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor
 
 // 2. OBTENÇÃO DO ID DA PROPOSTA
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: propostas.php?erro=" . urlencode("Proposta não especificada ou inválida."));
+    header("Location: propostas?erro=" . urlencode("Proposta não especificada ou inválida."));
     exit();
 }
 
@@ -68,7 +68,7 @@ try {
     $proposta = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$proposta) {
-        header("Location: propostas.php?erro=" . urlencode("Proposta não encontrada ou acesso negado."));
+        header("Location: propostas?erro=" . urlencode("Proposta não encontrada ou acesso negado."));
         exit();
     }
 
@@ -313,19 +313,19 @@ if ($ultima_proposta_vendedor) {
                         <a href="../../index.php" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="dashboard.php" class="nav-link">Painel</a>
+                        <a href="dashboard" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">
-                        <a href="anuncios.php" class="nav-link">Meus Anúncios</a>
+                        <a href="anuncios" class="nav-link">Meus Anúncios</a>
                     </li>
                     <li class="nav-item">
-                        <a href="propostas.php" class="nav-link active">Propostas</a>
+                        <a href="propostas" class="nav-link active">Propostas</a>
                     </li>
                     <li class="nav-item">
                         <a href="precos.php" class="nav-link">Médias de Preços</a>
                     </li>
                     <li class="nav-item">
-                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
+                        <a href="perfil" class="nav-link">Meu Perfil</a>
                     </li>
                     <li class="nav-item">
                         <a href="../logout.php" class="nav-link login-button no-underline">Sair</a>
@@ -419,14 +419,14 @@ if ($ultima_proposta_vendedor) {
                     <p>O Comprador enviou uma <strong>nova proposta</strong>. Escolha uma opção:</p>
                     
                     <div class="action-buttons">
-                        <a href="processar_decisao.php?id=<?php echo $proposta_comprador_id; ?>&action=aceitar" 
+                        <a href="processar_decisao?id=<?php echo $proposta_comprador_id; ?>&action=aceitar" 
                         class="btn btn-success" 
                         onclick="return confirm('ATENÇÃO: Você está prestes a ACEITAR a proposta e concluir a negociação. Confirma?')">
                             <i class="fas fa-check"></i> 
                             Aceitar Proposta
                         </a>
                         
-                        <a href="processar_decisao.php?id=<?php echo $proposta_comprador_id; ?>&action=recusar" 
+                        <a href="processar_decisao?id=<?php echo $proposta_comprador_id; ?>&action=recusar" 
                         class="btn btn-danger"
                         onclick="return confirm('Você está prestes a RECUSAR a proposta. Isso encerrará a negociação. Confirma?')">
                             <i class="fas fa-times"></i> 
@@ -441,7 +441,7 @@ if ($ultima_proposta_vendedor) {
                     
                     <div id="contraproposta-form-initial" class="contraproposta-form" style="display:none;">
                         <h3>Sua Contraproposta (Condições de Venda)</h3>
-                        <form action="processar_decisao.php?id=<?php echo $proposta_comprador_id; ?>&action=contraproposta" method="POST">
+                        <form action="processar_decisao?id=<?php echo $proposta_comprador_id; ?>&action=contraproposta" method="POST">
                         <input type="hidden" name="proposta_id" value="<?php echo $proposta_comprador_id; ?>">
                             
                             <div class="info-section">
@@ -516,12 +516,12 @@ if ($ultima_proposta_vendedor) {
                     <?php endif; ?>
                     
                     <div class="action-buttons">
-                        <a href="editar_contraproposta.php?id=<?php echo $proposta_comprador_id; ?>" class="btn btn-edit">
+                        <a href="editar_contraproposta?id=<?php echo $proposta_comprador_id; ?>" class="btn btn-edit">
                             <i class="fas fa-edit"></i> 
                             Editar Contraproposta
                         </a>
                         
-                        <a href="desfazer_contraproposta.php?id=<?php echo $proposta_comprador_id; ?>" 
+                        <a href="desfazer_contraproposta?id=<?php echo $proposta_comprador_id; ?>" 
                         class="btn btn-warning"
                         onclick="return confirm('ATENÇÃO: Você está prestes a DESFAZER sua contraproposta.\n\n• A contraproposta será removida\n• A proposta voltará ao estado inicial\n• O comprador verá que você ainda não respondeu\n\nConfirma esta ação?')">
                         <i class="fas fa-undo"></i> 
@@ -537,7 +537,7 @@ if ($ultima_proposta_vendedor) {
                     </p>
                 <?php endif; ?>
                 
-                <a href="propostas.php" class="btn btn-back" style="margin-top: 20px;">
+                <a href="propostas" class="btn btn-back" style="margin-top: 20px;">
                     <i class="fas fa-arrow-left"></i> 
                     Voltar para a Lista
                 </a>

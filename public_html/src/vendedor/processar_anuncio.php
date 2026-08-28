@@ -4,7 +4,7 @@ require_once 'auth.php';
 
 // Somente processa requisições POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: anuncios.php");
+    header("Location: anuncios");
     exit();
 }
 
@@ -15,7 +15,7 @@ $vendedor_id_fk = $vendedor['id']; // ID do vendedor logado na tabela 'vendedore
 // 1. Validação básica
 if (empty($anuncio_id) || empty($acao)) {
     $_SESSION['mensagem_anuncio_erro'] = "Dados inválidos para processar a ação.";
-    header("Location: anuncios.php");
+    header("Location: anuncios");
     exit();
 }
 
@@ -91,6 +91,6 @@ try {
 }
 
 // 5. Redireciona de volta para a tela de anúncios
-header("Location: anuncios.php");
+header("Location: anuncios");
 exit();
 ?>

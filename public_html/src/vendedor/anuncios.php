@@ -108,9 +108,9 @@ try {
             </div>
 
             <ul class="nav-menu">
-                <li class="nav-item"><a href="dashboard.php" class="nav-link">Dashboard</a></li>
-                <li class="nav-item"><a href="anuncios.php" class="nav-link active">Meus Anúncios</a></li>
-                <li class="nav-item"><a href="perfil.php" class="nav-link">Perfil</a></li>
+                <li class="nav-item"><a href="dashboard" class="nav-link">Dashboard</a></li>
+                <li class="nav-item"><a href="anuncios" class="nav-link active">Meus Anúncios</a></li>
+                <li class="nav-item"><a href="perfil" class="nav-link">Perfil</a></li>
                 <li class="nav-item"><a href="../logout.php" class="nav-link exit-button no-underline">Sair</a></li>
             </ul>
 
@@ -137,14 +137,14 @@ try {
                     <div>
                         Você possui mais anúncios do que seu plano permite. 
                         Os anúncios mais recentes foram <strong>bloqueados</strong> automaticamente.
-                        <a href="escolher_plano.php">Faça um upgrade</a> para desbloquear.
+                        <a href="escolher_plano">Faça um upgrade</a> para desbloquear.
                     </div>
                 </div>
             <?php endif; ?>
         </div>
 
         <?php if (count($anuncios) < $limite_permitido): ?>
-            <a href="anuncio_novo.php" class="cta-button">
+            <a href="anuncio_novo" class="cta-button">
                 <i class="fas fa-plus"></i> Novo Anúncio
             </a>
         <?php else: ?>
@@ -245,7 +245,7 @@ try {
                                         <button class="action-btn delete" onclick="confirmarExclusao(<?php echo $anuncio['id']; ?>)" title="Excluir para liberar espaço"><i class="fas fa-trash"></i></button>
                                         <button class="action-btn" disabled style="opacity:0.3; cursor:not-allowed;"><i class="fas fa-power-off"></i></button>
                                     <?php else: ?>
-                                        <button class="action-btn edit" onclick="window.location.href='anuncio_editar.php?id=<?php echo $anuncio['id']; ?>'"><i class="fas fa-edit"></i></button>
+                                        <button class="action-btn edit" onclick="window.location.href='anuncio_editar?id=<?php echo $anuncio['id']; ?>'"><i class="fas fa-edit"></i></button>
                                         <button class="action-btn delete" onclick="confirmarExclusao(<?php echo $anuncio['id']; ?>)"><i class="fas fa-trash"></i></button>
                                         <button class="action-btn <?php echo $anuncio['status']=='ativo'?'inactive':'active-icon'; ?>" 
                                                 onclick="toggleStatus(<?php echo $anuncio['id']; ?>, '<?php echo $anuncio['status']; ?>')">
@@ -275,7 +275,7 @@ try {
     function toggleStatus(id, currentStatus) {
         const novo = currentStatus === 'ativo' ? 'inativo' : 'ativo';
         if (confirm('Deseja alterar o status deste anúncio?')) {
-            fetch('anuncios_alterar_status.php', {
+            fetch('anuncios_alterar_status', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `id=${id}&status=${novo}`
@@ -288,7 +288,7 @@ try {
 
     function confirmarExclusao(id) {
         if (confirm('Tem certeza? Isso liberará espaço no seu limite de anúncios.')) {
-            fetch('anuncio_excluir.php', {
+            fetch('anuncio_excluir', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `id=${id}`

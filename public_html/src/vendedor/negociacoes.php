@@ -251,13 +251,13 @@ try {
                         <a href="../anuncios.php" class="nav-link">Anúncios</a>
                     </li>
                     <li class="nav-item">
-                        <a href="dashboard.php" class="nav-link">Painel</a>
+                        <a href="dashboard" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">
-                        <a href="chats.php" class="nav-link">Chats</a>
+                        <a href="chats" class="nav-link">Chats</a>
                     </li>
                     <li class="nav-item">
-                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
+                        <a href="perfil" class="nav-link">Meu Perfil</a>
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">

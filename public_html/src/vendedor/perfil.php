@@ -57,7 +57,7 @@ $vendedor_id_fk = $vendedor['id'] ?? 0;
 if (isset($_SESSION['status_assinatura']) && $_SESSION['status_assinatura'] === 'atrasado') {
     echo '<div style="background: #fff3cd; color: #856404; padding: 15px; text-align: center; border-bottom: 2px solid #ffeeba;">
             <strong>Atenção:</strong> Identificamos um problema no pagamento da sua mensalidade. 
-            Para evitar o bloqueio dos seus anúncios, <a href="escolher_plano.php">clique aqui e atualize seu pagamento</a>.
+            Para evitar o bloqueio dos seus anúncios, <a href="escolher_plano">clique aqui e atualize seu pagamento</a>.
           </div>';
 }
 
@@ -361,9 +361,9 @@ function getImagePath($path) {
                 <ul class="nav-menu">
                     <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
                     <li class="nav-item"><a href="../anuncios.php" class="nav-link">Anúncios</a></li>
-                    <li class="nav-item"><a href="dashboard.php" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="chats.php" class="nav-link">Chats</a></li>
-                    <li class="nav-item"><a href="perfil.php" class="nav-link active">Meu Perfil</a></li>
+                    <li class="nav-item"><a href="dashboard" class="nav-link">Painel</a></li>
+                    <li class="nav-item"><a href="chats" class="nav-link">Chats</a></li>
+                    <li class="nav-item"><a href="perfil" class="nav-link active">Meu Perfil</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
                         <a href="../notificacoes.php" class="nav-link no-underline">
@@ -407,7 +407,7 @@ function getImagePath($path) {
                 <div class="alert error-alert"><i class="fas fa-exclamation-triangle"></i> <?php echo $mensagem_erro; ?></div>
             <?php endif; ?>
 
-            <form method="POST" action="perfil.php" class="perfil-form" enctype="multipart/form-data">
+            <form method="POST" action="perfil" class="perfil-form" enctype="multipart/form-data">
                 <div class="perfil-header-info">
                     <center>
                         <div class="foto-perfil-container">
@@ -524,10 +524,10 @@ function getImagePath($path) {
                             <input type="text" value="<?php echo htmlspecialchars($plano_atual); ?>" disabled>
                             <small>
                                 <?php if ($plano_id_atual > 1): ?>
-                                    <a href="escolher_plano.php" class="change-plan-link">Ver Planos</a> | 
-                                    <a href="gerenciar_assinatura.php" class="manage-subscription-link">Gerenciar assinatura</a>
+                                    <a href="escolher_plano" class="change-plan-link">Ver Planos</a> | 
+                                    <a href="gerenciar_assinatura" class="manage-subscription-link">Gerenciar assinatura</a>
                                 <?php else: ?>
-                                    <a href="escolher_plano.php" class="upgrade-plan-link">Fazer upgrade do plano</a>
+                                    <a href="escolher_plano" class="upgrade-plan-link">Fazer upgrade do plano</a>
                                 <?php endif; ?>
                             </small>
                         </div>
@@ -554,7 +554,7 @@ function getImagePath($path) {
             <p>Tem certeza? Esta ação não pode ser desfeita.</p>
             <div style="display: flex; justify-content: flex-end; gap: 10px;">
                 <button id="cancel-delete" style="padding: 10px 20px; border: 1px solid #ddd; background: #f5f5f5; border-radius: 4px; cursor: pointer;">Cancelar</button>
-                <form id="delete-account-form" method="POST" action="deletar_conta.php" style="margin: 0;">
+                <form id="delete-account-form" method="POST" action="deletar_conta" style="margin: 0;">
                     <input type="hidden" name="usuario_id" value="<?php echo $usuario['id']; ?>">
                     <input type="hidden" name="vendedor_id" value="<?php echo $vendedor['id']; ?>">
                     <button type="submit" style="padding: 10px 20px; background: #c62828; color: white; border: none; border-radius: 4px; cursor: pointer;">Sim, apagar</button>

@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     
                     // Redirecionar para evitar reenvio do formulário
-                    header("Location: chats.php?aba=" . $aba . "&success=1&msg=" . urlencode($mensagem_sucesso));
+                    header("Location: chats?aba=" . $aba . "&success=1&msg=" . urlencode($mensagem_sucesso));
                     exit();
                 }
             } catch (PDOException $e) {
@@ -462,13 +462,13 @@ try {
                     </li>
                     <li class="nav-item"><a href="../anuncios.php" class="nav-link">Anúncios</a></li>
                     <li class="nav-item">
-                        <a href="dashboard.php" class="nav-link">Painel</a>
+                        <a href="dashboard" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">
-                        <a href="chats.php" class="nav-link active">Chats</a>
+                        <a href="chats" class="nav-link active">Chats</a>
                     </li>
                     <li class="nav-item">
-                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
+                        <a href="perfil" class="nav-link">Meu Perfil</a>
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
@@ -533,10 +533,10 @@ try {
         <?php if (isset($error)): ?><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <?php echo $error; ?></div><?php endif; ?>
 
         <div class="abas-container">
-            <button class="aba <?php echo !$mostrar_arquivados ? 'active' : ''; ?>" onclick="window.location.href='chats.php?aba=ativos'">
+            <button class="aba <?php echo !$mostrar_arquivados ? 'active' : ''; ?>" onclick="window.location.href='chats?aba=ativos'">
                 <i class="fas fa-comments"></i> Conversas Ativas
             </button>
-            <button class="aba <?php echo $mostrar_arquivados ? 'active' : ''; ?>" onclick="window.location.href='chats.php?aba=arquivados'">
+            <button class="aba <?php echo $mostrar_arquivados ? 'active' : ''; ?>" onclick="window.location.href='chats?aba=arquivados'">
                 <i class="fas fa-archive"></i> Arquivadas
                 <?php if ($total_arquivadas > 0): ?><span class="badge-aba"><?php echo $total_arquivadas; ?></span><?php endif; ?>
             </button>
@@ -709,7 +709,7 @@ function carregarConversasIniciais() {
     const loadingEl = document.getElementById('loadingConversas');
     const conversasList = document.getElementById('conversasList');
     
-    fetch(`carregar_conversas_ajax.php?aba=<?php echo $aba; ?>`, {
+    fetch(`carregar_conversas_ajax?aba=<?php echo $aba; ?>`, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
     .then(response => response.json())
@@ -1053,7 +1053,7 @@ function verificarAtualizacoes() {
     
     estaVerificando = true;
     
-    fetch(`atualizar_chats_ajax.php?aba=<?php echo $aba; ?>&ultima_verificacao=${ultimaVerificacao}`, {
+    fetch(`atualizar_chats_ajax?aba=<?php echo $aba; ?>&ultima_verificacao=${ultimaVerificacao}`, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
     .then(response => {

@@ -9,7 +9,7 @@ if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor
 }
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: propostas.php?erro=" . urlencode("ID da proposta inválido."));
+    header("Location: propostas?erro=" . urlencode("ID da proposta inválido."));
     exit();
 }
 
@@ -65,13 +65,13 @@ try {
     $contraproposta = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$contraproposta) {
-        header("Location: propostas.php?erro=" . urlencode("Contraproposta não encontrada."));
+        header("Location: propostas?erro=" . urlencode("Contraproposta não encontrada."));
         exit();
     }
     
     // Verificar se pode editar (status deve ser negociacao + pendente)
     if ($contraproposta['negociacao_status'] !== 'negociacao' || $contraproposta['status_comprador'] !== 'pendente') {
-        header("Location: detalhes_proposta.php?id=" . $proposta_comprador_id . "&erro=" . urlencode("Esta contraproposta não pode ser editada."));
+        header("Location: detalhes_proposta?id=" . $proposta_comprador_id . "&erro=" . urlencode("Esta contraproposta não pode ser editada."));
         exit();
     }
     
@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 enviarEmailNotificacao($contraproposta['vendedor_email'], $contraproposta['vendedor_nome'], $subject, $message);
             }
             
-            header("Location: detalhes_proposta.php?id=" . $proposta_comprador_id . "&sucesso=" . urlencode("Contraproposta atualizada com sucesso!"));
+            header("Location: detalhes_proposta?id=" . $proposta_comprador_id . "&sucesso=" . urlencode("Contraproposta atualizada com sucesso!"));
             exit();
             
         } catch (PDOException $e) {
@@ -199,19 +199,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <a href="../../index.php" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="dashboard.php" class="nav-link">Painel</a>
+                        <a href="dashboard" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">
-                        <a href="anuncios.php" class="nav-link">Meus Anúncios</a>
+                        <a href="anuncios" class="nav-link">Meus Anúncios</a>
                     </li>
                     <li class="nav-item">
-                        <a href="propostas.php" class="nav-link active">Propostas</a>
+                        <a href="propostas" class="nav-link active">Propostas</a>
                     </li>
                     <li class="nav-item">
                         <a href="precos.php" class="nav-link">Médias de Preços</a>
                     </li>
                     <li class="nav-item">
-                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
+                        <a href="perfil" class="nav-link">Meu Perfil</a>
                     </li>
                     <li class="nav-item">
                         <a href="../logout.php" class="nav-link login-button no-underline">Sair</a>
@@ -266,7 +266,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 <div class="contraproposta-form-actions">
                     <button type="submit" class="btn-atualizar-contraproposta">Atualizar Contraproposta</button>
-                    <a href="detalhes_proposta.php?id=<?php echo $proposta_comprador_id; ?>" class="btn-cancelar">Cancelar</a>
+                    <a href="detalhes_proposta?id=<?php echo $proposta_comprador_id; ?>" class="btn-cancelar">Cancelar</a>
                 </div>
             </form>
         </div>

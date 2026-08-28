@@ -7,7 +7,7 @@ if (isset($_GET['return_from_stripe']) && $_GET['return_from_stripe'] == '1') {
     // Verifica se a sessão ainda está ativa
     if (isset($_SESSION['usuario_id'])) {
         // Redireciona para o perfil com mensagem de sucesso
-        header("Location: perfil.php?stripe_return=success");
+        header("Location: perfil?stripe_return=success");
         exit();
     } else {
         // Se perdeu a sessão, redireciona para login
@@ -146,7 +146,7 @@ try {
             </div>
 
             <div class="actions">
-                <a href="gerar_portal_stripe.php" class="btn btn-green">
+                <a href="gerar_portal_stripe" class="btn btn-green">
                     <i class="fa-solid fa-arrows-rotate"></i> Gerenciar Assinatura
                 </a>
             </div>
@@ -159,7 +159,7 @@ try {
             <div style="font-size: 32px; font-weight: 800;">Versão Limitada</div>
             <p style="color: var(--text-light); margin-top: 10px;">Faça um upgrade para anunciar mais produtos e ter maior visibilidade.</p>
             <div class="actions">
-                <a href="escolher_plano.php" class="btn btn-green">Escolher um Plano Profissional</a>
+                <a href="escolher_plano" class="btn btn-green">Escolher um Plano Profissional</a>
             </div>
         <?php endif; ?>
     </div>
@@ -191,7 +191,7 @@ try {
     </div>
 
     <center>
-        <a href="perfil.php" class="btn-voltar">
+        <a href="perfil" class="btn-voltar">
             <i class="fa-solid fa-arrow-left"></i> Voltar para o Perfil
         </a>
     </center>

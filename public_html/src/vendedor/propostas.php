@@ -156,10 +156,10 @@ function formatarStatusVendedor($status_negociacao, $status_comprador = null) {
                         <a href="../../index.php" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="dashboard.php" class="nav-link">Painel</a>
+                        <a href="dashboard" class="nav-link">Painel</a>
                     </li>
                     <li class="nav-item">
-                        <a href="perfil.php" class="nav-link">Meu Perfil</a>
+                        <a href="perfil" class="nav-link">Meu Perfil</a>
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
@@ -208,7 +208,7 @@ function formatarStatusVendedor($status_negociacao, $status_comprador = null) {
         <?php if (empty($propostas)): ?>
             <div class="empty-state">
                 <h3>Nenhuma proposta recebida até o momento.</h3>
-                <p>Verifique se seus <a href="anuncios.php">anúncios</a> estão ativos.</p>
+                <p>Verifique se seus <a href="anuncios">anúncios</a> estão ativos.</p>
             </div>
         <?php else: ?>
             <div class="propostas-list">
@@ -251,12 +251,12 @@ function formatarStatusVendedor($status_negociacao, $status_comprador = null) {
                         
                         <div class="proposta-actions">
                             <?php if ($proposta['negociacao_status'] == 'aceita' || $proposta['negociacao_status'] == 'recusada'): ?>
-                                <a href="detalhes_proposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn-action <?= $status_info['class'] ?>">
+                                <a href="detalhes_proposta?id=<?php echo $proposta['proposta_id']; ?>" class="btn-action <?= $status_info['class'] ?>">
                                     <i class="fas fa-eye"></i>
                                     Ver Detalhes
                                 </a>
                             <?php else: ?>
-                                <a href="detalhes_proposta.php?id=<?php echo $proposta['proposta_id']; ?>" class="btn-action <?= $status_info['class'] ?>">
+                                <a href="detalhes_proposta?id=<?php echo $proposta['proposta_id']; ?>" class="btn-action <?= $status_info['class'] ?>">
                                     <i class="fas fa-search"></i>
                                     Ver Detalhes / Negociar
                                 </a>

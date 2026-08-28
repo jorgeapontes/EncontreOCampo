@@ -10,7 +10,7 @@ $customer_id = $vendedor['stripe_customer_id'] ?? null;
 
 if (!$customer_id) {
     // Se não tiver o ID salvo, redireciona para escolher um plano pela primeira vez
-    header("Location: escolher_plano.php");
+    header("Location: escolher_plano");
     exit();
 }
 

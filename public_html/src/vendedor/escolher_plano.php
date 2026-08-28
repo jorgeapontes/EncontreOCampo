@@ -138,7 +138,7 @@ $result = $db->query($query);
                             Mudar de Plano
                         </a>
                     <?php else: ?>
-                        <a href="processar_assinatura.php?id=<?php echo $plano['id']; ?>" class="btn-assinar">
+                        <a href="processar_assinatura?id=<?php echo $plano['id']; ?>" class="btn-assinar">
                             Assinar Agora
                         </a>
                     <?php endif; ?>
@@ -151,13 +151,13 @@ $result = $db->query($query);
         <div class="modal-content">
             <h3>Mudar de Plano?</h3>
             <p>Você já possui uma assinatura ativa. Para fazer um upgrade, downgrade ou cancelar, utilize nossa central de gestão.</p>
-            <a href="gerenciar_assinatura.php" class="btn-gerenciar">Ir para Gerenciar Assinatura</a>
+            <a href="gerenciar_assinatura" class="btn-gerenciar">Ir para Gerenciar Assinatura</a>
             <a href="javascript:void(0);" onclick="fecharModal()" class="btn-fechar">Voltar</a>
         </div>
     </div>
 
     <div class="voltar">
-        <a href="perfil.php" class="btn-voltar">Voltar</a>
+        <a href="perfil" class="btn-voltar">Voltar</a>
     </div>
 
     <footer class="site-footer">

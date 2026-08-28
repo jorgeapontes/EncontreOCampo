@@ -239,7 +239,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 $db->commit();
                 $_SESSION['mensagem_anuncio_sucesso'] = "Anúncio criado com sucesso!";
-                header("Location: anuncios.php");
+                header("Location: anuncios");
                 exit();
             } else {
                 throw new Exception("Erro ao inserir produto.");
@@ -277,7 +277,7 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
                     </a>
                 </div>
                 <ul class="nav-menu">
-                    <li class="nav-item"><a href="dashboard.php" class="nav-link">Voltar ao Painel</a></li>
+                    <li class="nav-item"><a href="dashboard" class="nav-link">Voltar ao Painel</a></li>
                 </ul>
             </div>
         </nav>
@@ -295,7 +295,7 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
         <div class="alert error-alert" style="background-color: #fff3cd; color: #856404; border-color: #ffeeba;">
             <i class="fas fa-exclamation-crown"></i> 
             <strong>Limite do Plano Atingido:</strong> Você está usando <?php echo $total_atual; ?> de <?php echo $limite_permitido; ?> anúncios permitidos no plano <?php echo $plano_info['nome_plano']; ?>.
-            <br><a href="escolher_plano.php" style="font-weight: bold; color: #009ee3;">Faça upgrade para continuar anunciando.</a>
+            <br><a href="escolher_plano" style="font-weight: bold; color: #009ee3;">Faça upgrade para continuar anunciando.</a>
         </div>
     <?php endif; ?>
 
@@ -303,7 +303,7 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
         <div class="alert error-alert"><i class="fas fa-exclamation-triangle"></i> <?php echo $mensagem_erro; ?></div>
     <?php endif; ?>
     
-    <form method="POST" action="anuncio_novo.php" class="anuncio-form <?php echo $limite_atingido ? 'form-disabled' : ''; ?>" enctype="multipart/form-data" id="anuncioForm">
+    <form method="POST" action="anuncio_novo" class="anuncio-form <?php echo $limite_atingido ? 'form-disabled' : ''; ?>" enctype="multipart/form-data" id="anuncioForm">
         <style>
             .form-disabled { opacity: 0.6; pointer-events: none; user-select: none; }
         </style>
@@ -316,7 +316,7 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
                 <p>Publicando anúncio...</p>
             </div>
             
-            <form method="POST" action="anuncio_novo.php" class="anuncio-form" enctype="multipart/form-data" id="anuncioForm">
+            <form method="POST" action="anuncio_novo" class="anuncio-form" enctype="multipart/form-data" id="anuncioForm">
                 <div class="forms-area">
                     <div class="top-info">
                         <div class="form-group">
@@ -662,7 +662,7 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
                 
                 // Adiciona evento de clique
                 floatingBackButton.addEventListener('click', function() {
-                    window.location.href = 'dashboard.php';
+                    window.location.href = 'dashboard';
                 });
                 
                 // Adiciona ao body

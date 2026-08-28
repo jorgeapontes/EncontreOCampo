@@ -10,7 +10,7 @@ $anuncio = null;
 $anuncio_id = sanitizeInput($_REQUEST['id'] ?? $_POST['anuncio_id'] ?? null);
 
 if (!$anuncio_id) {
-    header("Location: anuncios.php");
+    header("Location: anuncios");
     exit();
 }
 
@@ -24,7 +24,7 @@ try {
     $anuncio = $stmt_anuncio->fetch(PDO::FETCH_ASSOC);
 
     if (!$anuncio) {
-        header("Location: anuncios.php");
+        header("Location: anuncios");
         exit();
     }
     
@@ -36,7 +36,7 @@ try {
     $imagens = $stmt_imagens->fetchAll(PDO::FETCH_ASSOC);
     
 } catch (PDOException $e) {
-    header("Location: anuncios.php");
+    header("Location: anuncios");
     exit();
 }
 
@@ -379,7 +379,7 @@ $categorias_disponiveis = [
                     </a>
                 </div>
                 <ul class="nav-menu">
-                    <li class="nav-item"><a href="anuncios.php" class="nav-link">Voltar</a></li>
+                    <li class="nav-item"><a href="anuncios" class="nav-link">Voltar</a></li>
                 </ul>
             </div>
         </nav>
@@ -399,7 +399,7 @@ $categorias_disponiveis = [
                 <p>Salvando alterações...</p>
             </div>
 
-            <form method="POST" action="anuncio_editar.php" class="anuncio-form" enctype="multipart/form-data" id="anuncioForm">
+            <form method="POST" action="anuncio_editar" class="anuncio-form" enctype="multipart/form-data" id="anuncioForm">
                 <input type="hidden" name="anuncio_id" value="<?php echo $anuncio['id']; ?>">
                 <input type="hidden" id="imagens_removidas" name="imagens_removidas" value="">
                 <input type="hidden" id="nova_ordem" name="nova_ordem" value="">
@@ -940,7 +940,7 @@ $categorias_disponiveis = [
                 
                 // Adiciona evento de clique
                 floatingBackButton.addEventListener('click', function() {
-                    window.location.href = 'dashboard.php';
+                    window.location.href = 'dashboard';
                 });
                 
                 // Adiciona ao body

@@ -6,7 +6,7 @@ require_once __DIR__ . '/../../includes/send_notification.php'; // NOVO: Adicion
 require_once __DIR__ . '/../funcoes_notificacoes.php';
 
 function redirecionar($id, $tipo, $mensagem) {
-    header("Location: detalhes_proposta.php?id=" . $id . "&" . $tipo . "=" . urlencode($mensagem));
+    header("Location: detalhes_proposta?id=" . $id . "&" . $tipo . "=" . urlencode($mensagem));
     exit();
 }
 
@@ -17,12 +17,12 @@ if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor
 }
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: propostas.php?erro=" . urlencode("ID da proposta inválido."));
+    header("Location: propostas?erro=" . urlencode("ID da proposta inválido."));
     exit();
 }
 
 if (!isset($_GET['action'])) {
-    header("Location: propostas.php?erro=" . urlencode("Ação não especificada."));
+    header("Location: propostas?erro=" . urlencode("Ação não especificada."));
     exit();
 }
 

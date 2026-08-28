@@ -195,8 +195,8 @@ try {
                     <li class="nav-item"><a href="../../index.php" class="nav-link">Home</a></li>
                     <li class="nav-item"><a href="../anuncios.php" class="nav-link">Anúncios</a></li>
                     <li class="nav-item"><a href="" class="nav-link active">Painel</a></li>
-                    <li class="nav-item"><a href="chats.php" class="nav-link">Chats</a></li>
-                    <li class="nav-item"><a href="perfil.php" class="nav-link">Meu Perfil</a></li>
+                    <li class="nav-item"><a href="chats" class="nav-link">Chats</a></li>
+                    <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
                         <a href="../notificacoes.php" class="nav-link no-underline">
@@ -237,17 +237,17 @@ try {
                 <div class="aviso-item">
                     <h3><i class="fas fa-truck"></i> Configure suas Regiões de Entrega</h3>
                     <p>Não se esqueça de configurar as regiões onde você realiza entregas!</p>
-                    <p style="margin-top: 10px;"><a href="config_logistica.php">Clique aqui para configurar agora</a></p>
+                    <p style="margin-top: 10px;"><a href="config_logistica">Clique aqui para configurar agora</a></p>
                 </div>
                 <div class="aviso-item">
                     <h3><i class="fas fa-bell"></i> Plano de assinatura</h3>
                     <p>Caso queria ter mais anúncios ativos, altere seu plano em "Meu Perfil".</p>
-                    <p style="margin-top: 10px;"><a href="perfil.php">Alterar plano</a></p>
+                    <p style="margin-top: 10px;"><a href="perfil">Alterar plano</a></p>
                 </div>
                 <div class="aviso-item">
                     <h3><i class="fas fa-box"></i> Alterar estoque</h3>
                     <p>Se o seu estoque estiver baixo, não esqueça de atualizá-lo para evitar problemas nas vendas. Clique para editar um anúncio para atualizar o estoque.</p>
-                    <p style="margin-top: 10px;"><a href="anuncios.php">Alterar estoque</a></p>
+                    <p style="margin-top: 10px;"><a href="anuncios">Alterar estoque</a></p>
                 </div>
             </div>
             <div class="popup-footer">
@@ -283,7 +283,7 @@ try {
         
         <section class="info-cards">
             <?php if (!$is_pendente): ?>
-                <a href="chats.php">
+                <a href="chats">
                     <div class="card">
                         <i class="fas fa-comments"></i>
                         <h3>Chats</h3>
@@ -297,21 +297,21 @@ try {
                         <p><?php echo ($total_procurando_transportador_nao_lidas > 0) ? $total_procurando_transportador_nao_lidas . ' não lidas' : 'Ver'; ?></p>
                     </div>
                 </a>
-                <a href="negociacoes.php">
+                <a href="negociacoes">
                     <div class="card">
                         <i class="fa-solid fa-check"></i>
                         <h3>Histórico de vendas</h3>
                         <p>Ver</p>
                     </div>
                 </a>
-                <a href="historico_compras.php">
+                <a href="historico_compras">
                     <div class="card">
                         <i class="fas fa-shopping-cart"></i>
                         <h3>Histórico de compras</h3>
                         <p>Ver</p>
                     </div>
                 </a>
-                <a href="config_logistica.php"> 
+                <a href="config_logistica"> 
                     <div class="card"> 
                         <i class="fas fa-truck"></i> 
                         <h3>Regiões de entrega</h3> 
@@ -334,12 +334,12 @@ try {
                     <h2>Meus Anúncios (<?php echo $total_anuncios; ?>)</h2>
                     
                     <?php if ($total_anuncios < $limite_permitido): ?>
-                        <a href="anuncio_novo.php" class="cta-button"><i class="fas fa-plus"></i> Novo Anúncio</a>
+                        <a href="anuncio_novo" class="cta-button"><i class="fas fa-plus"></i> Novo Anúncio</a>
                     <?php else: ?>
                         <button class="cta-button" style="background-color: #b2bec3; cursor: not-allowed;" onclick="alert('Limite do plano atingido!');"><i class="fas fa-lock"></i> Limite Atingido</button>
                     <?php endif; ?>
                     
-                    <a href="anuncios.php" class="cta-button"><i class="fas fa-list"></i> Ver Todos</a>
+                    <a href="anuncios" class="cta-button"><i class="fas fa-list"></i> Ver Todos</a>
                 </div>
                 
                 <div class="tabela-anuncios">
@@ -381,15 +381,15 @@ try {
                                         <?php if ($bloqueado): ?>
                                             <button class="action-btn" disabled style="opacity:0.3; cursor:not-allowed;"><i class="fas fa-edit"></i></button>
                                             
-                                            <form method="POST" action="processar_anuncio.php" style="display: inline;">
+                                            <form method="POST" action="processar_anuncio" style="display: inline;">
                                                 <input type="hidden" name="anuncio_id" value="<?php echo $anuncio['id']; ?>">
                                                 <button type="submit" name="acao" value="deletar" class="action-btn delete" title="Excluir para liberar espaço" onclick="return confirm('Tem certeza que deseja DELETAR este anúncio?');">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             </form>
                                         <?php else: ?>
-                                            <a href="anuncio_editar.php?id=<?php echo $anuncio['id']; ?>" class="action-btn edit" title="Editar"><i class="fas fa-edit"></i></a>
-                                            <form method="POST" action="processar_anuncio.php" style="display: inline;">
+                                            <a href="anuncio_editar?id=<?php echo $anuncio['id']; ?>" class="action-btn edit" title="Editar"><i class="fas fa-edit"></i></a>
+                                            <form method="POST" action="processar_anuncio" style="display: inline;">
                                                 <input type="hidden" name="anuncio_id" value="<?php echo $anuncio['id']; ?>">
                                                 <button type="submit" name="acao" value="deletar" class="action-btn delete" title="Excluir Definitivamente" onclick="return confirm('Tem certeza que deseja DELETAR este anúncio? Esta ação é irreversível.');">
                                                     <i class="fas fa-trash-alt"></i>
@@ -442,10 +442,10 @@ try {
                                     <?php if ($bloqueado): ?>
                                         <button class="card-action-btn" disabled style="opacity:0.3;"><i class="fas fa-edit"></i></button>
                                     <?php else: ?>
-                                        <a href="anuncio_editar.php?id=<?php echo $anuncio['id']; ?>" class="card-action-btn edit" title="Editar"><i class="fas fa-edit"></i></a>
+                                        <a href="anuncio_editar?id=<?php echo $anuncio['id']; ?>" class="card-action-btn edit" title="Editar"><i class="fas fa-edit"></i></a>
                                     <?php endif; ?>
                                     
-                                    <form method="POST" action="processar_anuncio.php" onsubmit="return confirm('Tem certeza?');">
+                                    <form method="POST" action="processar_anuncio" onsubmit="return confirm('Tem certeza?');">
                                         <input type="hidden" name="anuncio_id" value="<?php echo $anuncio['id']; ?>">
                                         <input type="hidden" name="acao" value="deletar">
                                         <button type="submit" class="card-action-btn delete" title="Excluir"><i class="fas fa-trash-alt"></i></button>
@@ -459,7 +459,7 @@ try {
                             <div class="empty-state-icon"><i class="fas fa-bullhorn"></i></div>
                             <h3>Você ainda não tem anúncios</h3>
                             <p>Comece a vender seus produtos!</p>
-                            <a href="anuncio_novo.php" class="empty-state-button"><i class="fas fa-plus"></i> Criar Primeiro Anúncio</a>
+                            <a href="anuncio_novo" class="empty-state-button"><i class="fas fa-plus"></i> Criar Primeiro Anúncio</a>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -508,7 +508,7 @@ try {
                 console.log("Enviando requisição para processar_aviso.php...");
                 
                 // Usar caminho relativo baseado na localização atual
-                const url = 'processar_aviso.php';
+                const url = 'processar_aviso';
                 console.log("URL da requisição:", url);
                 
                 fetch(url, { 

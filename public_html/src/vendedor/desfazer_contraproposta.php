@@ -5,7 +5,7 @@ require_once __DIR__ . '/../conexao.php';
 require_once __DIR__ . '/../../includes/send_notification.php';
 
 function redirecionar($id, $tipo, $mensagem) {
-    header("Location: detalhes_proposta.php?id=" . $id . "&" . $tipo . "=" . urlencode($mensagem));
+    header("Location: detalhes_proposta?id=" . $id . "&" . $tipo . "=" . urlencode($mensagem));
     exit();
 }
 
@@ -15,7 +15,7 @@ if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'vendedor
 }
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: propostas.php?erro=" . urlencode("ID da proposta inválido."));
+    header("Location: propostas?erro=" . urlencode("ID da proposta inválido."));
     exit();
 }
 

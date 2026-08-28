@@ -27,7 +27,7 @@ if ($id_plano && $usuario_id) {
 
     // Verifica se já possui assinatura ativa antes de processar nova compra
     if (isset($vendedor['status_assinatura']) && $vendedor['status_assinatura'] === 'ativo' && $vendedor['plano_id'] > 1) {
-        header("Location: escolher_plano.php?erro=assinatura_ativa");
+        header("Location: escolher_plano?erro=assinatura_ativa");
         exit;
     }
 
@@ -117,7 +117,7 @@ if ($id_plano && $usuario_id) {
         die("Este plano não está disponível no momento. Entre em contato com o suporte.");
     }
 } else {
-    header("Location: escolher_plano.php");
+    header("Location: escolher_plano");
     exit;
 }
 ?>

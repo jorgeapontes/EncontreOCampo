@@ -168,10 +168,10 @@ try {
             </div>
         </div>
         <div class="nav-links">
-            <a href="dashboard.php" class="nav-link">Dashboard</a>
-            <a href="todos_usuarios.php" class="nav-link">Todos os Usuários</a>
-            <a href="chats_admin.php" class="nav-link">Chats</a>
-            <a href="manage_comprovantes.php" class="nav-link active">Comprovantes</a>
+            <a href="dashboard" class="nav-link">Dashboard</a>
+            <a href="todos_usuarios" class="nav-link">Todos os Usuários</a>
+            <a href="chats_admin" class="nav-link">Chats</a>
+            <a href="manage_comprovantes" class="nav-link active">Comprovantes</a>
             <a href="../../index.php" class="nav-link">Home</a>
             <a href="../logout.php" class="nav-link logout">Sair</a>
         </div>
@@ -184,7 +184,7 @@ try {
         <p><?php echo $descricao_aba; ?></p>
     </div>
 
-    <form method="GET" action="manage_comprovantes.php" class="admin-toolbar">
+    <form method="GET" action="manage_comprovantes" class="admin-toolbar">
         <input type="hidden" name="aba" value="<?php echo htmlspecialchars($aba_atual); ?>">
 
         <div class="toolbar-search">
@@ -195,7 +195,7 @@ try {
                    value="<?php echo htmlspecialchars($pesquisa ?? ''); ?>">
 
             <?php if (!empty($pesquisa)): ?>
-                <a href="manage_comprovantes.php?aba=<?php echo urlencode($aba_atual); ?>" class="clear-search-inline" title="Limpar pesquisa">
+                <a href="manage_comprovantes?aba=<?php echo urlencode($aba_atual); ?>" class="clear-search-inline" title="Limpar pesquisa">
                     <i class="fas fa-times"></i>
                 </a>
             <?php endif; ?>

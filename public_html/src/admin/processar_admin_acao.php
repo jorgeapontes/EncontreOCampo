@@ -16,7 +16,7 @@ $conn = $database->getConnection();
 
 // Verificar se a conexão falhou
 if (!$conn) {
-    header('Location: dashboard.php?msg=' . urlencode('Erro fatal: Falha na conexão com o Banco de Dados.'));
+    header('Location: dashboard?msg=' . urlencode('Erro fatal: Falha na conexão com o Banco de Dados.'));
     exit;
 }
 
@@ -26,7 +26,7 @@ $acao = filter_input(INPUT_GET, 'acao');
 $admin_id = $_SESSION['usuario_id'] ?? 1; 
 
 if ($solicitacao_id === null || $solicitacao_id === false || !in_array($acao, ['aprovar', 'rejeitar'])) {
-    header('Location: dashboard.php?msg=' . urlencode('Erro: Dados de solicitação inválidos.'));
+    header('Location: dashboard?msg=' . urlencode('Erro: Dados de solicitação inválidos.'));
     exit;
 }
 
@@ -138,7 +138,7 @@ try {
         $stmt_update->execute();
         
         $conn->commit();
-        header('Location: dashboard.php?msg=' . urlencode('Solicitação rejeitada com sucesso.'));
+        header('Location: dashboard?msg=' . urlencode('Solicitação rejeitada com sucesso.'));
         exit;
     }
 
@@ -434,7 +434,7 @@ try {
 
     // 3.2.6. FINALIZAR TRANSAÇÃO
     $conn->commit();
-    header('Location: dashboard.php?msg=' . urlencode('Solicitação aprovada e usuário criado/atualizado com sucesso!'));
+    header('Location: dashboard?msg=' . urlencode('Solicitação aprovada e usuário criado/atualizado com sucesso!'));
 
 } catch (Exception $e) {
     // 4. EM CASO DE ERRO, REVERTER TUDO
@@ -442,7 +442,7 @@ try {
         $conn->rollBack();
     }
     error_log("Erro em processar_admin_acao: " . $e->getMessage());
-    header('Location: dashboard.php?msg=' . urlencode('Erro: ' . $e->getMessage()));
+    header('Location: dashboard?msg=' . urlencode('Erro: ' . $e->getMessage()));
 }
 
 exit;

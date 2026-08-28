@@ -11,7 +11,7 @@ if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') 
 $conversa_id = isset($_GET['conversa_id']) ? (int)$_GET['conversa_id'] : 0;
 
 if ($conversa_id <= 0) {
-    header("Location: chats_admin.php");
+    header("Location: chats_admin");
     exit();
 }
 
@@ -58,7 +58,7 @@ try {
     $conversa = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$conversa) {
-        header("Location: chats_admin.php");
+        header("Location: chats_admin");
         exit();
     }
     
@@ -163,7 +163,7 @@ try {
     <div class="container">
         <div class="top-controls">
             <div class="controls-group align-center">
-                <a href="chats_admin.php" class="btn-back">
+                <a href="chats_admin" class="btn-back">
                     <i class="fas fa-arrow-left"></i> Voltar para Lista
                 </a>
 
@@ -180,7 +180,7 @@ try {
             </div>
 
             <div class="controls-group">
-                <a href="exportar_pdf.php?conversa_id=<?php echo $conversa_id; ?>" target="_blank" class="btn-export">
+                <a href="exportar_pdf?conversa_id=<?php echo $conversa_id; ?>" target="_blank" class="btn-export">
                     <i class="fas fa-file-pdf"></i> Exportar PDF
                 </a>
             </div>

@@ -110,10 +110,10 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
             </div>
         </div>
         <div class="nav-links">
-            <a href="dashboard.php" class="nav-link">Dashboard</a>
-            <a href="todos_usuarios.php" class="nav-link active">Todos os Usuários</a>
-            <a href="chats_admin.php" class="nav-link">Chats</a>
-                <a href="manage_comprovantes.php" class="nav-link">Comprovantes</a>
+            <a href="dashboard" class="nav-link">Dashboard</a>
+            <a href="todos_usuarios" class="nav-link active">Todos os Usuários</a>
+            <a href="chats_admin" class="nav-link">Chats</a>
+                <a href="manage_comprovantes" class="nav-link">Comprovantes</a>
             <a href="../../index.php" class="nav-link">Home</a>
             <a href="../logout.php" class="nav-link logout">Sair</a>
         </div>
@@ -133,7 +133,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
         <p>Gerencie todos os usuários do sistema</p>
     </div>
 
-    <form method="GET" action="todos_usuarios.php" class="admin-toolbar">
+    <form method="GET" action="todos_usuarios" class="admin-toolbar">
         
         <div class="toolbar-search">
             <input type="text" 
@@ -143,7 +143,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
                    value="<?php echo htmlspecialchars($termo_pesquisa); ?>">
             
             <?php if (!empty($termo_pesquisa)): ?>
-                <a href="todos_usuarios.php" class="clear-search-inline" title="Limpar pesquisa">
+                <a href="todos_usuarios" class="clear-search-inline" title="Limpar pesquisa">
                     <i class="fas fa-times"></i>
                 </a>
             <?php endif; ?>
@@ -218,13 +218,13 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
                         <td class="actions-status">
                             <?php if ($usuario['tipo'] !== 'admin'): ?>
                                 <?php if ($usuario['status'] === 'ativo'): ?>
-                                    <a href="alterar_status.php?id=<?= $usuario['id']; ?>&status=inativo"
+                                    <a href="alterar_status?id=<?= $usuario['id']; ?>&status=inativo"
                                     class="btn btn-warning btn-sm btn-status-action"
                                     onclick="return confirm('Tem certeza que deseja desativar este usuário?')">
                                         Desativar
                                     </a>
                                 <?php else: ?>
-                                    <a href="alterar_status.php?id=<?= $usuario['id']; ?>&status=ativo"
+                                    <a href="alterar_status?id=<?= $usuario['id']; ?>&status=ativo"
                                     class="btn btn-success btn-sm btn-status-action"
                                     onclick="return confirm('Tem certeza que deseja ativar este usuário?')">
                                         Ativar
@@ -244,7 +244,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
                 <h3>Nenhum usuário encontrado</h3>
                 <p>Não encontramos resultados para sua busca ou filtros aplicados.</p>
                 <?php if(!empty($termo_pesquisa) || !empty($filtro_tipo)): ?>
-                    <a href="todos_usuarios.php" class="btn btn-primary">Limpar Filtros</a>
+                    <a href="todos_usuarios" class="btn btn-primary">Limpar Filtros</a>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
@@ -363,7 +363,7 @@ document.addEventListener("DOMContentLoaded", function () {
             modalCorpo.innerHTML = `<div class="loading-state"><div class="loading-spinner">⏳</div><p>Carregando detalhes do usuário...</p></div>`;
             modal.style.display = "block";
             
-            fetch(`get_user_details.php?id=${userId}`)
+            fetch(`get_user_details?id=${userId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {

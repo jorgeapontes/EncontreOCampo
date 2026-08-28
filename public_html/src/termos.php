@@ -10,7 +10,7 @@ $usuario_tipo = $_SESSION['usuario_tipo'] ?? null;
 if ($is_logged_in) {
     $button_text = 'Olá, ' . htmlspecialchars($_SESSION['usuario_nome'] ?? 'Usuário');
     if ($usuario_tipo == 'admin') {
-        $button_action = 'admin/dashboard.php';
+        $button_action = 'admin/dashboard';
     } elseif ($usuario_tipo == 'comprador') {
         $button_action = 'comprador/dashboard.php';
     } elseif ($usuario_tipo == 'vendedor') {

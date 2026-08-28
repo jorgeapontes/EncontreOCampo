@@ -14,7 +14,7 @@ $usuario_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 $novo_status = filter_input(INPUT_GET, 'status', FILTER_SANITIZE_STRING);
 
 if ($usuario_id === false || $usuario_id === null || !in_array($novo_status, ['ativo', 'inativo'])) {
-    header('Location: todos_usuarios.php?msg=' . urlencode('Erro: Parâmetros inválidos.'));
+    header('Location: todos_usuarios?msg=' . urlencode('Erro: Parâmetros inválidos.'));
     exit;
 }
 
@@ -36,7 +36,7 @@ try {
     $stmt_acao->bindParam(':registro_id', $usuario_id, PDO::PARAM_INT);
     $stmt_acao->execute();
 
-    header('Location: todos_usuarios.php?msg=' . urlencode('Status alterado com sucesso.'));
+    header('Location: todos_usuarios?msg=' . urlencode('Status alterado com sucesso.'));
 } catch (Exception $e) {
-    header('Location: todos_usuarios.php?msg=' . urlencode('Erro ao alterar status: ' . $e->getMessage()));
+    header('Location: todos_usuarios?msg=' . urlencode('Erro ao alterar status: ' . $e->getMessage()));
 }

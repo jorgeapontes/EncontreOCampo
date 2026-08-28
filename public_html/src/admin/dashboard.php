@@ -63,22 +63,22 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="dashboard.php" class="nav-link active">
+                        <a href="dashboard" class="nav-link active">
                             Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="todos_usuarios.php" class="nav-link">
+                        <a href="todos_usuarios" class="nav-link">
                             Usuários
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="chats_admin.php" class="nav-link">
+                        <a href="chats_admin" class="nav-link">
                             Chats
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="manage_comprovantes.php" class="nav-link">
+                        <a href="manage_comprovantes" class="nav-link">
                             Comprovantes
                         </a>
                     </li>
@@ -213,7 +213,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
                     </tbody>
                 </table>
             </div>
-            <a href="todos_usuarios.php" class="btn-ver-todos">Ver todos os usuários cadastrados</a>
+            <a href="todos_usuarios" class="btn-ver-todos">Ver todos os usuários cadastrados</a>
             
             <?php else: ?>
                 <div class="empty-state">
@@ -339,7 +339,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                     <div class="data-field foto-doc-field">
                                         <div class="field-label foto-doc-label">Foto do Rosto</div>
                                         <div class="foto-doc-preview">
-                                            <img src="ver_documento.php?usuario_id=${usuarioId}&tipo=rosto" alt="Foto do Rosto" class="foto-doc-img" onclick="abrirImagemGrande('ver_documento.php?usuario_id=${usuarioId}&tipo=rosto', 'Foto do Rosto')">
+                                            <img src="ver_documento?usuario_id=${usuarioId}&tipo=rosto" alt="Foto do Rosto" class="foto-doc-img" onclick="abrirImagemGrande('ver_documento?usuario_id=${usuarioId}&tipo=rosto', 'Foto do Rosto')">
                                         </div>
                                     </div>
                                 ` : ''}
@@ -347,7 +347,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                     <div class="data-field foto-doc-field">
                                         <div class="field-label foto-doc-label">Documento - Frente</div>
                                         <div class="foto-doc-preview">
-                                            <img src="ver_documento.php?usuario_id=${usuarioId}&tipo=frente" alt="Documento Frente" class="foto-doc-img" onclick="abrirImagemGrande('ver_documento.php?usuario_id=${usuarioId}&tipo=frente', 'Documento - Frente')">
+                                            <img src="ver_documento?usuario_id=${usuarioId}&tipo=frente" alt="Documento Frente" class="foto-doc-img" onclick="abrirImagemGrande('ver_documento?usuario_id=${usuarioId}&tipo=frente', 'Documento - Frente')">
                                         </div>
                                     </div>
                                 ` : ''}
@@ -355,7 +355,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                     <div class="data-field foto-doc-field">
                                         <div class="field-label foto-doc-label">Documento - Verso</div>
                                         <div class="foto-doc-preview">
-                                            <img src="ver_documento.php?usuario_id=${usuarioId}&tipo=verso" alt="Documento Verso" class="foto-doc-img" onclick="abrirImagemGrande('ver_documento.php?usuario_id=${usuarioId}&tipo=verso', 'Documento - Verso')">
+                                            <img src="ver_documento?usuario_id=${usuarioId}&tipo=verso" alt="Documento Verso" class="foto-doc-img" onclick="abrirImagemGrande('ver_documento?usuario_id=${usuarioId}&tipo=verso', 'Documento - Verso')">
                                         </div>
                                     </div>
                                 ` : ''}
@@ -692,7 +692,7 @@ document.addEventListener("DOMContentLoaded", function() {
     confirmYes.addEventListener('click', function() {
         if (currentId && currentAction) {
             // Redireciona para processar a ação
-            window.location.href = `processar_admin_acao.php?id=${currentId}&acao=${currentAction}`;
+            window.location.href = `processar_admin_acao?id=${currentId}&acao=${currentAction}`;
         }
         confirmModal.style.display = "none";
     });

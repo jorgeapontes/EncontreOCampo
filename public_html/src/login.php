@@ -184,7 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             // Redirecionar baseado no tipo de usuário
                             switch ($usuario['tipo']) {
                                 case 'admin':
-                                    header("Location: admin/dashboard.php");
+                                    header("Location: admin/dashboard");
                                     break;
                                 case 'comprador':
                                 case 'vendedor':

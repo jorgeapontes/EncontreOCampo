@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['excluir_conversa'])) 
         $mensagem_sucesso = "Conversa excluída permanentemente do banco de dados!";
         
         // Redirecionar para evitar reenvio do formulário
-        header("Location: chats_admin.php?success=1&msg=" . urlencode($mensagem_sucesso));
+        header("Location: chats_admin?success=1&msg=" . urlencode($mensagem_sucesso));
         exit();
         
     } catch (PDOException $e) {
@@ -195,10 +195,10 @@ try {
                 </div>
             </div>
             <div class="nav-links">
-                <a href="dashboard.php" class="nav-link">Dashboard</a>
-                <a href="todos_usuarios.php" class="nav-link">Todos os Usuários</a>
-                <a href="chats_admin.php" class="nav-link active">Chats</a>
-                <a href="manage_comprovantes.php" class="nav-link">Comprovantes</a>
+                <a href="dashboard" class="nav-link">Dashboard</a>
+                <a href="todos_usuarios" class="nav-link">Todos os Usuários</a>
+                <a href="chats_admin" class="nav-link active">Chats</a>
+                <a href="manage_comprovantes" class="nav-link">Comprovantes</a>
                 <a href="../../index.php" class="nav-link">Home</a>
                 <a href="../logout.php" class="nav-link logout">Sair</a>
             </div>
@@ -333,7 +333,7 @@ try {
                         </div>
                         
                         <div class="actions">
-                            <a href="visualizar_chat.php?conversa_id=<?php echo $conversa['conversa_id']; ?>" 
+                            <a href="visualizar_chat?conversa_id=<?php echo $conversa['conversa_id']; ?>"
                                class="btn btn-view">
                                 <i class="fas fa-eye"></i> Visualizar Completo
                             </a>

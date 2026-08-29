@@ -234,20 +234,8 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        @media (max-width: 768px) {
-            .chat-sidebar {
-                width: 100%;
-                display: <?php echo $conversa_id ? 'none' : 'flex'; ?>;
-            }
-            
-            .chat-area {
-                display: <?php echo $conversa_id ? 'flex' : 'none'; ?>;
-            }
-        }
-    </style>
 </head>
-<body>
+<body class="<?php echo $conversa_id ? 'tem-conversa' : ''; ?>">
     <div class="chat-container">
         <div class="chat-sidebar">
             <div class="sidebar-header">
@@ -271,19 +259,19 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                     <?php if ($conversa_id && $outro_usuario_id): ?>
                         <!-- Exibir apenas a conversa atual -->
                         <div class="conversa-item ativa">
-                            <div style="flex: 1;">
+                            <div class="flex-1">
                                 <div class="nome">
-                                    <i class="fas fa-user" style="margin-right: 8px;"></i>
+                                    <i class="fas fa-user icon-spaced"></i>
                                     <?php echo htmlspecialchars($outro_usuario_nome); ?>
                                 </div>
                                 <div class="ultima-msg">Conversa com o comprador</div>
                             </div>
                             <?php if ($conversa_id && $outro_usuario_id && !empty($telefone_whatsapp)): ?>
                                 <a href="https://wa.me/<?php echo $telefone_whatsapp; ?>?text=Olá%20<?php echo urlencode($outro_usuario_nome); ?>%2C%20estamos%20conversando%20sobre%20o%20produto%20<?php echo urlencode($produto['nome']); ?>%20no%20Encontre%20o%20Campo."
-                                target="_blank" 
+                                target="_blank"
                                 class="whatsapp-button"
                                 title="Converse no Whatsapp com <?php echo htmlspecialchars($outro_usuario_nome); ?>">
-                                    <i class="fab fa-whatsapp" style="color: #ffffff;"></i>
+                                    <i class="fab fa-whatsapp"></i>
                                 </a>
                             <?php endif; ?>
                         </div>
@@ -294,17 +282,17 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                     <div class="conversa-item ativa">
                         <div>
                             <div class="nome">
-                                <i class="fas fa-store" style="margin-right: 8px;"></i>
+                                <i class="fas fa-store icon-spaced"></i>
                                 <?php echo htmlspecialchars($outro_usuario_nome); ?>
                             </div>
                             <div class="ultima-msg">Conversa com o vendedor</div>
                         </div>
                         <?php if ($conversa_id && $outro_usuario_id && !empty($telefone_whatsapp)): ?>
                             <a href="https://wa.me/<?php echo $telefone_whatsapp; ?>?text=Olá%20<?php echo urlencode($outro_usuario_nome); ?>%2C%20estamos%20conversando%20sobre%20o%20produto%20<?php echo urlencode($produto['nome']); ?>%20no%20Encontre%20o%20Campo."
-                            target="_blank" 
+                            target="_blank"
                             class="whatsapp-button"
                             title="Converse no Whatsapp com <?php echo htmlspecialchars($outro_usuario_nome); ?>">
-                                <i class="fab fa-whatsapp" style="color: #ffffff;"></i>
+                                <i class="fab fa-whatsapp"></i>
                             </a>
                         <?php endif; ?>
                     </div>
@@ -432,7 +420,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                             
                             foreach ($assinaturas as $assinatura) {
                                 $data = date('d/m/Y H:i', strtotime($assinatura['data_assinatura']));
-                                $assinaturas_info .= '<small><i class="fas fa-check-circle" style="color: #28a745;"></i> ' .
+                                $assinaturas_info .= '<small><i class="fas fa-check-circle icon-success"></i> ' .
                                                 htmlspecialchars($assinatura['nome']) . 
                                                 ' (' . $assinatura['tipo'] . ') assinou em ' . $data . '</small><br>';
                             }
@@ -444,7 +432,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
             <div id="proposta-indicador" 
                 data-proposta-id="<?php echo htmlspecialchars($ultima_proposta['ID']); ?>"
                 data-status="<?php echo htmlspecialchars($ultima_proposta['status']); ?>"
-                style="display: none;"></div>
+                class="hidden"></div>
             <?php 
                 }
             }
@@ -468,7 +456,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                     </div>
                     
                     <!-- Template para quando houver proposta -->
-                    <div class="proposta-conteudo" id="proposta-conteudo" style="display: none;">
+                    <div class="proposta-conteudo hidden" id="proposta-conteudo">
                         <div class="proposta-item" id="proposta-quantidade">
                             <span><i class="fas fa-box"></i> Quantidade:</span>
                             <strong id="quantidade-valor">-</strong>
@@ -515,25 +503,25 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
         <div class="chat-area">
             <?php if ($conversa_id && $outro_usuario_id): ?>
                 <div class="chat-header">
-                    <div style="display: flex; flex-direction: row;">
+                    <div class="chat-header-top-row">
                         <div class="usuario-info">
                         <div class="avatar-container">
                             <?php if ($foto_perfil): ?>
-                                <div class="avatar" id="avatar-usuario" data-foto="<?php echo htmlspecialchars($foto_perfil); ?>" style="cursor: pointer;">
+                                <div class="avatar" id="avatar-usuario" data-foto="<?php echo htmlspecialchars($foto_perfil); ?>">
                                     <img src="<?php echo htmlspecialchars($foto_perfil); ?>" 
                                         alt="<?php echo htmlspecialchars($outro_usuario_nome); ?>"
                                         onerror="substituirPorIcone(this);">
                                 </div>
                             <?php else: ?>
-                                <div class="avatar" id="avatar-usuario" style="cursor: pointer;">
+                                <div class="avatar" id="avatar-usuario">
                                     <i class="fas fa-user"></i>
                                 </div>
                             <?php endif; ?>
                         </div>
-                        <a href="../verperfil?usuario_id=<?php echo $outro_usuario_id; ?>" 
-                            style="text-decoration: none; color: inherit;"
+                        <a href="../verperfil?usuario_id=<?php echo $outro_usuario_id; ?>"
+                            class="perfil-link-reset"
                             title="Ver perfil de <?php echo htmlspecialchars($outro_usuario_nome); ?>">
-                            <div class="name-and-type" style="cursor: pointer;">
+                            <div class="name-and-type">
                                 <h3><?php echo htmlspecialchars($outro_usuario_nome); ?></h3>
                                 <small><?php echo $eh_vendedor_produto ? 'Comprador' : 'Vendedor'; ?></small>
                             </div>
@@ -630,7 +618,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                         <?php endif; ?>
                     </div>
                     
-                    <input type="file" id="image-input" accept="image/jpeg,image/png,image/gif,image/webp" style="display: none;">
+                    <input type="file" id="image-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden">
 
                     <input type="text" id="message-input" placeholder="Digite sua mensagem..." autocomplete="off">
                     <button type="button" id="send-btn" class="btn-send">
@@ -643,7 +631,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                     <i class="fas fa-comments"></i>
                     <p><?php echo $eh_vendedor_produto ? 'Selecione uma conversa para começar' : 'Carregando chat...'; ?></p>
                     <?php if ($eh_vendedor_produto): ?>
-                        <a href="<?php echo $url_voltar; ?>" class="btn-voltar" style="margin-top: 20px;">
+                        <a href="<?php echo $url_voltar; ?>" class="btn-voltar mt-20">
                             <i class="fas fa-arrow-left"></i>
                             Voltar para Chats
                         </a>
@@ -657,7 +645,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
     <div class="modal-negociacao" id="modal-negociacao">
         <div class="modal-negociacao-content">
             <div class="modal-header">
-                <h3><i class="fas fa-handshake" style="margin-right: 8px;"></i> Acordo de Compra</h3>
+                <h3><i class="fas fa-handshake icon-spaced"></i> Acordo de Compra</h3>
                 <button class="btn-fechar-modal" id="fechar-modal">&times;</button>
             </div>
             
@@ -666,7 +654,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                 <div class="produto-info-modal">
                     <img src="<?php echo htmlspecialchars($produto['imagem_url'] ?: '../../img/placeholder.png'); ?>" 
                          alt="<?php echo htmlspecialchars($produto['nome']); ?>">
-                    <div style="flex: 1;">
+                    <div class="flex-1">
                         <h4><?php echo htmlspecialchars($produto['nome']); ?></h4>
                         <div class="preco" id="preco-produto-modal">
                             R$ <?php 
@@ -676,10 +664,10 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                             echo number_format($preco_exibir, 2, ',', '.'); 
                             ?>
                             <?php if ($produto['desconto_ativo'] && $produto['preco_desconto']): ?>
-                                <small style="color: #999; text-decoration: line-through; margin-left: 8px;">
+                                <small class="preco-riscado">
                                     R$ <?php echo number_format($produto['preco'], 2, ',', '.'); ?>
                                 </small>
-                                <small style="color: #42b72a; margin-left: 8px;">
+                                <small class="preco-desconto-percentual">
                                     -<?php echo number_format($produto['desconto_percentual'], 0); ?>%
                                 </small>
                             <?php endif; ?>
@@ -765,7 +753,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                         </div>
                         
                         <!-- Conteúdo dinâmico baseado na opção de frete -->
-                        <div id="conteudo-frete-vendedor" style="display: none;">
+                        <div id="conteudo-frete-vendedor" class="hidden">
                             <div class="form-group">
                                 <label for="valor_frete">Valor do Frete (R$)</label>
                                 <input type="number" 
@@ -777,7 +765,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                             </div>
                         </div>
                         
-                        <div id="conteudo-retirada" style="display: none;">
+                        <div id="conteudo-retirada" class="hidden">
                             <?php 
                             // Buscar endereço do vendedor
                             $sql_endereco_vendedor = "SELECT 
@@ -802,28 +790,28 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                             ?>
                             <div class="form-group">
                                 <label>Endereço para Retirada</label>
-                                <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
+                                <div class="endereco-retirada-box">
                                     <strong><?php echo htmlspecialchars($endereco_vendedor['nome_comercial']); ?></strong><br>
                                     <?php echo htmlspecialchars($endereco_completo); ?><br>
                                     CEP: <?php echo htmlspecialchars($endereco_vendedor['cep']); ?>
                                 </div>
-                                <a href="https://www.google.com/maps/search/?api=1&query=<?php echo $endereco_maps; ?>" 
-                                   target="_blank" 
-                                   style="color: #1877f2; text-decoration: none; font-weight: 500;">
+                                <a href="https://www.google.com/maps/search/?api=1&query=<?php echo $endereco_maps; ?>"
+                                   target="_blank"
+                                   class="link-maps">
                                     <i class="fas fa-map-marker-alt"></i> Ver no Google Maps
                                 </a>
                             </div>
                             <?php endif; ?>
                         </div>
                         
-                        <div id="conteudo-buscar-transportador" style="display: none;">
+                        <div id="conteudo-buscar-transportador" class="hidden">
                             <div class="alert alert-info">
                                 <i class="fas fa-info-circle"></i>
                                 A plataforma irá buscar um transportador disponível para a entrega.
                                 Você receberá cotações de transportadores cadastrados.
                             </div>
                             
-                            <div id="aviso-pagamento-transportador" style="display: none;" class="alert alert-warning">
+                            <div id="aviso-pagamento-transportador" class="alert alert-warning hidden">
                                 <i class="fas fa-exclamation-triangle"></i>
                                 <strong>Atenção:</strong> Para contratar transportador pela plataforma, 
                                 o pagamento deve ser feito no ato. Transportadores não aceitam pagamento na entrega.
@@ -860,7 +848,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                         </div>
                         
                         <!-- Avisos dinâmicos -->
-                        <div id="aviso-pagamento-entrega" style="display: none;" class="alert alert-warning">
+                        <div id="aviso-pagamento-entrega" class="alert alert-warning hidden">
                             <i class="fas fa-exclamation-triangle"></i>
                             <strong>O Vendedor deverá cobrar o valor total de R$ <span id="valor-total-aviso">0,00</span> no ato da entrega.</strong>
                         </div>
@@ -869,17 +857,17 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
             </div>
             
             <div class="modal-footer">
-                <button type="button" class="btn-voltar-etapa" id="btn-voltar-etapa" style="display: none;">
+                <button type="button" class="btn-voltar-etapa hidden" id="btn-voltar-etapa">
                     <i class="fas fa-arrow-left"></i> Voltar
                 </button>
                 
-                <div style="flex: 1;"></div>
+                <div class="flex-1"></div>
                 
                 <button type="button" class="btn-proximo-etapa" id="btn-proximo-etapa">
                     Próxima Etapa <i class="fas fa-arrow-right"></i>
                 </button>
                 
-                <button type="button" class="btn-finalizar-negociacao" id="btn-finalizar-negociacao" style="display: none;">
+                <button type="button" class="btn-finalizar-negociacao hidden" id="btn-finalizar-negociacao">
                     <i class="fas fa-check"></i> Finalizar Negociação
                 </button>
             </div>
@@ -2526,49 +2514,14 @@ function mostrarNotificacao(mensagem, tipo) {
         <span>${mensagem}</span>
     `;
     
-    // Estilo da notificação
-    notificacao.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${tipo === 'success' ? '#d4edda' : '#f8d7da'};
-        color: ${tipo === 'success' ? '#155724' : '#721c24'};
-        padding: 15px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        z-index: 10000;
-        border: 1px solid ${tipo === 'success' ? '#c3e6cb' : '#f5c6cb'};
-        animation: slideIn 0.3s ease forwards;
-        max-width: 350px;
-    `;
-    
-    // Adicionar animação
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-    `;
-    document.head.appendChild(style);
-    
     // Adicionar ao corpo
     document.body.appendChild(notificacao);
-    
+
     // Remover após 3 segundos
     setTimeout(() => {
-        notificacao.style.animation = 'slideOut 0.3s ease forwards';
+        notificacao.classList.add('saindo');
         setTimeout(() => {
             notificacao.remove();
-            style.remove();
         }, 300);
     }, 3000);
 }

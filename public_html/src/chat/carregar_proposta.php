@@ -210,7 +210,7 @@ if ($proposta['status'] === 'assinando') {
                        <i class="fas fa-signature"></i> Assinar Acordo</button>';
     } else {
         $html_acoes .= '<div class="proposta-finalizada assinado">
-                       <i class="fas fa-check-circle" style="color: #28a745;"></i> 
+                       <i class="fas fa-check-circle icon-success"></i>
                        Você já assinou este acordo</div>';
     }
     

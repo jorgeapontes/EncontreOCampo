@@ -138,165 +138,11 @@ try {
     <title>Chat - Transportador</title>
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="../chat/css/chat.css">
+    <link rel="stylesheet" href="css/chat_interface.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* CSS ESPECÍFICO PARA A LÓGICA DE DUPLICAÇÃO DE CARDS */
-        
-        /* Estilos gerais do card na sidebar */
-        #sidebar-proposta-container {
-            padding: 10px 16px;
-            background: #fff;
-            border-bottom: 1px solid #e4e6eb;
-        }
-        
-        #sidebar-proposta-container .proposta-card {
-            margin: 0;
-            width: 100%;
-            font-size: 0.9em;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border: 1px solid #ddd;
-        }
-
-        /* LÓGICA DE VISIBILIDADE DOS BOTÕES (DESKTOP VS MOBILE) */
-        
-        /* Por padrão (Mobile First ou genérico), os botões do chat aparecem */
-        .acoes-chat {
-            display: flex;
-        }
-        
-        /* A sidebar normalmente não aparece em mobile, controlado pelo chat.css */
-        
-        /* DESKTOP (maior que 768px) */
-        @media (min-width: 769px) {
-            /* No Desktop, ESCONDER botões dentro da mensagem do chat */
-            .acoes-chat {
-                display: none !important;
-            }
-            
-            /* No Desktop, MOSTRAR container da sidebar */
-            #sidebar-proposta-container {
-                display: block;
-            }
-        }
-
-        /* MOBILE (menor ou igual a 768px) */
-        @media (max-width: 768px) {
-            .chat-sidebar {
-                width: 100%;
-                display: <?php echo $conversa_id ? 'none' : 'flex'; ?>;
-            }
-            .chat-area {
-                display: <?php echo $conversa_id ? 'flex' : 'none'; ?>;
-            }
-            
-            /* No Mobile, garantir que os botões do chat apareçam */
-            .acoes-chat {
-                display: flex !important;
-            }
-            
-            /* Esconder container extra da sidebar no mobile (caso a sidebar apareça de alguma forma) */
-            #sidebar-proposta-container {
-                display: none;
-            }
-        }
-
-        /* Estilos auxiliares */
-        .chat-messages img { border: none !important; outline: none !important; }
-        .proposta-status {
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-weight: 700;
-            display: inline-block;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-        .proposta-aceita { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .proposta-recusada { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .proposta-pendente { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
-        
-        .proposta-card {
-            border: 1px solid #e1e4e8;
-            padding: 12px;
-            border-radius: 8px;
-            background: #f8f9fa;
-            max-width: 420px;
-            color: #1c1e21;
-            margin: 4px 0;
-        }
-        
-        .proposta-actions {
-            gap: 8px;
-            justify-content: flex-end;
-            margin-top: 10px;
-        }
-        
-        .btn-aceitar { background: #42b72a; color: #fff; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; }
-        .btn-recusar { background: #ff4444; color: #fff; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; }
-
-        /* Botão Propor Entrega (transportador) - estilo e hover */
-        .btn-negociar, #btn-negociar-sidebar {
-            background: #42b72a;
-            color: #fff;
-            border: none;
-            padding: 10px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-negociar:hover, #btn-negociar-sidebar:hover {
-            background: #389e21;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(56, 158, 33, 0.18);
-        }
-        
-        /* Modal */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 14000; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: #fff; padding: 25px; border-radius: 12px; max-width: 500px; width: 100%; }
-        .modal-header { display: flex; align-items: center; margin-bottom: 15px; }
-        .modal-icon { width: 48px; height: 48px; border-radius: 50%; background: #d4edda; color: #155724; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 15px; }
-        .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-        .btn-modal-primary { background: #42b72a; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        .btn-modal-secondary { background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
-
-        .whatsapp-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #25D366;
-    color: white;
-    padding: 13.75px 15px;
-    border-radius: 100%;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all 0.2s;
-    border: #25D366;
-    cursor: pointer;
-}
-
-.whatsapp-button:hover {
-    background-color: #1da851;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
-}
-
-.whatsapp-button i {
-    font-size: 20px ;
-}
-
-.sidebar-negociarcao-btn:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-    </style>
 </head>
-<body>
+<body class="<?php echo $conversa_id ? 'tem-conversa' : ''; ?>">
     <div class="chat-container">
         <div class="chat-sidebar">
             <div class="sidebar-header">
@@ -313,13 +159,13 @@ try {
             </div>
             <div class="conversas-lista">
                 <div class="conversa-item ativa">
-                    <div style="flex:1;">
-                        <div class="nome"><i class="fas fa-user" style="margin-right:8px;"></i><?php echo htmlspecialchars($outro_nome); ?></div>
+                    <div class="flex-1">
+                        <div class="nome"><i class="fas fa-user icon-spaced"></i><?php echo htmlspecialchars($outro_nome); ?></div>
                         <div class="ultima-msg">Conversa com <?php echo htmlspecialchars($outro_papel); ?></div>
                     </div>
-                    <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end;">
+                    <div class="sidebar-whatsapp-row">
                         <?php if (!empty($comprador_telefone)): ?>
-                            <a href="https://wa.me/<?php echo $comprador_telefone; ?>" target="_blank" class="whatsapp-button"><i class="fab fa-whatsapp" style="color: #ffffff;"></i></a>
+                            <a href="https://wa.me/<?php echo $comprador_telefone; ?>" target="_blank" class="whatsapp-button"><i class="fab fa-whatsapp"></i></a>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -327,20 +173,20 @@ try {
 
             <!-- CARD DE ENDEREÇO DO COMPRADOR -->
             <?php if (!empty($comprador_endereco) && $is_transportador): ?>
-                <div class="endereco-card" style="padding:12px;background:#fff;border-bottom:1px solid #e9ecef;">
-                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-                        <i class="fas fa-map-marker-alt" style="font-size:18px;color:#d9534f;"></i>
+                <div class="endereco-card endereco-card-box">
+                    <div class="endereco-header-row">
+                        <i class="fas fa-map-marker-alt endereco-icon-alerta"></i>
                         <div>
-                            <strong style="font-size:13px;">Endereço do Comprador</strong>
+                            <strong class="endereco-titulo-compacto">Endereço do Comprador</strong>
                         </div>
                     </div>
-                    <a href="https://www.google.com/maps/search/?api=1&query=<?php echo $comprador_endereco_maps; ?>" target="_blank" style="color:#1877f2;text-decoration:underline;display:block;">
-                        <div style="font-size:13px;color:inherit;margin-bottom:6px;">
+                    <a href="https://www.google.com/maps/search/?api=1&query=<?php echo $comprador_endereco_maps; ?>" target="_blank" class="endereco-link-sublinhado">
+                        <div class="endereco-texto-truncado">
                             <?php echo htmlspecialchars(strlen($comprador_endereco) > 60 ? substr($comprador_endereco,0,57).'...' : $comprador_endereco); ?>
                         </div>
                     </a>
                     <?php if (!empty($comprador_info['cep'])): ?>
-                        <div style="font-size:12px;color:#777;">CEP: <?php echo htmlspecialchars($comprador_info['cep']); ?></div>
+                        <div class="endereco-cep-info">CEP: <?php echo htmlspecialchars($comprador_info['cep']); ?></div>
                     <?php endif; ?>
                     <div class="endereco-usuario-footer">
                         <small>
@@ -352,15 +198,15 @@ try {
             <?php endif; ?>
             <!-- BOTÃO MAIOR NA SIDEBAR PARA ENVIAR PROPOSTA (mesma ação do btn-negociar) -->
             <?php if ($is_transportador): ?>
-                <div class="sidebar-negociacao-btn" style="padding:12px;">
-                    <button type="button" id="btn-negociar-sidebar" style="width:100%;background:#42b72a;color:#fff;border:none;padding:10px 12px;border-radius:8px;font-size:15px;display:flex;gap:8px;align-items:center;justify-content:center;">
+                <div class="sidebar-negociacao-btn">
+                    <button type="button" id="btn-negociar-sidebar">
                         <i class="fas fa-handshake"></i>
                         Propor Entrega
                     </button>
                 </div>
             <?php endif; ?>
 
-            <div id="sidebar-proposta-container" style="display:none;">
+            <div id="sidebar-proposta-container">
             </div>
 
             
@@ -368,15 +214,15 @@ try {
 
         <div class="chat-area">
             <div class="chat-header">
-                <div style="display: flex; flex-direction: row;">
+                <div class="chat-header-top-row">
                     <div class="usuario-info">
                     <div class="avatar-container">
-                        <img id="outro-avatar" src="<?php echo htmlspecialchars($foto_perfil); ?>" alt="Avatar" style="width:56px;height:56px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid #eee;">
+                        <img id="outro-avatar" src="<?php echo htmlspecialchars($foto_perfil); ?>" alt="Avatar" class="outro-avatar-img">
                     </div>
-                    <a href="../verperfil?usuario_id=<?php echo $outro_usuario_id; ?>" 
-                            style="text-decoration: none; color: inherit;"
+                    <a href="../verperfil?usuario_id=<?php echo $outro_usuario_id; ?>"
+                            class="perfil-link-reset"
                             title="Ver perfil de <?php echo htmlspecialchars($outro_usuario_nome); ?>">
-                        <div class="name-and-type" style="cursor: pointer;">
+                        <div class="name-and-type">
                             <h3><?php echo htmlspecialchars($outro_nome); ?></h3>
                             <small><?php echo htmlspecialchars($outro_papel); ?></small>
                         </div>
@@ -439,7 +285,7 @@ try {
                         <button type="button" class="btn-negociar" id="btn-negociar" title="Propor Entrega"><i class="fas fa-handshake"></i></button>
                     <?php endif; ?>
                 </div>
-                <input type="file" id="image-input" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none;">
+                <input type="file" id="image-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden">
                 <input type="text" id="message-input" placeholder="Digite sua mensagem..." autocomplete="off">
                 <button type="button" id="send-btn" class="btn-send"><i class="fas fa-paper-plane"></i><span>Enviar</span></button>
             </div>
@@ -447,23 +293,23 @@ try {
     </div>
 
     <?php if ($is_transportador): ?>
-    <div id="modal-proposta-transportador" style="display:none; position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:13000;align-items:center;justify-content:center;padding:20px;">
-        <div style="background:#fff;padding:20px;border-radius:8px;max-width:520px;width:100%;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                <h3 style="margin:0;font-size:18px;"><i class="fas fa-handshake"></i> Propor Entrega</h3>
-                <button id="fechar-modal-proposta" style="background:transparent;border:none;font-size:22px;">&times;</button>
+    <div id="modal-proposta-transportador">
+        <div class="modal-proposta-content">
+            <div class="modal-proposta-header">
+                <h3 class="modal-proposta-title"><i class="fas fa-handshake"></i> Propor Entrega</h3>
+                <button id="fechar-modal-proposta" class="modal-proposta-close">&times;</button>
             </div>
             <div>
                 <label>Valor do frete (R$)</label>
-                <input type="number" id="proposta-valor" step="0.01" min="0" style="width:100%;padding:8px;margin:6px 0;border:1px solid #ddd;border-radius:6px;" />
+                <input type="number" id="proposta-valor" step="0.01" min="0" class="modal-proposta-input" />
             </div>
             <div>
                 <label>Data limite de entrega</label>
-                <input type="date" id="proposta-data" style="width:100%;padding:8px;margin:6px 0;border:1px solid #ddd;border-radius:6px;" />
+                <input type="date" id="proposta-data" class="modal-proposta-input" />
             </div>
-            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
-                <button id="enviar-proposta" style="background:#42b72a;color:#fff;border:none;padding:8px 12px;border-radius:6px;">Enviar Proposta</button>
-                <button id="cancelar-proposta" style="background:#ccc;border:none;padding:8px 12px;border-radius:6px;">Cancelar</button>
+            <div class="modal-proposta-footer">
+                <button id="enviar-proposta" class="btn-proposta-enviar">Enviar Proposta</button>
+                <button id="cancelar-proposta" class="btn-proposta-cancelar">Cancelar</button>
             </div>
         </div>
     </div>
@@ -475,11 +321,11 @@ try {
             <div class="modal-header">
                 <div class="modal-icon"> <i class="fas fa-check"></i> </div>
                 <div>
-                    <h3 style="margin:0 0 5px 0;">Proposta Aceita!</h3>
-                    <p style="margin:0;color:#666;">Você aceitou a proposta de entrega.</p>
+                    <h3 class="modal-titulo-compacto">Proposta Aceita!</h3>
+                    <p class="modal-subtitulo">Você aceitou a proposta de entrega.</p>
                 </div>
             </div>
-            <div style="margin:15px 0;">
+            <div class="modal-corpo-texto">
                 <p>✅ Você aceitou a proposta de entrega.</p>
                 <p>📦 O transportador foi notificado e irá proceder com a coleta e entrega.</p>
             </div>
@@ -498,9 +344,9 @@ try {
             if (avatar) {
                 const modal = document.createElement('div');
                 modal.id = 'avatar-modal';
-                modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:12000;align-items:center;justify-content:center;padding:20px;';
+                modal.className = 'avatar-modal-overlay';
                 const img = document.createElement('img');
-                img.style.cssText = 'max-width:96%;max-height:96%;border-radius:8px;';
+                img.className = 'avatar-modal-img';
                 modal.appendChild(img);
                 document.body.appendChild(modal);
                 avatar.addEventListener('click', function(){ img.src = this.src; modal.style.display = 'flex'; });
@@ -556,8 +402,7 @@ try {
                             if (msg.tipo === 'imagem') {
                                 const img = document.createElement('img');
                                 img.src = msg.mensagem;
-                                img.style.maxWidth = '320px';
-                                img.style.borderRadius = '8px';
+                                img.className = 'mensagem-imagem';
                                 img.addEventListener('click', () => { /* logica zoom */ });
                                 content.appendChild(img);
                             } else if (msg.tipo === 'proposta' || (msg.mensagem && msg.mensagem.indexOf('ID') !== -1)) {
@@ -617,15 +462,15 @@ try {
             const card = document.createElement('div');
             card.className = 'proposta-card';
             
-            let htmlInner = '<strong><i class="fas fa-handshake" style="margin-right:5px;"></i>Proposta de Entrega</strong>';
-            htmlInner += '<div style="margin-top:8px;">';
-            
+            let htmlInner = '<strong><i class="fas fa-handshake icon-spaced-sm"></i>Proposta de Entrega</strong>';
+            htmlInner += '<div class="mt-8">';
+
             let valorText = 'Valor não especificado';
             if (dados && dados.valor) valorText = 'R$ ' + parseFloat(dados.valor).toFixed(2).replace('.', ',');
-            htmlInner += `<div style="margin-bottom:5px;"><span style="color:#666;">Valor:</span> <strong style="color:#333;">${valorText}</strong></div>`;
-            
-            if (dados && dados.prazo) htmlInner += `<div style="margin-bottom:5px;"><span style="color:#666;">Prazo:</span> <span style="color:#333;">${dados.prazo}</span></div>`;
-            if (propostaId) htmlInner += `<div><span style="color:#666;font-size:12px;">ID: ${propostaId}</span></div>`;
+            htmlInner += `<div class="mb-5"><span class="texto-secundario">Valor:</span> <strong class="texto-destaque">${valorText}</strong></div>`;
+
+            if (dados && dados.prazo) htmlInner += `<div class="mb-5"><span class="texto-secundario">Prazo:</span> <span class="texto-destaque">${dados.prazo}</span></div>`;
+            if (propostaId) htmlInner += `<div><span class="texto-secundario fonte-pequena">ID: ${propostaId}</span></div>`;
             htmlInner += '</div>';
             
             card.innerHTML = htmlInner;
@@ -672,7 +517,7 @@ try {
 
             // Título na sidebar
             const titulo = document.createElement('h4');
-            titulo.style.cssText = "margin:0 0 10px 0; font-size:14px; color:#666;";
+            titulo.className = 'sidebar-proposta-titulo';
             titulo.textContent = "Última Proposta";
             containerSidebar.appendChild(titulo);
 
@@ -684,7 +529,7 @@ try {
             
             let htmlInner = `
                 <strong><i class="fas fa-handshake"></i> Entrega</strong>
-                <div style="margin-top:8px; font-size:13px;">
+                <div class="sidebar-proposta-detalhes">
                     <div>Valor: <strong>${valorText}</strong></div>
                     <div>Prazo: ${dados.prazo || '--'}</div>
                 </div>

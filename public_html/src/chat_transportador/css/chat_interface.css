@@ -1,0 +1,340 @@
+/* CSS ESPECÍFICO PARA A LÓGICA DE DUPLICAÇÃO DE CARDS */
+
+/* Estilos gerais do card na sidebar */
+#sidebar-proposta-container {
+    padding: 10px 16px;
+    background: #fff;
+    border-bottom: 1px solid #e4e6eb;
+    display: none;
+}
+
+#sidebar-proposta-container .proposta-card {
+    margin: 0;
+    width: 100%;
+    font-size: 0.9em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid #ddd;
+}
+
+/* LÓGICA DE VISIBILIDADE DOS BOTÕES (DESKTOP VS MOBILE) */
+
+/* Por padrão (Mobile First ou genérico), os botões do chat aparecem */
+.acoes-chat {
+    display: flex;
+}
+
+/* A sidebar normalmente não aparece em mobile, controlado pelo chat.css */
+
+/* DESKTOP (maior que 768px) */
+@media (min-width: 769px) {
+    /* No Desktop, ESCONDER botões dentro da mensagem do chat */
+    .acoes-chat {
+        display: none !important;
+    }
+
+    /* No Desktop, MOSTRAR container da sidebar */
+    #sidebar-proposta-container {
+        display: block;
+    }
+}
+
+/* MOBILE (menor ou igual a 768px) */
+@media (max-width: 768px) {
+    .chat-sidebar {
+        width: 100%;
+        display: flex;
+    }
+    .chat-area {
+        display: none;
+    }
+
+    body.tem-conversa .chat-sidebar {
+        display: none;
+    }
+    body.tem-conversa .chat-area {
+        display: flex;
+    }
+
+    /* No Mobile, garantir que os botões do chat apareçam */
+    .acoes-chat {
+        display: flex !important;
+    }
+
+    /* Esconder container extra da sidebar no mobile (caso a sidebar apareça de alguma forma) */
+    #sidebar-proposta-container {
+        display: none;
+    }
+}
+
+/* Estilos auxiliares */
+.chat-messages img { border: none !important; outline: none !important; }
+.message img.mensagem-imagem { max-width: 320px; border-radius: 8px; }
+.proposta-status {
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 14px;
+}
+.proposta-aceita { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.proposta-recusada { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.proposta-pendente { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+
+.proposta-card {
+    border: 1px solid #e1e4e8;
+    padding: 12px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    max-width: 420px;
+    color: #1c1e21;
+    margin: 4px 0;
+}
+
+.proposta-actions {
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.btn-aceitar { background: #42b72a; color: #fff; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; }
+.btn-recusar { background: #ff4444; color: #fff; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; }
+
+/* Botão Propor Entrega (transportador) - estilo e hover */
+.btn-negociar, #btn-negociar-sidebar {
+    background: #42b72a;
+    color: #fff;
+    border: none;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+#btn-negociar-sidebar {
+    width: 100%;
+    font-size: 15px;
+}
+
+.btn-negociar:hover, #btn-negociar-sidebar:hover {
+    background: #389e21;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(56, 158, 33, 0.18);
+}
+
+/* Modal (aceite de proposta) */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 14000; align-items: center; justify-content: center; padding: 20px; }
+.modal-content { background: #fff; padding: 25px; border-radius: 12px; max-width: 500px; width: 100%; }
+.modal-header { display: flex; align-items: center; margin-bottom: 15px; }
+.modal-icon { width: 48px; height: 48px; border-radius: 50%; background: #d4edda; color: #155724; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 15px; }
+.modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+.btn-modal-primary { background: #42b72a; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+.btn-modal-secondary { background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+.modal-titulo-compacto { margin: 0 0 5px 0; }
+.modal-subtitulo { margin: 0; color: #666; }
+.modal-corpo-texto { margin: 15px 0; }
+
+.whatsapp-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #25D366;
+    color: white;
+    padding: 13.75px 15px;
+    border-radius: 100%;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+    border: #25D366;
+    cursor: pointer;
+}
+
+.whatsapp-button:hover {
+    background-color: #1da851;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
+}
+
+.whatsapp-button i {
+    font-size: 20px;
+}
+
+/* Nota: seletor mantido igual ao original (com o mesmo nome de classe usado no HTML,
+   "sidebar-negociacao-btn"); este hover nunca chegou a ser aplicado por causa de uma
+   diferença de nome pré-existente e foi preservado tal como estava. */
+.sidebar-negociarcao-btn:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* --- Sidebar: card de conversa (topo) --- */
+.sidebar-whatsapp-row {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* --- Card de endereço do comprador --- */
+.endereco-card-box {
+    padding: 12px;
+    background: #fff;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.endereco-header-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.endereco-icon-alerta {
+    font-size: 18px;
+    color: #d9534f;
+}
+
+.endereco-titulo-compacto {
+    font-size: 13px;
+}
+
+.endereco-link-sublinhado {
+    color: #1877f2;
+    text-decoration: underline;
+    display: block;
+}
+
+.endereco-texto-truncado {
+    font-size: 13px;
+    color: inherit;
+    margin-bottom: 6px;
+}
+
+.endereco-cep-info {
+    font-size: 12px;
+    color: #777;
+}
+
+/* --- Botão "Propor Entrega" na sidebar --- */
+.sidebar-negociacao-btn {
+    padding: 12px;
+}
+
+/* --- Cabeçalho do chat: avatar + nome --- */
+.outro-avatar-img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid #eee;
+}
+
+/* --- Modal "Propor Entrega" (transportador) --- */
+#modal-proposta-transportador {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 13000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-proposta-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 520px;
+    width: 100%;
+}
+
+.modal-proposta-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.modal-proposta-title {
+    margin: 0;
+    font-size: 18px;
+}
+
+.modal-proposta-close {
+    background: transparent;
+    border: none;
+    font-size: 22px;
+}
+
+.modal-proposta-input {
+    width: 100%;
+    padding: 8px;
+    margin: 6px 0;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+.modal-proposta-footer {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+.btn-proposta-enviar {
+    background: #42b72a;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.btn-proposta-cancelar {
+    background: #ccc;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+/* --- Modal de zoom do avatar (JS) --- */
+.avatar-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 12000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.avatar-modal-img {
+    max-width: 96%;
+    max-height: 96%;
+    border-radius: 8px;
+}
+
+/* --- Utilitários usados nos cards de proposta montados via JS --- */
+.mt-8 { margin-top: 8px; }
+.mb-5 { margin-bottom: 5px; }
+.texto-secundario { color: #666; }
+.texto-destaque { color: #333; }
+.fonte-pequena { font-size: 12px; }
+.icon-spaced-sm { margin-right: 5px; }
+
+.sidebar-proposta-titulo {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.sidebar-proposta-detalhes {
+    margin-top: 8px;
+    font-size: 13px;
+}

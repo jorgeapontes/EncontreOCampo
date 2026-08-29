@@ -154,145 +154,6 @@ if ($ultima_proposta_vendedor) {
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <style>
-        /* Estilos similares ao Comprador, mas adaptados ao Vendedor */
-        .details-container {
-            padding-top: 120px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .proposta-details {
-            background-color: var(--white);
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            padding: 30px;
-        }
-        
-        /* Cores de status */
-        .status-pending { background-color: #FFF3E0; color: #FF9800; border: 1px solid #FF9800; }
-        .status-accepted { background-color: #E8F5E9; color: #4CAF50; border: 1px solid #4CAF50; }
-        .status-rejected { background-color: #FFEBEE; color: #F44336; border: 1px solid #F44336; }
-        .status-negotiation { background-color: #E3F2FD; color: #2196F3; border: 1px solid #2196F3; }
-        .status-badge {
-            font-weight: bold;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 1em;
-        }
-        
-        .info-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .info-card {
-            padding: 15px;
-            border-radius: 8px;
-            background-color: var(--gray);
-        }
-        
-        .proposta-valor {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: var(--secondary-color);
-        }
-        
-        /* Seção de Condições */
-        .condicoes-section {
-            background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            border-left: 5px solid var(--secondary-color);
-        }
-        
-        .condicoes-section.vendedor {
-            border-left-color: var(--primary-color);
-            background-color: #f0fff0; /* Verde bem claro para a última oferta */
-        }
-        
-        /* Seção de Ações e Formulário */
-        .actions-section {
-            padding-top: 20px;
-            border-top: 2px dashed #eee;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .btn-success { background-color: var(--primary-color); color: white; }
-        .btn-success:hover { background-color: var(--primary-dark); }
-        .btn-danger { background-color: #F44336; color: white; }
-        .btn-danger:hover { background-color: #D32F2F; }
-        .btn-info { background-color: #2196F3; color: white; }
-        .btn-info:hover { background-color: #1976D2; }
-        .btn-back { background-color: #aaa; color: white; }
-        .btn-back:hover { background-color: #888; }
-        
-        .contraproposta-form {
-            background-color: #fcfcfc;
-            border: 1px solid #ddd;
-            padding: 20px;
-            border-radius: 8px;
-        }
-        
-        .form-group { margin-bottom: 15px; }
-        .form-group input, .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-        
-        .estoque-info {
-            font-size: 0.85em;
-            color: #666;
-            margin-top: 5px;
-            font-style: italic;
-        }
-        
-        /* ... outros estilos ... */
-        
-        .btn-warning { 
-            background-color: #dc3545; 
-            color: white; 
-        }
-        
-        .btn-warning:hover { 
-            background-color: #c82333;
-            transform: translateY(-2px);
-        }
-        
-        .btn-edit { 
-            background-color: #FF9800; 
-            color: white; 
-        }
-        
-        .btn-edit:hover { 
-            background-color: #e68900; 
-            transform: translateY(-2px);
-        }
-    </style>
 </head>
 <body>
     <!-- Nova Navbar no estilo do index.php -->
@@ -300,7 +161,7 @@ if ($ultima_proposta_vendedor) {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -344,13 +205,13 @@ if ($ultima_proposta_vendedor) {
     <main class="container details-container">
         
         <?php if (isset($_GET['sucesso'])): ?>
-            <div class="alert alert-success" style="margin-bottom: 20px; padding: 15px; background: #d4edda; color: #155724; border-radius: 5px;">
+            <div class="alert alert-success">
                 <i class="fas fa-check-circle"></i> <?php echo htmlspecialchars($_GET['sucesso']); ?>
             </div>
         <?php endif; ?>
 
         <?php if (isset($_GET['erro'])): ?>
-            <div class="alert alert-danger" style="margin-bottom: 20px; padding: 15px; background: #f8d7da; color: #721c24; border-radius: 5px;">
+            <div class="alert alert-danger">
                 <i class="fas fa-times-circle"></i> <?php echo htmlspecialchars($_GET['erro']); ?>
             </div>
         <?php endif; ?>
@@ -409,7 +270,7 @@ if ($ultima_proposta_vendedor) {
                 
                 <?php if (in_array($status_negociacao, ['aceita', 'recusada'])): ?>
                     <!-- Status finalizado - apenas visualização -->
-                    <p style="font-size: 1.1em; font-style: italic; color: var(--text-light);">
+                    <p class="proposta-observacao">
                         Esta negociação está encerrada com o status "<?php echo $status_info['text']; ?>".
                         <br><small>Data da conclusão: <?php echo date('d/m/Y H:i', strtotime($proposta['data_atualizacao'] ?? $proposta['data_proposta'])); ?></small>
                     </p>
@@ -439,7 +300,7 @@ if ($ultima_proposta_vendedor) {
                         </a>
                     </div>
                     
-                    <div id="contraproposta-form-initial" class="contraproposta-form" style="display:none;">
+                    <div id="contraproposta-form-initial" class="contraproposta-form">
                         <h3>Sua Contraproposta (Condições de Venda)</h3>
                         <form action="processar_decisao?id=<?php echo $proposta_comprador_id; ?>&action=contraproposta" method="POST">
                         <input type="hidden" name="proposta_id" value="<?php echo $proposta_comprador_id; ?>">
@@ -505,7 +366,7 @@ if ($ultima_proposta_vendedor) {
                     <p>Você enviou uma <strong>contraproposta</strong> e aguarda a resposta do comprador.</p>
                     
                     <?php if ($ultima_proposta_vendedor): ?>
-                        <div class="condicoes-section vendedor" style="margin-bottom: 20px;">
+                        <div class="condicoes-section vendedor compact">
                             <h3>Sua Última Contraproposta (Enviada em: <?php echo date('d/m/Y H:i', strtotime($ultima_proposta_vendedor['data_contra_proposta'])); ?>)</h3>
                             <p><strong>Preço:</strong> R$ <?php echo number_format($ultima_proposta_vendedor['preco_proposto'], 2, ',', '.'); ?> / <?php echo htmlspecialchars($proposta['unidade_medida']); ?></p>
                             <p><strong>Quantidade:</strong> <?php echo $ultima_proposta_vendedor['quantidade_proposta']; ?> <?php echo htmlspecialchars($proposta['unidade_medida']); ?></p>
@@ -531,13 +392,13 @@ if ($ultima_proposta_vendedor) {
                     
                 <?php else: ?>
                     <!-- Status não identificado -->
-                    <p style="font-size: 1.1em; font-style: italic; color: var(--text-light);">
+                    <p class="proposta-observacao">
                         Status da negociação não identificado. Entre em contato com o suporte.
                         <br><small>Negociação: <?php echo $status_negociacao; ?> | Comprador: <?php echo $status_comprador; ?></small>
                     </p>
                 <?php endif; ?>
                 
-                <a href="propostas" class="btn btn-back" style="margin-top: 20px;">
+                <a href="propostas" class="btn btn-back">
                     <i class="fas fa-arrow-left"></i> 
                     Voltar para a Lista
                 </a>

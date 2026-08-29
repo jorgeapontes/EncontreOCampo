@@ -55,8 +55,8 @@ $vendedor_id_fk = $vendedor['id'] ?? 0;
 
 // Exemplo de alerta no topo do painel do vendedor
 if (isset($_SESSION['status_assinatura']) && $_SESSION['status_assinatura'] === 'atrasado') {
-    echo '<div style="background: #fff3cd; color: #856404; padding: 15px; text-align: center; border-bottom: 2px solid #ffeeba;">
-            <strong>Atenção:</strong> Identificamos um problema no pagamento da sua mensalidade. 
+    echo '<div class="alert-atraso">
+            <strong>Atenção:</strong> Identificamos um problema no pagamento da sua mensalidade.
             Para evitar o bloqueio dos seus anúncios, <a href="escolher_plano">clique aqui e atualize seu pagamento</a>.
           </div>';
 }
@@ -271,78 +271,15 @@ function getImagePath($path) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
     
-    <style>
-        html {
-            scrollbar-gutter: stable;
-        }
-
-        .input-group-cep {
-            display: flex;
-            align-items: flex-end;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .btn-buscar-cep {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.3s;
-            margin-bottom: 2px;
-            white-space: nowrap;
-        }
-        .btn-buscar-cep:hover {
-            background-color: #218838;
-        }
-        .btn-buscar-cep:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
-        }
-        .form-group-cep {
-            flex: 1;
-            min-width: 150px;
-        }
-        .cep-message {
-            margin-top: 5px;
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 13px;
-            animation: fadeIn 0.3s;
-            display: none;
-        }
-        .cep-message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-            display: block;
-        }
-        .cep-message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            display: block;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-    </style>
 </head>
 <body>
     <?php if (isset($_SESSION['aviso_expiracao'])): ?>
-    <div id="alert-expirado" style="background: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; font-family: 'Inter', sans-serif; box-shadow: 0 4px 10px rgba(0,0,0,0.05); animation: slideIn 0.5s ease;">
-        <div style="display: flex; align-items: center;">
-            <i class="fa-solid fa-circle-exclamation" style="font-size: 20px; margin-right: 12px;"></i>
+    <div id="alert-expirado" class="alert-expirado">
+        <div class="alert-expirado-content">
+            <i class="fa-solid fa-circle-exclamation"></i>
             <span><strong>Plano Expirado:</strong> A sua assinatura Profissional terminou e a sua conta foi movida para o <strong>Plano Gratuito</strong>.</span>
         </div>
-        <button onclick="document.getElementById('alert-expirado').style.display='none'" style="background:none; border:none; color: #856404; cursor:pointer; font-size: 20px;">&times;</button>
+        <button onclick="document.getElementById('alert-expirado').style.display='none'" class="alert-expirado-close">&times;</button>
     </div>
     <?php unset($_SESSION['aviso_expiracao']); endif; ?>
     
@@ -350,7 +287,7 @@ function getImagePath($path) {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -417,7 +354,7 @@ function getImagePath($path) {
                                     alt="Foto de Perfil">
                                 <div class="foto-overlay"><i class="fas fa-pencil-alt"></i></div>
                             </div>
-                            <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" style="display: none;">
+                            <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" class="file-input-hidden">
                         </div>
                     </center>
                 </div>
@@ -445,7 +382,7 @@ function getImagePath($path) {
                     <div class="form-group-row">
                         <div class="form-group">
                             <label>CPF/CNPJ (Não editável)</label>
-                            <input type="text" value="<?php echo htmlspecialchars($vendedor['cpf_cnpj'] ?? ''); ?>" disabled style="background-color: #f8f9fa;">
+                            <input type="text" value="<?php echo htmlspecialchars($vendedor['cpf_cnpj'] ?? ''); ?>" disabled>
                         </div>
                         <div class="form-group">
                             <label for="telefone1" class="required">Telefone Principal</label>
@@ -453,7 +390,7 @@ function getImagePath($path) {
                         </div>
                     </div>
 
-                    <h3 style="margin-top: 20px; color: #2d3436; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">Endereço</h3>
+                    <h3>Endereço</h3>
                     
                     <div class="form-group-row input-group-cep">
                         <div class="form-group form-group-cep">
@@ -462,7 +399,7 @@ function getImagePath($path) {
                             <div id="cep-message" class="cep-message"></div>
                         </div>
                         <button type="button" class="btn-buscar-cep" id="btn-buscar-cep" onclick="buscarCep()">
-                            <i class="fas fa-search" style="margin-right: 5px;"></i> Buscar
+                            <i class="fas fa-search"></i> Buscar
                         </button>
                         
                         <div class="form-group">
@@ -478,14 +415,14 @@ function getImagePath($path) {
                                 ?>
                             </select>
                         </div>
-                        <div class="form-group" style="flex: 2;">
+                        <div class="form-group flex-2">
                             <label for="cidade">Cidade</label>
                             <input type="text" id="cidade" name="cidade" value="<?php echo htmlspecialchars($vendedor['cidade'] ?? ''); ?>">
                         </div>
                     </div>
 
                     <div class="form-group-row">
-                        <div class="form-group" style="flex: 3;">
+                        <div class="form-group flex-3">
                             <label for="rua">Rua/Logradouro</label>
                             <input type="text" id="rua" name="rua" value="<?php echo htmlspecialchars($vendedor['rua'] ?? ''); ?>">
                         </div>
@@ -536,7 +473,7 @@ function getImagePath($path) {
                     <button type="submit" class="big-button"><i class="fas fa-save"></i> Salvar Alterações</button>
                     
                     <center>
-                        <a href="#" id="delete-account-link" style="display: inline-block; margin-top: 20px; color: #666; text-decoration: none; font-size: 0.9rem;">
+                        <a href="#" id="delete-account-link" class="delete-account-link">
                             <i class="fas fa-trash-alt"></i> Apagar minha conta
                         </a>
                     </center>
@@ -548,16 +485,16 @@ function getImagePath($path) {
         </section>
     </div>
 
-    <div id="delete-account-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
-        <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%;">
-            <h3 style="color: #c62828; margin-bottom: 15px;"><i class="fas fa-exclamation-triangle"></i> Confirmar exclusão</h3>
+    <div id="delete-account-modal" class="delete-account-modal">
+        <div class="delete-account-modal-content">
+            <h3><i class="fas fa-exclamation-triangle"></i> Confirmar exclusão</h3>
             <p>Tem certeza? Esta ação não pode ser desfeita.</p>
-            <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button id="cancel-delete" style="padding: 10px 20px; border: 1px solid #ddd; background: #f5f5f5; border-radius: 4px; cursor: pointer;">Cancelar</button>
-                <form id="delete-account-form" method="POST" action="deletar_conta" style="margin: 0;">
+            <div class="delete-account-modal-actions">
+                <button id="cancel-delete" class="btn-cancel-delete">Cancelar</button>
+                <form id="delete-account-form" method="POST" action="deletar_conta" class="delete-account-form">
                     <input type="hidden" name="usuario_id" value="<?php echo $usuario['id']; ?>">
                     <input type="hidden" name="vendedor_id" value="<?php echo $vendedor['id']; ?>">
-                    <button type="submit" style="padding: 10px 20px; background: #c62828; color: white; border: none; border-radius: 4px; cursor: pointer;">Sim, apagar</button>
+                    <button type="submit" class="btn-confirm-delete">Sim, apagar</button>
                 </form>
             </div>
         </div>

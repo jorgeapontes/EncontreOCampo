@@ -373,7 +373,7 @@ $categorias_disponiveis = [
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div><h1>ENCONTRE</h1><h2>O CAMPO</h2></div>
                     </a>
@@ -412,7 +412,7 @@ $categorias_disponiveis = [
                                     <?php if (!empty($anuncio['imagem_url']) && file_exists($anuncio['imagem_url'])): ?>
                                         <img src="<?php echo htmlspecialchars($anuncio['imagem_url']); ?>" alt="Imagem do Anúncio">
                                     <?php else: ?>
-                                        <div class="default-image"><i class="fas fa-image" style="font-size: 3rem; color: #ccc;"></i></div>
+                                        <div class="default-image"><i class="fas fa-image icon-muted"></i></div>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -450,7 +450,7 @@ $categorias_disponiveis = [
                             <div class="imagens-preview" id="imagensPreview">
                                 </div>
                             
-                            <input type="file" id="novas_imagens" name="novas_imagens[]" accept="image/*" multiple style="display: none;">
+                            <input type="file" id="novas_imagens" name="novas_imagens[]" accept="image/*" multiple class="file-input-hidden">
                         </div>
                     </div>
 
@@ -505,7 +505,7 @@ $categorias_disponiveis = [
                             <label for="desconto_ativo">Ativar desconto para este produto</label>
                         </div>
 
-                        <div id="campos-desconto" style="<?php echo $anuncio['desconto_ativo'] ? '' : 'display: none;'; ?>">
+                        <div id="campos-desconto" class="<?php echo $anuncio['desconto_ativo'] ? '' : 'hidden'; ?>">
                             <div class="tipo-desconto">
                                 <label>
                                     <input type="radio" name="tipo_desconto" value="percentual" <?php echo ($tipo_desconto_atual === 'percentual') ? 'checked' : ''; ?>>
@@ -638,7 +638,7 @@ $categorias_disponiveis = [
                 if(allImages.length > 0) {
                     topImageContainer.innerHTML = `<img src="${allImages[0].url}" alt="Principal">`;
                 } else {
-                    topImageContainer.innerHTML = '<div class="default-image"><i class="fas fa-image" style="font-size:3rem"></i></div>';
+                    topImageContainer.innerHTML = '<div class="default-image"><i class="fas fa-image"></i></div>';
                 }
 
                 allImages.forEach((img, index) => {

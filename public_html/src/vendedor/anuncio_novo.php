@@ -271,7 +271,7 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div><h1>ENCONTRE</h1><h2>O CAMPO</h2></div>
                     </a>
@@ -292,10 +292,10 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
         <section class="form-section">
             <section class="form-section">
     <?php if ($limite_atingido): ?>
-        <div class="alert error-alert" style="background-color: #fff3cd; color: #856404; border-color: #ffeeba;">
-            <i class="fas fa-exclamation-crown"></i> 
+        <div class="alert error-alert warning-alert">
+            <i class="fas fa-exclamation-crown"></i>
             <strong>Limite do Plano Atingido:</strong> Você está usando <?php echo $total_atual; ?> de <?php echo $limite_permitido; ?> anúncios permitidos no plano <?php echo $plano_info['nome_plano']; ?>.
-            <br><a href="escolher_plano" style="font-weight: bold; color: #009ee3;">Faça upgrade para continuar anunciando.</a>
+            <br><a href="escolher_plano" class="link-upgrade">Faça upgrade para continuar anunciando.</a>
         </div>
     <?php endif; ?>
 
@@ -304,9 +304,6 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
     <?php endif; ?>
     
     <form method="POST" action="anuncio_novo" class="anuncio-form <?php echo $limite_atingido ? 'form-disabled' : ''; ?>" enctype="multipart/form-data" id="anuncioForm">
-        <style>
-            .form-disabled { opacity: 0.6; pointer-events: none; user-select: none; }
-        </style>
             <?php if (!empty($mensagem_erro)): ?>
                 <div class="alert error-alert"><i class="fas fa-exclamation-triangle"></i> <?php echo $mensagem_erro; ?></div>
             <?php endif; ?>
@@ -366,7 +363,7 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
                             
                             <div class="imagens-preview" id="imagensPreview"></div>
                             
-                            <input type="file" id="imagens" name="imagens[]" accept="image/*" multiple style="display: none;" required>
+                            <input type="file" id="imagens" name="imagens[]" accept="image/*" multiple class="file-input-hidden" required>
                             <p>*Clique na estrela para tornar a respectiva imagem capa do anúncio.</p>
                         </div>
                     </div>
@@ -560,8 +557,8 @@ $preco_formatado = number_format((float)$preco, 2, ',', '');
                 if (filesArray.length === 0) {
                     imagemPrincipalPreview.innerHTML = `
                         <div class="default-image">
-                            <i class="fas fa-image" style="font-size: 4rem; color: #ccc;"></i>
-                            <p style="color: #999;">Imagem Principal</p>
+                            <i class="fas fa-image icon-muted"></i>
+                            <p>Imagem Principal</p>
                         </div>`;
                 }
 

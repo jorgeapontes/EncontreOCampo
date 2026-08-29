@@ -351,6 +351,42 @@ th:last-child {
     filter: brightness(90%);
 }
 
+.action-btn.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+.limite-plano-info {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.produto-thumb-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.produto-thumb-img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.produto-id-label {
+    font-size: 0.7em;
+    color: #999;
+}
+
 /* Botão CTA (Novo Anúncio) */
 .cta-button {
     display: inline-flex;
@@ -373,6 +409,11 @@ th:last-child {
 
 .cta-button:hover {
     background-color: var(--primary-dark);
+}
+
+.cta-button.disabled {
+    background-color: #b2bec3;
+    cursor: not-allowed;
 }
 
 .cta-button i {

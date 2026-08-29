@@ -340,6 +340,32 @@ th:last-child {
     filter: brightness(90%);
 }
 
+.action-btn.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+.aviso-link {
+    margin-top: 10px;
+}
+
+.form-inline {
+    display: inline;
+}
+
+.card-anuncio.bloqueado {
+    background-color: #f1f2f6;
+    opacity: 0.8;
+}
+
 /* Botão CTA (Novo Anúncio) */
 .cta-button {
     display: inline-flex;
@@ -361,6 +387,11 @@ th:last-child {
 
 .cta-button:hover {
     background-color: var(--primary-dark);
+}
+
+.cta-button.disabled {
+    background-color: #b2bec3;
+    cursor: not-allowed;
 }
 
 .cta-button i {
@@ -1265,6 +1296,10 @@ th:last-child {
     .card-action-btn:hover {
         transform: scale(1.1);
         opacity: 0.9;
+    }
+
+    .card-action-btn.disabled {
+        opacity: 0.3;
     }
 
     /* Botões de ação */

@@ -376,79 +376,13 @@ try {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-    <style>
-        /* Alerts */
-        .alert { padding: 15px; margin-bottom: 20px; border-radius: 5px; display: flex; align-items: center; gap: 10px; }
-        .alert-success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
-        .alert-error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
-        .conversas-list { max-height: 600px; overflow-y: auto; }
-        
-        /* Arquivados */
-        .conversa-card.arquivado { background: #f8f9fa; border-left: 4px solid #6c757d; opacity: 0.8; }
-        .conversa-card.arquivado:hover { background: #f8f9fa; cursor: default; }
-        .conversa-card.arquivado .produto-thumb img { filter: grayscale(50%); }
-        .conversa-card.arquivado .comprador-nome, .conversa-card.arquivado .produto-nome, .conversa-card.arquivado .ultima-mensagem { color: #6c757d; }
-        .conversa-card.arquivado .produto-preco { color: #28a745; }
-        
-        .comprador-nome { font-weight: 700; color: #333; font-size: 16px; display: flex; align-items: center; gap: 8px; }
-        .badge-novo { background: #dc3545; color: white; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; }
-        .badge-tipo { background: #17a2b8; color: white; font-size: 10px; padding: 3px 8px; border-radius: 12px; font-weight: 600; }
-        .badge-arquivado { background: #6c757d; color: white; font-size: 10px; padding: 3px 8px; border-radius: 12px; font-weight: 600; }
-        
-        /* NOVO BOTÃO EXCLUIR */
-        .btn-excluir { background: #dc3545; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 5px; transition: all 0.3s; white-space: nowrap; border: none; cursor: pointer; }
-        .btn-excluir:hover { background: #c82333; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3); }
-        
-        .empty-state { padding: 4rem 2rem; text-align: center; color: #999; }
-        .empty-state i { font-size: 80px; margin-bottom: 1rem; opacity: 0.3; }
-        .empty-state h3 { font-size: 20px; margin-bottom: 0.5rem; }
-        
-        /* Modais */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .modal-content { background: white; border-radius: 10px; width: 90%; max-width: 500px; overflow: hidden; }
-        .modal-header { padding: 1.5rem; background: #f8f9fa; border-bottom: 1px solid #e9ecef; }
-        .modal-header h3 { font-size: 20px; }
-        .modal-arquivar .modal-header h3 { color: #6c757d; }
-        .modal-restaurar .modal-header h3 { color: #28a745; }
-        
-        /* Modal Excluir Estilo */
-        .modal-excluir .modal-header h3 { color: #dc3545; }
-        
-        .modal-body { padding: 1.5rem; }
-        .modal-body p { color: #666; margin-bottom: 1.5rem; }
-        
-        .modal-footer { padding: 1rem 1.5rem; background: #f8f9fa; border-top: 1px solid #e9ecef; display: flex; justify-content: flex-end; gap: 10px; }
-        
-        .btn-cancel { padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 5px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
-        .btn-cancel:hover { background: #f8f9fa; }
-        
-        .btn-confirm-arquivar { padding: 10px 20px; border: none; background: #6c757d; color: white; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s; }
-        .btn-confirm-arquivar:hover { background: #5a6268; }
-        
-        .btn-confirm-restaurar { padding: 10px 20px; border: none; background: #28a745; color: white; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s; }
-        .btn-confirm-restaurar:hover { background: #218838; }
-        
-        .btn-confirm-excluir { padding: 10px 20px; border: none; background: #dc3545; color: white; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s; }
-        .btn-confirm-excluir:hover { background: #c82333; }
-        
-        @media (max-width: 768px) {
-            .conversas-container { border-radius: 0 0 10px 10px; }
-            .conversa-card { flex-direction: column; align-items: flex-start; }
-            .conversa-top { flex-direction: column; gap: 5px; }
-            .conversa-actions { width: 100%; align-items: stretch; flex-direction: row; justify-content: space-between; }
-            .btn-chat, .btn-arquivar, .btn-restaurar, .btn-excluir { flex: 1; justify-content: center; }
-            .ultima-mensagem { max-width: 100%; }
-            .stats-bar { flex-wrap: wrap; }
-            .modal-content { width: 95%; }
-        }
-    </style>
 </head>
 <body>
     <header>
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../../index" class="logo-link">
                         <img src="../../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -567,14 +501,14 @@ try {
             <div class="modal-header"><h3><i class="fas fa-archive"></i> Arquivar Conversa</h3></div>
             <div class="modal-body">
                 <p>Tem certeza que deseja arquivar esta conversa?</p>
-                <ul style="margin-left: 20px; color: #666;">
+                <ul class="modal-list">
                     <li>A conversa será movida para a seção "Arquivadas"</li>
                     <li>Você não poderá mais visualizar o histórico</li>
                 </ul>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-cancel" onclick="fecharModal('arquivar')">Cancelar</button>
-                <form id="arquivarForm" method="POST" style="display: inline;">
+                <form id="arquivarForm" method="POST" class="form-inline">
                     <input type="hidden" name="action" value="arquivar_conversa">
                     <input type="hidden" id="conversa_id_arquivar" name="conversa_id">
                     <input type="hidden" id="tipo_chat_arquivar" name="tipo_chat">
@@ -592,7 +526,7 @@ try {
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-cancel" onclick="fecharModal('restaurar')">Cancelar</button>
-                <form id="restaurarForm" method="POST" style="display: inline;">
+                <form id="restaurarForm" method="POST" class="form-inline">
                     <input type="hidden" name="action" value="restaurar_conversa">
                     <input type="hidden" id="conversa_id_restaurar" name="conversa_id">
                     <input type="hidden" id="tipo_chat_restaurar" name="tipo_chat">
@@ -607,14 +541,14 @@ try {
             <div class="modal-header"><h3><i class="fas fa-trash-alt"></i> Excluir Conversa</h3></div>
             <div class="modal-body">
                 <p>Tem certeza que deseja excluir esta conversa?</p>
-                <ul style="margin-left: 20px; color: #666;">
+                <ul class="modal-list">
                     <li>A conversa será removida da sua lista <strong>permanentemente</strong>.</li>
                     <li>O outro usuário <strong>ainda terá acesso</strong> ao histórico.</li>
                 </ul>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-cancel" onclick="fecharModal('excluir')">Cancelar</button>
-                <form id="excluirForm" method="POST" style="display: inline;">
+                <form id="excluirForm" method="POST" class="form-inline">
                     <input type="hidden" name="action" value="excluir_conversa">
                     <input type="hidden" id="conversa_id_excluir" name="conversa_id">
                     <input type="hidden" id="tipo_chat_excluir" name="tipo_chat">
@@ -780,8 +714,8 @@ function renderizarConversa(conversa) {
     // Construir HTML do card de forma mais segura
     card.innerHTML = `
         ${!mostraArquivados ? 
-            `<a href="${chatUrl}" class="conversa-link" style="display: flex; gap: 1.5rem; align-items: center; text-decoration: none; color: inherit; flex: 1;">` : 
-            `<div class="conversa-content" style="display: flex; gap: 1.5rem; align-items: center; flex: 1; cursor: default;">`
+            `<a href="${chatUrl}" class="conversa-link">` :
+            `<div class="conversa-content">`
         }
             <div class="produto-thumb">
                 <img src="${escapeHtml(imagemProduto)}" alt="${escapeHtml(conversa.produto_nome)}" onerror="this.src='../../img/placeholder.png'">
@@ -950,9 +884,9 @@ function atualizarConversaExistente(card, conversa) {
             compradorNomeDiv.appendChild(novoBadge);
             
             // Aplicar animação para novo badge
-            novoBadge.style.animation = 'pulse 1s ease-in-out';
+            novoBadge.classList.add('pulsando');
             setTimeout(() => {
-                novoBadge.style.animation = '';
+                novoBadge.classList.remove('pulsando');
             }, 1000);
             
         } else if (badgeNovo) {
@@ -962,10 +896,10 @@ function atualizarConversaExistente(card, conversa) {
                 if (badgeNovo.getAttribute('data-animating') !== 'true') {
                     badgeNovo.setAttribute('data-animating', 'true');
                     badgeNovo.textContent = `${conversa.mensagens_nao_lidas} nova${conversa.mensagens_nao_lidas > 1 ? 's' : ''}`;
-                    badgeNovo.style.animation = 'pulse 1s ease-in-out';
-                    
+                    badgeNovo.classList.add('pulsando');
+
                     setTimeout(() => {
-                        badgeNovo.style.animation = '';
+                        badgeNovo.classList.remove('pulsando');
                         badgeNovo.setAttribute('data-animating', 'false');
                     }, 1000);
                 }           
@@ -1126,9 +1060,9 @@ function verificarAtualizacoes() {
                             if (data.novas_conversas.length <= 0) {
                                 mostrarNotificacaoNovasMensagens(data.ultimas_mensagens.length);
                                 // Animação sutil
-                                badgeNovo.style.animation = 'pulse 1s ease-in-out';
+                                badgeNovo.classList.add('pulsando');
                                 setTimeout(() => {
-                                    badge.style.animation = '';
+                                    badge.classList.remove('pulsando');
                                 }, 1000);
                             }
                         }
@@ -1165,80 +1099,16 @@ function mostrarNotificacaoNovasMensagens(quantidade) {
         <button onclick="this.parentElement.remove()">&times;</button>
     `;
     
-    // Estilos
-    notif.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: #28a745;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        z-index: 9999;
-        animation: slideInRight 0.3s ease-out;
-    `;
-    
     document.body.appendChild(notif);
-    
+
     // Remover automaticamente após 5 segundos
     setTimeout(() => {
         if (notif.parentElement) {
-            notif.style.animation = 'slideOutRight 0.3s ease-in';
+            notif.classList.add('saindo');
             setTimeout(() => notif.remove(), 300);
         }
     }, 5000);
 }
-
-// Adicionar estilos CSS para animações
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes pulse {
-        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
-        50% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
-        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
-    }
-    
-    @keyframes slideInRight {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    
-    @keyframes slideOutRight {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-    }
-    
-    .badge-novo {
-        animation: none; /* Reset inicial */
-        display: inline-block;
-        position: relative;
-    }
-
-    .notificacao-flutuante {
-        font-size: 14px;
-        font-weight: 500;
-    }
-    
-    .notificacao-flutuante button {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 20px;
-        cursor: pointer;
-        padding: 0;
-        margin-left: 10px;
-    }
-    
-    .conversa-card.nao-lida {
-        background-color: #f0f9ff !important;
-        border-left: 4px solid #2196F3 !important;
-    }
-`;
-document.head.appendChild(style);
 
 // Funções auxiliares
 function escapeHtml(text) {
@@ -1305,7 +1175,7 @@ function mostrarErroCarregamento(mensagem) {
             <i class="fas fa-exclamation-triangle"></i>
             <h3>Erro ao carregar conversas</h3>
             <p>${mensagem}</p>
-            <button onclick="carregarConversasIniciais()" class="btn-chat" style="margin-top: 15px;">
+            <button onclick="carregarConversasIniciais()" class="btn-chat retry">
                 <i class="fas fa-redo"></i> Tentar novamente
             </button>
         </div>
@@ -1357,27 +1227,11 @@ function mostrarNotificacao(mensagem) {
         <button onclick="this.parentElement.remove()">&times;</button>
     `;
     
-    notif.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: #28a745;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        z-index: 9999;
-        animation: slideInRight 0.3s ease-out;
-    `;
-    
     document.body.appendChild(notif);
-    
+
     setTimeout(() => {
         if (notif.parentElement) {
-            notif.style.animation = 'slideOutRight 0.3s ease-in';
+            notif.classList.add('saindo');
             setTimeout(() => notif.remove(), 300);
         }
     }, 4000);

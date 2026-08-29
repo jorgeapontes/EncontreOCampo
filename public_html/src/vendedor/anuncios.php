@@ -98,7 +98,7 @@ try {
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <a href="../../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                <a href="../../index" class="logo-link">
                     <img src="../../img/logo-nova.png" alt="Logo">
                     <div>
                         <h1>ENCONTRE</h1>
@@ -128,7 +128,7 @@ try {
             <center>
                 <h1>Meus Anúncios</h1>
                 <p>Gerencie seus produtos. Seu plano atual é: <strong><?php echo htmlspecialchars($nome_plano_atual); ?></strong></p>
-                <p style="font-size: 0.9em; color: #666;">Limite do plano: <strong><?php echo $limite_permitido; ?></strong> anúncios ativos.</p>
+                <p class="limite-plano-info">Limite do plano: <strong><?php echo $limite_permitido; ?></strong> anúncios ativos.</p>
             </center>
 
             <?php if (count($anuncios) > $limite_permitido): ?>
@@ -148,7 +148,7 @@ try {
                 <i class="fas fa-plus"></i> Novo Anúncio
             </a>
         <?php else: ?>
-             <button class="cta-button" style="background-color: #b2bec3; cursor: not-allowed;" onclick="alert('Você atingiu o limite de <?php echo $limite_permitido; ?> anúncios do seu plano. Faça upgrade ou exclua um item antigo.');">
+             <button class="cta-button disabled" onclick="alert('Você atingiu o limite de <?php echo $limite_permitido; ?> anúncios do seu plano. Faça upgrade ou exclua um item antigo.');">
                 <i class="fas fa-lock"></i> Limite Atingido
             </button>
         <?php endif; ?>
@@ -204,18 +204,18 @@ try {
                             
                             <tr class="<?php echo $bloqueado ? 'locked-row' : ''; ?>">
                                 <td>
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <?php 
+                                    <div class="produto-thumb-row">
+                                        <?php
                                         $img = $anuncio['imagem_url'] ?: '../img/placeholder.png';
                                         if (empty($img)) $img = '../img/placeholder.png';
                                         ?>
-                                        <img src="<?php echo htmlspecialchars($img); ?>" 
-                                             style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;"
+                                        <img src="<?php echo htmlspecialchars($img); ?>"
+                                             class="produto-thumb-img"
                                              onerror="this.src='../img/placeholder.png';">
                                         <div>
                                             <strong><?php echo htmlspecialchars($anuncio['nome']); ?></strong><br>
                                             <small><?php echo htmlspecialchars($anuncio['unidade_medida']); ?></small>
-                                            <div style="font-size: 0.7em; color: #999;">ID: <?php echo $anuncio['id']; ?></div>
+                                            <div class="produto-id-label">ID: <?php echo $anuncio['id']; ?></div>
                                         </div>
                                     </div>
                                 </td>
@@ -241,9 +241,9 @@ try {
                                 
                                 <td>
                                     <?php if ($bloqueado): ?>
-                                        <button class="action-btn" disabled style="opacity:0.3; cursor:not-allowed;"><i class="fas fa-edit"></i></button>
+                                        <button class="action-btn disabled" disabled><i class="fas fa-edit"></i></button>
                                         <button class="action-btn delete" onclick="confirmarExclusao(<?php echo $anuncio['id']; ?>)" title="Excluir para liberar espaço"><i class="fas fa-trash"></i></button>
-                                        <button class="action-btn" disabled style="opacity:0.3; cursor:not-allowed;"><i class="fas fa-power-off"></i></button>
+                                        <button class="action-btn disabled" disabled><i class="fas fa-power-off"></i></button>
                                     <?php else: ?>
                                         <button class="action-btn edit" onclick="window.location.href='anuncio_editar?id=<?php echo $anuncio['id']; ?>'"><i class="fas fa-edit"></i></button>
                                         <button class="action-btn delete" onclick="confirmarExclusao(<?php echo $anuncio['id']; ?>)"><i class="fas fa-trash"></i></button>

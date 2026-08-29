@@ -1,3 +1,11 @@
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
 :root {
     --primary-color: #4CAF50; /* Verde Principal */
     --primary-dark: #388E3C;

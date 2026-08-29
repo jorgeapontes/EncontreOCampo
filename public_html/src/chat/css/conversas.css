@@ -468,6 +468,10 @@ body {
     background: #1f7224;
 }
 
+.btn-chat.retry {
+    margin-top: 15px;
+}
+
 .btn-arquivar {
     font-family: "Montserrat", sans-serif;
     background: #6c757d;
@@ -582,6 +586,7 @@ body {
     border-radius: 12px;
     font-weight: 600;
     display: inline-block;
+    position: relative;
 }
 
 .badge-novo.pulsando {
@@ -1006,6 +1011,23 @@ html {
 
 .form-inline {
     display: inline;
+}
+
+.conversa-link {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    flex: 1;
+}
+
+.conversa-content {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    flex: 1;
+    cursor: default;
 }
 
 /* Notificação flutuante de novas mensagens (via polling AJAX) */

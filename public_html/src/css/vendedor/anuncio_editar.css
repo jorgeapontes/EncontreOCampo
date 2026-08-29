@@ -237,6 +237,26 @@ body {
     color: var(--primary-light);
 }
 
+.default-image i.icon-muted {
+    color: #ccc;
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+.file-input-hidden {
+    display: none;
+}
+
+#campos-desconto.hidden {
+    display: none;
+}
+
 .foto-overlay {
     position: absolute;
     top: 0;

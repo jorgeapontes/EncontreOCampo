@@ -77,7 +77,7 @@ if($_SESSION['usuario_tipo'] == 'vendedor') {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../index" class="logo-link">
                         <img src="../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -134,7 +134,7 @@ if($_SESSION['usuario_tipo'] == 'vendedor') {
         
         <?php if (empty($notificacoes)): ?>
             <div class="empty-state">
-                <i class="fas fa-bell-slash" style="font-size: 48px; margin-bottom: 20px;"></i>
+                <i class="fas fa-bell-slash"></i>
                 <h3>Nenhuma notificação</h3>
                 <p>Quando você tiver notificações, elas aparecerão aqui.</p>
             </div>

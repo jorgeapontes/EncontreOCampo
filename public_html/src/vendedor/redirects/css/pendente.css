@@ -1,0 +1,23 @@
+.pending-container {
+    text-align: center;
+    padding: 50px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+.pending-icon {
+    font-size: 80px;
+    color: #ff9800;
+    margin-bottom: 20px;
+}
+.btn-voltar {
+    background-color: #009ee3;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 5px;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 30px;
+}
+.botoes-wrapper {
+    margin-top: 30px;
+}

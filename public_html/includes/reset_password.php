@@ -30,164 +30,7 @@ if ($token) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nova Senha - Encontre o Campo</title>
-    <style>
-        :root {
-            --primary-color: #4CAF50;
-            --primary-dark: #388E3C;
-            --primary-light: #C8E6C9;
-            --dark-color: #2E7D32;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 450px;
-            padding: 40px;
-        }
-        
-        .logo {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .logo h1 {
-            color: var(--dark-color);
-            font-size: 28px;
-            margin-bottom: 5px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-        }
-        
-        input[type="password"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        input[type="password"]:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-        
-        .password-strength {
-            height: 5px;
-            background-color: #eee;
-            border-radius: 3px;
-            margin-top: 5px;
-            overflow: hidden;
-        }
-        
-        .strength-bar {
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s, background-color 0.3s;
-        }
-        
-        .btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 14px 20px;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: background-color 0.3s;
-        }
-        
-        .btn:hover {
-            background-color: var(--primary-dark);
-        }
-        
-        .btn:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-        
-        .back-link {
-            text-align: center;
-            margin-top: 20px;
-        }
-        
-        .back-link a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-size: 14px;
-        }
-        
-        .back-link a:hover {
-            text-decoration: underline;
-        }
-        
-        .message {
-            padding: 12px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .error {
-            background-color: #ffebee;
-            color: #c62828;
-            border: 1px solid #ef9a9a;
-        }
-        
-        .success {
-            background-color: var(--primary-light);
-            color: var(--primary-dark);
-            border: 1px solid var(--primary-color);
-        }
-        
-        .requirements {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        .requirements ul {
-            padding-left: 20px;
-            margin-top: 5px;
-        }
-        
-        .valid {
-            color: var(--primary-dark);
-        }
-        
-        .invalid {
-            color: #c62828;
-        }
-    </style>
+    <link rel="stylesheet" href="css/reset_password.css">
 </head>
 <body>
     <div class="container">
@@ -199,7 +42,7 @@ if ($token) {
         <?php if ($erro): ?>
             <div class="message error">
                 <?php echo $erro; ?>
-                <p style="margin-top: 10px;"><a href="forgot_password">Solicitar novo link</a></p>
+                <p class="solicitar-novo-link"><a href="forgot_password">Solicitar novo link</a></p>
             </div>
         <?php elseif (!$valido): ?>
             <div class="message error">
@@ -236,7 +79,7 @@ if ($token) {
                 <label for="confirmar_senha">Confirmar Senha</label>
                 <input type="password" id="confirmar_senha" name="confirmar_senha" required 
                        oninput="checkPasswordMatch()">
-                <div id="matchMessage" style="font-size: 12px; margin-top: 5px;"></div>
+                <div id="matchMessage" class="match-message"></div>
             </div>
             
             <button type="submit" class="btn" id="submitBtn" disabled>Redefinir Senha</button>

@@ -120,6 +120,7 @@ if ($viewer_id) {
     <link rel="shortcut icon" href="../img/logo-nova.png" type="image/x-icon">
     <title>Ver Perfil - <?php echo htmlspecialchars($user['nome'] ?? 'Usuário'); ?></title>
     <link rel="stylesheet" href="css/vendedor/vendas.css">
+    <link rel="stylesheet" href="css/verperfil.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
@@ -128,7 +129,7 @@ if ($viewer_id) {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../index" class="logo-link">
                         <img src="../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -171,16 +172,16 @@ if ($viewer_id) {
 
     <div class="main-content">
         <section class="section-anuncios">
-            <div style="display:flex;gap:20px;align-items:flex-start;margin-top:16px;">
-                <div style="width:140px;">
+            <div class="perfil-header-flex">
+                <div class="perfil-foto-wrapper">
                     <?php
                         // escolher foto do vendedor > comprador > usuário
                         $foto = $user['v_foto'] ?? $user['c_foto'] ?? ($user['foto_perfil_url'] ?? '');
                         $foto_path = getImagePath($foto);
                     ?>
-                    <img src="<?php echo htmlspecialchars($foto_path); ?>" alt="Foto" style="width:140px;height:140px;object-fit:cover;border-radius:8px;border:1px solid #eee;">
+                    <img src="<?php echo htmlspecialchars($foto_path); ?>" alt="Foto" class="perfil-foto-img">
                 </div>
-                <div style="flex:1;">
+                <div class="perfil-info-flex">
                     <h2><?php echo htmlspecialchars($user['nome']); ?></h2>
                     <?php
                         // mostrar email, se existir
@@ -198,7 +199,7 @@ if ($viewer_id) {
                         <div><strong>Telefone:</strong> <?php echo htmlspecialchars($phone); ?></div>
                     <?php endif; ?>
 
-                    <div style="margin-top:8px;"><strong>Endereço:</strong>
+                    <div class="perfil-endereco-bloco"><strong>Endereço:</strong>
                         <div>
                             <?php
                             // preferir dados do vendedor, senão comprador
@@ -224,7 +225,7 @@ if ($viewer_id) {
                         </div>
                     </div>
                 </div>
-                <div style="display: flex; align-items: center; flex-direction: column;">
+                <div class="perfil-avaliacao-col">
                 <?php
             // Buscar avaliações do usuário (vendedor, comprador ou transportador)
             $media_avaliacao = 0;
@@ -314,12 +315,12 @@ if ($viewer_id) {
         
         <?php if (!empty($tipo_avaliacao) && $total_avaliacoes > 0): ?>
         <div class="avaliacao-vendedor" >
-            <div class="media-avaliacao-vendedor" style="display: flex; align-items: center; gap: 10px;">
-                <div class="numero-media-vendedor" style="font-size: 1.8em; font-weight: 700; color: #ff9800;">
+            <div class="media-avaliacao-vendedor">
+                <div class="numero-media-vendedor">
                     <?php echo $media_avaliacao; ?>
                 </div>
                 <div>
-                    <div class="estrelas-media-vendedor" style="display: flex; gap: 3px; margin-bottom: 5px;">
+                    <div class="estrelas-media-vendedor">
                         <?php 
                         for ($i = 1; $i <= 5; $i++) {
                             if ($i <= floor($media_avaliacao)) {
@@ -332,21 +333,21 @@ if ($viewer_id) {
                         }
                         ?>
                     </div>
-                    <div class="total-avaliacoes-vendedor" style="color: #666; font-size: 0.9em;">
+                    <div class="total-avaliacoes-vendedor">
                         <?php echo $total_avaliacoes; ?> <?php echo $total_avaliacoes === 1 ? 'avaliação' : 'avaliações'; ?>
                     </div>
                 </div>
             </div>
-            <div style="margin-top: 8px;">
-                <a href="avaliacoes?tipo=<?php echo $tipo_avaliacao; ?>&id=<?php echo urlencode($profile_id); ?>" 
-                   style="font-size: 0.85em; color: #007bff; text-decoration: none;">
+            <div class="ver-avaliacoes-wrapper">
+                <a href="avaliacoes?tipo=<?php echo $tipo_avaliacao; ?>&id=<?php echo urlencode($profile_id); ?>"
+                   class="link-ver-avaliacoes">
                     Ver todas as avaliações <i class="fas fa-external-link-alt" ></i>
                 </a>
             </div>
         </div>
         <?php elseif (!empty($tipo_avaliacao)): ?>
-        <div style="margin: 10px 0 15px 0; padding: 10px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6; width: fit-content;">
-            <div style="color: #999; font-size: 0.9em;">
+        <div class="sem-avaliacoes-box">
+            <div class="sem-avaliacoes-texto">
                 <i class="far fa-star"></i> <?php echo $rotulo_tipo; ?> ainda não tem avaliações
             </div>
         </div>
@@ -536,7 +537,7 @@ if ($viewer_id) {
                                 $url_avaliacao = 'avaliar.php?tipo=' . urlencode($tipo_avaliacao) . '&' . $param_nome . '=' . urlencode($profile_id);
                                 
                                 if ($texto_botao) {
-                                    echo '<div style="margin-top:12px;">';
+                                    echo '<div class="avaliar-btn-wrapper">';
                                     echo '<a href="' . htmlspecialchars($url_avaliacao) . '" class="btn btn-info">';
                                     echo htmlspecialchars($texto_botao);
                                     echo '</a>';
@@ -553,12 +554,12 @@ if ($viewer_id) {
                 </div>
             </div>
 
-            <hr style="margin:18px 0;">
+            <hr class="hr-secao">
 
             <h3>Negociações com você</h3>
             <?php if ($viewer_id): ?>
                 <?php if (count($negociacoes) > 0): ?>
-                    <div class="cards-list" style="margin-top:12px;">
+                    <div class="cards-list">
                         <?php foreach ($negociacoes as $n): ?>
                             <div class="proposal-card" id="proposal-<?php echo $n['ID']; ?>">
                                 <div class="card-image">

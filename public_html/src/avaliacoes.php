@@ -321,288 +321,18 @@ try {
     <title><?php echo $pagina_titulo; ?> - Encontre o Campo</title>
     <link rel="shortcut icon" href="../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="../index.css">
+    <link rel="stylesheet" href="css/avaliacoes.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #4CAF50;
-            --primary-dark: #2E7D32;
-            --light-gray: #f5f5f5;
-            --dark-gray: #333;
-            --border-color: #ddd;
-            --radius: 8px;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background: var(--light-gray);
-            color: var(--dark-gray);
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 100px auto auto;
-            padding: 20px;
-        }
-        
-        .header {
-            background: white;
-            padding: 20px;
-            border-radius: var(--radius);
-            margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            justify-content: space-between;
-            display: flex;
-        }
-        
-        .header h1 {
-            color: var(--primary-dark);
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            color: #666;
-            font-size: 1.1em;
-        }
-
-        .header-info{
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        
-        .voltar-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--primary-color);
-            color: white;
-            padding: 10px 20px;
-            border-radius: var(--radius);
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-            width: 110.64px;
-            height: 45.6px;
-        }
-        
-        .voltar-btn:hover {
-            background: var(--primary-dark);
-            transform: translateX(-5px);
-        }
-        
-        .resumo-avaliacoes {
-            background: white;
-            padding: 25px;
-            border-radius: var(--radius);
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .media-container {
-            align-items: center;
-            justify-content: center;
-            gap: 30px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
-        
-        .numero-media {
-            font-size: 3.5em;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-        
-        .estrelas-media {
-            display: flex;
-            gap: 5px;
-            font-size: 1.5em;
-            margin-bottom: 10px;
-        }
-        
-        .estrela-cheia {
-            color: #ffc107;
-        }
-        
-        .estrela-vazia {
-            color: #ddd;
-        }
-        
-        .total-avaliacoes {
-            font-size: 1.2em;
-            color: #666;
-        }
-        
-        .lista-avaliacoes {
-            background: white;
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .avaliacao-item {
-            padding: 25px;
-            border-bottom: 1px solid var(--border-color);
-            transition: background-color 0.3s ease;
-        }
-        
-        /* Cor para itens pares (segundo, quarto, etc.) */
-        .avaliacao-item:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        
-        /* Cor para itens ímpares (primeiro, terceiro, etc.) */
-        .avaliacao-item:nth-child(odd) {
-            background-color: #ffffff;
-        }
-        
-        /* Efeito hover para melhor interatividade */
-        .avaliacao-item:hover {
-            background-color: #f0f7f0 !important;
-        }
-        
-        /* Ajuste na cor do comentário para ficar bem com ambas as cores de fundo */
-        .avaliacao-comentario {
-            color: #555;
-            line-height: 1.7;
-            font-size: 1em;
-            background: rgba(76, 175, 80, 0.05);
-            padding: 15px;
-            border-radius: var(--radius);
-            border-left: 3px solid var(--primary-color);
-        }
-        
-        .avaliacao-item:last-child {
-            border-bottom: none;
-        }
-        
-        .avaliacao-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        .avaliacoes-info {
-            flex: 1;
-            padding: 30px;
-            border-bottom: 1px solid var(--border-color);
-            justify-content: space-between;
-            display: flex;
-        }
-        
-        .avaliacoes-info h3 {
-            margin-top: 0;
-            color: #333;
-            font-size: 1.3em;
-        }
-        
-        .avaliacoes-info p {
-            color: #666;
-            margin: 5px 0;
-        }
-
-        .avaliador-info {
-            flex: 1;
-        }
-        
-        .avaliador-nome {
-            font-weight: 600;
-            font-size: 1.1em;
-            color: var(--dark-gray);
-        }
-        
-        .avaliacao-data {
-            color: #999;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-        
-        .avaliacao-nota {
-            display: flex;
-            gap: 3px;
-            font-size: 1.2em;
-        }
-        
-        .sem-avaliacoes {
-            text-align: center;
-            padding: 50px 20px;
-            color: #999;
-        }
-        
-        .sem-avaliacoes i {
-            font-size: 3em;
-            margin-bottom: 15px;
-            color: #ddd;
-        }
-
-        .botao-avaliar {
-            margin-top: 15px;
-            text-align: center;
-        }
-        
-        .botao-avaliar .btn-avaliar {
-            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-        }
-        
-        .botao-avaliar .btn-avaliar:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(255, 152, 0, 0.3);
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-            
-            .media-container {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .numero-media {
-                font-size: 2.5em;
-            }
-            
-            .avaliacao-header {
-                flex-direction: column;
-                align-items: start;
-            }
-            
-            .avaliacao-item {
-                padding: 20px;
-            }
-        }
-    </style>
 </head>
 <body>
     <header>
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../index" class="logo-link">
                         <img src="../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -724,19 +454,19 @@ try {
                         </a>
                     </div>
                     <?php elseif ($tipo_avaliacao === 'produto' && isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo'): ?>
-                        <div style="padding: 10px 15px; background: #f8f9fa; border-radius: var(--radius); color: #666; font-size: 0.9em;">
+                        <div class="info-badge">
                             <i class="fas fa-info-circle"></i> Você só pode avaliar produtos que comprou
                         </div>
                     <?php elseif ($tipo_avaliacao === 'vendedor' && isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo'): ?>
-                        <div style="padding: 10px 15px; background: #f8f9fa; border-radius: var(--radius); color: #666; font-size: 0.9em;">
+                        <div class="info-badge">
                             <i class="fas fa-info-circle"></i> Você só pode avaliar vendedores com quem fez negócio
                         </div>
                     <?php elseif ($tipo_avaliacao === 'transportador' && isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo'): ?>
-                        <div style="padding: 10px 15px; background: #f8f9fa; border-radius: var(--radius); color: #666; font-size: 0.9em;">
+                        <div class="info-badge">
                             <i class="fas fa-info-circle"></i> Você só pode avaliar transportadores com quem fez negócio
                         </div>
                     <?php elseif ($tipo_avaliacao === 'comprador' && isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo'): ?>
-                        <div style="padding: 10px 15px; background: #f8f9fa; border-radius: var(--radius); color: #666; font-size: 0.9em;">
+                        <div class="info-badge">
                             <i class="fas fa-info-circle"></i> Você só pode avaliar compradores com quem fez negócio
                         </div>
                     <?php endif; ?> 
@@ -779,10 +509,10 @@ try {
                             </div>
                         <?php endif; ?>
                         <?php if (!empty($av['fotos'])): ?>
-                            <div class="avaliacao-fotos" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+                            <div class="avaliacao-fotos">
                                 <?php foreach ($av['fotos'] as $foto): ?>
-                                    <a href="../<?php echo htmlspecialchars($foto); ?>" target="_blank" rel="noopener" style="display:inline-block;">
-                                        <img src="../<?php echo htmlspecialchars($foto); ?>" alt="Foto da avaliação" style="max-width:140px;max-height:140px;object-fit:cover;border-radius:8px;border:1px solid #e3e3e3;" />
+                                    <a href="../<?php echo htmlspecialchars($foto); ?>" target="_blank" rel="noopener" class="avaliacao-foto-link">
+                                        <img src="../<?php echo htmlspecialchars($foto); ?>" alt="Foto da avaliação" class="avaliacao-foto-img" />
                                     </a>
                                 <?php endforeach; ?>
                             </div>
@@ -824,14 +554,14 @@ try {
                     $compradores = $stmt_cp->fetchAll(PDO::FETCH_ASSOC);
                     
                     if (!empty($compradores)): ?>
-                        <div style="background: white; padding: 25px; border-radius: var(--radius); margin-top: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <div class="card-secundario">
                             <h3><i class="fas fa-users"></i> Compradores para avaliar</h3>
-                            <p style="color: #666; margin-bottom: 20px;">Veja e avalie os compradores com quem você fez negócios</p>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                            <p class="card-secundario-subtitulo">Veja e avalie os compradores com quem você fez negócios</p>
+                            <div class="pessoas-grid">
                                 <?php foreach ($compradores as $comp): ?>
-                                    <div style="border: 1px solid #e3e3e3; padding: 15px; border-radius: 6px; text-align: center;">
-                                        <div style="font-weight: 600; margin-bottom: 10px;"><?php echo htmlspecialchars($comp['nome'] ?? $comp['nome_comercial']); ?></div>
-                                        <a href="./avaliacoes?tipo=comprador&id=<?php echo $comp['usuario_id']; ?>" style="color: #4CAF50; text-decoration: none; font-weight: 500;">Ver avaliações</a>
+                                    <div class="pessoa-card">
+                                        <div class="pessoa-nome"><?php echo htmlspecialchars($comp['nome'] ?? $comp['nome_comercial']); ?></div>
+                                        <a href="./avaliacoes?tipo=comprador&id=<?php echo $comp['usuario_id']; ?>" class="pessoa-link-avaliacoes">Ver avaliações</a>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
@@ -880,18 +610,18 @@ try {
                     $vendedores_transp = $stmt_vv->fetchAll(PDO::FETCH_ASSOC);
                     
                     if (!empty($compradores_transp) || !empty($vendedores_transp)): ?>
-                        <div style="background: white; padding: 25px; border-radius: var(--radius); margin-top: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <div class="card-secundario">
                             <h3><i class="fas fa-users"></i> Pessoas para avaliar</h3>
-                            <p style="color: #666; margin-bottom: 20px;">Avalie os compradores e vendedores com quem você fez entregas</p>
+                            <p class="card-secundario-subtitulo">Avalie os compradores e vendedores com quem você fez entregas</p>
                             
                             <?php if (!empty($compradores_transp)): ?>
-                                <div style="margin-bottom: 25px;">
-                                    <h4 style="margin-bottom: 15px; color: #333;">Compradores</h4>
-                                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                                <div class="grupo-secao">
+                                    <h4 class="grupo-secao-titulo">Compradores</h4>
+                                    <div class="pessoas-grid">
                                         <?php foreach ($compradores_transp as $comp): ?>
-                                            <div style="border: 1px solid #e3e3e3; padding: 15px; border-radius: 6px; text-align: center;">
-                                                <div style="font-weight: 600; margin-bottom: 10px;"><?php echo htmlspecialchars($comp['nome'] ?? $comp['nome_comercial']); ?></div>
-                                                <a href="./avaliacoes?tipo=comprador&id=<?php echo $comp['usuario_id']; ?>" style="color: #4CAF50; text-decoration: none; font-weight: 500;">Ver avaliações</a>
+                                            <div class="pessoa-card">
+                                                <div class="pessoa-nome"><?php echo htmlspecialchars($comp['nome'] ?? $comp['nome_comercial']); ?></div>
+                                                <a href="./avaliacoes?tipo=comprador&id=<?php echo $comp['usuario_id']; ?>" class="pessoa-link-avaliacoes">Ver avaliações</a>
                                             </div>
                                         <?php endforeach; ?>
                                     </div>
@@ -900,12 +630,12 @@ try {
                             
                             <?php if (!empty($vendedores_transp)): ?>
                                 <div>
-                                    <h4 style="margin-bottom: 15px; color: #333;">Vendedores</h4>
-                                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                                    <h4 class="grupo-secao-titulo">Vendedores</h4>
+                                    <div class="pessoas-grid">
                                         <?php foreach ($vendedores_transp as $vend): ?>
-                                            <div style="border: 1px solid #e3e3e3; padding: 15px; border-radius: 6px; text-align: center;">
-                                                <div style="font-weight: 600; margin-bottom: 10px;"><?php echo htmlspecialchars($vend['nome'] ?? $vend['nome_comercial']); ?></div>
-                                                <a href="./avaliacoes?tipo=vendedor&id=<?php echo $vend['usuario_id']; ?>" style="color: #4CAF50; text-decoration: none; font-weight: 500;">Ver avaliações</a>
+                                            <div class="pessoa-card">
+                                                <div class="pessoa-nome"><?php echo htmlspecialchars($vend['nome'] ?? $vend['nome_comercial']); ?></div>
+                                                <a href="./avaliacoes?tipo=vendedor&id=<?php echo $vend['usuario_id']; ?>" class="pessoa-link-avaliacoes">Ver avaliações</a>
                                             </div>
                                         <?php endforeach; ?>
                                     </div>

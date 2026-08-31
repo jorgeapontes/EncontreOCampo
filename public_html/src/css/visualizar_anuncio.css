@@ -1,0 +1,192 @@
+/* Estilos específicos desta página, ainda não presentes em view_ad.css */
+.aviso-login {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border: 2px solid #2196f3;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(33, 150, 243, 0.1);
+}
+
+.aviso-login h3 {
+    color: #1976d2;
+    margin-bottom: 10px;
+}
+
+.aviso-login p {
+    color: #424242;
+    margin-bottom: 15px;
+}
+
+.botoes-login {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-login-cta {
+    background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+}
+
+.btn-login-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(33, 150, 243, 0.3);
+}
+
+.btn-register-cta {
+    background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+}
+
+.btn-register-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(76, 175, 80, 0.3);
+}
+
+.botoes-compra-desativados {
+    opacity: 0.6;
+    pointer-events: none;
+    filter: grayscale(20%);
+}
+
+.botoes-compra-desativados .btn-comprar,
+.botoes-compra-desativados .btn-chat {
+    cursor: not-allowed;
+}
+
+.tooltip-desativado {
+    position: relative;
+    cursor: not-allowed;
+}
+
+.tooltip-desativado::after {
+    content: "Faça login para acessar esta funcionalidade";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.tooltip-desativado:hover::after {
+    opacity: 1;
+}
+
+/* Estilos específicos para visualização pública */
+.visao-publica .produto-actions,
+.visao-publica .proposta-section {
+    display: none;
+}
+
+.status-info i, .status-alert i {
+    margin-right: 5px;
+}
+
+.btn-ver-mais i {
+    font-size: 1.1em;
+}
+
+.avaliar-produto-wrapper {
+    margin-top: 10px;
+}
+
+/* Overrides pontuais em cima das classes compartilhadas de view_ad.css,
+   para preservar os valores que já estavam em uso nesta página */
+.btn-chat {
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+}
+
+.btn-chat:hover {
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+}
+
+.carrossel-container {
+    border-radius: 10px;
+}
+
+.carrossel-btn:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.carrossel-btn:disabled:hover {
+    transform: translateY(-50%);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.carrossel-indicator:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.miniatura:hover {
+    border-color: #4CAF50;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .miniatura {
+        width: 60px;
+        height: 45px;
+    }
+}
+
+@media (max-width: 576px) {
+    .carrossel-indicators {
+        bottom: 10px;
+    }
+
+    .carrossel-indicator {
+        width: 10px;
+        height: 10px;
+    }
+}
+
+.ver-mais-avaliacoes {
+    margin-top: 20px;
+}
+
+.btn-ver-mais {
+    padding: 10px 20px;
+    gap: 8px;
+}
+
+.btn-ver-mais:hover {
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+    background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+}
+
+.btn-ver-mais-login,
+.btn-ver-mais-login:hover {
+    background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+}

@@ -39,22 +39,6 @@ if (isset($_SESSION['usuario_nome'])) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-    
-    <style>
-        /* Estilos para mensagens de erro de arquivo */
-        .file-error {
-            color: #ff4444;
-            font-size: 0.85em;
-            margin-top: 5px;
-            display: none;
-        }
-        .file-error.show {
-            display: block;
-        }
-        .file-input-error {
-            border-color: #ff4444 !important;
-        }
-    </style>
 </head>
 <body>
     <header>
@@ -151,7 +135,7 @@ if (isset($_SESSION['usuario_nome'])) {
             </div>
 
             <center>
-                <a href="src/anuncios" class="cta-button" style="display: inline-block; margin-top: 40px; text-decoration: none; width: 250px; text-align: center;">
+                <a href="src/anuncios" class="cta-button cta-anuncios-link">
                     Ver Todos os Anúncios
                 </a>
             </center>
@@ -246,12 +230,12 @@ if (isset($_SESSION['usuario_nome'])) {
                         </div>
 
                         <!-- Checkbox de Termos -->
-                        <div class="form-group" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
-                            <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-weight:600; color:var(--dark-color);">
-                                <input type="checkbox" id="aceite_termos" name="aceite_termos" value="1" required style="width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0;">
-                                <span>Li e aceito os <a href="src/termos" target="_blank" rel="noopener noreferrer" style="color: #4CAF50; text-decoration: underline;">termos e condições</a> e a <a href="src/privacidade" target="_blank" rel="noopener noreferrer" style="color: #4CAF50; text-decoration: underline;">política de privacidade</a></span>
+                        <div class="form-group form-group-termos">
+                            <label class="label-aceite-termos">
+                                <input type="checkbox" id="aceite_termos" name="aceite_termos" value="1" required class="checkbox-termos">
+                                <span>Li e aceito os <a href="src/termos" target="_blank" rel="noopener noreferrer" class="link-termos">termos e condições</a> e a <a href="src/privacidade" target="_blank" rel="noopener noreferrer" class="link-termos">política de privacidade</a></span>
                             </label>
-                            <small class="form-help" style="display: block; margin-top: 5px; color: #666;">Você precisa aceitar os termos para continuar</small>
+                            <small class="form-help">Você precisa aceitar os termos para continuar</small>
                         </div>
 
                         <div class="form-group">
@@ -265,7 +249,7 @@ if (isset($_SESSION['usuario_nome'])) {
                         </div>
 
                         <!-- FORMULÁRIO DO COMPRADOR -->
-                        <div id="compradorFields" style="display: none;">
+                        <div id="compradorFields" class="hidden">
                             <div class="multi-step-form">
                                 <div class="progress-indicator">
                                     <div class="progress-step active" data-step="1">1</div>
@@ -275,7 +259,7 @@ if (isset($_SESSION['usuario_nome'])) {
 
                                 <!-- PASSO 1 -->
                                 <div id="compradorStep1" class="step-content active">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
+                                    <h4 class="step-heading">Dados Pessoais</h4>
                                     
                                     <div class="form-group">
                                         <label class="required">Tipo de Pessoa:</label>
@@ -315,8 +299,8 @@ if (isset($_SESSION['usuario_nome'])) {
                                 </div>
 
                                 <!-- PASSO 2 -->
-                                <div id="compradorStep2" class="step-content" style="display: none;">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
+                                <div id="compradorStep2" class="step-content">
+                                    <h4 class="step-heading">Endereço</h4>
                                     
                                     <div class="form-group">
                                         <label for="cepComprador">CEP (opcional)</label>
@@ -389,8 +373,8 @@ if (isset($_SESSION['usuario_nome'])) {
                                 </div>
 
                                 <!-- PASSO 3 -->
-                                <div id="compradorStep3" class="step-content" style="display: none;">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Contato e Plano</h4>
+                                <div id="compradorStep3" class="step-content">
+                                    <h4 class="step-heading">Contato e Plano</h4>
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
@@ -403,8 +387,8 @@ if (isset($_SESSION['usuario_nome'])) {
                                         </div>
                                     </div>
 
-                                    <h4 style="margin-top: 30px; margin-bottom: 20px; color: var(--dark-color);">Documentação</h4>
-                                    <p style="color: #666; margin-bottom: 15px;">Para validar sua identidade, envie as fotos abaixo:</p>
+                                    <h4 class="step-heading-doc">Documentação</h4>
+                                    <p class="doc-instrucoes">Para validar sua identidade, envie as fotos abaixo:</p>
                                     
                                     <div class="form-group">
                                         <label for="fotoRostoComprador" class="required">Foto Facial</label>
@@ -437,7 +421,7 @@ if (isset($_SESSION['usuario_nome'])) {
                         </div>
 
                         <!-- FORMULÁRIO DO VENDEDOR -->
-                        <div id="vendedorFields" style="display: none;">
+                        <div id="vendedorFields" class="hidden">
                             <div class="multi-step-form">
                                 <div class="progress-indicator">
                                     <div class="progress-step active" data-step="1">1</div>
@@ -446,7 +430,7 @@ if (isset($_SESSION['usuario_nome'])) {
                                 </div>
 
                                 <div id="vendedorStep1" class="step-content active">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados da Empresa</h4>
+                                    <h4 class="step-heading">Dados da Empresa</h4>
                                     
                                     <div class="form-group">
                                         <label for="nomeComercialVendedor" class="required">Nome Comercial </label>
@@ -471,8 +455,8 @@ if (isset($_SESSION['usuario_nome'])) {
                                     </div>
                                 </div>
 
-                                <div id="vendedorStep2" class="step-content" style="display: none;">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
+                                <div id="vendedorStep2" class="step-content">
+                                    <h4 class="step-heading">Endereço</h4>
                                     
                                     <div class="form-group">
                                         <label for="cepVendedor">CEP (opcional)</label>
@@ -544,8 +528,8 @@ if (isset($_SESSION['usuario_nome'])) {
                                     </div>
                                 </div>
 
-                                <div id="vendedorStep3" class="step-content" style="display: none;">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Contato e Plano</h4>
+                                <div id="vendedorStep3" class="step-content">
+                                    <h4 class="step-heading">Contato e Plano</h4>
                                     
                                     <div class="form-group-row">
                                         <div class="form-group">
@@ -563,13 +547,13 @@ if (isset($_SESSION['usuario_nome'])) {
                                         <select id="planoVendedor" name="planoVendedor">
                                             <option value="free" selected>Plano 1 - Grátis</option>
                                         </select>
-                                        <small class="form-help" style="color: #666; font-style: italic; display: block; margin-top: 5px;">
+                                        <small class="form-help form-help-italic">
                                             * Todos começam com plano gratuito. Você poderá alterar o plano posteriormente em seu painel.
                                         </small>
                                     </div>
 
-                                    <h4 style="margin-top: 30px; margin-bottom: 20px; color: var(--dark-color);">Documentação</h4>
-                                    <p style="color: #666; margin-bottom: 15px;">Para validar sua identidade, envie as fotos abaixo:</p>
+                                    <h4 class="step-heading-doc">Documentação</h4>
+                                    <p class="doc-instrucoes">Para validar sua identidade, envie as fotos abaixo:</p>
                                     
                                     <div class="form-group">
                                         <label for="fotoRostoVendedor" class="required">Foto do Rosto </label>
@@ -601,7 +585,7 @@ if (isset($_SESSION['usuario_nome'])) {
                         </div>
 
                         <!-- FORMULÁRIO DO TRANSPORTADOR -->
-                        <div id="transportadorFields" style="display: none;">
+                        <div id="transportadorFields" class="hidden">
                             <div class="multi-step-form">
                                 <div class="progress-indicator">
                                     <div class="progress-step active" data-step="1">1</div>
@@ -610,7 +594,7 @@ if (isset($_SESSION['usuario_nome'])) {
                                 </div>
 
                                 <div id="transportadorStep1" class="step-content active">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados Pessoais</h4>
+                                    <h4 class="step-heading">Dados Pessoais</h4>
                                     
                                     <div class="form-group">
                                         <label for="telefoneTransportador" class="required">Telefone/Celular </label>
@@ -629,8 +613,8 @@ if (isset($_SESSION['usuario_nome'])) {
                                     </div>
                                 </div>
 
-                                <div id="transportadorStep2" class="step-content" style="display: none;">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Dados do Veículo</h4>
+                                <div id="transportadorStep2" class="step-content">
+                                    <h4 class="step-heading">Dados do Veículo</h4>
                                     
                                     <div class="form-group">
                                         <label for="placaVeiculo" class="required">Placa do Veículo </label>
@@ -658,8 +642,8 @@ if (isset($_SESSION['usuario_nome'])) {
                                     </div>
                                 </div>
 
-                                <div id="transportadorStep3" class="step-content" style="display: none;">
-                                    <h4 style="margin-bottom: 20px; color: var(--dark-color);">Endereço</h4>
+                                <div id="transportadorStep3" class="step-content">
+                                    <h4 class="step-heading">Endereço</h4>
                                     
                                     <div class="form-group">
                                         <label for="cepTransportador">CEP (opcional)</label>
@@ -697,8 +681,8 @@ if (isset($_SESSION['usuario_nome'])) {
                                         </div>
                                     </div>
 
-                                    <h4 style="margin-top: 30px; margin-bottom: 20px; color: var(--dark-color);">Documentação</h4>
-                                    <p style="color: #666; margin-bottom: 15px;">Para validar sua identidade, envie as fotos abaixo:</p>
+                                    <h4 class="step-heading-doc">Documentação</h4>
+                                    <p class="doc-instrucoes">Para validar sua identidade, envie as fotos abaixo:</p>
                                     
                                     <div class="form-group">
                                         <label for="fotoRostoTransportador" class="required">Foto do Rosto </label>
@@ -730,17 +714,17 @@ if (isset($_SESSION['usuario_nome'])) {
                         </div>
 
                         <!-- Mensagem (opcional) -->
-                        <div class="form-group" id="messageGroup" style="display: none; margin-top: 20px;">
+                        <div class="form-group hidden message-group-box" id="messageGroup">
                             <label for="message">Mensagem (opcional)</label>
                             <textarea id="message" name="message" rows="4" placeholder="Conte-nos mais sobre o que você precisa..."></textarea>
                         </div>
                         
                         <!-- Botão de envio genérico -->
-                        <div class="end" style="margin-top: 30px;">
-                            <button type="button" id="submitOther" class="cta-button" style="width: 100%; padding: 15px; font-size: 1.1em;">
+                        <div class="end">
+                            <button type="button" id="submitOther" class="cta-button btn-submit-other">
                                 Enviar Solicitação de Cadastro
                             </button>
-                            <small class="form-help" style="text-align: center; display: block; margin-top: 10px; color: #666;">
+                            <small class="form-help form-help-center">
                                 * Campos obrigatórios
                             </small>
                         </div>

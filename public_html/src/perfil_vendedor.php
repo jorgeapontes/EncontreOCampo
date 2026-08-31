@@ -161,64 +161,13 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
     <link rel="shortcut icon" href="../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-    <style>
-        .avaliacao-vendedor {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 10px;
-            padding: 10px;
-            background: linear-gradient(135deg, #fff8e1 0%, #fff3e0 100%);
-            border-radius: 8px;
-            border: 1px solid #ffd54f;
-            width: fit-content;
-            height: fit-content ;
-        }
-        
-        .media-avaliacao-vendedor {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .numero-media-vendedor {
-            font-size: 1.8em;
-            font-weight: 700;
-            color: #ff9800;
-        }
-        
-        .estrelas-media-vendedor {
-            display: flex;
-            gap: 3px;
-        }
-        
-        .estrela-cheia-vendedor {
-            color: #ffc107;
-        }
-        
-        .estrela-vazia-vendedor {
-            color: #ddd;
-        }
-        
-        .total-avaliacoes-vendedor {
-            color: #666;
-            font-size: 0.9em;
-        }
-        
-        .sem-avaliacoes-vendedor {
-            color: #999;
-            font-style: italic;
-            margin-top: 10px;
-        }
-    </style>
 </head>
 <body>
     <header>
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../index" class="logo-link">
                         <img src="../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -268,7 +217,7 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                                 src="<?php echo htmlspecialchars($foto_path); ?>" 
                                 alt="Foto de Perfil"
                                 onerror="this.style.display='none'; document.getElementById('default-avatar').style.display='block';">
-                            <div id="default-avatar" class="default-avatar" style="display: none;">
+                            <div id="default-avatar" class="default-avatar hidden">
                                 <i class="fas fa-user-tie"></i>
                             </div>
                         <?php else: ?>
@@ -278,17 +227,16 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                         <?php endif; ?>                   
                 </div>
                 </center>
-                <div style="text-align: center; align-items: center; display: flex; flex-direction: column;">
+                <div class="perfil-vendedor-info-col">
                     <h3><?php echo htmlspecialchars($vendedor_info['nome_comercial'] ?? $vendedor_info['nome_vendedor']); ?></h3>
-                    <p style="color: var(--text-light); margin-bottom: 10px;">
+                    <p class="vendedor-localizacao">
                         <i class="fas fa-map-marker-alt"></i>
                         <?php echo htmlspecialchars($vendedor_info['cidade'] . ' - ' . $vendedor_info['estado']); ?>
                     </p>
                     
                     <!-- EXIBIÇÃO DA AVALIAÇÃO MÉDIA DO VENDEDOR -->
                     <?php if ($total_avaliacoes > 0): ?>
-                        <div class="avaliacao-vendedor" 
-                            style="cursor: pointer;" 
+                        <div class="avaliacao-vendedor"
                             onclick="redirectToVendorReviews(<?php echo $vendedor_usuario_id; ?>, <?php echo $is_logged_in ? 'true' : 'false'; ?>)">
                             <div class="media-avaliacao-vendedor">
                                 <div class="numero-media-vendedor"><?php echo $media_avaliacao; ?></div>
@@ -307,7 +255,7 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                                 </div>
                                 <div class="total-avaliacoes-vendedor">
                                     <?php echo $total_avaliacoes; ?> <?php echo $total_avaliacoes === 1 ? 'avaliação' : 'avaliações'; ?>
-                                    <i class="fas fa-external-link-alt" style="margin-left: 5px; font-size: 0.8em;"></i>
+                                    <i class="fas fa-external-link-alt icon-external-link"></i>
                                 </div>
                             </div>
                         </div>
@@ -317,7 +265,7 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                         </div>
                     <?php endif; ?>
                     
-                    <p style="color: var(--primary-color); font-weight: 600; margin-top: 15px;">
+                    <p class="vendedor-anuncios-ativos">
                         <i class="fas fa-box"></i>
                         <?php echo $total_anuncios; ?> anúncio(s) ativo(s)
                     </p>
@@ -366,12 +314,12 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                                             <?php if ($has_discount): ?>
                                                 <span class="preco-original">R$ <?php echo number_format($info_preco['original'], 2, ',', '.');?></span>
                                                 <span class="price price-desconto">R$ <?php echo number_format($info_preco['efetivo'], 2, ',', '.');?>
-                                                    <span style="font-size: 0.9rem; color: #7f8c8d;">/<?php echo htmlspecialchars($anuncio['unidade_medida']);?></span>
+                                                    <span class="unidade-medida-label">/<?php echo htmlspecialchars($anuncio['unidade_medida']);?></span>
                                                 </span>
                                             <?php else: ?>
                                                 <span class="price">
                                                     R$ <?php echo number_format($info_preco['efetivo'], 2, ',', '.'); ?>
-                                                    <span style="font-size: 0.9rem; color: #7f8c8d;">/<?php echo htmlspecialchars($anuncio['unidade_medida']);?></span>
+                                                    <span class="unidade-medida-label">/<?php echo htmlspecialchars($anuncio['unidade_medida']);?></span>
                                                 </span>
                                             <?php endif; ?>
                                         </div>
@@ -417,7 +365,7 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                     <input type="password" id="modal-password" name="password" required>
                 </div>
                 <button type="submit" class="btn btn-primary">Entrar</button>
-                <div style="text-align: center; margin-top: 15px;">
+                <div class="registro-link">
                     Não tem conta? <a href="../index#contato" target="_blank">Registre-se</a>
                 </div>
             </form>

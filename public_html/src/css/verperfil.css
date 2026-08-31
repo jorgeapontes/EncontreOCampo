@@ -1,0 +1,77 @@
+/* Overrides pontuais para esta página em cima das classes compartilhadas de vendas.css */
+.media-avaliacao-vendedor {
+    gap: 10px;
+}
+
+.estrelas-media-vendedor {
+    margin-bottom: 5px;
+}
+
+.perfil-header-flex {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin-top: 16px;
+}
+
+.perfil-foto-wrapper {
+    width: 140px;
+}
+
+.perfil-foto-img {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.perfil-info-flex {
+    flex: 1;
+}
+
+.perfil-endereco-bloco {
+    margin-top: 8px;
+}
+
+.perfil-avaliacao-col {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.ver-avaliacoes-wrapper {
+    margin-top: 8px;
+}
+
+.link-ver-avaliacoes {
+    font-size: 0.85em;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.sem-avaliacoes-box {
+    margin: 10px 0 15px 0;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    width: fit-content;
+}
+
+.sem-avaliacoes-texto {
+    color: #999;
+    font-size: 0.9em;
+}
+
+.avaliar-btn-wrapper {
+    margin-top: 12px;
+}
+
+.hr-secao {
+    margin: 18px 0;
+}
+
+.cards-list {
+    margin-top: 12px;
+}

@@ -88,66 +88,7 @@ if ($session_id) {
     <title>Pagamento Concluído | Encontre o Campo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-green: #28a745;
-            --dark-green: #1e7e34;
-            --bg-light: #f8faf9;
-            --text-main: #2d3436;
-            --white: #ffffff;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .success-card {
-            background: var(--white);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            text-align: center;
-            max-width: 450px;
-            width: 90%;
-        }
-        .icon-container {
-            font-size: 60px;
-            margin-bottom: 20px;
-        }
-        .icon-success { color: var(--primary-green); }
-        .icon-error { color: #d63031; }
-        
-        h1 { font-size: 24px; color: var(--text-main); margin-bottom: 10px; }
-        p { color: #636e72; line-height: 1.6; margin-bottom: 25px; }
-
-        .info-box {
-            background: #f1f3f5;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: left;
-            margin-bottom: 30px;
-        }
-        .info-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
-        .info-item:last-child { margin-bottom: 0; }
-        .label { font-weight: 600; color: #636e72; }
-        .value { color: var(--text-main); font-weight: 700; }
-
-        .btn-green {
-            display: block;
-            background: var(--primary-green);
-            color: white;
-            padding: 15px;
-            border-radius: 12px;
-            text-decoration: none;
-            font-weight: 700;
-            transition: 0.3s;
-        }
-        .btn-green:hover { background: var(--dark-green); transform: translateY(-2px); }
-    </style>
+    <link rel="stylesheet" href="css/sucesso.css">
 </head>
 <body>
 
@@ -170,7 +111,7 @@ if ($session_id) {
                 </div>
                 <div class="info-item">
                     <span class="label">Status:</span>
-                    <span class="value" style="color: var(--primary-green);">Ativo</span>
+                    <span class="value value-ativo">Ativo</span>
                 </div>
             </div>
 
@@ -183,13 +124,13 @@ if ($session_id) {
             <h1>Ops! Algo deu errado</h1>
             <p>Não conseguimos confirmar a ativação do seu plano automaticamente.</p>
             
-            <div class="info-box" style="background: #fff5f5; border: 1px solid #fed7d7;">
-                <p style="font-size: 13px; color: #c53030; margin: 0;">
+            <div class="info-box info-box-erro">
+                <p class="mensagem-erro-stripe">
                     <?php echo $mensagem_status ?: "Houve um problema na comunicação com o Stripe. Se o valor foi cobrado, entre em contato com o suporte."; ?>
                 </p>
             </div>
 
-            <a href="../escolher_plano" class="btn-green" style="background: #636e72;">Tentar Novamente</a>
+            <a href="../escolher_plano" class="btn-green btn-green-cinza">Tentar Novamente</a>
         <?php endif; ?>
     </div>
 

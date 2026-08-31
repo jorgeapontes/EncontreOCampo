@@ -383,131 +383,14 @@ if (empty($sucesso) && empty($erro)) {
     <link rel="shortcut icon" href="../img/logo-nova.png" type="image/x-icon">
     <title>Avaliar</title>
     <link rel="stylesheet" href="../index.css">
-    <style>
-        /* Estilos para o sistema de estrelas */
-        .rating-container {
-            margin: 15px 0 25px 0;
-        }
-        
-        .stars {
-            display: flex;
-            flex-direction: row-reverse;
-            justify-content: flex-end;
-            font-size: 2.5rem;
-            line-height: 1;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-        
-        .star {
-            color: #ddd;
-            transition: color 0.2s, transform 0.2s;
-            margin-right: 5px;
-        }
-        
-        .star:hover,
-        .star:hover ~ .star {
-            color: #ffc107;
-        }
-        
-        .star.selected {
-            color: #ffc107;
-        }
-        
-        .star-label {
-            font-size: 1.8rem;
-            margin-left: 10px;
-            color: #666;
-            font-weight: bold;
-        }
-        
-        .star-label-text {
-            font-size: 1rem;
-            color: #666;
-            margin-top: 5px;
-            text-align: center;
-        }
-        
-        .star-rating-input {
-            display: none;
-        }
-        
-        .rating-error {
-            color: #d32f2f;
-            font-size: 0.9rem;
-            margin-top: 5px;
-            display: none;
-        }
-        
-        .stars-label {
-            font-weight: bold;
-            margin-bottom: 10px;
-            display: block;
-        }
-        
-        .cancel-btn{
-            background-color: #ff4444;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s;
-            margin-top: 15px;
-            margin-right: 15px;
-            width: 160px;
-        }
-
-        .cancel-btn:hover {
-            background-color: #f72424;
-        }
-
-        .submit-btn {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s;
-            margin-top: 15px;
-            margin-left: 15px;
-        }
-        
-        .submit-btn:hover {
-            background-color: #45a049;
-        }
-        
-        .submit-btn:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-
-        .back-btn{
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s;
-            margin-top: 15px;
-        }
-
-        .back-btn:hover {
-            background-color: #4d5256;
-        }
-    </style>
+    <link rel="stylesheet" href="css/avaliar.css">
 </head>
-<body style="background-color:#f5f5f5">
+<body>
     <header>
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../index" class="logo-link">
                         <img src="../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -547,7 +430,7 @@ if (empty($sucesso) && empty($erro)) {
             </div>
         </nav>
     </header>
-<div class="container" style="max-width:700px;margin:120px auto auto;padding:30px;background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+<div class="container avaliar-container">
     <?php
         // Buscar dados ANTES do HTML
         try {
@@ -609,7 +492,7 @@ if (empty($sucesso) && empty($erro)) {
             // Erro silencioso
         }
         ?>
-    <h2 style="margin-bottom:25px;color:#333;border-bottom:2px solid #f0f0f0;padding-bottom:10px;">
+    <h2 class="avaliar-titulo">
         Avaliar - 
         <?php if ($tipo === 'produto' && isset($produto['nome'])): ?>
             <?php echo htmlspecialchars($produto['nome']); ?>
@@ -622,10 +505,10 @@ if (empty($sucesso) && empty($erro)) {
         <?php endif; ?>
     </h2>
     <?php if ($erro): ?>
-        <div style="background:#ffeded;padding:12px 15px;border-radius:6px;color:#a00;border-left:4px solid #d32f2f;margin-bottom:20px;"><?php echo htmlspecialchars($erro); ?></div>
+        <div class="alert-erro-avaliar"><?php echo htmlspecialchars($erro); ?></div>
     <?php endif; ?>
     <?php if ($sucesso): ?>
-        <div style="background:#e6ffed;padding:12px 15px;border-radius:6px;color:#080;border-left:4px solid #4CAF50;margin-bottom:20px;">
+        <div class="alert-sucesso-avaliar">
             <?php echo htmlspecialchars($sucesso); ?>
         </div>
             <center><button type="button" class="back-btn" onclick="history.back(history.back())">Voltar</button></center>
@@ -662,15 +545,15 @@ if (empty($sucesso) && empty($erro)) {
             <div class="rating-error" id="ratingError">Por favor, selecione uma nota</div>
         </div>
         
-        <div style="margin-top:20px;">
-            <label style="display:block;font-weight:bold;margin-bottom:8px;">Comentário (opcional)</label>
-            <textarea name="comentario" rows="4" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;font-size:1rem;resize:vertical;" placeholder="Compartilhe sua experiência..."></textarea>
+        <div class="campo-comentario">
+            <label class="campo-label">Comentário (opcional)</label>
+            <textarea name="comentario" rows="4" class="textarea-comentario" placeholder="Compartilhe sua experiência..."></textarea>
         </div>
         
-        <div style="margin-top:25px;text-align:center;">
-            <div style="margin-bottom:12px;">
-                <label style="display:block;font-weight:bold;margin-bottom:8px;">Fotos (opcional)</label>
-                <input type="file" name="fotos[]" accept="image/*" multiple style="width:100%;" />
+        <div class="campo-fotos-wrapper">
+            <div class="campo-fotos-inner">
+                <label class="campo-label">Fotos (opcional)</label>
+                <input type="file" name="fotos[]" accept="image/*" multiple class="input-fotos" />
             </div>
             <button type="button" class="cancel-btn" onclick="history.back()">Cancelar</button>
             <button type="submit" class="submit-btn" id="submitBtn" disabled>Enviar avaliação</button>

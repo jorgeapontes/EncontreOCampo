@@ -44,7 +44,7 @@ if ($is_logged_in) {
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit; cursor: pointer;">
+                    <a href="../index" class="logo-link">
                         <img src="../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -227,7 +227,7 @@ if ($is_logged_in) {
                     <input type="password" id="modal-password" name="password" required>
                 </div>
                 <button type="submit" class="btn btn-primary">Entrar</button>
-                <div style="text-align: center; margin-top: 15px;">
+                <div class="registro-link">
                     Não tem conta? <a href="../index#contato" target="_blank">Registre-se</a>
                 </div>
             </form>

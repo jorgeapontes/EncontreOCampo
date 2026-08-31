@@ -573,6 +573,19 @@ th:last-child {
     margin-top: 20px;
 }
 
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
 /* --- Media Queries (Responsividade) --- */
 @media (max-width: 900px) {
     .info-cards {

@@ -63,558 +63,14 @@ try {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #4CAF50;
-            --primary-dark: #388E3C;
-            --primary-light: #C8E6C9;
-            --secondary-color: #FF9800;
-            --dark-color: #2E7D32;
-            --light-color: #F1F8E9;
-            --text-color: #212121;
-            --text-light: #757575;
-            --white: #FFFFFF;
-            --gray: #F5F5F5;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Montserrat', sans-serif; background: #f5f5f5; min-height: 100vh; }
-        /* Navbar */
-        .navbar {
-            background-color: var(--white);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-
-        .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .logo {
-            display: flex;
-        }       
-        .logo h1 {
-            font-size: 1.5rem;
-            color: var(--primary-color);
-            font-weight: 700;
-            letter-spacing: 0px;
-            line-height: 1.6;
-            margin-top: 4px;
-        }
-
-        .logo h2 {
-            font-size: 1.1rem;
-            color: var(--dark-color);
-            font-weight: 600;
-            letter-spacing: 1px;
-            margin-top: -10px;
-            line-height: 1.3;
-        }
-
-        .logo img {
-            height: 60px;
-            padding-right: 5px;
-        }
-
-        .nav-menu {
-            display: flex;
-            list-style: none;
-            align-items: center;
-        }
-
-        .nav-item {
-            margin-left: 30px;
-        }
-
-        .nav-link {
-            color: var(--text-color);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 1rem;
-            padding: 10px 0;
-            position: relative;
-            transition: color 0.3s ease;
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: 0;
-            left: 0;
-            background-color: var(--primary-color);
-            transition: width 0.3s ease;
-        }
-
-        .nav-link:hover {
-            color: var(--primary-color);
-        }
-
-        .nav-link:hover::after {
-            width: 100%;
-        }
-
-        .nav-link.login-button {
-            background-color: var(--primary-color);
-            color: var(--white);
-            padding: 8px 20px;
-            border-radius: 20px;
-            transition: background-color 0.3s ease;
-            margin-left: 15px;
-        }
-
-        .nav-link.sino::after {
-            display: none;
-        }
-
-        .nav-link.login-button:hover {
-            background-color: var(--primary-dark);
-            color: var(--white);
-        }
-
-        /* Remover sublinhado do botão login */
-        .nav-link.no-underline::after {
-            display: none;
-        }
-        .main-content { position: flex; max-width: 1400px; margin: 2rem auto; padding: 70px 2rem; top: 20px; }
-        .conversas-container { background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; }
-        .conversas-header { padding: 1.5rem 2rem; background: #f9f9f9; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; }
-        .conversas-header h2 { font-size: 20px; color: #333; }
-        .conversas-list { max-height: 700px; overflow-y: auto; }
-        .conversa-card { padding: 1.5rem 2rem; border-bottom: 1px solid #e0e0e0; display: flex; gap: 1.5rem; align-items: center; transition: background 0.2s; color: inherit; }
-        .conversa-card:hover { background: #f9f9f9; }
-        .produto-thumb { width: 80px; height: 80px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: #e0e0e0; display: flex; align-items: center; justify-content: center; position: relative; }
-        .produto-thumb img { width: 100%; height: 100%; object-fit: cover; }
-        .produto-thumb .placeholder-icon { font-size: 32px; color: #999; }
-        .debug-info { font-size: 10px; color: red; background: #fff; padding: 2px 4px; position: absolute; bottom: 0; left: 0; right: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .conversa-info { flex: 1; min-width: 0; }
-        .produto-nome-principal { font-weight: 700; color: #333; font-size: 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .badge-proposta { background: #e3f2fd; color: #1565c0; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; white-space: nowrap; }
-        .badge-proposta-generica { background: #f1f1f1; color: #757575; }
-        .proposta-detalhes { font-size: 13px; color: #444; }
-        .proposta-detalhes strong { color: #2E7D32; }
-        .conversa-data { font-size: 13px; color: #999; }
-        .ultima-mensagem { font-size: 14px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 500px; }
-        .conversa-actions { display: flex; gap: 8px; align-items: center; }
-        .badge-novo { background: #dc3545; color: white; font-size: 12px; padding: 4px 8px; border-radius: 12px; font-weight: 700; }
-        .btn-chat { background: #2E7D32; color: white; padding: 10px 18px; border-radius: 5px; text-decoration: none; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; border: none; }
-        .btn-chat:hover { background: #1B5E20; }
-        .empty-state { padding: 4rem 2rem; text-align: center; color: #999; }
-        .debug-alert { background: #fff3cd; border: 1px solid #ffc107; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 12px; }
-        .nav-menu {
-    display: flex;
-    list-style: none;
-    align-items: center;
-    text-decoration: none;
-}
-
-
-
-.nav-link.exit-button {
-    background-color: rgb(230, 30, 30);
-    color: #fff;
-    padding: 8px 20px;
-    border-radius: 20px;
-    transition: background-color 0.3s ease;
-    margin-left: 15px;
-}
-
-.nav-link.exit-button:hover {
-    background-color: rgb(200, 30, 30);
-    color: #fff;
-}
-
-/* Menu Hamburguer */
-.hamburger {
-    display: none;
-    cursor: pointer;
-}
-
-.bar {
-    display: block;
-    width: 25px;
-    height: 3px;
-    margin: 5px auto;
-    background-color: var(--text-color);
-    transition: all 0.3s ease;
-}
-
-.hamburger.active .bar:nth-child(2) {
-    opacity: 0;
-}
-
-.hamburger.active .bar:nth-child(1) {
-    transform: translateY(8px) rotate(45deg);
-}
-
-.hamburger.active .bar:nth-child(3) {
-    transform: translateY(-8px) rotate(-45deg);
-}
-
-/* Responsividade do menu */
-@media (max-width: 768px) {
-    .hamburger {
-        display: block;
-    }
-    
-    .nav-menu {
-        position: fixed;
-        left: -100%;
-        top: 80px;
-        gap: 0;
-        flex-direction: column;
-        background-color: white;
-        width: 100%;
-        text-align: center;
-        transition: 0.3s;
-        box-shadow: 0 10px 10px rgba(0,0,0,0.1);
-        z-index: 999;
-        padding: 20px 0;
-    }
-    
-    .nav-item {
-        margin: 15px 0;
-    }
-    
-    .nav-menu.active {
-        left: 0;
-    }
-    
-    .nav-link.exit-button {
-        margin-left: 0;
-        margin-top: 10px;
-    }
-}
-
-/* --- Ajustes para dispositivos móveis (até 480px) --- */
-@media screen and (max-width: 480px) {
-    /* Ajuste do layout geral */
-    .main-content {
-        padding: 10px;
-        margin-top: 100px;
-    }
-    
-    /* Ajuste do container das conversas */
-    .conversas-container {
-        border-radius: 8px;
-        overflow: hidden;
-        margin: 0;
-    }
-    
-    /* Ajuste do cabeçalho */
-    .conversas-header {
-        padding: 15px;
-    }
-    
-    .conversas-header h2 {
-        font-size: 1.2rem;
-        text-align: center;
-        width: 100%;
-    }
-    
-    /* Ajuste da lista de conversas */
-    .conversas-list {
-        max-height: none;
-        overflow-y: visible;
-    }
-    
-    /* Ajuste dos cards de conversa */
-    .conversa-card {
-        padding: 15px;
-        flex-direction: column;
-        gap: 12px;
-        position: relative;
-    }
-    
-    /* Ajuste da miniatura do produto */
-    .produto-thumb {
-        width: 60px;
-        height: 60px;
-        border-radius: 6px;
-        align-self: flex-start;
-    }
-    
-    .produto-thumb img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
-    /* Ajuste das informações da conversa */
-    .conversa-info {
-        width: 100%;
-        order: 2;
-    }
-    
-    /* Ajuste do nome do produto e data */
-    .produto-nome-principal {
-        font-size: 1rem;
-        line-height: 1.3;
-        margin-bottom: 8px;
-    }
-    
-    .conversa-data {
-        font-size: 0.8rem;
-        color: #666;
-        position: absolute;
-        top: 15px;
-        right: 15px;
-    }
-    
-    /* Ajuste da linha do transportador */
-    .conversa-info div[style*="margin-top:8px;color:#666;"] {
-        font-size: 0.9rem;
-        margin-top: 5px;
-        line-height: 1.4;
-    }
-    
-    /* Ajuste da última mensagem */
-    .ultima-mensagem {
-        font-size: 0.9rem;
-        white-space: normal;
-        max-width: 100%;
-        line-height: 1.4;
-        margin-top: 8px;
-        color: #555;
-    }
-    
-    /* Ajuste das ações (botão) */
-    .conversa-actions {
-        order: 3;
-        width: 100%;
-        margin-top: 10px;
-    }
-    
-    .btn-chat {
-        width: 100%;
-        justify-content: center;
-        padding: 12px;
-        font-size: 0.95rem;
-    }
-    
-    /* Ajuste do estado vazio */
-    .empty-state {
-        padding: 30px 15px;
-    }
-    
-    .empty-state i {
-        font-size: 36px;
-        margin-bottom: 15px;
-    }
-    
-    .empty-state h3 {
-        font-size: 1.2rem;
-    }
-    
-    .empty-state p {
-        font-size: 0.95rem;
-    }
-    
-    /* Ajuste para o link de conversa (quando não arquivado) */
-    .conversa-card > a[style*="display:flex"] {
-        display: flex !important;
-        flex-direction: row;
-        align-items: flex-start;
-        gap: 12px;
-        width: 100%;
-        text-decoration: none;
-        color: inherit;
-    }
-    
-    /* Ajuste para o div de conversa arquivada */
-    .conversa-card > div[style*="display:flex"] {
-        display: flex !important;
-        flex-direction: row;
-        align-items: flex-start;
-        gap: 12px;
-        width: 100%;
-    }
-    
-    /* Ajuste do badge de mensagens não lidas */
-    .badge-novo {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        font-size: 10px;
-        padding: 3px 8px;
-        z-index: 2;
-    }
-    
-    /* Ajuste do badge arquivado */
-    .badge-arquivado {
-        display: inline-block;
-        background: #6c757d;
-        color: white;
-        font-size: 0.7rem;
-        padding: 2px 6px;
-        border-radius: 10px;
-        margin-left: 8px;
-    }
-}
-
-/* Ajustes para telas muito pequenas (até 360px) */
-@media screen and (max-width: 360px) {
-    .conversa-card {
-        padding: 12px;
-    }
-    
-    .produto-thumb {
-        width: 50px;
-        height: 50px;
-    }
-    
-    .produto-nome-principal {
-        font-size: 0.95rem;
-    }
-    
-    .conversa-data {
-        font-size: 0.75rem;
-    }
-    
-    .btn-chat {
-        padding: 10px;
-        font-size: 0.9rem;
-    }
-}
-
-.loading-conversas {
-            padding: 3rem;
-            text-align: center;
-            color: #666;
-            font-size: 16px;
-        }
-        
-        .loading-conversas i {
-            font-size: 24px;
-            margin-bottom: 10px;
-            display: block;
-        }
-        
-        .notificacao-flutuante {
-            position: fixed;
-            top: 100px;
-            right: 20px;
-            background: #2E7D32;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 9999;
-            animation: slideInRight 0.3s ease-out;
-        }
-        
-        .notificacao-flutuante button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 0;
-            margin-left: 10px;
-        }
-        
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        @keyframes slideOutRight {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
-            50% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
-        }
-        
-        .conversa-card.nao-lida {
-            background-color: #f0f9ff !important;
-            border-left: 4px solid #2196F3 !important;
-        }
-        
-        .badge-novo {
-            animation: pulse 1s ease-in-out;
-        }
-        
-        .conversa-card.nova {
-            animation: fadeIn 0.5s ease-out;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* Adicione abas para ativos/arquivados (opcional) */
-        .abas-container {
-            display: flex;
-            gap: 1px;
-            margin-bottom: 20px;
-            background: #e0e0e0;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .aba {
-            flex: 1;
-            padding: 12px 20px;
-            background: #f8f9fa;
-            border: none;
-            border-right: 1px solid #e0e0e0;
-            font-size: 14px;
-            font-weight: 600;
-            color: #666;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        .aba:last-child {
-            border-right: none;
-        }
-        
-        .aba.active {
-            background: #2E7D32;
-            color: white;
-        }
-        
-        .aba:hover:not(.active) {
-            background: #e9ecef;
-        }
-        
-        .badge-aba {
-            background: #dc3545;
-            color: white;
-            font-size: 11px;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-left: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/procurando_transportador.css">
 </head>
 <body>
     <header>
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
-                    <a href="../index" class="logo-link" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                    <a href="../index" class="logo-link">
                         <img src="../img/logo-nova.png" alt="Logo">
                         <div>
                             <h1>ENCONTRE</h1>
@@ -753,15 +209,15 @@ try {
             
             // Construir HTML do card
             card.innerHTML = `
-                <a href="${chatUrl}" style="display:flex;gap:1.5rem;align-items:center;text-decoration:none;color:inherit;flex:1;">
+                <a href="${chatUrl}" class="conversa-link-content">
                     <div class="produto-thumb">
                         <img src="${escapeHtml(imagemProduto)}" 
                              alt="${escapeHtml(conversa.produto_nome)}"
                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                        <i class="fas fa-image placeholder-icon" style="display: none;"></i>
+                        <i class="fas fa-image placeholder-icon"></i>
                     </div>
                     <div class="conversa-info">
-                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+                        <div class="conversa-linha-topo">
                             <div class="produto-nome-principal">
                                 ${escapeHtml(conversa.produto_nome)}
                                 ${conversa.proposta_id ?
@@ -775,21 +231,21 @@ try {
                             </div>
                             <div class="conversa-data">${dataFormatada}</div>
                         </div>
-                        <div style="margin-top:8px;color:#666;">
+                        <div class="transportador-info">
                             <strong>Transportador:</strong> ${escapeHtml(conversa.transportador_nome || 'Transportador')}
                         </div>
                         ${(conversa.valor_frete_final || conversa.data_entrega_estimada) ?
-                            `<div class="proposta-detalhes" style="margin-top:6px;">
+                            `<div class="proposta-detalhes">
                                 <i class="fas fa-truck"></i> Frete negociado:
                                 ${conversa.valor_frete_final ? `<strong>R$ ${Number(conversa.valor_frete_final).toFixed(2).replace('.', ',')}</strong>` : ''}
                                 ${conversa.data_entrega_estimada ? ` &middot; Prazo: <strong>${formatarDataSimples(conversa.data_entrega_estimada)}</strong>` : ''}
                             </div>` :
                             ''
                         }
-                        ${conversa.ultima_mensagem ? 
-                            `<div class="ultima-mensagem" style="margin-top:8px;">
+                        ${conversa.ultima_mensagem ?
+                            `<div class="ultima-mensagem">
                                 <i class="fas fa-comment"></i> ${tratarUltimaMensagem(conversa.ultima_mensagem)}
-                            </div>` : 
+                            </div>` :
                             ''
                         }
                     </div>
@@ -1088,7 +544,7 @@ try {
             const emptyState = document.createElement('div');
             emptyState.className = 'empty-state';
             emptyState.innerHTML = `
-                <i class="fas fa-comments" style="font-size:48px;margin-bottom:12px;"></i>
+                <i class="fas fa-comments"></i>
                 <h3>Nenhuma conversa com transportador encontrada</h3>
                 <p>Quando transportadores entrarem em contato, as conversas aparecerão aqui.</p>
             `;
@@ -1107,7 +563,7 @@ try {
                     <i class="fas fa-exclamation-triangle"></i>
                     <h3>Erro ao carregar conversas</h3>
                     <p>${mensagem}</p>
-                    <button onclick="carregarConversasIniciais()" class="btn-chat" style="margin-top: 15px;">
+                    <button onclick="carregarConversasIniciais()" class="btn-chat btn-tentar-novamente">
                         <i class="fas fa-redo"></i> Tentar novamente
                     </button>
                 </div>

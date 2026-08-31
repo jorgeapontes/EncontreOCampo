@@ -301,8 +301,9 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
                                             $imagePath = substr($imagePath, 3);
                                         }
                                     ?>
-                                    <img src="<?php echo $imagePath; ?>" 
-                                         alt="Imagem de <?php echo htmlspecialchars($anuncio['produto']); ?>" 
+                                    <img src="<?php echo $imagePath; ?>"
+                                         alt="Imagem de <?php echo htmlspecialchars($anuncio['produto']); ?>"
+                                         loading="lazy" decoding="async"
                                          onerror="this.src='../img/placeholder.png'">
                                 </div>
                                 <div class="card-content">

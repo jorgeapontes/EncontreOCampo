@@ -158,7 +158,7 @@ if (isset($_SESSION['usuario_nome'])) {
                 </div>
                 <div class="sell-image">
                     <div class="logo-large">
-                        <img src="img/logo-nova.png" alt="Logo">
+                        <img src="img/logo-nova.png" alt="Logo" loading="lazy" decoding="async">
                     </div>
                 </div>
             </div>
@@ -170,7 +170,7 @@ if (isset($_SESSION['usuario_nome'])) {
             <h2 class="section-title">Transporte</h2>
             <div class="transport-content">
                 <div class="transport-image">
-                    <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Agricultor colhendo frutas">
+                    <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Agricultor colhendo frutas" loading="lazy" decoding="async">
                 </div>
                 <div class="transport-text">
                     <h3>Logística especializada para frutas</h3>

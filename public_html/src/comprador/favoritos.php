@@ -206,7 +206,8 @@ try {
                                 if (strpos($imagePath, '../../') === 0) $imagePath = substr($imagePath, 3);
                                 if ($produto['imagem_url'] && !file_exists($imagePath)) $imagePath = '../img/placeholder.png';
                             ?>
-                            <img src="<?php echo $imagePath; ?>" alt="Imagem de <?php echo htmlspecialchars($produto['nome']); ?>" 
+                            <img src="<?php echo $imagePath; ?>" alt="Imagem de <?php echo htmlspecialchars($produto['nome']); ?>"
+                                loading="lazy" decoding="async"
                                 onerror="this.src='../img/placeholder.png'">
                         </div>
                         <div class="card-content">

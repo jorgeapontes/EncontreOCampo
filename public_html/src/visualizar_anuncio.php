@@ -307,8 +307,11 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                                 }
                             ?>
                                 <div class="carrossel-slide">
-                                    <img src="<?php echo htmlspecialchars($imagePath); ?>" 
+                                    <img src="<?php echo htmlspecialchars($imagePath); ?>"
                                          alt="<?php echo htmlspecialchars($anuncio['produto']); ?> - Imagem <?php echo $index + 1; ?>"
+                                         loading="<?php echo $index === 0 ? 'eager' : 'lazy'; ?>"
+                                         <?php echo $index === 0 ? 'fetchpriority="high"' : ''; ?>
+                                         decoding="async"
                                          onerror="this.src='../img/placeholder.png'">
                                 </div>
                             <?php endforeach; ?>
@@ -353,8 +356,9 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                             ?>
                                 <div class="miniatura <?php echo $index === 0 ? 'active' : ''; ?>" 
                                      data-index="<?php echo $index; ?>">
-                                    <img src="<?php echo htmlspecialchars($imagePath); ?>" 
+                                    <img src="<?php echo htmlspecialchars($imagePath); ?>"
                                          alt="Miniatura <?php echo $index + 1; ?>"
+                                         loading="lazy" decoding="async"
                                          onerror="this.src='../img/placeholder.png'">
                                 </div>
                             <?php endforeach; ?>
@@ -615,7 +619,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                                     <?php if ($desc_rel['ativo']): ?>
                                         <div class="badge-desconto">-<?php echo $desc_rel['porcentagem']; ?>%</div>
                                     <?php endif; ?>
-                                    <img src="<?php echo $imagem_produto; ?>" alt="<?php echo htmlspecialchars($produto['nome']); ?>" onerror="this.src='../img/placeholder.png'">
+                                    <img src="<?php echo $imagem_produto; ?>" alt="<?php echo htmlspecialchars($produto['nome']); ?>" loading="lazy" decoding="async" onerror="this.src='../img/placeholder.png'">
                                 </div>
                                 <div class="card-content">
                                     <div class="card-header">

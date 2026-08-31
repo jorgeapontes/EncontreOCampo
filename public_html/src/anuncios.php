@@ -466,7 +466,7 @@ foreach ($anuncios as &$a) {
                             if (strpos($imagePath, '../') === 0) $imagePath = substr($imagePath, 3);
                             if ($anuncio['imagem_url'] && !file_exists($imagePath)) $imagePath = '../img/placeholder.png';
                         ?>
-                        <img src="<?= $imagePath ?>" alt="<?= htmlspecialchars($anuncio['produto']) ?>" onerror="this.src='../img/placeholder.png'">
+                        <img src="<?= $imagePath ?>" alt="<?= htmlspecialchars($anuncio['produto']) ?>" loading="lazy" decoding="async" onerror="this.src='../img/placeholder.png'">
                     </div>
                     <div class="card-content">
                         <div class="card-header">

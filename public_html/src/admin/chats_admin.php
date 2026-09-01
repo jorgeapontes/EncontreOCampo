@@ -179,32 +179,14 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auditoria de Chats - Admin</title>
+    <link rel="stylesheet" href="css/navbar.css">
     <link rel="stylesheet" href="css/chats_admin.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- NAVBAR -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <img src="../../img/logo-nova.png" class="logo" alt="Logo">
-                <div>
-                    <h1>ENCONTRE</h1>
-                    <h2>O CAMPO</h2>
-                </div>
-            </div>
-            <div class="nav-links">
-                <a href="dashboard" class="nav-link">Dashboard</a>
-                <a href="todos_usuarios" class="nav-link">Todos os Usuários</a>
-                <a href="chats_admin" class="nav-link active">Chats</a>
-                <a href="manage_comprovantes" class="nav-link">Comprovantes</a>
-                <a href="../../index" class="nav-link">Home</a>
-                <a href="../logout" class="nav-link logout">Sair</a>
-            </div>
-        </div>
-    </nav>
-    
+    <?php $active_nav = 'chats'; require __DIR__ . '/includes/navbar.php'; ?>
+
     <div class="container">
         <?php if ($success): ?>
             <div class="alert alert-success">

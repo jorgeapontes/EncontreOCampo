@@ -40,6 +40,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/navbar.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <title>Dashboard Admin - Encontre o Campo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -49,55 +50,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <a href="../../index" class="logo-link">
-                        <img src="../../img/logo-nova.png" alt="Logo">
-                        <div>
-                            <h1>ENCONTRE</h1>
-                            <h2>O CAMPO</h2>
-                        </div>
-                    </a>
-                </div>
-                <ul class="nav-menu">
-                    <li class="nav-item">
-                        <a href="dashboard" class="nav-link active">
-                            Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="todos_usuarios" class="nav-link">
-                            Usuários
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="chats_admin" class="nav-link">
-                            Chats
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="manage_comprovantes" class="nav-link">
-                            Comprovantes
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="../../index" class="nav-link">
-                            Home
-                        </a>
-                    </li>
-                    <li class="nav-item"><a href="../logout" class="nav-link exit-button no-underline">Sair</a></li>
-                </ul>
-                <div class="hamburger">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <br>
+    <?php $active_nav = 'dashboard'; require __DIR__ . '/includes/navbar.php'; ?>
 
     <div class="main-content">
         <section class="header">

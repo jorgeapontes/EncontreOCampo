@@ -92,6 +92,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Todos os Usuários - Admin</title>
     <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="css/navbar.css">
     <link rel="stylesheet" href="css/todos_usuarios.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -100,25 +101,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
 
 <body>
 
-<nav class="navbar">
-    <div class="nav-container">
-        <div class="nav-logo">
-            <img src="../../img/logo-nova.png" alt="Logo Encontre Ocampo" class="logo">
-            <div>
-                <h1>ENCONTRE</h1>
-                <h2>O CAMPO</h2>
-            </div>
-        </div>
-        <div class="nav-links">
-            <a href="dashboard" class="nav-link">Dashboard</a>
-            <a href="todos_usuarios" class="nav-link active">Todos os Usuários</a>
-            <a href="chats_admin" class="nav-link">Chats</a>
-                <a href="manage_comprovantes" class="nav-link">Comprovantes</a>
-            <a href="../../index" class="nav-link">Home</a>
-            <a href="../logout" class="nav-link logout">Sair</a>
-        </div>
-    </div>
-</nav>
+<?php $active_nav = 'usuarios'; require __DIR__ . '/includes/navbar.php'; ?>
 
 <div class="container">
 

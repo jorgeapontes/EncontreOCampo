@@ -181,27 +181,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="../css/comprador/comprador.css">
     <link rel="stylesheet" href="../css/comprador/minhas_propostas.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../css/comprador/navbar.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <a href="../../index" class="logo-link">
-                    <img src="../../img/logo-nova.png" alt="Logo">
-                    <div>
-                        <h1>ENCONTRE</h1>
-                        <h2>O CAMPO</h2>
-                    </div>
-                </a>
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item"><a href="dashboard" class="nav-link">Dashboard</a></li>
-                <li class="nav-item"><a href="../anuncios" class="nav-link">Comprar</a></li>
-                <li class="nav-item"><a href="minhas_propostas" class="nav-link active">Minhas Propostas</a></li>
-                <li class="nav-item"><a href="../logout" class="nav-link logout">Sair</a></li>
-            </ul>
-        </div>
-    </nav>
+    <?php
+    $active_nav = 'propostas';
+    $nav_items = [
+        ['key' => 'painel',    'label' => 'Dashboard',        'href' => 'dashboard'],
+        ['key' => 'anuncios',  'label' => 'Comprar',          'href' => '../anuncios'],
+        ['key' => 'propostas', 'label' => 'Minhas Propostas', 'href' => 'minhas_propostas'],
+    ];
+    require __DIR__ . '/includes/navbar.php';
+    ?>
 
     <main class="container contrapropostas-container">
         <h1>Fazer Contraproposta</h1>

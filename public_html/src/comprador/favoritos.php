@@ -77,68 +77,20 @@ try {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/comprador/navbar.css">
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <a href="../../index" class="logo-link">
-                        <img src="../../img/logo-nova.png" alt="Logo">
-                        <div>
-                            <h1>ENCONTRE</h1>
-                            <h2>O CAMPO</h2>
-                        </div>
-                    </a>
-                </div>
-                <ul class="nav-menu">
-                    <li class="nav-item">
-                        <a href="../../index" class="nav-link">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="../anuncios" class="nav-link">Anúncios</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/dashboard.php' : 'dashboard'; ?>" class="nav-link">Painel</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="meus_chats" class="nav-link">Chats</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/perfil.php' : 'perfil'; ?>" class="nav-link">Meu Perfil</a>
-                    </li>
-                    <?php if (isset($_SESSION['usuario_id'])): ?>
-                    <li class="nav-item">
-                        <a href="../notificacoes" class="nav-link no-underline">
-                            <i class="fas fa-bell"></i>
-                            <?php
-                            // Contar notificações não lidas
-                            if (isset($_SESSION['usuario_id'])) {
-                                $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
-                                $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
-                                $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
-                                $stmt_nao_lidas->execute();
-                                $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
-                                if ($total_nao_lidas > 0) {
-                                    echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
-                                }
-                            }
-                            ?>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <li class="nav-item">
-                        <a href="../logout" class="nav-link exit-button no-underline">Sair</a>
-                    </li>
-                </ul>
-                <div class="hamburger">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
-            </div>
-        </nav>
-    </header>
+    <?php
+    $eh_vendedor = (($_SESSION['usuario_tipo'] ?? '') === 'vendedor');
+    $active_nav = '';
+    $nav_items = [
+        ['key' => 'anuncios', 'label' => 'Anúncios',   'href' => '../anuncios'],
+        ['key' => 'painel',   'label' => 'Painel',     'href' => $eh_vendedor ? '../vendedor/dashboard.php' : 'dashboard'],
+        ['key' => 'chats',    'label' => 'Chats',      'href' => 'meus_chats'],
+        ['key' => 'perfil',   'label' => 'Meu Perfil', 'href' => $eh_vendedor ? '../vendedor/perfil.php' : 'perfil'],
+    ];
+    require __DIR__ . '/includes/navbar.php';
+    ?>
     <br>
 
     <div class="main-content">
@@ -278,24 +230,5 @@ try {
         <?php endif; ?>
     </div>
 
-    <script>
-        // Menu Hamburguer
-        document.addEventListener('DOMContentLoaded', function() {
-            const hamburger = document.querySelector(".hamburger");
-            const navMenu = document.querySelector(".nav-menu");
-
-            if (hamburger && navMenu) {
-                hamburger.addEventListener("click", () => {
-                    hamburger.classList.toggle("active");
-                    navMenu.classList.toggle("active");
-                });
-
-                document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
-                    hamburger.classList.remove("active");
-                    navMenu.classList.remove("active");
-                }));
-            }
-        });
-    </script>
 </body>
 </html>

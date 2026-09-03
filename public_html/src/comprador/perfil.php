@@ -212,72 +212,23 @@ if (isset($_GET['success']) && $_GET['success'] == '1') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meu Perfil - Comprador</title>
+    <link rel="stylesheet" href="../css/comprador/navbar.css">
     <link rel="stylesheet" href="../css/comprador/perfil.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <a href="../../index" class="logo-link">
-                        <img src="../../img/logo-nova.png" alt="Logo">
-                        <div>
-                            <h1>ENCONTRE</h1>
-                            <h2>O CAMPO</h2>
-                        </div>
-                    </a>
-                </div>
-                <ul class="nav-menu">
-                    <li class="nav-item">
-                        <a href="../../index" class="nav-link">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="../anuncios" class="nav-link">Anúncios</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="dashboard" class="nav-link">Painel</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="meus_chats" class="nav-link">Chats</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="perfil" class="nav-link active">Meu Perfil</a>
-                    </li>
-                    <?php if (isset($_SESSION['usuario_id'])): ?>
-                    <li class="nav-item">
-                        <a href="../notificacoes" class="nav-link no-underline">
-                            <i class="fas fa-bell"></i>
-                            <?php
-                            // Contar notificações não lidas
-                            if (isset($_SESSION['usuario_id'])) {
-                                $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
-                                $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
-                                $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
-                                $stmt_nao_lidas->execute();
-                                $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
-                                if ($total_nao_lidas > 0) {
-                                    echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
-                                }
-                            }
-                            ?>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <li class="nav-item">
-                        <a href="../logout" class="nav-link exit-button no-underline">Sair</a>
-                    </li>
-                </ul>
-                <div class="hamburger">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
-            </div>
-        </nav>
-    </header>
+    <?php
+    $active_nav = 'perfil';
+    $nav_items = [
+        ['key' => 'anuncios', 'label' => 'Anúncios',   'href' => '../anuncios'],
+        ['key' => 'painel',   'label' => 'Painel',     'href' => 'dashboard'],
+        ['key' => 'chats',    'label' => 'Chats',      'href' => 'meus_chats'],
+        ['key' => 'perfil',   'label' => 'Meu Perfil', 'href' => 'perfil'],
+    ];
+    require __DIR__ . '/includes/navbar.php';
+    ?>
     <br>
 
     <div class="main-content">
@@ -551,22 +502,6 @@ if (isset($_GET['success']) && $_GET['success'] == '1') {
             });
         }
 
-        // Menu Hamburguer functionality (adicionado)
-        const hamburger = document.querySelector(".hamburger");
-        const navMenu = document.querySelector(".nav-menu");
-        
-        if (hamburger) {
-            hamburger.addEventListener("click", () => {
-                hamburger.classList.toggle("active");
-                navMenu.classList.toggle("active");
-            });
-            
-            // Fechar menu ao clicar em um link
-            document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
-                hamburger.classList.remove("active");
-                navMenu.classList.remove("active");
-            }));
-        }
     </script>
 </body>
 </html>

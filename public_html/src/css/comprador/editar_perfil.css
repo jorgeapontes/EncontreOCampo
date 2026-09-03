@@ -3,7 +3,7 @@ html {
 }
 
 .editar-container {
-            padding-top: 120px;
+            padding-top: 20px;
             max-width: 800px;
             margin: 0 auto;
         }
@@ -179,7 +179,7 @@ html {
 
         @media (max-width: 768px) {
             .editar-container {
-                padding-top: 100px;
+                padding-top: 20px;
             }
             
             .form-grid {

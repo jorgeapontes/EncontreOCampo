@@ -133,28 +133,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="../css/comprador/editar_perfil.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../css/comprador/navbar.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <a href="../../index" class="logo-link">
-                    <div>
-                        <h1>ENCONTRE</h1>
-                        <h2>OCAMPO</h2>
-                    </div>
-                </a>
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item"><a href="dashboard" class="nav-link">Dashboard</a></li>
-                <li class="nav-item"><a href="../anuncios" class="nav-link">Ver Anúncios</a></li>
-                <li class="nav-item"><a href="minhas_propostas" class="nav-link">Minhas Propostas</a></li>
-                <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
-                <li class="nav-item"><a href="editar_perfil" class="nav-link active">Editar Perfil</a></li>
-                <li class="nav-item"><a href="../logout" class="nav-link logout">Sair</a></li>
-            </ul>
-        </div>
-    </nav>
+    <?php
+    $active_nav = 'editar_perfil';
+    $nav_items = [
+        ['key' => 'painel',        'label' => 'Dashboard',        'href' => 'dashboard'],
+        ['key' => 'anuncios',      'label' => 'Ver Anúncios',     'href' => '../anuncios'],
+        ['key' => 'propostas',     'label' => 'Minhas Propostas', 'href' => 'minhas_propostas'],
+        ['key' => 'perfil',        'label' => 'Meu Perfil',       'href' => 'perfil'],
+        ['key' => 'editar_perfil', 'label' => 'Editar Perfil',    'href' => 'editar_perfil'],
+    ];
+    require __DIR__ . '/includes/navbar.php';
+    ?>
 
     <main class="container editar-container">
         <div class="page-header">

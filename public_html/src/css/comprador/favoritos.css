@@ -176,7 +176,7 @@ body {
 
 /* --- Conteúdo Principal --- */
 .main-content {
-    margin-top: 60px; /* Compensa a navbar fixa */
+    margin-top: 20px;
     padding: 20px;
     max-width: 1200px;
     margin-left: auto;
@@ -1342,7 +1342,7 @@ body {
 
 /* --- Conteúdo Principal --- */
 .main-content {
-    margin-top: 60px; /* Compensa a navbar fixa */
+    margin-top: 20px;
     padding: 20px;
     max-width: 1200px;
     margin-left: auto;

@@ -1,6 +1,6 @@
 /* Estilos similares ao Comprador, mas adaptados ao Vendedor */
 .details-container {
-    padding-top: 120px;
+    padding-top: 20px;
     max-width: 900px;
     margin: 0 auto;
 }
@@ -140,14 +140,6 @@
 .btn-edit:hover {
     background-color: #e68900;
     transform: translateY(-2px);
-}
-
-.logo-link {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    color: inherit;
-    cursor: pointer;
 }
 
 .alert {

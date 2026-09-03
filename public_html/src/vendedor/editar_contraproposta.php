@@ -179,52 +179,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="../../index.css">
     <link rel="stylesheet" href="../css/vendedor/propostas.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../css/vendedor/navbar.css">
 </head>
 <body>
-    <!-- Navbar similar ao detalhes_proposta.php -->
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <a href="../../index" class="logo-link">
-                        <img src="../../img/logo-nova.png" alt="Logo">
-                        <div>
-                            <h1>ENCONTRE</h1>
-                            <h2>O CAMPO</h2>
-                        </div>
-                    </a>
-                </div>
-                <ul class="nav-menu">
-                    <li class="nav-item">
-                        <a href="../../index" class="nav-link">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="dashboard" class="nav-link">Painel</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="anuncios" class="nav-link">Meus Anúncios</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="propostas" class="nav-link active">Propostas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="precos" class="nav-link">Médias de Preços</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="perfil" class="nav-link">Meu Perfil</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="../logout" class="nav-link login-button no-underline">Sair</a>
-                    </li>
-                </ul>
-                <div class="hamburger">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
-            </div>
-        </nav>
-    </header>
+    <?php
+    $active_nav = 'propostas';
+    $nav_items = [
+        ['key' => 'painel',        'label' => 'Painel',          'href' => 'dashboard'],
+        ['key' => 'meus_anuncios', 'label' => 'Meus Anúncios',   'href' => 'anuncios'],
+        ['key' => 'propostas',     'label' => 'Propostas',       'href' => 'propostas'],
+        ['key' => 'precos',        'label' => 'Médias de Preços', 'href' => 'precos'],
+        ['key' => 'perfil',        'label' => 'Meu Perfil',      'href' => 'perfil'],
+    ];
+    require __DIR__ . '/includes/navbar.php';
+    ?>
 
     <main class="container contrapropostas-container">
         <h1>Editar Contraproposta</h1>

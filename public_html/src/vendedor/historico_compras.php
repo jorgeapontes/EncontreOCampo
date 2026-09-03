@@ -99,38 +99,18 @@ try {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/vendedor/navbar.css">
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <a href="../../index" class="logo-link">
-                        <img src="../../img/logo-nova.png" alt="Logo">
-                        <div>
-                            <h1>ENCONTRE</h1>
-                            <h2>O CAMPO</h2>
-                        </div>
-                    </a>
-                </div>
-                <ul class="nav-menu">
-                    <li class="nav-item"><a href="../../index" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="../anuncios" class="nav-link">Anúncios</a></li>
-                    <li class="nav-item"><a href="dashboard" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
-                    <?php if (isset($_SESSION['usuario_id'])): ?>
-                    <li class="nav-item"><a href="../notificacoes" class="nav-link no-underline"><i class="fas fa-bell"></i></a></li>
-                    <?php endif; ?>
-                    <li class="nav-item"><a href="../logout" class="nav-link exit-button no-underline">Sair</a></li>
-                </ul>
-                <div class="hamburger">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
-            </div>
-        </nav>
-    </header>
+    <?php
+    $active_nav = '';
+    $nav_items = [
+        ['key' => 'anuncios', 'label' => 'Anúncios',   'href' => '../anuncios'],
+        ['key' => 'painel',   'label' => 'Painel',     'href' => 'dashboard'],
+        ['key' => 'perfil',   'label' => 'Meu Perfil', 'href' => 'perfil'],
+    ];
+    require __DIR__ . '/includes/navbar.php';
+    ?>
     <br>
     <div class="main-content">
         <section class="header">
@@ -238,22 +218,5 @@ try {
             </div>
         </section>
     </div>
-
-    <script>
-        const hamburger = document.querySelector(".hamburger");
-        const navMenu = document.querySelector(".nav-menu");
-
-        hamburger.addEventListener("click", () => {
-            hamburger.classList.toggle("active");
-            navMenu.classList.toggle("active");
-        });
-
-        document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
-            hamburger.classList.remove("active");
-            navMenu.classList.remove("active");
-        }));
-
-        // Arquivamento removido para compradores — nenhuma ação cliente necessária aqui.
-    </script>
 </body>
 </html>

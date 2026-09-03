@@ -93,34 +93,18 @@ try {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/vendedor/navbar.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <a href="../../index" class="logo-link">
-                    <img src="../../img/logo-nova.png" alt="Logo">
-                    <div>
-                        <h1>ENCONTRE</h1>
-                        <h2>O CAMPO</h2>
-                    </div>
-                </a>
-            </div>
-
-            <ul class="nav-menu">
-                <li class="nav-item"><a href="dashboard" class="nav-link">Dashboard</a></li>
-                <li class="nav-item"><a href="anuncios" class="nav-link active">Meus Anúncios</a></li>
-                <li class="nav-item"><a href="perfil" class="nav-link">Perfil</a></li>
-                <li class="nav-item"><a href="../logout" class="nav-link exit-button no-underline">Sair</a></li>
-            </ul>
-
-            <div class="hamburger">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </div>
-        </div>
-    </nav>
+    <?php
+    $active_nav = 'meus_anuncios';
+    $nav_items = [
+        ['key' => 'painel',        'label' => 'Dashboard',    'href' => 'dashboard'],
+        ['key' => 'meus_anuncios', 'label' => 'Meus Anúncios', 'href' => 'anuncios'],
+        ['key' => 'perfil',        'label' => 'Perfil',       'href' => 'perfil'],
+    ];
+    require __DIR__ . '/includes/navbar.php';
+    ?>
     <br>
 
     <main class="main-content">
@@ -262,16 +246,6 @@ try {
     </main>
 
     <script>
-    // JS Básico para Menu e Ações
-    const hamburger = document.querySelector('.hamburger');
-    const navMenu = document.querySelector('.nav-menu');
-    if(hamburger){
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('active');
-            navMenu.classList.toggle('active');
-        });
-    }
-
     function toggleStatus(id, currentStatus) {
         const novo = currentStatus === 'ativo' ? 'inativo' : 'ativo';
         if (confirm('Deseja alterar o status deste anúncio?')) {

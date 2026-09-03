@@ -60,22 +60,16 @@ if ($transportador_id) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Favoritos - Transportador</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/transportador/navbar.css">
     <link rel="stylesheet" href="../css/transportador/dashboard.css">
     <link rel="stylesheet" href="../css/transportador/favoritos.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <?php
-    $eh_vendedor = (($_SESSION['usuario_tipo'] ?? '') === 'vendedor');
-    $active_nav = 'favoritos';
-    $nav_items = [
-        ['key' => 'painel',    'label' => 'Painel',     'href' => $eh_vendedor ? '../vendedor/dashboard.php' : 'dashboard'],
-        ['key' => 'favoritos', 'label' => 'Favoritos',  'href' => 'favoritos'],
-        ['key' => 'perfil',    'label' => 'Meu Perfil', 'href' => $eh_vendedor ? '../vendedor/perfil.php' : 'perfil'],
-    ];
-    require __DIR__ . '/includes/navbar.php';
-    ?>
+    <?php $active_nav = ''; require __DIR__ . '/includes/navbar.php'; ?>
     <div class="main-content">
         <section class="acordos-disponiveis">
             <h2>Favoritos</h2>

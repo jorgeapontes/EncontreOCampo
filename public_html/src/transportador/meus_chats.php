@@ -184,49 +184,19 @@ try {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/transportador/navbar.css">
     <link rel="stylesheet" href="../css/transportador/meus_chats.css">
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <a href="../../index" class="logo-link">
-                        <img src="../../img/logo-nova.png" alt="Logo">
-                        <div>
-                            <h1>ENCONTRE</h1>
-                            <h2>O CAMPO</h2>
-                        </div>
-                    </a>
-                </div>
-                <ul class="nav-menu">
-                    <li class="nav-item"><a href="../../index" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="dashboard" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="meus_chats" class="nav-link active">Chats</a></li>
-                    <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
-                    <?php if (isset($_SESSION['usuario_id'])): ?>
-                    <li class="nav-item">
-                        <a href="../notificacoes" class="nav-link">
-                            <i class="fas fa-bell"></i>
-                            <?php
-                            $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
-                            $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
-                            $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
-                            $stmt_nao_lidas->execute();
-                            $total_notif = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
-                            if ($total_notif > 0) { echo '<span class="notificacao-badge">'.$total_notif.'</span>'; }
-                            ?>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <li class="nav-item"><a href="../logout" class="nav-link exit-button">Sair</a></li>
-                </ul>
-                <div class="hamburger">
-                    <span class="bar"></span><span class="bar"></span><span class="bar"></span>
-                </div>
-            </div>
-        </nav>
-    </header>
+    <?php
+    $active_nav = 'chats';
+    $nav_items = [
+        ['key' => 'painel', 'label' => 'Painel',     'href' => 'dashboard'],
+        ['key' => 'chats',  'label' => 'Chats',      'href' => 'meus_chats'],
+        ['key' => 'perfil', 'label' => 'Meu Perfil', 'href' => 'perfil'],
+    ];
+    require __DIR__ . '/includes/navbar.php';
+    ?>
 
     <div class="main-content">
         <div class="page-header">
@@ -484,21 +454,6 @@ try {
     </div>
 
     <script>
-        const hamburger = document.querySelector(".hamburger");
-        const navMenu = document.querySelector(".nav-menu");
-
-        if (hamburger) {
-            hamburger.addEventListener("click", () => {
-                hamburger.classList.toggle("active");
-                navMenu.classList.toggle("active");
-            });
-
-            document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
-                hamburger.classList.remove("active");
-                navMenu.classList.remove("active");
-            }));
-        }
-        
         function filtrarConversas(tipo) {
             const cards = document.querySelectorAll('.conversa-card');
             const buttons = document.querySelectorAll('.filter-btn');

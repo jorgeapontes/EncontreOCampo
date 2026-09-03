@@ -60,39 +60,14 @@ if ($id > 0 && $transportador_id) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes da Entrega</title>
+    <link rel="stylesheet" href="../css/transportador/navbar.css">
     <link rel="stylesheet" href="../css/transportador/dashboard.css">
     <link rel="stylesheet" href="../css/transportador/entrega_detalhes.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <a href="../../index" class="logo-link">
-                        <img src="../../img/logo-nova.png" alt="Logo">
-                        <div>
-                            <h1>ENCONTRE</h1>
-                            <h2>O CAMPO</h2>
-                        </div>
-                    </a>
-                </div>
-                <ul class="nav-menu">
-                    <li class="nav-item"><a href="../../index" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="entregas" class="nav-link">Entregas</a></li>
-                    <li class="nav-item"><a href="dashboard" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
-                    <li class="nav-item"><a href="../logout" class="nav-link exit-button no-underline">Sair</a></li>
-                </ul>
-                <div class="hamburger">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
-            </div>
-        </nav>
-    </header>
+    <?php $active_nav = ''; require __DIR__ . '/includes/navbar.php'; ?>
     <main class="main-content">
         <?php if ($entrega): ?>
         <section class="entrega-detalhes">
@@ -166,19 +141,5 @@ if ($id > 0 && $transportador_id) {
         </section>
         <?php endif; ?>
     </main>
-    <script>
-        const hamburger = document.querySelector(".hamburger");
-        const navMenu = document.querySelector(".nav-menu");
-        if (hamburger) {
-            hamburger.addEventListener("click", () => {
-                hamburger.classList.toggle("active");
-                navMenu.classList.toggle("active");
-            });
-            document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
-                hamburger.classList.remove("active");
-                navMenu.classList.remove("active");
-            }));
-        }
-    </script>
 </body>
 </html>

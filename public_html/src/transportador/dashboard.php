@@ -157,6 +157,7 @@ if (!$is_pendente && $transportador_id) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard do Transportador - Encontre Ocampo</title>
+    <link rel="stylesheet" href="../css/transportador/navbar.css">
     <link rel="stylesheet" href="../css/transportador/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
@@ -165,51 +166,7 @@ if (!$is_pendente && $transportador_id) {
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <a href="../../index" class="logo-link">
-                        <img src="../../img/logo-nova.png" alt="Logo">
-                        <div>
-                            <h1>ENCONTRE</h1>
-                            <h2>O CAMPO</h2>
-                        </div>
-                    </a>
-                </div>
-                <ul class="nav-menu">
-                    <li class="nav-item"><a href="../../index" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="entregas" class="nav-link">Entregas</a></li>
-                    <li class="nav-item"><a href="" class="nav-link active">Painel</a></li>
-                    <li class="nav-item"><a href="perfil" class="nav-link">Meu Perfil</a></li>
-                    <?php if (isset($_SESSION['usuario_id'])): ?>
-                    <li class="nav-item">
-                        <a href="../notificacoes" class="nav-link no-underline">
-                            <i class="fas fa-bell"></i>
-                            <?php
-                            if (isset($_SESSION['usuario_id'])) {
-                                $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
-                                $stmt_nao_lidas = $db->prepare($sql_nao_lidas);
-                                $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
-                                $stmt_nao_lidas->execute();
-                                $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
-                                if ($total_nao_lidas > 0) echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
-                            }
-                            ?>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <li class="nav-item"><a href="../logout" class="nav-link exit-button no-underline">Sair</a></li>
-                </ul>
-                <div class="hamburger">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <br>
+    <?php $active_nav = 'painel'; require __DIR__ . '/includes/navbar.php'; ?>
     <div class="main-content">
         <section class="header">
             <center>
@@ -425,20 +382,5 @@ if (!$is_pendente && $transportador_id) {
             </section>
             <?php endif; ?>
     </div>
-
-    <script>
-        const hamburger = document.querySelector(".hamburger");
-        const navMenu = document.querySelector(".nav-menu");
-        if (hamburger) {
-            hamburger.addEventListener("click", () => {
-                hamburger.classList.toggle("active");
-                navMenu.classList.toggle("active");
-            });
-            document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
-                hamburger.classList.remove("active");
-                navMenu.classList.remove("active");
-            }));
-        }
-    </script>
 </body>
 </html>

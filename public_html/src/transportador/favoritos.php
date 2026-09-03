@@ -60,56 +60,22 @@ if ($transportador_id) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Favoritos - Transportador</title>
+    <link rel="stylesheet" href="../css/transportador/navbar.css">
     <link rel="stylesheet" href="../css/transportador/dashboard.css">
     <link rel="stylesheet" href="../css/transportador/favoritos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <a href="../../index" class="logo-link">
-                        <img src="../../img/logo-nova.png" alt="Logo">
-                        <div>
-                            <h1>ENCONTRE</h1>
-                            <h2>O CAMPO</h2>
-                        </div>
-                    </a>
-                </div>
-                <ul class="nav-menu">
-                    <li class="nav-item"><a href="../../index" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/dashboard.php' : 'dashboard'; ?>" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="favoritos" class="nav-link active">Favoritos</a></li>
-                    <li class="nav-item"><a href="<?php echo ($_SESSION['usuario_tipo'] === 'vendedor') ? '../vendedor/perfil.php' : 'perfil'; ?>" class="nav-link">Meu Perfil</a></li>
-                    <?php if (isset($_SESSION['usuario_id'])): ?>
-                    <li class="nav-item">
-                        <a href="../notificacoes" class="nav-link no-underline">
-                            <i class="fas fa-bell"></i>
-                            <?php
-                            if (isset($_SESSION['usuario_id'])) {
-                                try {
-                                    $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
-                                    $stmt_nao_lidas = $db->prepare($sql_nao_lidas);
-                                    $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
-                                    $stmt_nao_lidas->execute();
-                                    $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
-                                    if ($total_nao_lidas > 0) echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
-                                } catch (PDOException $e) { }
-                            }
-                            ?>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <li class="nav-item"><a href="../logout" class="nav-link exit-button no-underline">Sair</a></li>
-                </ul>
-                <div class="hamburger">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
-            </div>
-        </nav>
-    </header>
+    <?php
+    $eh_vendedor = (($_SESSION['usuario_tipo'] ?? '') === 'vendedor');
+    $active_nav = 'favoritos';
+    $nav_items = [
+        ['key' => 'painel',    'label' => 'Painel',     'href' => $eh_vendedor ? '../vendedor/dashboard.php' : 'dashboard'],
+        ['key' => 'favoritos', 'label' => 'Favoritos',  'href' => 'favoritos'],
+        ['key' => 'perfil',    'label' => 'Meu Perfil', 'href' => $eh_vendedor ? '../vendedor/perfil.php' : 'perfil'],
+    ];
+    require __DIR__ . '/includes/navbar.php';
+    ?>
     <div class="main-content">
         <section class="acordos-disponiveis">
             <h2>Favoritos</h2>

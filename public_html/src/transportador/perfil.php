@@ -272,6 +272,7 @@ function getImagePath($path) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meu Perfil - Transportador</title>
+    <link rel="stylesheet" href="../css/transportador/navbar.css">
     <link rel="stylesheet" href="../css/transportador/perfil.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
@@ -280,35 +281,15 @@ function getImagePath($path) {
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <a href="../../index" class="logo-link">
-                        <img src="../../img/logo-nova.png" alt="Logo">
-                        <div>
-                            <h1>ENCONTRE</h1>
-                            <h2>O CAMPO</h2>
-                        </div>
-                    </a>
-                </div>
-                <ul class="nav-menu">
-                    <li class="nav-item"><a href="../../index" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="../anuncios" class="nav-link">Anúncios</a></li>
-                    <li class="nav-item"><a href="dashboard" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="" class="nav-link active">Meu Perfil</a></li>
-                    <li class="nav-item">
-                        <a href="../logout" class="nav-link exit-button no-underline">Sair</a>
-                    </li>
-                </ul>
-                <div class="hamburger">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
-            </div>
-        </nav>
-    </header>
+    <?php
+    $active_nav = 'perfil';
+    $nav_items = [
+        ['key' => 'anuncios', 'label' => 'Anúncios',   'href' => '../anuncios'],
+        ['key' => 'painel',   'label' => 'Painel',     'href' => 'dashboard'],
+        ['key' => 'perfil',   'label' => 'Meu Perfil', 'href' => 'perfil'],
+    ];
+    require __DIR__ . '/includes/navbar.php';
+    ?>
     <br>
 
     <div class="main-content">
@@ -570,16 +551,6 @@ function getImagePath($path) {
                 // Restaurar o botão
                 btnBuscar.innerHTML = originalHTML;
                 btnBuscar.disabled = false;
-            });
-        }
-
-        // Menu Mobile
-        const hamburger = document.querySelector(".hamburger");
-        const navMenu = document.querySelector(".nav-menu");
-        if(hamburger) {
-            hamburger.addEventListener("click", () => {
-                hamburger.classList.toggle("active");
-                navMenu.classList.toggle("active");
             });
         }
 

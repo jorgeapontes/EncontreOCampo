@@ -27,7 +27,7 @@ if (php_sapi_name() !== 'cli') {
 $TABELAS = [
     'log_acessos' => [
         'dias'         => 90,
-        'colunas_data' => ['data_hora', 'criado_em', 'created_at', 'data', 'timestamp'],
+        'colunas_data' => ['data_tentativa', 'data_hora', 'criado_em', 'created_at', 'data', 'timestamp'],
     ],
     'tentativas_ip' => [
         'dias'         => 7,

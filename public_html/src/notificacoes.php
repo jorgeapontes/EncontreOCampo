@@ -71,56 +71,17 @@ if($_SESSION['usuario_tipo'] == 'vendedor') {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/navbar.css">
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <a href="../index" class="logo-link">
-                        <img src="../img/logo-nova.png" alt="Logo">
-                        <div>
-                            <h1>ENCONTRE</h1>
-                            <h2>O CAMPO</h2>
-                        </div>
-                    </a>
-                </div>
-                <ul class="nav-menu">
-                    <li class="nav-item">
-                        <a href="../index" class="nav-link">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="<?= $painel_href ?>?>" class="nav-link">Painel</a>
-                    </li>
-                     <li class="nav-item">
-                        <a href="<?= $perfil_href ?>?>" class="nav-link">Meu Perfil</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="notificacoes" class="nav-link active no-underline">
-                            <i class="fas fa-bell"></i>
-                            <?php if ($total_nao_lidas > 0): ?>
-                                <span class="notificacao-badge"><?php echo $total_nao_lidas; ?></span>
-                            <?php endif; ?>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <?php if (isset($_SESSION['usuario_nome'])): ?>
-                            <a href="logout" class="nav-link exit-button no-underline">
-                                Sair
-                            </a>
-                        <?php else: ?>
-                            <a href="src/login" class="nav-link login-button no-underline">Login</a>
-                        <?php endif; ?>
-                    </li>
-                </ul>
-                <div class="hamburger">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
-            </div>
-        </nav>
-    </header>
+    <?php
+    $active_nav = 'notificacoes';
+    $nav_items = [
+        ['key' => 'painel', 'label' => 'Painel',     'href' => $painel_href],
+        ['key' => 'perfil', 'label' => 'Meu Perfil', 'href' => $perfil_href],
+    ];
+    require __DIR__ . '/includes/navbar.php';
+    ?>
 
     <main class="notificacoes-container">
         <center>
@@ -161,20 +122,5 @@ if($_SESSION['usuario_tipo'] == 'vendedor') {
             </div>
         <?php endif; ?>
     </main>
-
-    <script>
-        const hamburger = document.querySelector(".hamburger");
-        const navMenu = document.querySelector(".nav-menu");
-
-        hamburger.addEventListener("click", () => {
-            hamburger.classList.toggle("active");
-            navMenu.classList.toggle("active");
-        });
-
-        document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
-            hamburger.classList.remove("active");
-            navMenu.classList.remove("active");
-        }));
-    </script>
 </body>
 </html>

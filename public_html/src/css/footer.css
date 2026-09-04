@@ -1,0 +1,100 @@
+/* src/css/footer.css
+   Rodapé compartilhado (site-footer). Marcação em src/includes/footer.php.
+   Usado por anuncios, visualizar_anuncio, comprador/view_ad, vendedor/escolher_plano. */
+
+.site-footer {
+    background: #2E7D32;
+    color: #ffffff;
+    margin-top: 80px;
+    font-family: "Montserrat", "Segoe UI", Tahoma, sans-serif;
+}
+
+.site-footer .footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.site-footer .footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+    padding: 50px 0 30px;
+}
+
+.site-footer .footer-section h4 {
+    color: #4CAF50;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.site-footer .footer-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.site-footer .footer-section ul li {
+    margin-bottom: 12px;
+}
+
+.site-footer .footer-section ul li a {
+    color: #F1F8E9;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    font-size: 1rem;
+}
+
+.site-footer .footer-section ul li a:hover {
+    color: #4CAF50;
+}
+
+.site-footer .contact-info p {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    color: #F1F8E9;
+}
+
+.site-footer .contact-info i {
+    color: #4CAF50;
+    width: 20px;
+}
+
+.site-footer .social-links {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.site-footer .social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    color: #ffffff;
+    text-decoration: none;
+    transition: transform 0.3s ease;
+}
+
+.site-footer .social-links a:hover {
+    transform: translateY(-2px);
+}
+
+.site-footer .footer-bottom {
+    text-align: center;
+    padding: 25px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 576px) {
+    .site-footer .footer-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        padding: 35px 0 20px;
+    }
+}

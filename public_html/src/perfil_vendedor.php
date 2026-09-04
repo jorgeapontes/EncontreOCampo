@@ -161,42 +161,10 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
     <link rel="shortcut icon" href="../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/navbar.css">
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <a href="../index" class="logo-link">
-                        <img src="../img/logo-nova.png" alt="Logo">
-                        <div>
-                            <h1>ENCONTRE</h1>
-                            <h2>O CAMPO</h2>
-                        </div>
-                    </a>
-                </div>
-                <ul class="nav-menu">
-                    <li class="nav-item">
-                        <a href="../index" class="nav-link">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="anuncios" class="nav-link">Anúncios</a>
-                    </li>
-                    <?php if ($is_logged_in): ?>
-                        <li class="nav-item"><a href="<?= $usuario_tipo ?>/dashboard.php" class="nav-link">Painel</a></li>
-                        <li class="nav-item"><a href="<?= $usuario_tipo ?>/perfil.php" class="nav-link">Meu Perfil</a></li>
-                        <li class="nav-item">
-                            <a href="logout" class="nav-link exit-button no-underline">Sair</a>
-                        </li>
-                    <?php else: ?>
-                        <li class="nav-item">
-                            <a href="login" class="nav-link login-button no-underline">Login</a>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-            </div>
-        </nav>
-    </header>
+    <?php $active_nav = ''; require __DIR__ . '/includes/navbar.php'; ?>
 
     <main class="container content-container">
         <div class="page-header">

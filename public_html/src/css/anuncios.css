@@ -30,7 +30,7 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
-    margin-top: 80px;
+    margin-top: 0;
     min-height: calc(100vh - 200px);
 }
 
@@ -184,7 +184,7 @@ body {
 
 /* --- Conteúdo Principal --- */
 .main-content {
-    margin-top: 60px;
+    margin-top: 0;
     padding: 20px;
     max-width: 1200px; /* Largura máxima igual ao container de anúncios */
     margin-left: auto;

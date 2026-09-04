@@ -64,36 +64,19 @@ try {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/procurando_transportador.css">
+    <link rel="stylesheet" href="css/navbar.css">
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <a href="../index" class="logo-link">
-                        <img src="../img/logo-nova.png" alt="Logo">
-                        <div>
-                            <h1>ENCONTRE</h1>
-                            <h2>O CAMPO</h2>
-                        </div>
-                    </a>
-                </div>
-                <!-- Menu Hamburguer (adicionado) -->
-                <div class="hamburger">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
-                <ul class="nav-menu">
-                    <li class="nav-item"><a href="../index" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="comprador/dashboard" class="nav-link">Painel</a></li>
-                    <li class="nav-item"><a href="comprador/perfil" class="nav-link">Meu Perfil</a></li>
-                    <li class="nav-item"><a href="comprador/chats" class="nav-link">Chats</a></li>
-                    <li class="nav-item"><a href="logout" class="nav-link exit-button no-underline">Sair</a></li>
-                </ul>
-            </div>
-        </nav>
-    </header>
+    <?php
+    $active_nav = '';
+    $mostrar_sino = false;
+    $nav_items = [
+        ['key' => 'painel', 'label' => 'Painel',     'href' => 'comprador/dashboard'],
+        ['key' => 'perfil', 'label' => 'Meu Perfil', 'href' => 'comprador/perfil'],
+        ['key' => 'chats',  'label' => 'Chats',      'href' => 'comprador/meus_chats'],
+    ];
+    require __DIR__ . '/includes/navbar.php';
+    ?>
 
     <main class="main-content">
 
@@ -113,23 +96,6 @@ try {
 
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script>
-        // Menu Hamburguer functionality
-        const hamburger = document.querySelector(".hamburger");
-        const navMenu = document.querySelector(".nav-menu");
-        
-        if (hamburger) {
-            hamburger.addEventListener("click", () => {
-                hamburger.classList.toggle("active");
-                navMenu.classList.toggle("active");
-            });
-            
-            // Fechar menu ao clicar em um link
-            document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
-                hamburger.classList.remove("active");
-                navMenu.classList.remove("active");
-            }));
-        }
-
         // ============== SISTEMA DINÂMICO DE CONVERSAS ==============
         let conversasCache = new Map();
         let ultimaVerificacao = Math.floor(Date.now() / 1000);

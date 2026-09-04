@@ -169,7 +169,7 @@
 
 /* Container Principal */
 .container {
-    padding-top: 120px;
+    padding-top: 20px;
     max-width: 1200px;
     margin: 0 auto;
     padding-left: 20px;
@@ -688,7 +688,7 @@
 
 @media (max-width: 768px) {
     .container {
-        padding-top: 100px;
+        padding-top: 20px;
         padding-left: 15px;
         padding-right: 15px;
         padding-bottom: 40px;
@@ -762,12 +762,12 @@
 
 @media (max-width: 480px) {
     .container {
-        padding-top: 90px;
+        padding-top: 20px;
         padding-bottom: 30px;
     }
 
     .page-header{
-        padding-top: 120px;
+        padding-top: 20px;
     }
     
     .hero-text h1 {

@@ -126,7 +126,7 @@ body { font-family: 'Montserrat', sans-serif; background: #f5f5f5; min-height: 1
 .nav-link.no-underline::after {
     display: none;
 }
-.main-content { position: flex; max-width: 1400px; margin: 2rem auto; padding: 70px 2rem; top: 20px; }
+.main-content { position: flex; max-width: 1400px; margin: 2rem auto; padding: 20px 2rem; top: 20px; }
 .conversas-container { background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; }
 .conversas-header { padding: 1.5rem 2rem; background: #f9f9f9; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; }
 .conversas-header h2 { font-size: 20px; color: #333; }
@@ -238,7 +238,7 @@ body { font-family: 'Montserrat', sans-serif; background: #f5f5f5; min-height: 1
     /* Ajuste do layout geral */
     .main-content {
         padding: 10px;
-        margin-top: 100px;
+        margin-top: 0;
     }
 
     /* Ajuste do container das conversas */

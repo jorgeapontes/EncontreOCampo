@@ -326,52 +326,18 @@ try {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/navbar.css">
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <a href="../index" class="logo-link">
-                        <img src="../img/logo-nova.png" alt="Logo">
-                        <div>
-                            <h1>ENCONTRE</h1>
-                            <h2>O CAMPO</h2>
-                        </div>
-                    </a>
-                </div>
-                <ul class="nav-menu">
-                    <li class="nav-item">
-                        <a href="../index" class="nav-link">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="anuncios" class="nav-link">Anúncios</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="vendedor/dashboard" class="nav-link">Painel</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="vendedor/perfil" class="nav-link">Meu Perfil</a>
-                    </li>
-                    <?php if (isset($_SESSION['usuario_id'])): ?>
-                    <li class="nav-item">
-                        <a href="notificacoes" class="nav-link no-underline">
-                            <i class="fas fa-bell"></i>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <li class="nav-item">
-                        <a href="logout" class="nav-link exit-button no-underline">Sair</a>
-                    </li>
-                </ul>
-                <div class="hamburger">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
-            </div>
-        </nav>
-    </header>
+    <?php
+    $active_nav = '';
+    $nav_items = [
+        ['key' => 'anuncios', 'label' => 'Anúncios',   'href' => 'anuncios'],
+        ['key' => 'painel',   'label' => 'Painel',     'href' => 'vendedor/dashboard'],
+        ['key' => 'perfil',   'label' => 'Meu Perfil', 'href' => 'vendedor/perfil'],
+    ];
+    require __DIR__ . '/includes/navbar.php';
+    ?>
     <div class="container">
         <div class="header">
             <div class="header-info">

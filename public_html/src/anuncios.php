@@ -197,69 +197,11 @@ foreach ($anuncios as &$a) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-    
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/footer.css">
 </head>
-<body> 
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <a href="../index" class="logo-link">
-                        <img src="../img/logo-nova.png" alt="Logo">
-                        <div>
-                            <h1>ENCONTRE</h1>
-                            <h2>O CAMPO</h2>
-                        </div>
-                    </a>
-                </div>
-                <ul class="nav-menu">
-                    <li class="nav-item">
-                        <a href="../index" class="nav-link">Home</a>
-                    </li>
-                    <?php if (isset($_SESSION['usuario_id'])): ?>
-                        <li class="nav-item">
-                            <a href="" class="nav-link active">Anúncios</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="<?= $_SESSION['usuario_tipo'] ?>/dashboard.php" class="nav-link">Painel</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="<?= $_SESSION['usuario_tipo'] ?>/meus_chats.php" class="nav-link">Chats</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="<?= $_SESSION['usuario_tipo'] ?>/perfil.php" class="nav-link">Meu Perfil</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="notificacoes" class="nav-link no-underline">
-                                <i class="fas fa-bell"></i>
-                                <?php
-                                $sql_nao_lidas = "SELECT COUNT(*) as total FROM notificacoes WHERE usuario_id = :usuario_id AND lida = 0";
-                                $stmt_nao_lidas = $conn->prepare($sql_nao_lidas);
-                                $stmt_nao_lidas->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
-                                $stmt_nao_lidas->execute();
-                                $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
-                                if ($total_nao_lidas > 0) echo '<span class="notificacao-badge">'.$total_nao_lidas.'</span>';
-                                ?>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="logout" class="nav-link exit-button no-underline">Sair</a>
-                        </li>
-                    <?php else: ?>
-                        <li class="nav-item">
-                            <a href="login" class="nav-link login-button no-underline">Login</a>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-                <div class="hamburger">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <br>
+<body>
+    <?php $active_nav = 'anuncios'; require __DIR__ . '/includes/navbar.php'; ?>
 
     <main class="main-content">
         <section class="header">
@@ -539,51 +481,7 @@ foreach ($anuncios as &$a) {
         </div>
     </div>
 
-    <footer class="site-footer">
-        <div class="footer-container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h4>Encontre o Campo</h4>
-                    <ul>
-                        <li><a href="../index">Página Inicial</a></li>
-                        <li><a href="anuncios">Ver Anúncios</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>Suporte</h4>
-                    <ul>
-                        <li><a href="../ajuda">Central de Ajuda</a></li>
-                        <li><a href="../contato">Fale Conosco</a></li>
-                        <li><a href="sobre">Sobre Nós</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>Legal</h4>
-                    <ul>
-                        <li><a href="faq">FAQ</a></li>
-                        <li><a href="termos">Termos de Uso</a></li>
-                        <li><a href="privacidade">Política de Privacidade</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>Contato</h4>
-                    <div class="contact-info">
-                        <p><i class="fas fa-envelope"></i> contato@encontreocampo.com.br</p>
-                        <div class="social-links">
-                            <a href="#">Instagram</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <p>&copy; Encontre o Campo. Todos os direitos reservados.</p>
-            </div>
-        </div>
-    </footer>
+    <?php require __DIR__ . '/includes/footer.php'; ?>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -604,12 +502,7 @@ foreach ($anuncios as &$a) {
         }
         document.querySelector('.modal-close').onclick = () => document.getElementById('loginModal').style.display = "none";
         document.querySelectorAll('.open-login-modal').forEach(b => b.onclick = () => document.getElementById('loginModal').style.display = "block");
-        
-        // Hamburger
-        const hamburger = document.querySelector(".hamburger");
-        const navMenu = document.querySelector(".nav-menu");
-        hamburger.addEventListener("click", () => { hamburger.classList.toggle("active"); navMenu.classList.toggle("active"); });
-        
+
         // Cards clicáveis
         document.querySelectorAll('.anuncio-card').forEach(card => {
             card.addEventListener('click', function(e) {

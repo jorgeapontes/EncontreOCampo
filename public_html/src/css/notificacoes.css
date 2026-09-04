@@ -154,7 +154,7 @@ body {
 
 /* --- Conteúdo Principal --- */
 .main-content {
-    margin-top: 60px; /* Compensa a navbar fixa */
+    margin-top: 0; /* Compensa a navbar fixa */
     padding: 20px;
     max-width: 1200px;
     margin-left: auto;

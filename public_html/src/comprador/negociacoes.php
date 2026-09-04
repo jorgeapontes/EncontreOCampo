@@ -97,7 +97,7 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Histórico de Compras - Encontre Ocampo</title>
     <link rel="stylesheet" href="../css/vendedor/vendas.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/comprador/navbar.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">

@@ -159,7 +159,7 @@ $foto_perfil_url = $vendedor_info['foto_perfil_url'] ?? '';
     <link rel="stylesheet" href="css/anuncios.css?v=1.1"> 
     <link rel="stylesheet" href="css/vendedor/perfil.css">
     <link rel="shortcut icon" href="../img/logo-nova.png" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/navbar.css">
 </head>

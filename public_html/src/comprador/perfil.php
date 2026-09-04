@@ -215,7 +215,7 @@ if (isset($_GET['success']) && $_GET['success'] == '1') {
     <link rel="stylesheet" href="../css/comprador/navbar.css">
     <link rel="stylesheet" href="../css/comprador/perfil.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap" rel="stylesheet">
 </head>
 <body>

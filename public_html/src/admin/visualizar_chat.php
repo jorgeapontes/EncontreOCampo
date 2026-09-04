@@ -157,7 +157,7 @@ try {
     <title>Visualizar Chat - Admin</title>
     <link rel="stylesheet" href="css/visualizar_chat.css">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="container">

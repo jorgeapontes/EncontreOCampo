@@ -121,7 +121,7 @@ if ($viewer_id) {
     <title>Ver Perfil - <?php echo htmlspecialchars($user['nome'] ?? 'Usuário'); ?></title>
     <link rel="stylesheet" href="css/vendedor/vendas.css">
     <link rel="stylesheet" href="css/verperfil.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/navbar.css">
 </head>

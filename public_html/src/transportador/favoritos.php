@@ -66,7 +66,7 @@ if ($transportador_id) {
     <link rel="stylesheet" href="../css/transportador/navbar.css">
     <link rel="stylesheet" href="../css/transportador/dashboard.css">
     <link rel="stylesheet" href="../css/transportador/favoritos.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <?php $active_nav = ''; require __DIR__ . '/includes/navbar.php'; ?>

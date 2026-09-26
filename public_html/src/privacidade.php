@@ -54,7 +54,7 @@ if ($is_logged_in) {
     <main class="container">
         <div class="page-header">
             <h2>Política de Privacidade</h2>
-            <p>Última atualização: <?php echo date('d/m/Y'); ?></p>
+            <p>Última atualização: 25/09/2026</p>
         </div>
 
         <div class="legal-content">
@@ -157,19 +157,20 @@ if ($is_logged_in) {
                     <li><strong>Revogação:</strong> Retirar consentimento a qualquer momento</li>
                     <li><strong>Informação sobre compartilhamento:</strong> Saber com quem seus dados são compartilhados</li>
                 </ul>
-                <p>Para exercer qualquer um desses direitos, entre em contato pelo e-mail informado na seção 12.</p>
+                <p>Para exercer qualquer um desses direitos, entre em contato pelo e-mail informado na seção 13.</p>
             </div>
 
             <div class="legal-section">
                 <h3><i class="fas fa-cookie"></i> 8. Cookies e Tecnologias Similares</h3>
-                <p>Utilizamos cookies para:</p>
+                <p>Utilizamos apenas o mínimo necessário para a plataforma funcionar:</p>
                 <ul>
-                    <li>Manter sua sessão ativa (essencial para o funcionamento da plataforma)</li>
-                    <li>Lembrar suas preferências</li>
-                    <li>Analisar o uso da plataforma</li>
-                    <li>Melhorar nossa performance</li>
+                    <li><strong>Cookie de sessão (essencial):</strong> mantém você conectado enquanto navega. Não guarda dados pessoais, apenas um identificador aleatório de sessão, e é apagado quando você fecha o navegador. Base legal: execução do contrato e legítimo interesse (art. 7º, V e IX, da LGPD).</li>
+                    <li><strong>Armazenamento local do navegador (funcional):</strong> registra apenas se um aviso informativo já foi exibido, para que ele não apareça novamente. Não contém dados pessoais e não é enviado aos nossos servidores.</li>
                 </ul>
-                <p>Você pode controlar cookies através das configurações do seu navegador. Note que desabilitar cookies essenciais pode impedir o funcionamento correto da plataforma (ex: manter você logado).</p>
+                <p><strong>Não utilizamos</strong> cookies de publicidade, de rastreamento ou de análise de comportamento (como Google Analytics ou pixels de redes sociais), nem compartilhamos dados de navegação com anunciantes.</p>
+                <p>Para exibir fontes e ícones, a plataforma carrega arquivos de serviços de terceiros (Google Fonts e Cloudflare cdnjs). Como em qualquer acesso a um site, esses serviços recebem dados técnicos da conexão, como endereço IP e tipo de navegador, mas não gravam cookies pela nossa plataforma. O pagamento de assinaturas é feito na página do Stripe, que segue sua própria política de cookies.</p>
+                <p>Você pode bloquear ou apagar cookies nas configurações do seu navegador. Note que bloquear o cookie de sessão impede que você permaneça conectado à plataforma.</p>
+                <p>Caso passemos a utilizar cookies não essenciais no futuro, esta política será atualizada e solicitaremos o seu consentimento antes de ativá-los.</p>
             </div>
 
             <div class="legal-section">

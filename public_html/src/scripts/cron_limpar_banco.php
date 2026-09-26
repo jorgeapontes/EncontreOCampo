@@ -3,19 +3,11 @@
 // Expurga registros antigos das tabelas de auditoria/segurança do banco.
 // ATENÇÃO: Este script DEVE ser executado via CRON JOB, não pelo navegador.
 //
-// Cron sugerido (Hostinger) - 1x por dia, 04:00:
+// Cron (Hostinger) - 1x por dia, 04:00:
 // 0 4 * * * /usr/bin/php /home/u569225384/domains/encontreocampo.com.br/public_html/src/scripts/cron_limpar_banco.php
 
-set_time_limit(0);
-date_default_timezone_set('America/Sao_Paulo');
-
-// =============================================
-// SEGURANÇA: Só permite execução via CLI (cron)
-// =============================================
-if (php_sapi_name() !== 'cli') {
-    http_response_code(403);
-    exit('Acesso negado. Este script só pode ser executado via linha de comando.');
-}
+require_once __DIR__ . '/cron_utils.php';
+cronIniciar('cron_limpar_banco');
 
 // =============================================
 // CONFIGURAÇÃO
@@ -23,49 +15,43 @@ if (php_sapi_name() !== 'cli') {
 // Para cada tabela:
 //   dias           => retenção (registros mais antigos que isso são apagados)
 //   colunas_data   => nomes possíveis da coluna de data/hora (usa a 1ª que existir)
-//   extra_where    => condição adicional opcional (ex.: não apagar registros ainda em bloqueio)
+//   extra_where    => condição adicional opcional
 $TABELAS = [
+    // Registros de acesso (IP + data/hora de cada login). O Marco Civil da
+    // Internet (Lei 12.965/2014, art. 15) obriga a guardar por NO MÍNIMO 6 meses.
+    // Não reduzir abaixo de 183 dias; 190 dá margem.
     'log_acessos' => [
-        'dias'         => 90,
+        'dias'         => 190,
         'colunas_data' => ['data_tentativa', 'data_hora', 'criado_em', 'created_at', 'data', 'timestamp'],
     ],
+    // Contadores de rate limit de login por IP. Só apaga IPs fora de bloqueio.
     'tentativas_ip' => [
         'dias'         => 7,
         'colunas_data' => ['ultima_tentativa', 'atualizado_em', 'updated_at', 'data'],
-        // Só apaga IPs que não estão mais em janela de bloqueio.
         'extra_where'  => '(bloqueado_ate IS NULL OR bloqueado_ate < NOW())',
     ],
+    // Referenciada no código, mas ainda não existe em produção (é ignorada até ser criada).
     'log_alteracoes' => [
         'dias'         => 180,
         'colunas_data' => ['data', 'data_hora', 'criado_em', 'created_at'],
     ],
+    // Notificações do painel já lidas há mais de 6 meses. As não lidas nunca são apagadas.
+    'notificacoes' => [
+        'dias'         => 180,
+        'colunas_data' => ['data_criacao'],
+        'extra_where'  => 'lida = 1',
+    ],
 ];
 
-$LOTE          = 2000;   // linhas por DELETE (evita lock longo)
-$PAUSA_MS      = 100;    // pausa entre lotes (ms)
-
-// =============================================
-// LOG
-// =============================================
-$log_dir = __DIR__ . '/logs';
-if (!is_dir($log_dir)) {
-    mkdir($log_dir, 0755, true);
-}
-$log_file = $log_dir . '/cron_limpar_banco_' . date('Y-m-d') . '.log';
-
-function logMessage($msg) {
-    global $log_file;
-    $full_msg = '[' . date('Y-m-d H:i:s') . "] $msg\n";
-    echo $full_msg;
-    file_put_contents($log_file, $full_msg, FILE_APPEND);
-}
+$LOTE     = 2000;   // linhas por DELETE (evita lock longo)
+$PAUSA_MS = 100;    // pausa entre lotes (ms)
 
 // =============================================
 // INÍCIO
 // =============================================
-logMessage('========================================');
-logMessage('INICIANDO LIMPEZA DO BANCO');
-logMessage('========================================');
+cronLog('========================================');
+cronLog('INICIANDO LIMPEZA DO BANCO');
+cronLog('========================================');
 
 require_once __DIR__ . '/../conexao.php';
 
@@ -76,32 +62,42 @@ try {
     if (!$db) {
         throw new Exception('Falha na conexão com o banco de dados');
     }
-    logMessage('✅ Conexão estabelecida.');
+    cronLog('✅ Conexão estabelecida.');
+} catch (Throwable $e) {
+    cronLog('❌ ERRO CRÍTICO: ' . $e->getMessage());
+    cronLog('FINALIZADO COM ERRO');
+    error_log('CRON LIMPAR BANCO - ERRO: ' . $e->getMessage());
+    exit(1);
+}
 
-    $totalGeral = 0;
+$stmtTabelaExiste = $db->prepare(
+    "SELECT COUNT(*) FROM information_schema.tables
+     WHERE table_schema = DATABASE() AND table_name = :t"
+);
+$stmtColunas = $db->prepare(
+    "SELECT column_name FROM information_schema.columns
+     WHERE table_schema = DATABASE() AND table_name = :t"
+);
 
-    foreach ($TABELAS as $tabela => $cfg) {
-        logMessage('----------------------------------------');
-        logMessage("Tabela: $tabela (retenção: {$cfg['dias']} dias)");
+$totalGeral = 0;
+$tabelasComErro = [];
 
+foreach ($TABELAS as $tabela => $cfg) {
+    cronLog('----------------------------------------');
+    cronLog("Tabela: $tabela (retenção: {$cfg['dias']} dias)");
+
+    // Cada tabela é independente: um erro aqui não impede a limpeza das demais.
+    try {
         // 1) A tabela existe?
-        $stmt = $db->prepare(
-            "SELECT COUNT(*) FROM information_schema.tables
-             WHERE table_schema = DATABASE() AND table_name = :t"
-        );
-        $stmt->execute([':t' => $tabela]);
-        if ((int) $stmt->fetchColumn() === 0) {
-            logMessage("   ⚠️ Tabela não encontrada — ignorando.");
+        $stmtTabelaExiste->execute([':t' => $tabela]);
+        if ((int)$stmtTabelaExiste->fetchColumn() === 0) {
+            cronLog('   ⚠️ Tabela não encontrada — ignorando.');
             continue;
         }
 
         // 2) Descobrir a coluna de data
-        $stmt = $db->prepare(
-            "SELECT column_name FROM information_schema.columns
-             WHERE table_schema = DATABASE() AND table_name = :t"
-        );
-        $stmt->execute([':t' => $tabela]);
-        $colunasExistentes = array_map('strtolower', $stmt->fetchAll(PDO::FETCH_COLUMN));
+        $stmtColunas->execute([':t' => $tabela]);
+        $colunasExistentes = array_map('strtolower', $stmtColunas->fetchAll(PDO::FETCH_COLUMN));
 
         $colData = null;
         foreach ($cfg['colunas_data'] as $candidata) {
@@ -112,53 +108,54 @@ try {
         }
 
         if ($colData === null) {
-            logMessage('   ❌ Nenhuma coluna de data conhecida encontrada ('
+            cronLog('   ❌ Nenhuma coluna de data conhecida encontrada ('
                 . implode(', ', $cfg['colunas_data']) . '). Pulando por segurança.');
+            $tabelasComErro[] = $tabela;
             continue;
         }
-        logMessage("   Coluna de data: `$colData`");
 
         // 3) Montar WHERE
-        $where = "`$colData` < (NOW() - INTERVAL {$cfg['dias']} DAY)";
+        $where = "`$colData` < (NOW() - INTERVAL " . (int)$cfg['dias'] . ' DAY)';
         if (!empty($cfg['extra_where'])) {
             $where .= ' AND ' . $cfg['extra_where'];
         }
 
         // 4) Quantos serão afetados
-        $qtd = (int) $db->query("SELECT COUNT(*) FROM `$tabela` WHERE $where")->fetchColumn();
+        $qtd = (int)$db->query("SELECT COUNT(*) FROM `$tabela` WHERE $where")->fetchColumn();
         if ($qtd === 0) {
-            logMessage('   ✅ Nada a apagar.');
+            cronLog("   ✅ Nada a apagar (coluna `$colData`).");
             continue;
         }
-        logMessage("   🔎 $qtd registro(s) a apagar.");
+        cronLog("   🔎 $qtd registro(s) a apagar (coluna `$colData`).");
 
         // 5) DELETE em lotes
         $apagadosTabela = 0;
         $sqlDelete = "DELETE FROM `$tabela` WHERE $where LIMIT $LOTE";
         do {
-            $del = $db->exec($sqlDelete);
+            $del = (int)$db->exec($sqlDelete);
             $apagadosTabela += $del;
-            if ($del > 0) {
-                logMessage("   … $apagadosTabela/$qtd");
+            if ($del === $LOTE) {
                 usleep($PAUSA_MS * 1000);
             }
-        } while ($del > 0);
+        } while ($del === $LOTE);
 
-        logMessage("   ✅ $apagadosTabela registro(s) removido(s) de $tabela.");
+        cronLog("   ✅ $apagadosTabela registro(s) removido(s).");
         $totalGeral += $apagadosTabela;
+
+    } catch (Throwable $e) {
+        cronLog('   ❌ ERRO: ' . $e->getMessage());
+        error_log("CRON LIMPAR BANCO - erro na tabela $tabela: " . $e->getMessage());
+        $tabelasComErro[] = $tabela;
     }
+}
 
-    logMessage('========================================');
-    logMessage("RESUMO: $totalGeral registro(s) removido(s) no total.");
-    logMessage('FINALIZADO COM SUCESSO');
-    logMessage('========================================');
-    exit(0);
-
-} catch (Exception $e) {
-    logMessage('❌ ERRO CRÍTICO: ' . $e->getMessage());
-    logMessage('   Arquivo: ' . $e->getFile() . ' - Linha: ' . $e->getLine());
-    logMessage('FINALIZADO COM ERRO');
-    logMessage('========================================');
-    error_log('CRON LIMPAR BANCO - ERRO: ' . $e->getMessage());
+cronLog('========================================');
+cronLog("RESUMO: $totalGeral registro(s) removido(s) no total.");
+if ($tabelasComErro) {
+    cronLog('FINALIZADO COM ERROS em: ' . implode(', ', $tabelasComErro));
+    cronLog('========================================');
     exit(1);
 }
+cronLog('FINALIZADO COM SUCESSO');
+cronLog('========================================');
+exit(0);

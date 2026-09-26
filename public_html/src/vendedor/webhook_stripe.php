@@ -52,10 +52,7 @@ function writeLog($message, $type = 'INFO') {
     
     // Escrever no arquivo de log diário
     file_put_contents($logFile, $formattedMessage, FILE_APPEND);
-    
-    // Manter log completo para compatibilidade (opcional)
-    file_put_contents(__DIR__ . '/log_webhook.txt', $formattedMessage, FILE_APPEND);
-    
+
     // Em ambiente de desenvolvimento, também pode logar no error_log
     if ($_ENV['APP_ENV'] ?? 'production' === 'development') {
         error_log("[WEBHOOK] $message");

@@ -33,8 +33,9 @@ try {
                 f.id as favorito_id, 
                 f.data_criacao as data_favorito,
                 v.nome_comercial as nome_vendedor,
-                v.id as vendedor_id
-            FROM favoritos f 
+                v.id as vendedor_id,
+                v.usuario_id as vendedor_usuario_id
+            FROM favoritos f
             JOIN produtos p ON f.produto_id = p.id 
             JOIN vendedores v ON p.vendedor_id = v.id
             WHERE f.usuario_id = :usuario_id AND p.status = 'ativo'
@@ -166,7 +167,7 @@ try {
                             <div class="card-header">
                                 <h3><?php echo htmlspecialchars($produto['nome']); ?></h3>
                                 <span class="vendedor">
-                                    por <a href="../perfil_vendedor?vendedor_id=<?php echo $produto['vendedor_id']; ?>">
+                                    por <a href="../perfil_vendedor?vendedor_id=<?php echo (int)$produto['vendedor_usuario_id']; ?>">
                                         <?php echo htmlspecialchars($produto['nome_vendedor']); ?>
                                     </a>
                                 </span>

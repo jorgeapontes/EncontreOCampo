@@ -1,0 +1,38 @@
+# Encontre o Campo
+
+> Encontre o Campo é um marketplace agrícola brasileiro que conecta produtores rurais, compradores e transportadores. Produtores anunciam frutas e outros produtos agrícolas, compradores negociam direto com quem produz (sem intermediários) e transportadores aprovados fazem o frete, com atendimento em todo o Brasil.
+
+Informações importantes para entender a plataforma:
+
+- Público: produtores rurais (vendedores), comerciantes, atacadistas, varejistas e consumidores finais (compradores) e transportadores de carga.
+- Catálogo: principalmente frutas — cítricas, tropicais, de caroço, vermelhas, secas e exóticas —, vendidas por quilo, por unidade ou por embalagem.
+- Negociação: o comprador envia uma proposta (preço, quantidade e condições de pagamento e entrega); o vendedor pode aceitar, recusar ou fazer uma contraproposta. Todo o histórico fica registrado na plataforma.
+- Pagamento: a forma de pagamento é escolhida pelo comprador no checkout; Pix e cartão são as mais comuns.
+- Frete: combinado entre as partes ou feito por transportadores cadastrados e aprovados pela plataforma. Por padrão o frete é do vendedor, mas isso pode ser negociado.
+- Segurança: todo cadastro passa por verificação de identidade (documento e foto) antes de ser ativado, e a plataforma segue a LGPD.
+- Uma mesma pessoa pode ter mais de um perfil (por exemplo, vendedor e comprador) com o mesmo e-mail.
+- Fundado em 2024. Idioma: português (Brasil).
+
+## Produtos e anúncios
+
+- [Todos os anúncios](https://encontreocampo.com.br/src/anuncios): lista de produtos à venda, com filtros por categoria e estado (UF) do vendedor
+- [Página inicial](https://encontreocampo.com.br/): visão geral da plataforma, anúncios em destaque e cadastro de comprador, vendedor ou transportador
+
+## Sobre a plataforma
+
+- [Sobre nós](https://encontreocampo.com.br/src/sobre): história, missão, visão, valores e diferenciais
+- [Perguntas frequentes](https://encontreocampo.com.br/src/faq): cadastro, propostas, anúncios, pagamento, frete e segurança
+
+## Políticas
+
+- [Termos de uso](https://encontreocampo.com.br/src/termos): regras de uso da plataforma
+- [Política de privacidade](https://encontreocampo.com.br/src/privacidade): tratamento de dados pessoais conforme a LGPD
+
+## Contato
+
+- Dúvidas gerais: contato@encontreocampo.com.br
+- Suporte e problemas com transações: suporte@encontreocampo.com.br
+
+## Optional
+
+- [Sitemap](https://encontreocampo.com.br/sitemap.xml): lista completa de URLs públicas, incluindo cada anúncio e perfil de vendedor

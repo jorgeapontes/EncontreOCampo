@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Páginas institucionais. Atualize o <lastmod> quando o CONTEÚDO da página mudar
+  (não por mudança de layout/navbar). URLs sempre na forma canônica, sem ".php",
+  pois o .htaccess redireciona (301) qualquer URL ".php" para a versão sem extensão.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <url>
+    <loc>https://encontreocampo.com.br/src/sobre</loc>
+    <lastmod>2026-09-04</lastmod>
+  </url>
+
+  <url>
+    <loc>https://encontreocampo.com.br/src/faq</loc>
+    <lastmod>2026-09-04</lastmod>
+  </url>
+
+  <url>
+    <loc>https://encontreocampo.com.br/src/termos</loc>
+    <lastmod>2026-09-04</lastmod>
+  </url>
+
+  <url>
+    <loc>https://encontreocampo.com.br/src/privacidade</loc>
+    <lastmod>2026-09-04</lastmod>
+  </url>
+
+</urlset>

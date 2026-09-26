@@ -1,3 +1,16 @@
+# robots.txt - Encontre o Campo
+# https://encontreocampo.com.br
+#
+# Observações:
+# - robots.txt NÃO é mecanismo de segurança: ele é público e só orienta robôs
+#   bem-comportados. Dados sensíveis são protegidos por login e .htaccess.
+# - O site usa URLs sem ".php" (o .htaccess redireciona com 301). Por isso as
+#   regras abaixo usam prefixos, que valem para as duas formas (/x e /x.php).
+# - Um único grupo "User-agent: *" vale para todos os robôs, inclusive os de IA
+#   (GPTBot, ClaudeBot, PerplexityBot, Google-Extended...). Se um dia for criado
+#   um grupo específico para algum robô, ele passa a IGNORAR este grupo, então
+#   as regras abaixo precisariam ser repetidas lá.
+
 User-agent: *
 Allow: /
 
@@ -7,25 +20,37 @@ Disallow: /src/comprador/
 Disallow: /src/vendedor/
 Disallow: /src/transportador/
 
-# Chat (dados privados de conversas entre usuários)
+# Chat (conversas privadas entre usuários)
 Disallow: /src/chat/
 Disallow: /src/chat_transportador/
 
-# Scripts internos, cron e processadores (não são páginas, são endpoints)
+# Páginas que exigem login ou expõem dados de usuários (não são conteúdo de busca)
+Disallow: /src/verperfil
+Disallow: /src/notificacoes
+Disallow: /src/avaliar
+Disallow: /src/avaliacoes
+Disallow: /src/procurando_transportador
+Disallow: /src/logout
+
+# Endpoints e processadores (não são páginas)
+Disallow: /src/processar_
+Disallow: /src/*_ajax
 Disallow: /src/scripts/
 Disallow: /src/cron/
-Disallow: /src/processar_*.php
-Disallow: /src/*/processar_*.php
-
-# Documentos de identidade e uploads de usuários (dados sensíveis/LGPD)
-Disallow: /uploads/documentos/
-Disallow: /uploads/chat/
-
-# Configuração e includes (não são páginas navegáveis)
-Disallow: /src/conexao.php
+Disallow: /src/stripe/
+Disallow: /src/webhooks/
 Disallow: /includes/
 
-# Login (opcional bloquear — deixe liberado se quiser que apareça em buscas "encontre o campo login")
-# Disallow: /src/login.php
+# Uploads privados de usuários (documentos, chat, comprovantes de entrega)
+Disallow: /uploads/documentos/
+Disallow: /uploads/chat/
+Disallow: /uploads/entregas/
+
+# Parâmetros que só geram URLs duplicadas (busca interna, ordenação e mensagens).
+# Filtros de categoria/estado continuam rastreáveis.
+Disallow: /*?*pesquisa=
+Disallow: /*?*ordenacao=
+Disallow: /*?*erro=
+Disallow: /*?*sucesso=
 
 Sitemap: https://encontreocampo.com.br/sitemap.xml

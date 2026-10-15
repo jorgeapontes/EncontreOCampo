@@ -523,6 +523,85 @@ function validarCPFouCNPJ($documento, $tipo) {
 // 10. FUNÇÃO DE UPLOAD COM VALIDAÇÃO COMPLETA
 // ============================================================
 
+/**
+ * Reduz a foto para no máximo $ladoMaximo pixels no maior lado e grava em
+ * $destino (o que também remove os metadados EXIF, como a localização GPS
+ * que celulares gravam na foto). Corrige a rotação de fotos de celular.
+ * Retorna false se não for possível (sem GD ou memória insuficiente); nesse
+ * caso o chamador grava o arquivo original.
+ */
+function redimensionarImagem($origem, $mime, $destino, $ladoMaximo) {
+    $leitores = [
+        'image/jpeg' => 'imagecreatefromjpeg',
+        'image/png'  => 'imagecreatefrompng',
+        'image/webp' => 'imagecreatefromwebp',
+    ];
+    if (!isset($leitores[$mime]) || !function_exists($leitores[$mime])) {
+        return false;
+    }
+
+    [$largura, $altura] = getimagesize($origem);
+
+    // A imagem descompactada ocupa ~5 bytes por pixel (a cópia reduzida é
+    // pequena). Se não couber na memória, não tenta: grava o original.
+    @ini_set('memory_limit', '512M');
+    $limite = trim((string)ini_get('memory_limit'));
+    if ($limite !== '-1') {
+        $multiplicador = ['G' => 1024 ** 3, 'M' => 1024 ** 2, 'K' => 1024][strtoupper(substr($limite, -1))] ?? 1;
+        $bytesLimite = (int)$limite * $multiplicador;
+        if (memory_get_usage() + $largura * $altura * 5 > $bytesLimite) {
+            return false;
+        }
+    }
+
+    $imagem = @$leitores[$mime]($origem);
+    if (!$imagem) {
+        return false;
+    }
+
+    // Fotos de celular vêm "deitadas" com a rotação só no EXIF, que se perde ao regravar
+    if ($mime === 'image/jpeg' && function_exists('exif_read_data')) {
+        $exif = @exif_read_data($origem);
+        $rotacoes = [3 => 180, 6 => -90, 8 => 90];
+        $orientacao = $exif['Orientation'] ?? 1;
+        if (isset($rotacoes[$orientacao])) {
+            $girada = imagerotate($imagem, $rotacoes[$orientacao], 0);
+            if ($girada) {
+                imagedestroy($imagem);
+                $imagem = $girada;
+                $largura = imagesx($imagem);
+                $altura = imagesy($imagem);
+            }
+        }
+    }
+
+    $escala = min(1, $ladoMaximo / max($largura, $altura));
+    $novaLargura = max(1, (int)round($largura * $escala));
+    $novaAltura = max(1, (int)round($altura * $escala));
+
+    $nova = imagecreatetruecolor($novaLargura, $novaAltura);
+    if ($mime !== 'image/jpeg') {
+        imagealphablending($nova, false);
+        imagesavealpha($nova, true);
+    }
+    imagecopyresampled($nova, $imagem, 0, 0, 0, 0, $novaLargura, $novaAltura, $largura, $altura);
+    imagedestroy($imagem);
+
+    switch ($mime) {
+        case 'image/png':  $ok = imagepng($nova, $destino, 6); break;
+        case 'image/webp': $ok = imagewebp($nova, $destino, 85); break;
+        default:           $ok = imagejpeg($nova, $destino, 85);
+    }
+    imagedestroy($nova);
+
+    if (!$ok) {
+        @unlink($destino);
+        return false;
+    }
+    @chmod($destino, 0644);
+    return true;
+}
+
 function uploadFoto($file, $tipo_usuario, $tipo_foto) {
     if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) {
         $erro_code = $file['error'] ?? 'arquivo não encontrado';
@@ -553,8 +632,10 @@ function uploadFoto($file, $tipo_usuario, $tipo_foto) {
     }
     
     // VALIDAÇÃO DE DIMENSÕES MÁXIMAS
-    $maxWidth = 4096;
-    $maxHeight = 4096;
+    // Limite alto só para barrar arquivos absurdos: fotos de celular comuns
+    // (13 MP = 4160x3120, 48/50 MP = ~8000x6000) passam e são reduzidas abaixo.
+    $maxWidth = 12000;
+    $maxHeight = 12000;
     $minWidth = 100;
     $minHeight = 100;
     
@@ -635,7 +716,14 @@ function uploadFoto($file, $tipo_usuario, $tipo_foto) {
     
     $caminho_arquivo = $diretorio_base . $nome_arquivo;
     
-    if (!move_uploaded_file($file['tmp_name'], $caminho_arquivo)) {
+    // Fotos grandes são reduzidas para 2560px no maior lado: o documento
+    // continua legível para a análise e o arquivo fica bem menor.
+    $ladoMaximo = 2560;
+    $reduzida = max($width, $height) > $ladoMaximo
+        && is_uploaded_file($file['tmp_name'])
+        && redimensionarImagem($file['tmp_name'], $mimeTypeReal, $caminho_arquivo, $ladoMaximo);
+
+    if (!$reduzida && !move_uploaded_file($file['tmp_name'], $caminho_arquivo)) {
         logError("Falha ao mover arquivo", [
             'source' => $file['tmp_name'],
             'dest' => $caminho_arquivo
@@ -646,7 +734,9 @@ function uploadFoto($file, $tipo_usuario, $tipo_foto) {
     logSecurityEvent('upload_success', 'Upload de imagem realizado com sucesso', [
         'tipo_foto' => $tipo_foto,
         'nome_arquivo' => $nome_arquivo,
-        'tamanho' => $file['size']
+        'tamanho' => $file['size'],
+        'dimensoes' => "{$width}x{$height}",
+        'reduzida' => $reduzida
     ]);
     
     return 'uploads/documentos/' . $nome_arquivo;
@@ -1031,6 +1121,23 @@ if ($tipoUsuario === 'comprador') {
 $fotos = [];
 $uploadSuccess = false;
 
+// Se o cadastro não chegar ao commit (foto seguinte recusada, erro no banco,
+// qualquer sendJsonResponse de erro), as fotos já gravadas são apagadas.
+// Sem isso elas ficavam no servidor sem nenhum usuário (dado biométrico
+// sem finalidade). O cron_limpar_documentos_orfaos.php cobre o que escapar.
+$cadastroConcluido = false;
+register_shutdown_function(function () use (&$fotos, &$cadastroConcluido) {
+    if ($cadastroConcluido) {
+        return;
+    }
+    foreach ($fotos as $caminho) {
+        $arquivo = __DIR__ . '/../' . $caminho;
+        if (strpos($caminho, 'uploads/documentos/') === 0 && is_file($arquivo)) {
+            @unlink($arquivo);
+        }
+    }
+});
+
 try {
     $campos_fotos = [
         'comprador' => [
@@ -1278,6 +1385,7 @@ try {
     $stmtNotificacao->execute();
     
     $conn->commit();
+    $cadastroConcluido = true; // fotos ligadas ao usuário: não apagar
     
     logSecurityEvent('registration_success', 'Cadastro realizado com sucesso', [
         'email' => $email,

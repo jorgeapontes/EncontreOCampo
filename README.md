@@ -87,5 +87,8 @@ APP_ENV=development
 | `0 0 * * *` | `limpar_logs.php` | Apaga logs antigos (logs de segurança: 190 dias) |
 | `0 4 * * *` | `src/scripts/cron_limpar_banco.php` | Retenção de `log_acessos`, `tentativas_ip` e notificações lidas |
 | `30 4 * * *` | `src/scripts/cron_limpar_rejeitados.php` | Apaga documentos e dados de cadastros rejeitados há mais de 30 dias |
+| `45 4 * * *` | `src/scripts/cron_limpar_documentos_orfaos.php` | Apaga fotos de documento sem usuário (cadastros que falharam) e lista documentos que sumiram do servidor. Aceita `--simular` |
+
+Os horários são em **UTC** (o servidor da Hostinger): `0 0` roda às 21:00 de Brasília.
 
 Comando: `/usr/bin/php /home/u569225384/domains/encontreocampo.com.br/public_html/<script>`

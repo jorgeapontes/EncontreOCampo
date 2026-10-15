@@ -1,6 +1,7 @@
 <?php
 // Incluir a conexão
 require_once __DIR__ . '/../conexao.php'; 
+require_once __DIR__ . '/includes/toast.php';
 // Redireciona se não for um admin logado
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
@@ -16,7 +17,8 @@ $conn = $database->getConnection();
 
 // Verificar se a conexão falhou
 if (!$conn) {
-    header('Location: dashboard?msg=' . urlencode('Erro fatal: Falha na conexão com o Banco de Dados.'));
+    adminToast('erro', 'Falha na conexão', 'Não foi possível conectar ao banco de dados. Tente novamente.');
+    header('Location: dashboard');
     exit;
 }
 
@@ -26,7 +28,8 @@ $acao = filter_input(INPUT_GET, 'acao');
 $admin_id = $_SESSION['usuario_id'] ?? 1; 
 
 if ($solicitacao_id === null || $solicitacao_id === false || !in_array($acao, ['aprovar', 'rejeitar'])) {
-    header('Location: dashboard?msg=' . urlencode('Erro: Dados de solicitação inválidos.'));
+    adminToast('erro', 'Solicitação inválida', 'Os dados da solicitação não foram reconhecidos.');
+    header('Location: dashboard');
     exit;
 }
 
@@ -131,14 +134,29 @@ try {
 
     // Código para REJEITAR
     if ($acao === 'rejeitar') {
+        $stmt_nome = $conn->prepare("SELECT nome, tipo_solicitacao FROM solicitacoes_cadastro WHERE id = :id");
+        $stmt_nome->bindParam(':id', $solicitacao_id, PDO::PARAM_INT);
+        $stmt_nome->execute();
+        $rejeitada = $stmt_nome->fetch(PDO::FETCH_ASSOC) ?: ['nome' => 'O usuário', 'tipo_solicitacao' => ''];
+
         $sql_update = "UPDATE solicitacoes_cadastro SET status = :status, data_analise = NOW() WHERE id = :id AND status = 'pendente'";
         $stmt_update = $conn->prepare($sql_update);
         $stmt_update->bindParam(':status', $novo_status);
         $stmt_update->bindParam(':id', $solicitacao_id, PDO::PARAM_INT);
         $stmt_update->execute();
-        
+
+        if ($stmt_update->rowCount() === 0) {
+            throw new Exception("Esta solicitação já tinha sido analisada.");
+        }
+
         $conn->commit();
-        header('Location: dashboard?msg=' . urlencode('Solicitação rejeitada com sucesso.'));
+        adminToast(
+            'rejeitado',
+            'Cadastro rejeitado',
+            "O cadastro de {$rejeitada['nome']}" . ($rejeitada['tipo_solicitacao'] ? " ({$rejeitada['tipo_solicitacao']})" : '')
+                . ' foi rejeitado. Os documentos serão apagados em 30 dias.'
+        );
+        header('Location: dashboard');
         exit;
     }
 
@@ -434,7 +452,12 @@ try {
 
     // 3.2.6. FINALIZAR TRANSAÇÃO
     $conn->commit();
-    header('Location: dashboard?msg=' . urlencode('Solicitação aprovada e usuário criado/atualizado com sucesso!'));
+    adminToast(
+        'aprovado',
+        'Cadastro aprovado',
+        "{$solicitacao['nome']} já pode acessar a plataforma como {$tipo_usuario}."
+    );
+    header('Location: dashboard');
 
 } catch (Exception $e) {
     // 4. EM CASO DE ERRO, REVERTER TUDO
@@ -442,7 +465,8 @@ try {
         $conn->rollBack();
     }
     error_log("Erro em processar_admin_acao: " . $e->getMessage());
-    header('Location: dashboard?msg=' . urlencode('Erro: ' . $e->getMessage()));
+    adminToast('erro', 'Não foi possível concluir', $e->getMessage());
+    header('Location: dashboard');
 }
 
 exit;

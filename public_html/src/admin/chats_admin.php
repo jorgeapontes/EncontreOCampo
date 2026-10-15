@@ -45,7 +45,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['excluir_conversa'])) 
         $mensagem_sucesso = "Conversa excluída permanentemente do banco de dados!";
         
         // Redirecionar para evitar reenvio do formulário
-        header("Location: chats_admin?success=1&msg=" . urlencode($mensagem_sucesso));
+        require_once __DIR__ . '/includes/toast.php';
+        adminToast('sucesso', 'Conversa excluída', 'A conversa e suas mensagens foram removidas permanentemente.');
+        header("Location: chats_admin");
         exit();
         
     } catch (PDOException $e) {
@@ -55,13 +57,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['excluir_conversa'])) 
         }
         
         error_log("Erro ao excluir conversa: " . $e->getMessage());
-        $mensagem_erro = "Erro ao excluir conversa. Tente novamente.";
+        require_once __DIR__ . '/includes/toast.php';
+        adminToast('erro', 'Não foi possível excluir', 'Erro ao excluir a conversa. Tente novamente.');
     }
 }
 
-// Verificar se veio de um redirecionamento com sucesso
-$success = isset($_GET['success']) && $_GET['success'] == 1;
-$success_msg = isset($_GET['msg']) ? urldecode($_GET['msg']) : '';
 
 $filtro_busca = isset($_GET['busca']) ? trim($_GET['busca']) : '';
 $ordenacao = isset($_GET['ordenacao']) ? $_GET['ordenacao'] : 'recente';
@@ -187,20 +187,9 @@ try {
 </head>
 <body>
     <?php $active_nav = 'chats'; require __DIR__ . '/includes/navbar.php'; ?>
+    <?php require_once __DIR__ . '/includes/toast.php'; adminToastRender(); ?>
 
     <div class="container">
-        <?php if ($success): ?>
-            <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i> <?php echo $success_msg; ?>
-            </div>
-        <?php endif; ?>
-        
-        <?php if (isset($mensagem_erro)): ?>
-            <div class="alert alert-error">
-                <i class="fas fa-exclamation-circle"></i> <?php echo $mensagem_erro; ?>
-            </div>
-        <?php endif; ?>
-        
         <div class="header">
             <h1><i class="fas fa-shield-alt"></i> Auditoria de Chats</h1>
             <p>Visualize todas as conversas do sistema para fins de auditoria e conformidade legal</p>
@@ -389,17 +378,6 @@ try {
             });
         }
         
-        // Auto-fechar mensagem de sucesso após 5 segundos
-        <?php if ($success): ?>
-        setTimeout(function() {
-            const alert = document.querySelector('.alert-success');
-            if (alert) {
-                alert.style.transition = 'opacity 0.5s';
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 500);
-            }
-        }, 5000);
-        <?php endif; ?>
     </script>
 </body>
 </html>

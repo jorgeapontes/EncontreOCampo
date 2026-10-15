@@ -80,8 +80,6 @@ $stmt = $conn->prepare($sql);
 $stmt->execute($params);
 $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$feedback_msg = $_GET['msg'] ?? '';
-$is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Erro') !== false;
 
 ?>
 
@@ -102,14 +100,9 @@ $is_error = strpos($feedback_msg, 'erro') !== false || strpos($feedback_msg, 'Er
 <body>
 
 <?php $active_nav = 'usuarios'; require __DIR__ . '/includes/navbar.php'; ?>
+<?php require_once __DIR__ . '/includes/toast.php'; adminToastRender(); ?>
 
 <div class="container">
-
-    <?php if ($feedback_msg): ?>
-        <div class="alert <?php echo $is_error ? 'alert-error' : 'alert-success'; ?>">
-            <?php echo htmlspecialchars(urldecode($feedback_msg)); ?>
-        </div>
-    <?php endif; ?>
 
     <div class="header-section">
         <h1>Todos os Usuários Cadastrados</h1>

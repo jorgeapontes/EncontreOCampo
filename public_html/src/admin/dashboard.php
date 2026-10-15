@@ -31,8 +31,6 @@ try {
    die("Ocorreu um erro ao carregar as solicitações. Tente novamente mais tarde.");
 }
 
-$feedback_msg = $_GET['msg'] ?? '';
-$is_error = strpos($feedback_msg, 'erro') !== false;
 ?>
 
 <!DOCTYPE html>
@@ -51,6 +49,7 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
 </head>
 <body>
     <?php $active_nav = 'dashboard'; require __DIR__ . '/includes/navbar.php'; ?>
+    <?php require_once __DIR__ . '/includes/toast.php'; adminToastRender(); ?>
 
     <div class="main-content">
         <section class="header">
@@ -59,12 +58,6 @@ $is_error = strpos($feedback_msg, 'erro') !== false;
                 <p>Gerencie solicitações de cadastro e usuários do sistema</p>
             </center>
         </section>
-
-        <?php if ($feedback_msg): ?>
-            <div class="alert <?= $is_error ? 'alert-error' : 'alert-success' ?>">
-                <?= htmlspecialchars(urldecode($feedback_msg)); ?>
-            </div>
-        <?php endif; ?>
 
         <div class="info-cards">
             <a>

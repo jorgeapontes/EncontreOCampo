@@ -1,11 +1,9 @@
 <?php
 // src/vendedor/perfil.php
 require_once 'auth.php'; 
-require_once 'verificar_assinaturas.php';
 
 $database = new Database();
 $db = $database->getConnection();
-verificarValidadeAssinaturas($db); 
 
 // Garante que as variáveis existam como arrays vazios caso auth.php não as crie
 if (!isset($usuario)) $usuario = [];
@@ -53,13 +51,6 @@ $mensagem_erro = '';
 
 $vendedor_id_fk = $vendedor['id'] ?? 0;
 
-// Exemplo de alerta no topo do painel do vendedor
-if (isset($_SESSION['status_assinatura']) && $_SESSION['status_assinatura'] === 'atrasado') {
-    echo '<div class="alert-atraso">
-            <strong>Atenção:</strong> Identificamos um problema no pagamento da sua mensalidade.
-            Para evitar o bloqueio dos seus anúncios, <a href="escolher_plano">clique aqui e atualize seu pagamento</a>.
-          </div>';
-}
 
 // Diretório de upload relativo ao arquivo atual
 $upload_dir = '../uploads/vendedores/'; 
@@ -273,15 +264,24 @@ function getImagePath($path) {
     <link rel="stylesheet" href="../css/vendedor/navbar.css">
 </head>
 <body>
-    <?php if (isset($_SESSION['aviso_expiracao'])): ?>
+    <?php
+    // Aviso conforme o status da assinatura DESTE vendedor (definido pelo
+    // webhook do Stripe e pelo cron_verificar_vencimentos.php)
+    $status_assinatura = $vendedor['status_assinatura'] ?? '';
+    if ($status_assinatura === 'atrasado' || $status_assinatura === 'expirado'):
+    ?>
     <div id="alert-expirado" class="alert-expirado">
         <div class="alert-expirado-content">
             <i class="fa-solid fa-circle-exclamation"></i>
-            <span><strong>Plano Expirado:</strong> A sua assinatura Profissional terminou e a sua conta foi movida para o <strong>Plano Gratuito</strong>.</span>
+            <?php if ($status_assinatura === 'atrasado'): ?>
+            <span><strong>Pagamento pendente:</strong> não conseguimos cobrar a sua mensalidade. <a href="gerenciar_assinatura">Atualize a forma de pagamento</a> para não perder os benefícios do seu plano.</span>
+            <?php else: ?>
+            <span><strong>Assinatura encerrada:</strong> a sua conta está no <strong>Plano Gratuito</strong>. <a href="escolher_plano">Escolha um plano</a> para voltar a ter mais anúncios.</span>
+            <?php endif; ?>
         </div>
         <button onclick="document.getElementById('alert-expirado').style.display='none'" class="alert-expirado-close">&times;</button>
     </div>
-    <?php unset($_SESSION['aviso_expiracao']); endif; ?>
+    <?php endif; ?>
     
     <?php $active_nav = 'perfil'; require __DIR__ . '/includes/navbar.php'; ?>
     <br>

@@ -190,3 +190,28 @@
 .btn-ver-mais-login:hover {
     background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
 }
+
+/* Compartilhar anúncio no WhatsApp (contorno, para não competir com o botão do chat) */
+.btn-compartilhar-whatsapp {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 12px 20px;
+    border: 2px solid #25D366;
+    border-radius: 10px;
+    color: #128C7E;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-compartilhar-whatsapp:hover {
+    background-color: #25D366;
+    color: #fff;
+}
+
+.btn-compartilhar-whatsapp i {
+    font-size: 1.2em;
+}

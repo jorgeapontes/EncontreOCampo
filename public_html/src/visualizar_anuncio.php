@@ -206,6 +206,37 @@ try {
 $preco_unitario = $info_desconto['preco_final'];
 $preco_display = number_format($preco_unitario, 2, ',', '.');
 $unidade = htmlspecialchars($anuncio['unidade_medida']);
+
+// ============================================================
+// COMPARTILHAMENTO (prévia no WhatsApp/redes via Open Graph)
+// ============================================================
+$url_site = 'https://encontreocampo.com.br';
+$url_anuncio = $url_site . '/src/visualizar_anuncio?anuncio_id=' . $anuncio_id;
+
+// Imagens são gravadas relativas a src/ ("../uploads/...") ou à raiz ("uploads/...")
+$og_imagem = $url_site . '/img/logo-nova.png';
+$caminho_imagem = $imagens_produto[0]['url'] ?? '';
+if ($caminho_imagem && !preg_match('#^https?://#i', $caminho_imagem)) {
+    $relativo = ltrim(str_replace('../', '', $caminho_imagem), '/');
+    foreach ([$relativo, 'src/' . $relativo] as $candidato) {
+        if (is_file(__DIR__ . '/../' . $candidato)) {
+            $og_imagem = $url_site . '/' . str_replace('%2F', '/', rawurlencode($candidato));
+            break;
+        }
+    }
+} elseif ($caminho_imagem) {
+    $og_imagem = $caminho_imagem;
+}
+
+$og_titulo = $anuncio['produto'] . ' - R$ ' . $preco_display . '/' . $anuncio['unidade_medida'];
+$og_descricao = trim(preg_replace('/\s+/', ' ', strip_tags($anuncio['descricao'] ?? '')));
+if ($og_descricao === '') {
+    $og_descricao = 'Direto do produtor' . (!empty($anuncio['nome_vendedor']) ? ' ' . $anuncio['nome_vendedor'] : '') . '. Negocie pelo Encontre o Campo.';
+}
+if (mb_strlen($og_descricao) > 155) {
+    $og_descricao = mb_substr($og_descricao, 0, 152) . '...';
+}
+$texto_whatsapp = $og_titulo . ' no Encontre o Campo: ' . $url_anuncio;
 ?>
 
 <!DOCTYPE html>
@@ -214,8 +245,18 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($anuncio['produto']); ?> - Encontre o Campo</title>
+    <meta name="description" content="<?= htmlspecialchars($og_descricao) ?>">
+    <link rel="canonical" href="<?= htmlspecialchars($url_anuncio) ?>">
+    <meta property="og:type" content="product">
+    <meta property="og:site_name" content="Encontre o Campo">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:title" content="<?= htmlspecialchars($og_titulo) ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($og_descricao) ?>">
+    <meta property="og:url" content="<?= htmlspecialchars($url_anuncio) ?>">
+    <meta property="og:image" content="<?= htmlspecialchars($og_imagem) ?>">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="stylesheet" href="css/comprador/view_ad.css">
-    <link rel="stylesheet" href="css/visualizar_anuncio.css">
+    <link rel="stylesheet" href="css/visualizar_anuncio.css?v=20261014">
     <link rel="shortcut icon" href="../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -397,6 +438,11 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                                 </button>
                             <?php endif; ?>
                         </div>
+
+                        <a href="https://wa.me/?text=<?= rawurlencode($texto_whatsapp) ?>" class="btn-compartilhar-whatsapp" target="_blank" rel="noopener">
+                            <i class="fab fa-whatsapp"></i>
+                            Compartilhar no WhatsApp
+                        </a>
 
                         <?php
                         // Mostrar link para avaliar produto apenas para usuários logados que compraram e são elegíveis

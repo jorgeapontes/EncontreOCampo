@@ -970,6 +970,18 @@ async function loadAnuncios() {
     console.log('🔄 Carregando anúncios...');
     
     const carousel = document.getElementById('anunciosCarousel');
+
+    // A home já traz os cards renderizados pelo PHP: só liga o carrossel
+    if (carousel && carousel.dataset.servidor === '1') {
+        anuncios = Array.from(carousel.querySelectorAll('.product-card'));
+        if (anuncios.length > 0) {
+            updateSlidesToShow();
+            setupCarouselControls();
+            startAutoSlide();
+        }
+        return;
+    }
+
     if (carousel) {
         carousel.innerHTML = '<div class="loading-state"><p>🌱 Buscando produtos fresquinhos...</p></div>';
     }
@@ -1203,7 +1215,7 @@ function resetAutoSlide() {
 }
 
 function verAnuncio(id) {
-    window.location.href = `src/anuncios.php?produto=${id}`;
+    window.location.href = `src/visualizar_anuncio?anuncio_id=${id}`;
 }
 
 // ===============================================

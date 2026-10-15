@@ -6,7 +6,6 @@ ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 
-require_once '../src/conexao.php';
 header('Content-Type: application/json; charset=utf-8');
 
 // Caminho absoluto para o arquivo de conexão

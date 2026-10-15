@@ -26,13 +26,65 @@ if (isset($_SESSION['usuario_nome'])) {
     $button_action = 'src/login';
 }
 
+// ============================================================
+// ANÚNCIOS DA HOME: renderizados no servidor, para aparecerem
+// mesmo sem JavaScript e serem lidos por buscadores. O script.js
+// só anima o carrossel em cima deste HTML.
+// ============================================================
+$anuncios_home = [];
+try {
+    $db_home = (new Database())->getConnection();
+    if ($db_home) {
+        $anuncios_home = $db_home->query(
+            "SELECT p.id, p.nome, p.descricao, p.preco, p.imagem_url, p.estoque,
+                    p.preco_desconto, p.desconto_data_fim
+             FROM produtos p
+             INNER JOIN vendedores v ON p.vendedor_id = v.id
+             WHERE p.status = 'ativo' AND p.estoque > 0
+             ORDER BY p.data_criacao DESC
+             LIMIT 12"
+        )->fetchAll(PDO::FETCH_ASSOC);
+    }
+} catch (Throwable $e) {
+    error_log('Erro ao carregar anúncios da home: ' . $e->getMessage());
+}
+
+// O banco tem caminhos gravados de formas diferentes ("../uploads/...", "uploads/...")
+function imagemAnuncioHome($caminho) {
+    $placeholder = 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80';
+    if (empty($caminho)) {
+        return $placeholder;
+    }
+    $relativo = ltrim(str_replace('../', '', $caminho), '/');
+    foreach ([$relativo, 'uploads/' . basename($relativo), 'src/' . $relativo] as $candidato) {
+        if (is_file(__DIR__ . '/' . $candidato)) {
+            return $candidato;
+        }
+    }
+    return $placeholder;
+}
+
+function precoBR($valor) {
+    return number_format((float)$valor, 2, ',', '.');
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encontre o Campo</title>
+    <title>Encontre o Campo | Marketplace de produtos do campo</title>
+    <meta name="description" content="Compre direto do produtor rural. Frutas, verduras e outros produtos do campo, com negociação de preço e transporte por transportadores aprovados, para todo o Brasil.">
+    <link rel="canonical" href="https://encontreocampo.com.br/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Encontre o Campo">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:title" content="Encontre o Campo | O Melhor Mercado do Campo">
+    <meta property="og:description" content="Compre direto do produtor rural, negocie o preço e receba com transportadores aprovados.">
+    <meta property="og:url" content="https://encontreocampo.com.br/">
+    <meta property="og:image" content="https://encontreocampo.com.br/img/logo-nova.png">
+    <meta name="twitter:card" content="summary">
     <link rel="stylesheet" href="index.css">
     <link rel="shortcut icon" href="img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -102,6 +154,12 @@ if (isset($_SESSION['usuario_nome'])) {
         </nav>
     </header>
 
+    <?php if (isset($_GET['conta_excluida'])): ?>
+    <div role="status" onclick="this.remove()" style="position: fixed; top: 85px; left: 50%; transform: translateX(-50%); z-index: 1001; width: max-content; max-width: 90%; background: #e8f5e9; color: #1b5e20; padding: 14px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center; cursor: pointer;">
+        Sua conta foi excluída e seus dados pessoais foram removidos. Enviamos uma confirmação para o seu e-mail.
+    </div>
+    <?php endif; ?>
+
     <section id="inicio" class="hero">
         <div class="hero-content">
             <h1>O Melhor Mercado do Campo</h1>
@@ -120,10 +178,51 @@ if (isset($_SESSION['usuario_nome'])) {
             <!-- Carrossel -->
             <div class="carousel-container">
                 <div class="carousel-wrapper">
-                    <div class="carousel-track" id="anunciosCarousel">
-                        <div class="loading-state">
-                            <p>Carregando anúncios fresquinhos...</p>
+                    <div class="carousel-track" id="anunciosCarousel" data-servidor="1">
+                        <?php if (empty($anuncios_home)): ?>
+                        <div style="text-align: center; padding: 40px; color: #666; width: 100%;">
+                            <p>Nenhum anúncio disponível no momento.</p>
                         </div>
+                        <?php endif; ?>
+                        <?php foreach ($anuncios_home as $i => $produto):
+                            $preco = (float)$produto['preco'];
+                            $preco_desconto = (float)($produto['preco_desconto'] ?? 0);
+                            $tem_desconto = $preco_desconto > 0 && $preco_desconto < $preco
+                                && (empty($produto['desconto_data_fim']) || $produto['desconto_data_fim'] > date('Y-m-d H:i:s'));
+                            $preco_final = $tem_desconto ? $preco_desconto : $preco;
+                            $porcentagem = $tem_desconto ? round((($preco - $preco_desconto) / $preco) * 100) : 0;
+                            $link_anuncio = 'src/visualizar_anuncio?anuncio_id=' . (int)$produto['id'];
+                        ?>
+                        <div class="product-card" style="animation-delay: <?= $i * 0.1 ?>s">
+                            <div class="product-image" role="img" aria-label="<?= safe($produto['nome']) ?>" style="background-image: url('<?= safe(imagemAnuncioHome($produto['imagem_url'])) ?>')">
+                                <?php if ($tem_desconto): ?><div class="badge-desconto">-<?= $porcentagem ?>%</div><?php endif; ?>
+                                <?php if ($produto['estoque'] < 10): ?><div class="product-badge">Poucas unidades</div><?php endif; ?>
+                            </div>
+                            <div class="product-info">
+                                <h3><?= safe($produto['nome']) ?></h3>
+                                <p><?= safe($produto['descricao'] ?: 'Produto fresco direto do produtor') ?></p>
+
+                                <div class="price-container" style="margin-top: 15px;">
+                                    <?php if ($tem_desconto): ?>
+                                    <div class="price-original" style="text-decoration: line-through; color: #999; font-size: 0.9em;">
+                                        R$ <?= precoBR($preco) ?>
+                                    </div>
+                                    <?php else: ?>
+                                    <p style="padding-top: 13px;"></p>
+                                    <?php endif; ?>
+
+                                    <div class="price-display" style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span class="price" style="color: <?= $tem_desconto ? '#6167ea' : '#4CAF50' ?>; font-weight: bold; font-size: 1.1em;">
+                                            R$ <?= precoBR($preco_final) ?>
+                                        </span>
+                                        <small style="color: #666; font-size: 0.9em;">Estoque: <?= safe($produto['estoque']) ?></small>
+                                    </div>
+                                </div>
+
+                                <a href="<?= $link_anuncio ?>" class="buy-btn" style="display: block; text-align: center; text-decoration: none;">Ver Detalhes</a>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
                 
@@ -148,7 +247,7 @@ if (isset($_SESSION['usuario_nome'])) {
             <div class="sell-content">
                 <div class="sell-text">
                     <h3>Venda para compradores de todo o país</h3>
-                    <p>Oferecemos uma plataforma segura para que produtores rurais possam vender suas frutas diretamente para comerciantes, atacadistas e consumidores finais.</p>
+                    <p>Oferecemos uma plataforma segura para que produtores rurais possam vender frutas, verduras e outros produtos do campo diretamente para comerciantes, atacadistas e consumidores finais.</p>
                     <ul class="benefits-list">
                         <li>Alcance nacional</li>
                         <li>Compra segura</li>
@@ -173,23 +272,23 @@ if (isset($_SESSION['usuario_nome'])) {
                     <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Agricultor colhendo frutas" loading="lazy" decoding="async">
                 </div>
                 <div class="transport-text">
-                    <h3>Logística especializada para frutas</h3>
-                    <p>Cadastre-se como transportador, escolha um destino e receba por isso!</p>
+                    <h3>Logística para produtos do campo</h3>
+                    <p>Cadastre-se como transportador, escolha os fretes que combinam com a sua rota e receba por cada entrega.</p>
                     <div class="transport-features">
                         <div class="feature">
                             <h4>Transporte Seguro</h4>
                             <p>Apenas transportadores aprovados podem fazer entregas por nossa plataforma.</p>
                         </div>
                         <div class="feature">
-                            <h4>Variedade e Qualidade</h4>
-                            <p>As frutas mais exóticas às verduras mais tradicionais.</p>
+                            <h4>Variedade de Cargas</h4>
+                            <p>Das frutas mais exóticas às verduras mais tradicionais.</p>
                         </div>
                         <div class="feature">
                             <h4>Alcance</h4>
                             <p>Entregas para todo o país.</p>
                         </div>
                     </div>
-                    <a href="#contato" class="cta-button">Inscreva-se</a>
+                    <a href="#contato" class="cta-button">Inscreva-se como transportador</a>
                 </div>
             </div>
         </div>
@@ -200,8 +299,9 @@ if (isset($_SESSION['usuario_nome'])) {
             <h2 class="section-title">Registre-se</h2>
             <div class="contact-content">
                 <div class="contact-info">
-                    <h3>Fale Conosco</h3>
-                    <p>Estamos aqui para ajudar produtores e compradores a se conectarem.</p>
+                    <h3>Crie sua conta</h3>
+                    <p>Cadastre-se como comprador, vendedor ou transportador. Nossa equipe analisa cada cadastro para manter a plataforma segura e, após a aprovação, sua conta é liberada.</p>
+                    <p>Dúvidas? Fale com a gente:</p>
                     <div class="contact-details">
                         <div class="contact-item">
                             <h4>Email</h4>
@@ -627,7 +727,7 @@ if (isset($_SESSION['usuario_nome'])) {
                                     <div class="form-group">
                                         <label for="modeloVeiculo" class="required">Modelo do Veículo </label>
                                         <input type="text" id="modeloVeiculo" name="modeloVeiculo" required placeholder="Ex: Mercedes-Benz Actros 2020">
-                                        <small class="form-help">Clique no botão "Buscar Info" acima para tentar preencher automaticamente</small>
+                                        <small class="form-help">Informe a marca, o modelo e o ano do veículo</small>
                                     </div>
                                     
                                     <div class="form-group">
@@ -778,7 +878,7 @@ if (isset($_SESSION['usuario_nome'])) {
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=20261014"></script>
     
     <!-- ============================================================
     CORREÇÃO: Validação Frontend de Arquivos

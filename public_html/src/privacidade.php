@@ -54,7 +54,7 @@ if ($is_logged_in) {
     <main class="container">
         <div class="page-header">
             <h2>Política de Privacidade</h2>
-            <p>Última atualização: 25/09/2026</p>
+            <p>Última atualização: 14/10/2026</p>
         </div>
 
         <div class="legal-content">
@@ -76,15 +76,17 @@ if ($is_logged_in) {
                     <li>Nome completo e email</li>
                     <li>CPF/CNPJ</li>
                     <li>Endereço e telefone</li>
-                    <li>Fotos de documento de identidade e foto de rosto (para verificação de identidade de vendedores e compradores)</li>
+                    <li>Fotos de documento de identidade (frente e verso) e foto do rosto, de compradores, vendedores e transportadores, usadas exclusivamente para a análise e aprovação do cadastro</li>
                     <li>Informações comerciais (para vendedores)</li>
                     <li>Dados do veículo (para transportadores)</li>
                 </ul>
+                <p>A foto do rosto é um <strong>dado pessoal sensível</strong> (dado biométrico, art. 5º, II, da LGPD). Ela é comparada pela nossa equipe com a foto do documento apenas para confirmar que o cadastro foi feito pelo próprio titular, não é exibida a outros usuários e não é usada para nenhuma outra finalidade.</p>
 
                 <p><strong>2.2 Dados de Uso:</strong></p>
                 <ul>
                     <li>Histórico de transações</li>
                     <li>Propostas e negociações</li>
+                    <li>Mensagens trocadas no chat da plataforma, incluindo imagens enviadas</li>
                     <li>Preferências e favoritos</li>
                     <li>Logs de acesso (endereço IP, data/hora e navegador utilizado)</li>
                 </ul>
@@ -96,13 +98,17 @@ if ($is_logged_in) {
                 <ul>
                     <li>Fornecer e melhorar nossos serviços <em>(execução de contrato)</em></li>
                     <li>Facilitar transações entre usuários <em>(execução de contrato)</em></li>
-                    <li>Verificar a identidade de vendedores e compradores <em>(execução de contrato e prevenção a fraudes)</em></li>
+                    <li>Verificar a identidade de compradores, vendedores e transportadores com fotos de documento <em>(execução de contrato e prevenção a fraudes)</em></li>
+                    <li>Confirmar, com a foto do rosto, que o cadastro foi feito pelo próprio titular <em>(dado sensível: garantia da prevenção à fraude e à segurança do titular em processos de identificação e autenticação de cadastro, art. 11, II, "g")</em></li>
+                    <li>Mediar conflitos entre usuários e apurar denúncias de fraude ou abuso, inclusive com acesso às conversas do chat <em>(legítimo interesse e exercício regular de direitos)</em></li>
                     <li>Enviar notificações importantes <em>(execução de contrato)</em></li>
                     <li>Personalizar sua experiência <em>(legítimo interesse)</em></li>
                     <li>Cumprir obrigações legais e fiscais <em>(cumprimento de obrigação legal)</em></li>
                     <li>Prevenir fraudes e abusos <em>(legítimo interesse)</em></li>
                 </ul>
-                <p>Cada finalidade acima está associada a uma base legal prevista no Art. 7º da LGPD, conforme indicado entre parênteses.</p>
+                <p>Cada finalidade acima está associada a uma base legal prevista no Art. 7º da LGPD (ou no Art. 11, no caso do dado sensível), conforme indicado entre parênteses.</p>
+
+                <p><strong>3.1 Acesso às conversas do chat:</strong> as conversas não são lidas de forma rotineira. Os administradores da plataforma podem acessá-las somente quando houver denúncia, disputa entre as partes de uma negociação, suspeita de fraude ou exigência legal ou judicial. Todo acesso fica restrito à equipe autorizada.</p>
             </div>
 
             <div class="legal-section">
@@ -143,7 +149,13 @@ if ($is_logged_in) {
                     <li>Resolver disputas</li>
                     <li>Executar acordos</li>
                 </ul>
-                <p>Dados de transações são mantidos por 5 anos para fins fiscais e legais. Logs de acesso são mantidos por até 6 meses, sendo excluídos automaticamente após esse período.</p>
+                <p>Dados de transações são mantidos por 5 anos para fins fiscais e legais. Logs de acesso são mantidos por 6 meses, conforme o Marco Civil da Internet (Lei nº 12.965/2014, art. 15), sendo excluídos automaticamente após esse período.</p>
+                <p><strong>Fotos de documento e do rosto:</strong></p>
+                <ul>
+                    <li>Cadastro aprovado: mantidas enquanto a conta estiver ativa, para eventual nova verificação em caso de suspeita de fraude, e apagadas quando a conta é excluída.</li>
+                    <li>Cadastro rejeitado: apagadas automaticamente, junto com os demais dados do cadastro, 30 dias após a rejeição. Esse prazo permite que você conteste a decisão.</li>
+                </ul>
+                <p><strong>Exclusão da conta:</strong> ao excluir sua conta, seu nome, e-mail, CPF/CNPJ, endereço, telefones, dados do veículo, foto de perfil e fotos de documento são apagados ou anonimizados imediatamente. As conversas e propostas das quais você participou continuam disponíveis para a outra parte da negociação, que também tem direito a esse histórico, mas sem os seus dados de identificação.</p>
             </div>
 
             <div class="legal-section">
@@ -157,7 +169,7 @@ if ($is_logged_in) {
                     <li><strong>Revogação:</strong> Retirar consentimento a qualquer momento</li>
                     <li><strong>Informação sobre compartilhamento:</strong> Saber com quem seus dados são compartilhados</li>
                 </ul>
-                <p>Para exercer qualquer um desses direitos, entre em contato pelo e-mail informado na seção 13.</p>
+                <p>Você mesmo pode corrigir seus dados e excluir sua conta a qualquer momento, pela opção <strong>"Apagar minha conta"</strong> na página de perfil do seu painel. Para os demais direitos, entre em contato pelo e-mail informado na seção 13.</p>
             </div>
 
             <div class="legal-section">
@@ -168,7 +180,7 @@ if ($is_logged_in) {
                     <li><strong>Armazenamento local do navegador (funcional):</strong> registra apenas se um aviso informativo já foi exibido, para que ele não apareça novamente. Não contém dados pessoais e não é enviado aos nossos servidores.</li>
                 </ul>
                 <p><strong>Não utilizamos</strong> cookies de publicidade, de rastreamento ou de análise de comportamento (como Google Analytics ou pixels de redes sociais), nem compartilhamos dados de navegação com anunciantes.</p>
-                <p>Para exibir fontes e ícones, a plataforma carrega arquivos de serviços de terceiros (Google Fonts e Cloudflare cdnjs). Como em qualquer acesso a um site, esses serviços recebem dados técnicos da conexão, como endereço IP e tipo de navegador, mas não gravam cookies pela nossa plataforma. O pagamento de assinaturas é feito na página do Stripe, que segue sua própria política de cookies.</p>
+                <p>Para funcionar, a plataforma carrega arquivos ou consulta serviços de terceiros: Google Fonts (fontes), Cloudflare cdnjs e jsDelivr (ícones e bibliotecas, como a de assinatura na confirmação de entrega), Unsplash (imagens da página inicial), ViaCEP (preenchimento do endereço a partir do CEP digitado) e IBGE (lista de cidades). Os links "ver no mapa" abrem o Google Maps somente quando você clica neles. Como em qualquer acesso a um site, esses serviços recebem dados técnicos da conexão, como endereço IP e tipo de navegador, mas não gravam cookies pela nossa plataforma. O pagamento de assinaturas é feito na página do Stripe, que segue sua própria política de cookies.</p>
                 <p>Você pode bloquear ou apagar cookies nas configurações do seu navegador. Note que bloquear o cookie de sessão impede que você permaneça conectado à plataforma.</p>
                 <p>Caso passemos a utilizar cookies não essenciais no futuro, esta política será atualizada e solicitaremos o seu consentimento antes de ativá-los.</p>
             </div>
@@ -200,7 +212,7 @@ if ($is_logged_in) {
                 <ul>
                     <li><strong>Email:</strong> privacidade@encontreocampo.com.br</li>
                     <li><strong>Endereço:</strong> Jundiaí, São Paulo, Brasil</li>
-                    <li><strong>Prazo de Resposta:</strong> Até 15 dias úteis</li>
+                    <li><strong>Prazo de Resposta:</strong> até 15 dias corridos a partir do pedido (art. 19, II, da LGPD)</li>
                 </ul>
             </div>
 

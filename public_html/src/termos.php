@@ -54,7 +54,7 @@ if ($is_logged_in) {
     <main class="container">
         <div class="page-header">
             <h2>Termos de Uso</h2>
-            <p>Última atualização: <?php echo date('d/m/Y'); ?></p>
+            <p>Última atualização: 14/10/2026</p>
         </div>
 
         <div class="legal-content">
@@ -116,6 +116,9 @@ if ($is_logged_in) {
                 <h3><i class="fas fa-lock"></i> 6. Contas e Segurança</h3>
                 <p><strong>6.1 Senha:</strong> Você é responsável por manter a confidencialidade de sua senha e por todas as atividades que ocorram em sua conta.</p>
                 <p><strong>6.2 Notificação:</strong> Notifique-nos imediatamente sobre qualquer uso não autorizado de sua conta ou qualquer outra violação de segurança.</p>
+                <p><strong>6.3 Verificação de identidade:</strong> Para aprovar o cadastro, pedimos fotos do documento de identidade e do rosto. Elas são analisadas apenas pela equipe da plataforma e tratadas conforme a <a href="privacidade">Política de Privacidade</a>.</p>
+                <p><strong>6.4 Conversas no chat:</strong> As mensagens trocadas pela plataforma não são monitoradas de forma rotineira, mas podem ser acessadas pelos administradores em caso de denúncia, disputa entre as partes, suspeita de fraude ou exigência legal, para mediar o conflito e proteger os usuários.</p>
+                <p><strong>6.5 Exclusão da conta:</strong> Você pode excluir sua conta a qualquer momento pela opção "Apagar minha conta" no seu perfil. Os seus dados pessoais são removidos, e as conversas e propostas continuam disponíveis para a outra parte da negociação, sem os seus dados de identificação. A assinatura de vendedor, se houver, é cancelada junto com a conta.</p>
             </div>
 
             <div class="legal-section">

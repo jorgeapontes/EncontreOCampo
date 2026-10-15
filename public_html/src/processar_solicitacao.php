@@ -1287,7 +1287,7 @@ try {
     
     sendJsonResponse(
         true, 
-        'Solicitação de cadastro enviada com sucesso! Em breve você receberá um email com as instruções. Sua conta será ativada após aprovação do administrador.'
+        'Solicitação de cadastro enviada com sucesso! Sua conta será ativada após a aprovação do administrador.'
     );
     
 } catch (Exception $e) {

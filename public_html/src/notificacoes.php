@@ -3,7 +3,7 @@
 require_once 'conexao.php';
 
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: src/login");
+    header("Location: login");
     exit();
 }
 
@@ -47,15 +47,50 @@ $stmt_nao_lidas->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
 $stmt_nao_lidas->execute();
 $total_nao_lidas = $stmt_nao_lidas->fetch(PDO::FETCH_ASSOC)['total'];
 
-if($_SESSION['usuario_tipo'] == 'vendedor') {
-    $painel_href = 'vendedor/dashboard';
-    $perfil_href = 'vendedor/perfil';
-} else if ($_SESSION['usuario_tipo'] == 'comprador') {
-    $painel_href = 'comprador/dashboard';
-    $perfil_href = 'comprador/perfil';
-} else if ($_SESSION['usuario_tipo'] == 'transportador') {
-    $painel_href = 'transportador/dashboard';
-    $perfil_href = 'transportador/perfil';
+// Menu conforme o tipo de usuário (admin não tem página de perfil)
+$tipo_usuario = $_SESSION['usuario_tipo'] ?? '';
+$nav_items = [];
+if (in_array($tipo_usuario, ['admin', 'vendedor', 'comprador', 'transportador'], true)) {
+    $nav_items[] = ['key' => 'painel', 'label' => 'Painel', 'href' => $tipo_usuario . '/dashboard'];
+}
+if (in_array($tipo_usuario, ['vendedor', 'comprador', 'transportador'], true)) {
+    $nav_items[] = ['key' => 'perfil', 'label' => 'Meu Perfil', 'href' => $tipo_usuario . '/perfil'];
+}
+
+/**
+ * Converte a URL gravada na notificação em um link válido a partir desta
+ * página (que fica em src/). O sistema gravou URLs em vários formatos ao
+ * longo do tempo, então isso também corrige as notificações antigas:
+ *   "src/vendedor/x.php"  -> relativa à raiz do site
+ *   "/src/vendedor/x"     -> absoluta
+ *   "../avaliar.php"      -> escrita a partir de uma subpasta de src/
+ *   "avaliar.php"         -> já relativa a src/
+ */
+function urlNotificacao($url) {
+    $url = trim((string)$url);
+    if ($url === '') {
+        return '';
+    }
+    if (preg_match('#^https?://#i', $url)) {
+        return $url;
+    }
+    // Qualquer outro esquema (javascript:, data:...) é descartado
+    if (preg_match('#^[a-z][a-z0-9+.-]*:#i', $url) || strpos($url, '//') === 0) {
+        return '';
+    }
+    // Página que nunca existiu: as solicitações pendentes ficam no dashboard do admin
+    $url = preg_replace('#^/?src/admin/solicitacoes(\.php)?#', 'src/admin/dashboard', $url);
+
+    if ($url[0] === '/') {
+        return '..' . $url;
+    }
+    if (strpos($url, 'src/') === 0) {
+        return '../' . $url;
+    }
+    while (strpos($url, '../') === 0) {
+        $url = substr($url, 3);
+    }
+    return $url;
 }
 ?>
 
@@ -76,10 +111,6 @@ if($_SESSION['usuario_tipo'] == 'vendedor') {
 <body>
     <?php
     $active_nav = 'notificacoes';
-    $nav_items = [
-        ['key' => 'painel', 'label' => 'Painel',     'href' => $painel_href],
-        ['key' => 'perfil', 'label' => 'Meu Perfil', 'href' => $perfil_href],
-    ];
     require __DIR__ . '/includes/navbar.php';
     ?>
 
@@ -113,8 +144,9 @@ if($_SESSION['usuario_tipo'] == 'vendedor') {
                             <?php if (!$notificacao['lida']): ?>
                                 <a href="notificacoes?ler=<?php echo $notificacao['id']; ?>">Marcar como lida</a>
                             <?php endif; ?>
-                            <?php if ($notificacao['url']): ?>
-                                <a href="<?php echo htmlspecialchars($notificacao['url']); ?>">Ver</a>
+                            <?php $link_notificacao = urlNotificacao($notificacao['url']); ?>
+                            <?php if ($link_notificacao): ?>
+                                <a href="<?php echo htmlspecialchars($link_notificacao); ?>">Ver</a>
                             <?php endif; ?>
                         </div>
                     </div>

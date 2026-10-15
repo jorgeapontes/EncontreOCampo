@@ -48,6 +48,10 @@ if (isset($vendedor['id'])) {
 $nome_exibicao_plano = $dados_completos['nome_plano_real'] ?? 'Sem Plano';
 $mensagem_sucesso = '';
 $mensagem_erro = '';
+// Mensagem de erro vinda de redirecionamento (ex.: deletar_conta)
+if (!empty($_GET['erro'])) {
+    $mensagem_erro = htmlspecialchars($_GET['erro'], ENT_QUOTES, 'UTF-8');
+}
 
 $vendedor_id_fk = $vendedor['id'] ?? 0;
 
@@ -441,8 +445,29 @@ function getImagePath($path) {
         </section>
     </div>
 
+    <?php
+    // Plano pago renovando no Stripe impede a exclusão: o modal só mostra o aviso.
+    // O Stripe só é consultado quando o banco indica plano pago com assinatura,
+    // para não atrasar o perfil de quem está no plano gratuito.
+    $exclusao_bloqueada_por_plano = false;
+    if ((int)($vendedor['plano_id'] ?? 1) > 1 && !empty($vendedor['stripe_subscription_id'])) {
+        require_once __DIR__ . '/../functions/conta_functions.php';
+        require_once __DIR__ . '/../../config/StripeConfig.php';
+        [$exclusao_bloqueada_por_plano] = assinaturaImpedeExclusao($vendedor['stripe_subscription_id']);
+    }
+    ?>
     <div id="delete-account-modal" class="delete-account-modal">
         <div class="delete-account-modal-content">
+            <?php if ($exclusao_bloqueada_por_plano): ?>
+            <h3><i class="fas fa-info-circle"></i> Excluir conta</h3>
+            <p>
+                Você tem um plano pago. Antes de excluir a conta, cancele a renovação em
+                <a href="gerenciar_assinatura">Gerenciar assinatura</a>.
+            </p>
+            <div class="delete-account-modal-actions">
+                <button id="cancel-delete" class="btn-cancel-delete">Fechar</button>
+            </div>
+            <?php else: ?>
             <h3><i class="fas fa-exclamation-triangle"></i> Confirmar exclusão</h3>
             <p>Tem certeza? Esta ação não pode ser desfeita.</p>
             <div class="delete-account-modal-actions">
@@ -453,6 +478,7 @@ function getImagePath($path) {
                     <button type="submit" class="btn-confirm-delete">Sim, apagar</button>
                 </form>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 

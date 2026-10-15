@@ -15,6 +15,10 @@ $conn = $database->getConnection();
 
 $mensagem_sucesso = null;
 $mensagem_erro = null;
+// Mensagem de erro vinda de redirecionamento (ex.: deletar_conta)
+if (!empty($_GET['erro'])) {
+    $mensagem_erro = htmlspecialchars($_GET['erro'], ENT_QUOTES, 'UTF-8');
+}
 
 // Buscar dados atuais do comprador antes de processar POST
 try {

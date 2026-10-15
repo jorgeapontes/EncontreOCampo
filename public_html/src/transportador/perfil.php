@@ -1,7 +1,13 @@
 <?php
 // src/transportador/perfil.php
 require_once __DIR__ . '/../permissions.php';
-require_once __DIR__ . '/../conexao.php'; 
+require_once __DIR__ . '/../conexao.php';
+
+// Verificação de acesso (igual ao dashboard do transportador)
+if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'transportador') {
+    header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Transportador."));
+    exit();
+}
 
 $database = new Database();
 $db = $database->getConnection();
@@ -104,6 +110,10 @@ if (isset($transportador['id'])) {
 
 $mensagem_sucesso = '';
 $mensagem_erro = '';
+// Mensagem de erro vinda de redirecionamento (ex.: deletar_conta)
+if (!empty($_GET['erro'])) {
+    $mensagem_erro = htmlspecialchars($_GET['erro'], ENT_QUOTES, 'UTF-8');
+}
 
 $transportador_id_fk = $transportador['id'] ?? 0;
 

@@ -1270,7 +1270,7 @@ try {
     
     // 4. Criar notificação para admin
     $sqlNotificacao = "INSERT INTO notificacoes (usuario_id, mensagem, tipo, url) 
-                       VALUES (1, :mensagem, 'info', 'src/admin/solicitacoes.php')";
+                       VALUES (1, :mensagem, 'info', 'src/admin/dashboard')";
     $stmtNotificacao = $conn->prepare($sqlNotificacao);
     
     $mensagemNotificacao = "Nova solicitação de cadastro de {$tipoUsuario}: {$nome}";

@@ -18,6 +18,39 @@
 const NOME_ANONIMIZADO = 'Usuário removido';
 
 /**
+ * Impede a exclusão por um motivo que o usuário precisa ver e resolver
+ * (ex.: assinatura ainda ativa). A mensagem é exibida no perfil.
+ */
+class ExclusaoContaBloqueada extends Exception {}
+
+const MSG_PLANO_ATIVO_EXCLUSAO = 'Você tem um plano pago. Antes de excluir a conta, cancele a renovação em Gerenciar assinatura.';
+
+/**
+ * A assinatura do vendedor no Stripe impede a exclusão da conta?
+ * Impede enquanto ela estiver ativa E renovando. Depois que o vendedor
+ * cancela a renovação (cancel_at_period_end), a exclusão é liberada.
+ * Exige StripeConfig carregado. Se o Stripe não responder, bloqueia por
+ * segurança (melhor pedir para tentar de novo do que cobrar após excluir).
+ * Retorna [bool $bloqueia, $assinatura|null].
+ */
+function assinaturaImpedeExclusao(?string $subscriptionId): array {
+    if (empty($subscriptionId)) {
+        return [false, null];
+    }
+    try {
+        \Config\StripeConfig::init();
+        $assinatura = \Stripe\Subscription::retrieve($subscriptionId);
+    } catch (\Stripe\Exception\InvalidRequestException $e) {
+        return [false, null]; // não existe mais no Stripe
+    } catch (Throwable $e) {
+        error_log('Falha ao consultar assinatura no Stripe: ' . $e->getMessage());
+        return [true, null];
+    }
+    $comCobranca = in_array($assinatura->status, ['active', 'trialing', 'past_due', 'unpaid', 'incomplete'], true);
+    return [$comCobranca && empty($assinatura->cancel_at_period_end), $assinatura];
+}
+
+/**
  * Colunas existentes de uma tabela (vazio se a tabela não existir).
  * Permite que o código funcione mesmo se prod tiver um schema um pouco
  * diferente do repositório.
@@ -259,6 +292,9 @@ function excluirContaDaSessao(string $tipoEsperado, ?callable $antesDeAnonimizar
             $antesDeAnonimizar($db, $usuarioId);
         }
         $original = anonimizarConta($db, $usuarioId);
+    } catch (ExclusaoContaBloqueada $e) {
+        header('Location: perfil?erro=' . urlencode($e->getMessage()));
+        exit();
     } catch (Throwable $e) {
         error_log("Erro ao excluir conta ($tipoEsperado, usuario $usuarioId): " . $e->getMessage());
         header('Location: perfil?erro=' . urlencode('Erro ao excluir a conta. Tente novamente ou fale com privacidade@encontreocampo.com.br.'));

@@ -361,7 +361,39 @@ try {
             writeLog("🔄 Processando subscription.updated para cliente: $cus_id", 'DEBUG');
             
             try {
+                // Consulta o estado ATUAL no Stripe: os eventos podem chegar fora de
+                // ordem (ex.: o "updated" do cancelamento chega depois do "deleted"),
+                // então a decisão é tomada pelo status real, não pelo evento.
                 $stripe_sub = \Stripe\Subscription::retrieve($subscription->id);
+                $sub_id = $stripe_sub->id;
+                $status_stripe = $stripe_sub->status;
+
+                if (in_array($status_stripe, ['canceled', 'incomplete_expired', 'unpaid'], true)) {
+                    // Mesma regra do customer.subscription.deleted
+                    $stmt = $db->prepare("UPDATE vendedores SET plano_id = 1, status_assinatura = 'expirado', data_vencimento_assinatura = NULL WHERE stripe_subscription_id = ?");
+                    $stmt->execute([$sub_id]);
+                    writeLog("🗑️ subscription.updated com status '$status_stripe' | Subscription: $sub_id | Rebaixado para Free | Linhas: " . $stmt->rowCount(), 'SUBSCRIPTION_UPDATED');
+                    break;
+                }
+                if (in_array($status_stripe, ['past_due', 'incomplete'], true)) {
+                    // Stripe ainda tentando cobrar: mantém o plano e avisa
+                    $stmt = $db->prepare("UPDATE vendedores SET status_assinatura = 'atrasado' WHERE stripe_subscription_id = ?");
+                    $stmt->execute([$sub_id]);
+                    writeLog("⚠️ subscription.updated com status '$status_stripe' | Subscription: $sub_id | Marcado como atrasado | Linhas: " . $stmt->rowCount(), 'SUBSCRIPTION_UPDATED');
+                    break;
+                }
+                if ($status_stripe === 'paused') {
+                    $stmt = $db->prepare("UPDATE vendedores SET status_assinatura = 'pausado' WHERE stripe_subscription_id = ?");
+                    $stmt->execute([$sub_id]);
+                    writeLog("⏸️ subscription.updated com status 'paused' | Subscription: $sub_id | Linhas: " . $stmt->rowCount(), 'SUBSCRIPTION_UPDATED');
+                    break;
+                }
+
+                // active / trialing: troca de plano, renovação ou cancelamento agendado
+                // (cancel_at_period_end): o plano continua valendo até o fim do período.
+                if (!empty($stripe_sub->cancel_at_period_end)) {
+                    writeLog("📅 Cancelamento agendado para o fim do período | Subscription: $sub_id", 'INFO');
+                }
                 $novo_price_id = $stripe_sub->items->data[0]->price->id;
                 
                 // Obter próxima data de vencimento
@@ -382,8 +414,13 @@ try {
                 $novo_plano = $stmt_plano->fetch(PDO::FETCH_ASSOC);
                 
                 if ($novo_plano) {
-                    $stmt_update = $db->prepare("UPDATE vendedores SET plano_id = ?, status_assinatura = 'ativo', data_vencimento_assinatura = ? WHERE stripe_customer_id = ?");
-                    $resultado = $stmt_update->execute([$novo_plano['id'], $next_billing_date, $cus_id]);
+                    // Só altera o vendedor dono DESTA assinatura (ou, se ainda não
+                    // gravamos a assinatura, o do cliente). Evita que o evento de uma
+                    // assinatura antiga do mesmo cliente sobrescreva a atual.
+                    $stmt_update = $db->prepare("UPDATE vendedores SET plano_id = ?, status_assinatura = 'ativo', data_vencimento_assinatura = ?
+                                                 WHERE stripe_subscription_id = ?
+                                                    OR (stripe_customer_id = ? AND stripe_subscription_id IS NULL)");
+                    $resultado = $stmt_update->execute([$novo_plano['id'], $next_billing_date, $sub_id, $cus_id]);
                     
                     writeLog("✅ Plano atualizado: Cliente=$cus_id | Novo Plano=" . $novo_plano['nome'] . " | Próximo vencimento=$next_billing_date", 'SUCESSO');
                 } else {

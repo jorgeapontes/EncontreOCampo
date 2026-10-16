@@ -68,24 +68,38 @@ try {
             continue;
         }
         $total++;
-        if (isset($referenciados[$item->getFilename()])) {
+        $nome = $item->getFilename();
+        if (isset($referenciados[$nome])) {
             continue;
         }
-        if ($item->getMTime() > $limiteIdade) {
+
+        // Data lida uma única vez e ANTES de apagar (depois o arquivo não existe
+        // mais e consultar a data dá erro). Um arquivo problemático não
+        // interrompe a limpeza dos demais.
+        $caminho = $item->getPathname();
+        $modificado = @filemtime($caminho);
+        if ($modificado === false) {
+            $falhas++;
+            cronLog("   ❌ Não foi possível ler a data de: $nome");
+            continue;
+        }
+        if ($modificado > $limiteIdade) {
             $recentes++;
             continue;
         }
+
+        $data = date('d/m/Y', $modificado);
         if ($simular) {
             $apagados++;
-            cronLog('   🔎 Seria apagado: ' . $item->getFilename() . ' (de ' . date('d/m/Y', $item->getMTime()) . ')');
+            cronLog("   🔎 Seria apagado: $nome (de $data)");
             continue;
         }
-        if (@unlink($item->getPathname())) {
+        if (@unlink($caminho)) {
             $apagados++;
-            cronLog('   🗑️ Apagado: ' . $item->getFilename() . ' (de ' . date('d/m/Y', $item->getMTime()) . ')');
+            cronLog("   🗑️ Apagado: $nome (de $data)");
         } else {
             $falhas++;
-            cronLog('   ❌ Falha ao apagar: ' . $item->getFilename());
+            cronLog("   ❌ Falha ao apagar: $nome");
         }
     }
 

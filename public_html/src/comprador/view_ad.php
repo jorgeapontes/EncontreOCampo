@@ -342,6 +342,12 @@ try {
 $preco_unitario = $info_desconto['preco_final'];
 $preco_display = number_format($preco_unitario, 2, ',', '.');
 $unidade = htmlspecialchars($anuncio['unidade_medida']);
+
+// Compartilhar no WhatsApp: aponta para a página pública do anúncio, que abre
+// sem login e tem a prévia (Open Graph) com foto, preço e descrição
+$url_anuncio_publico = 'https://encontreocampo.com.br/src/visualizar_anuncio?anuncio_id=' . $anuncio_id;
+$texto_whatsapp = $anuncio['produto'] . ' - R$ ' . $preco_display . '/' . $anuncio['unidade_medida']
+    . ' no Encontre o Campo: ' . $url_anuncio_publico;
 ?>
 
 <!DOCTYPE html>
@@ -350,7 +356,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($anuncio['produto']); ?> - Encontre o Campo</title>
-    <link rel="stylesheet" href="../css/comprador/view_ad.css?v=1.5">
+    <link rel="stylesheet" href="../css/comprador/view_ad.css?v=1.6">
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -493,6 +499,11 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
                                 <p class="proposta-text">Negocie diretamente com o vendedor</p>
                             </div>
                         </div>
+
+                        <a href="https://wa.me/?text=<?php echo rawurlencode($texto_whatsapp); ?>" class="btn-compartilhar-whatsapp" target="_blank" rel="noopener">
+                            <i class="fab fa-whatsapp"></i>
+                            Compartilhar no WhatsApp
+                        </a>
                     </div>
                 </div>
             </div>

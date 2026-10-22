@@ -1,6 +1,7 @@
 <?php
 // Interface simples de chat para transportador
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/../chat/chat_config.php';
 
 if (!isset($_SESSION['usuario_id'])) {
     header('Location: ../login');
@@ -135,9 +136,11 @@ try {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="<?php echo htmlspecialchars(chatCsrfToken()); ?>">
     <title>Chat - Transportador</title>
     <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
-    <link rel="stylesheet" href="../chat/css/chat.css">
+    <link rel="stylesheet" href="../chat/css/chat.css?v=<?php echo filemtime(__DIR__ . '/../chat/css/chat.css'); ?>">
+    <link rel="stylesheet" href="../chat/css/chat_comum.css?v=<?php echo filemtime(__DIR__ . '/../chat/css/chat_comum.css'); ?>">
     <link rel="stylesheet" href="css/chat_interface.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -221,7 +224,7 @@ try {
                     </div>
                     <a href="../verperfil?usuario_id=<?php echo $outro_usuario_id; ?>"
                             class="perfil-link-reset"
-                            title="Ver perfil de <?php echo htmlspecialchars($outro_usuario_nome); ?>">
+                            title="Ver perfil de <?php echo htmlspecialchars($outro_nome); ?>">
                         <div class="name-and-type">
                             <h3><?php echo htmlspecialchars($outro_nome); ?></h3>
                             <small><?php echo htmlspecialchars($outro_papel); ?></small>
@@ -280,14 +283,14 @@ try {
 
             <div class="chat-input">
                 <div class="chat-input-buttons">
-                    <button type="button" class="btn-attach" id="btn-attach-image" title="Enviar Imagem"><i class="fas fa-camera"></i></button>
+                    <button type="button" class="btn-attach" id="btn-attach-image" title="Enviar imagem" aria-label="Enviar imagem"><i class="fas fa-camera" aria-hidden="true"></i></button>
                     <?php if ($is_transportador): ?>
-                        <button type="button" class="btn-negociar" id="btn-negociar" title="Propor Entrega"><i class="fas fa-handshake"></i></button>
+                        <button type="button" class="btn-negociar" id="btn-negociar" title="Propor entrega" aria-label="Propor entrega"><i class="fas fa-handshake" aria-hidden="true"></i></button>
                     <?php endif; ?>
                 </div>
-                <input type="file" id="image-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden">
-                <input type="text" id="message-input" placeholder="Digite sua mensagem..." autocomplete="off">
-                <button type="button" id="send-btn" class="btn-send"><i class="fas fa-paper-plane"></i><span>Enviar</span></button>
+                <input type="file" id="image-input" accept="image/jpeg,image/png,image/gif,image/webp" multiple class="hidden">
+                <textarea id="message-input" rows="1" maxlength="5000" placeholder="Digite sua mensagem..." autocomplete="off" aria-label="Mensagem"></textarea>
+                <button type="button" id="send-btn" class="btn-send" aria-label="Enviar mensagem"><i class="fas fa-paper-plane" aria-hidden="true"></i><span>Enviar</span></button>
             </div>
         </div>
     </div>
@@ -337,6 +340,7 @@ try {
     </div>
     <?php endif; ?>
 
+    <script src="../chat/js/chat_comum.js?v=<?php echo filemtime(__DIR__ . '/../chat/js/chat_comum.js'); ?>"></script>
     <script>
         // Funções de utilidade e navegação
         (function(){
@@ -353,7 +357,7 @@ try {
                 modal.addEventListener('click', function(){ modal.style.display = 'none'; });
             }
         })();
-        
+
         function goBack(e) {
             if (e) e.preventDefault();
             try {
@@ -367,74 +371,22 @@ try {
             // fallback
             window.location.href = '../transportador/meus_chats';
         }
-        
+
         // Variáveis globais
         const conversaId = <?php echo (int)$conversa_id; ?>;
         const usuarioId = <?php echo (int)$_SESSION['usuario_id']; ?>;
-        const usuarioTipo = '<?php echo $_SESSION['usuario_tipo']; ?>';
-        let ultimaMensagemId = 0;
+        const ehComprador = <?php echo $is_comprador ? 'true' : 'false'; ?>;
+        const ehTransportador = <?php echo $is_transportador ? 'true' : 'false'; ?>;
+        const nomeOutro = <?php echo json_encode($outro_nome, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE); ?>;
         let ultimaPropostaIdRenderizada = 0; // Para controlar a sidebar
-        const propostasProcessadas = new Map();
+        // Status conhecido de cada proposta de frete (id em propostas_transportadores)
+        const statusPropostas = new Map();
 
-        // Escapa texto antes de inserir via innerHTML (proteção contra XSS).
-        // Usada em qualquer mensagem exibida como HTML, não só texto puro.
-        function escapeHtml(texto) {
-            const div = document.createElement('div');
-            div.textContent = texto ?? '';
-            return div.innerHTML;
-        }
-
-        // 1. Carregar mensagens
-        async function carregarMensagens() {
-            try {
-                const res = await fetch(`get_messages?conversa_id=${conversaId}&ultimo_id=${ultimaMensagemId}`);
-                const data = await res.json();
-                if (data.success && data.mensagens.length) {
-                    const container = document.getElementById('chat-messages');
-                    let estavaNaBase = container.scrollHeight - container.scrollTop <= container.clientHeight + 150;
-                    
-                    data.mensagens.forEach(msg => {
-                        if (msg.id > ultimaMensagemId) {
-                            const div = document.createElement('div');
-                            div.className = 'message ' + (msg.remetente_id == usuarioId ? 'sent' : 'received');
-                            const content = document.createElement('div');
-                            
-                            if (msg.tipo === 'imagem') {
-                                const img = document.createElement('img');
-                                img.src = msg.mensagem;
-                                img.className = 'mensagem-imagem';
-                                img.addEventListener('click', () => { /* logica zoom */ });
-                                content.appendChild(img);
-                            } else if (msg.tipo === 'proposta' || (msg.mensagem && msg.mensagem.indexOf('ID') !== -1)) {
-                                renderizarPropostaCard(msg, content);
-                            } else if (msg.tipo === 'aceite') {
-                                const notif = document.createElement('div');
-                                notif.className = 'proposta-status proposta-aceita';
-                                notif.innerHTML = `<i class="fas fa-check-circle"></i> ${escapeHtml(msg.mensagem)}`;
-                                content.appendChild(notif);
-                            } else {
-                                content.textContent = msg.mensagem;
-                            }
-                            
-                            const time = document.createElement('div');
-                            time.className = 'time';
-                            time.textContent = msg.data_formatada;
-                            div.appendChild(content);
-                            div.appendChild(time);
-                            container.appendChild(div);
-                            ultimaMensagemId = msg.id;
-                        }
-                    });
-                    if (estavaNaBase) container.scrollTop = container.scrollHeight;
-                }
-            } catch (e) { console.error(e); }
-        }
-
-        // 2. Extrair dados
+        // 1. Extrair dados (mensagens antigas sem dados_json)
         function extrairDadosDoTexto(texto) {
             const dados = {};
             if (!texto) return dados;
-            let textoLimpo = texto.replace(/\*/g, '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
+            let textoLimpo = texto.replace(/\*/g, '').replace(/ /g, ' ').replace(/\s+/g, ' ').trim();
             const idMatch = textoLimpo.match(/\bID\b\s*[:\-\s]?\s*(\d+)/i);
             if (idMatch) dados.propostas_transportador_id = parseInt(idMatch[1]);
             const valorMatch = textoLimpo.match(/\bValor\b\s*[:\-\s]?\s*(?:R\$\s*)?([0-9.,]+)/i);
@@ -444,59 +396,43 @@ try {
             return dados;
         }
 
-        // 3. Renderizar Card (Lógica Principal modificada)
-        async function renderizarPropostaCard(msg, content) {
+        function dadosDaProposta(msg) {
             let dados = null;
-            let propostaId = null;
-            
             if (msg.dados_json) {
-                try { dados = JSON.parse(msg.dados_json); } catch(e){}
-                if (dados?.propostas_transportador_id) propostaId = dados.propostas_transportador_id;
+                try { dados = JSON.parse(msg.dados_json); } catch (e) { /* JSON inválido */ }
             }
-            if (!dados && msg.mensagem) {
-                dados = extrairDadosDoTexto(msg.mensagem);
-                if (dados?.propostas_transportador_id) propostaId = dados.propostas_transportador_id;
+            if (!dados || !dados.propostas_transportador_id) {
+                dados = Object.assign(extrairDadosDoTexto(msg.mensagem), dados || {});
             }
+            return dados;
+        }
 
-            // Construir HTML do card
-            const card = document.createElement('div');
-            card.className = 'proposta-card';
-            
-            let htmlInner = '<strong><i class="fas fa-handshake icon-spaced-sm"></i>Proposta de Entrega</strong>';
-            htmlInner += '<div class="mt-8">';
+        function formatarValor(valor) {
+            return valor ? 'R$ ' + parseFloat(valor).toFixed(2).replace('.', ',') : null;
+        }
 
-            let valorText = 'Valor não especificado';
-            if (dados && dados.valor) valorText = 'R$ ' + parseFloat(dados.valor).toFixed(2).replace('.', ',');
-            htmlInner += `<div class="mb-5"><span class="texto-secundario">Valor:</span> <strong class="texto-destaque">${valorText}</strong></div>`;
+        // 2. Conteúdo dos tipos próprios deste chat. Só mensagens do tipo
+        // 'proposta' viram card (antes qualquer texto com "ID" em maiúsculas virava).
+        function renderizarConteudo(msg) {
+            if (msg.tipo === 'aceite') {
+                const notif = document.createElement('div');
+                notif.className = 'proposta-status proposta-aceita';
+                notif.innerHTML = '<i class="fas fa-check-circle" aria-hidden="true"></i> ';
+                notif.appendChild(document.createTextNode(msg.mensagem));
+                return notif;
+            }
+            if (msg.tipo !== 'proposta') return null;
 
-            if (dados && dados.prazo) htmlInner += `<div class="mb-5"><span class="texto-secundario">Prazo:</span> <span class="texto-destaque">${dados.prazo}</span></div>`;
-            if (propostaId) htmlInner += `<div><span class="texto-secundario fonte-pequena">ID: ${propostaId}</span></div>`;
-            htmlInner += '</div>';
-            
-            card.innerHTML = htmlInner;
-
-            // Identificar Status
+            const dados = dadosDaProposta(msg);
+            const propostaId = dados.propostas_transportador_id || null;
             let status = 'pendente';
             if (propostaId) {
-                if (propostasProcessadas.has(propostaId)) {
-                    status = propostasProcessadas.get(propostaId);
-                } else {
-                    try {
-                        const res = await fetch('get_proposta_status?id=' + propostaId);
-                        const data = await res.json();
-                        status = data.status || 'pendente';
-                        propostasProcessadas.set(propostaId, status);
-                    } catch(e) { }
-                }
+                status = statusPropostas.get(propostaId) || msg.proposta_status || 'pendente';
+                statusPropostas.set(propostaId, status);
             }
 
-            // Ações do Chat (Botões) - Visíveis apenas no mobile via CSS (.acoes-chat)
-            const actionsContainer = document.createElement('div');
-            actionsContainer.className = 'proposta-actions acoes-chat'; // Classe acoes-chat controla visibilidade
-            
-            adicionarBotoesOuStatus(actionsContainer, status, propostaId, 'chat');
-            card.appendChild(actionsContainer);
-            content.appendChild(card);
+            const content = document.createElement('div');
+            content.appendChild(montarCardProposta(dados, propostaId, status, 'chat'));
 
             // ATUALIZAÇÃO DA SIDEBAR
             // Se esta for uma proposta válida e for mais recente do que a que temos na sidebar
@@ -504,13 +440,47 @@ try {
                 ultimaPropostaIdRenderizada = propostaId;
                 atualizarSidebarProposta(dados, propostaId, status);
             }
+            return content;
         }
 
-        // 4. Nova função para atualizar a sidebar
+        // 3. Card de proposta (no chat e na sidebar)
+        function montarCardProposta(dados, propostaId, status, contexto) {
+            const card = document.createElement('div');
+            card.className = 'proposta-card';
+
+            const valorText = formatarValor(dados.valor) || 'Valor não especificado';
+            const e = ChatComum.escapeHtml;
+            let htmlInner;
+            if (contexto === 'sidebar') {
+                htmlInner = `
+                    <strong><i class="fas fa-handshake" aria-hidden="true"></i> Entrega</strong>
+                    <div class="sidebar-proposta-detalhes">
+                        <div>Valor: <strong>${e(formatarValor(dados.valor) || 'N/A')}</strong></div>
+                        <div>Prazo: ${e(dados.prazo || '--')}</div>
+                    </div>`;
+            } else {
+                htmlInner = '<strong><i class="fas fa-handshake icon-spaced-sm" aria-hidden="true"></i>Proposta de Entrega</strong><div class="mt-8">';
+                htmlInner += `<div class="mb-5"><span class="texto-secundario">Valor:</span> <strong class="texto-destaque">${e(valorText)}</strong></div>`;
+                if (dados.prazo) htmlInner += `<div class="mb-5"><span class="texto-secundario">Prazo:</span> <span class="texto-destaque">${e(dados.prazo)}</span></div>`;
+                if (propostaId) htmlInner += `<div><span class="texto-secundario fonte-pequena">ID: ${e(propostaId)}</span></div>`;
+                htmlInner += '</div>';
+            }
+            card.innerHTML = htmlInner;
+
+            // Ações: .acoes-chat aparece no mobile e .acoes-sidebar no desktop (via CSS)
+            const actionsContainer = document.createElement('div');
+            actionsContainer.className = 'proposta-actions ' + (contexto === 'sidebar' ? 'acoes-sidebar' : 'acoes-chat');
+            if (propostaId) actionsContainer.dataset.propostaId = propostaId;
+            adicionarBotoesOuStatus(actionsContainer, status, propostaId);
+            card.appendChild(actionsContainer);
+            return card;
+        }
+
+        // 4. Atualizar a sidebar
         function atualizarSidebarProposta(dados, propostaId, status) {
             const containerSidebar = document.getElementById('sidebar-proposta-container');
             if (!containerSidebar) return;
-            
+
             // Limpar conteúdo anterior
             containerSidebar.innerHTML = '';
             containerSidebar.style.display = 'block'; // Garante que a div container apareça (o CSS media query controla o pai)
@@ -521,192 +491,179 @@ try {
             titulo.textContent = "Última Proposta";
             containerSidebar.appendChild(titulo);
 
-            // Criar card idêntico
-            const card = document.createElement('div');
-            card.className = 'proposta-card';
-            
-            let valorText = dados.valor ? 'R$ ' + parseFloat(dados.valor).toFixed(2).replace('.', ',') : 'N/A';
-            
-            let htmlInner = `
-                <strong><i class="fas fa-handshake"></i> Entrega</strong>
-                <div class="sidebar-proposta-detalhes">
-                    <div>Valor: <strong>${valorText}</strong></div>
-                    <div>Prazo: ${dados.prazo || '--'}</div>
-                </div>
-            `;
-            card.innerHTML = htmlInner;
-
-            // Ações da Sidebar - Visíveis apenas no desktop via CSS (.acoes-sidebar logicamente, ou por default block)
-            const actionsContainer = document.createElement('div');
-            actionsContainer.className = 'proposta-actions acoes-sidebar';
-            
-            // Adicionar lógica de botões específica para sidebar
-            adicionarBotoesOuStatus(actionsContainer, status, propostaId, 'sidebar');
-            
-            card.appendChild(actionsContainer);
-            containerSidebar.appendChild(card);
+            containerSidebar.appendChild(montarCardProposta(dados, propostaId, status, 'sidebar'));
         }
 
-        // 5. Função auxiliar para gerar botões (reutilizável)
-        function adicionarBotoesOuStatus(container, status, propostaId, contexto) {
+        // 5. Botões (comprador com proposta pendente) ou o status
+        function adicionarBotoesOuStatus(container, status, propostaId) {
             container.innerHTML = ''; // Limpar
-            
-            <?php if ($is_comprador): ?>
-            if (status === 'pendente') {
-                // Botão Aceitar
-                const btnAceitar = document.createElement('button');
-                btnAceitar.className = 'btn-aceitar';
-                btnAceitar.textContent = 'Aceitar';
-                btnAceitar.onclick = () => actionProposta('aceitar', propostaId);
 
-                // Botão Recusar
-                const btnRecusar = document.createElement('button');
-                btnRecusar.className = 'btn-recusar';
-                btnRecusar.textContent = 'Recusar';
-                btnRecusar.onclick = () => {
-                    if(confirm('Recusar proposta?')) actionProposta('recusar', propostaId);
-                };
+            if (ehComprador) {
+                if (status === 'pendente') {
+                    // Botão Aceitar
+                    const btnAceitar = document.createElement('button');
+                    btnAceitar.type = 'button';
+                    btnAceitar.className = 'btn-aceitar';
+                    btnAceitar.textContent = 'Aceitar';
+                    btnAceitar.onclick = () => actionProposta('aceitar', propostaId);
 
-                container.appendChild(btnRecusar);
-                container.appendChild(btnAceitar);
+                    // Botão Recusar
+                    const btnRecusar = document.createElement('button');
+                    btnRecusar.type = 'button';
+                    btnRecusar.className = 'btn-recusar';
+                    btnRecusar.textContent = 'Recusar';
+                    btnRecusar.onclick = async () => {
+                        const ok = await ChatComum.confirmar('Tem certeza que deseja recusar esta proposta de entrega?', {
+                            titulo: 'Recusar proposta', textoConfirmar: 'Sim, recusar', textoCancelar: 'Não', perigo: true
+                        });
+                        if (ok) actionProposta('recusar', propostaId);
+                    };
+
+                    container.appendChild(btnRecusar);
+                    container.appendChild(btnAceitar);
+                } else {
+                    const div = document.createElement('div');
+                    div.className = `proposta-status proposta-${status}`;
+                    div.innerHTML = status === 'aceita' ? '<i class="fas fa-check"></i> Aceita' : '<i class="fas fa-times"></i> Recusada';
+                    container.appendChild(div);
+                }
             } else {
+                // Transportador
                 const div = document.createElement('div');
                 div.className = `proposta-status proposta-${status}`;
-                div.innerHTML = status === 'aceita' ? '<i class="fas fa-check"></i> Aceita' : '<i class="fas fa-times"></i> Recusada';
+                div.textContent = status === 'aceita' ? 'Aceita pelo cliente' : (status === 'recusada' ? 'Recusada' : 'Aguardando...');
                 container.appendChild(div);
             }
-            <?php else: // Transportador ?>
-            const div = document.createElement('div');
-            div.className = `proposta-status proposta-${status}`;
-            div.textContent = status === 'aceita' ? 'Aceita pelo cliente' : (status === 'recusada' ? 'Recusada' : 'Aguardando...');
-            container.appendChild(div);
-            <?php endif; ?>
+        }
+
+        // Atualiza no lugar todos os cards (chat e sidebar) de uma proposta
+        function aplicarStatus(propostaId, status) {
+            statusPropostas.set(propostaId, status);
+            document.querySelectorAll(`.proposta-actions[data-proposta-id="${propostaId}"]`).forEach(container => {
+                adicionarBotoesOuStatus(container, status, propostaId);
+            });
         }
 
         // 6. Ação AJAX unificada
         async function actionProposta(acao, id) {
             if (!id) return;
-            
-            // Feedback visual em todos os botões da tela
-            document.querySelectorAll('.btn-aceitar, .btn-recusar').forEach(b => {
-                b.disabled = true; 
+
+            // Feedback visual nos botões desta proposta
+            document.querySelectorAll(`.proposta-actions[data-proposta-id="${id}"] button`).forEach(b => {
+                b.disabled = true;
                 b.textContent = '...';
             });
 
             try {
-                const res = await fetch('responder_proposta', {
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({acao: acao, id: id})
-                });
-                const j = await res.json();
-                
-                if (j.success) {
-                    const novoStatus = (acao === 'aceitar') ? 'aceita' : 'recusada';
-                    propostasProcessadas.set(id, novoStatus);
-                    
-                    // Atualizar visualmente sem recarregar tudo imediatamente
-                    // Atualiza chat
-                    document.querySelectorAll('.acoes-chat').forEach(el => {
-                       // Encontrar se esse elemento pertence ao ID certo seria ideal, 
-                       // mas recarregar mensagens resolve a consistência
-                    });
-                    
-                    <?php if ($is_comprador): ?>
-                    if (acao === 'aceitar') {
-                        document.getElementById('modal-sucesso-aceite').style.display = 'flex';
-                    } else {
-                        alert('Proposta recusada.');
-                    }
-                    <?php endif; ?>
-                    
-                    // Recarrega mensagens para atualizar status nos cards e sidebar
-                    setTimeout(() => {
-                        document.getElementById('chat-messages').innerHTML = ''; // Limpa para forçar redraw correto
-                        ultimaMensagemId = 0; // Reset simples
-                        carregarMensagens();
-                    }, 500);
-                    
+                await ChatComum.postar('responder_proposta', JSON.stringify({acao: acao, id: id}), { json: true });
+
+                aplicarStatus(id, acao === 'aceitar' ? 'aceita' : 'recusada');
+                if (acao === 'aceitar') {
+                    document.getElementById('modal-sucesso-aceite').style.display = 'flex';
                 } else {
-                    alert(j.erro || 'Erro ao processar');
-                    document.querySelectorAll('.btn-aceitar, .btn-recusar').forEach(b => b.disabled = false);
+                    ChatComum.toast('Proposta recusada.', 'info');
                 }
+                // Busca a mensagem automática da resposta
+                conversa.atualizarAgora();
             } catch (e) {
-                console.error(e);
-                alert('Erro de conexão');
+                ChatComum.toast(e.message || 'Erro ao processar', 'error');
+                aplicarStatus(id, statusPropostas.get(id) || 'pendente');
             }
         }
 
-        // Handlers de input
-        document.getElementById('send-btn').addEventListener('click', async () => {
-            const input = document.getElementById('message-input');
-            if (!input.value.trim()) return;
-            const form = new URLSearchParams();
-            form.append('conversa_id', conversaId);
-            form.append('mensagem', input.value);
-            try {
-                await fetch('send_message', {method:'POST', body: form});
-                input.value = '';
-                carregarMensagens();
-            } catch(e){}
+        // Mensagens
+        const conversa = new ChatComum.Conversa({
+            container: document.getElementById('chat-messages'),
+            usuarioId,
+            nomeOutro,
+            urlMensagens: params => `get_messages?${params}`,
+            paramsExtras: () => {
+                const pendentes = [...statusPropostas].filter(([, s]) => s === 'pendente').map(([id]) => id);
+                return pendentes.length
+                    ? { conversa_id: conversaId, status_propostas: pendentes.join(',') }
+                    : { conversa_id: conversaId };
+            },
+            onResposta: dados => {
+                Object.entries(dados.status_propostas || {}).forEach(([id, status]) => {
+                    if (statusPropostas.get(Number(id)) !== status) aplicarStatus(Number(id), status);
+                });
+            },
+            renderizarConteudo,
+            enviarTexto: texto => ChatComum.postar('send_message', new URLSearchParams({ conversa_id: conversaId, mensagem: texto })),
+            enviarImagem: (arquivo, onProgresso) => {
+                const formData = new FormData();
+                formData.append('imagem', arquivo, arquivo.name || 'foto.jpg');
+                formData.append('conversa_id', conversaId);
+                return ChatComum.postar('send_message', formData, { onProgresso });
+            },
         });
-        
-        document.getElementById('message-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') document.getElementById('send-btn').click(); });
 
-        // Inicialização
-        carregarMensagens();
-        setInterval(carregarMensagens, 3000);
+        conversa.conectarEntrada({
+            campo: document.getElementById('message-input'),
+            botaoEnviar: document.getElementById('send-btn'),
+            botaoAnexo: document.getElementById('btn-attach-image'),
+            inputArquivo: document.getElementById('image-input'),
+        });
+        ChatComum.criarBotaoNotificacoes(document.querySelector('.chat-header .btn-voltar'));
+        conversa.iniciar();
 
         // Lógica de envio de proposta (Transportador)
-        <?php if ($is_transportador): ?>
-        const modalProp = document.getElementById('modal-proposta-transportador');
-        document.getElementById('btn-negociar')?.addEventListener('click', () => modalProp.style.display = 'flex');
-        // Também abrir modal a partir do botão grande na sidebar
-        document.getElementById('btn-negociar-sidebar')?.addEventListener('click', () => modalProp.style.display = 'flex');
-        document.getElementById('fechar-modal-proposta')?.addEventListener('click', () => modalProp.style.display = 'none');
-        document.getElementById('cancelar-proposta')?.addEventListener('click', () => modalProp.style.display = 'none');
-        
-        document.getElementById('enviar-proposta')?.addEventListener('click', async () => {
-            const v = document.getElementById('proposta-valor').value;
-            const d = document.getElementById('proposta-data').value;
-            if(!v || !d) return alert('Preencha tudo');
-            
-            const form = new FormData();
-            form.append('conversa_id', conversaId);
-            form.append('valor', v);
-            form.append('data_entrega', d);
-            
-            await fetch('send_proposal', { method: 'POST', body: form });
-            modalProp.style.display = 'none';
-            carregarMensagens();
-        });
-        <?php endif; ?>
+        if (ehTransportador) {
+            const modalProp = document.getElementById('modal-proposta-transportador');
+            const abrirModalProposta = () => {
+                // Prazo de entrega não pode ser no passado
+                const hoje = new Date();
+                document.getElementById('proposta-data').min =
+                    `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
+                modalProp.style.display = 'flex';
+            };
+            document.getElementById('btn-negociar')?.addEventListener('click', abrirModalProposta);
+            // Também abrir modal a partir do botão grande na sidebar
+            document.getElementById('btn-negociar-sidebar')?.addEventListener('click', abrirModalProposta);
+            document.getElementById('fechar-modal-proposta')?.addEventListener('click', () => modalProp.style.display = 'none');
+            document.getElementById('cancelar-proposta')?.addEventListener('click', () => modalProp.style.display = 'none');
+
+            document.getElementById('enviar-proposta')?.addEventListener('click', async function () {
+                const v = document.getElementById('proposta-valor').value;
+                const d = document.getElementById('proposta-data').value;
+                if (!v || parseFloat(v) <= 0 || !d) {
+                    ChatComum.toast('Preencha o valor do frete e a data limite de entrega.', 'warning');
+                    return;
+                }
+
+                const form = new FormData();
+                form.append('conversa_id', conversaId);
+                form.append('valor', v);
+                form.append('data_entrega', d);
+
+                this.disabled = true;
+                try {
+                    await ChatComum.postar('send_proposal', form);
+                    modalProp.style.display = 'none';
+                    ChatComum.toast('Proposta enviada!', 'success');
+                    conversa.atualizarAgora();
+                } catch (e) {
+                    ChatComum.toast(e.message || 'Não foi possível enviar a proposta.', 'error');
+                } finally {
+                    this.disabled = false;
+                }
+            });
+        }
 
         // Fechar modal sucesso
         document.getElementById('btn-fechar-modal')?.addEventListener('click', () => document.getElementById('modal-sucesso-aceite').style.display = 'none');
-        
+
         // Redirecionar para minhas compras
         document.getElementById('btn-ver-compras')?.addEventListener('click', () => {
             window.location.href = '../comprador/dashboard';
         });
-    
-    // Função para redirecionar para avaliações do usuário - CORRIGIDA
-function redirectToUserReviews(usuarioId, tipoUsuario) {
 
-    const tipoAvaliacao = tipoUsuario === 'transportador' ? 'transportador' : 'comprador';
-    
-    // Verificar se o usuário está logado (já está logado pois está no chat)
-    const isLoggedIn = <?php echo isset($_SESSION['usuario_id']) ? 'true' : 'false'; ?>;
-    
-    if (isLoggedIn) {
-        // Usuário logado: redireciona diretamente para a página de avaliações
+    // Função para redirecionar para avaliações do usuário
+    // (a página do chat exige login, então vai direto para as avaliações)
+    function redirectToUserReviews(usuarioId, tipoUsuario) {
+        const tipoAvaliacao = tipoUsuario === 'transportador' ? 'transportador' : 'comprador';
         window.location.href = '../avaliacoes?tipo=' + tipoAvaliacao + '&id=' + usuarioId;
-    } else {
-        // Usuário não logado (fallback - não deveria acontecer pois está no chat)
-        const redirectUrl = encodeURIComponent('../avaliacoes.php?tipo=' + tipoAvaliacao + '&id=' + usuarioId);
-        window.location.href = '../login?redirect=' + redirectUrl;
     }
-}
     </script>
 </body>
 </html>

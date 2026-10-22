@@ -1,0 +1,342 @@
+/* src/chat/css/chat_comum.css
+ * Componentes de js/chat_comum.js, usados pelos dois chats. */
+
+.chat-area {
+    position: relative;
+}
+
+/* Texto da mensagem preserva quebras de linha (Shift+Enter) */
+.cc-texto {
+    white-space: pre-wrap;
+}
+
+/* ---------- Rodapé da bolha: hora + status ---------- */
+.message .time {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+}
+
+.message.received .time {
+    justify-content: flex-start;
+}
+
+.cc-status {
+    font-size: 11px;
+    line-height: 1;
+}
+
+.cc-status-lida {
+    color: #a5e4ff;
+    opacity: 1;
+}
+
+.message.sent.cc-falhou {
+    background: #8d3b3b;
+}
+
+.cc-tentar {
+    display: block;
+    margin-top: 6px;
+    padding: 4px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 12px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.cc-tentar:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* ---------- Aviso automático da plataforma ---------- */
+.message.cc-sistema {
+    align-self: center;
+    max-width: 85%;
+    background: #fff8e1;
+    color: #5d4a00;
+    border: 1px solid #ffe08a;
+    border-radius: 12px;
+    font-size: 14px;
+    text-align: center;
+    box-shadow: none;
+}
+
+.message.cc-sistema .time {
+    justify-content: center;
+}
+
+/* ---------- Separador de data ---------- */
+.cc-separador-dia {
+    align-self: center;
+    margin: 8px 0 4px;
+}
+
+.cc-separador-dia span {
+    display: inline-block;
+    padding: 4px 12px;
+    background: #e1e4e8;
+    color: #4b4f56;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ---------- Estados da lista ---------- */
+.cc-carregando-antigas,
+.cc-vazio {
+    align-self: center;
+    color: #65676b;
+    font-size: 13px;
+    padding: 8px;
+}
+
+.cc-vazio {
+    margin: auto 0;
+    font-size: 14px;
+}
+
+.cc-vazio i {
+    margin-right: 6px;
+}
+
+/* ---------- Botão "novas mensagens" ---------- */
+.cc-btn-novas {
+    position: absolute;
+    left: 50%;
+    bottom: 90px;
+    transform: translateX(-50%);
+    z-index: 20;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    background: #2E7D32;
+    color: #fff;
+    font: 600 13px 'Inter', sans-serif;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+.cc-btn-novas i {
+    margin-right: 6px;
+}
+
+/* ---------- Indicador de conexão ---------- */
+.cc-conexao {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.cc-conexao i {
+    margin-right: 6px;
+}
+
+.cc-conexao-offline {
+    background: #fdecea;
+    color: #8a1c1c;
+}
+
+.cc-conexao-online {
+    background: #e8f5e9;
+    color: #1b5e20;
+}
+
+/* ---------- Imagens ---------- */
+.chat-image {
+    cursor: zoom-in;
+}
+
+.cc-progresso {
+    height: 4px;
+    margin-top: 6px;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.cc-progresso span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: #fff;
+    transition: width 0.2s;
+}
+
+.cc-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.88);
+    cursor: zoom-out;
+}
+
+.cc-lightbox.ativo {
+    display: flex;
+}
+
+.cc-lightbox img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 6px;
+    cursor: default;
+}
+
+.cc-lightbox-fechar {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+/* ---------- Avisos (toasts) ---------- */
+.cc-toasts {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100001;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: min(360px, calc(100vw - 32px));
+}
+
+.cc-toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    font-size: 14px;
+    animation: cc-entrar 0.25s ease;
+}
+
+.cc-toast.saindo {
+    opacity: 0;
+    transform: translateX(20px);
+    transition: all 0.3s;
+}
+
+.cc-toast-success { background: #d4edda; color: #155724; border-color: #c3e6cb; }
+.cc-toast-error   { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+.cc-toast-warning { background: #fff3cd; color: #856404; border-color: #ffeeba; }
+.cc-toast-info    { background: #e7f1ff; color: #0c4a8a; border-color: #c6dcff; }
+
+@keyframes cc-entrar {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ---------- Diálogo de confirmação ---------- */
+.cc-dialogo-fundo {
+    position: fixed;
+    inset: 0;
+    z-index: 100002;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.cc-dialogo {
+    width: 100%;
+    max-width: 420px;
+    padding: 24px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    animation: cc-entrar 0.2s ease;
+}
+
+.cc-dialogo h3 {
+    margin-bottom: 8px;
+    font-size: 18px;
+    color: #1c1e21;
+}
+
+.cc-dialogo p {
+    margin-bottom: 20px;
+    color: #4b4f56;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.cc-dialogo-botoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.cc-dialogo-botoes button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    font: 600 14px 'Inter', sans-serif;
+    cursor: pointer;
+}
+
+.cc-btn-secundario { background: #e4e6eb; color: #1c1e21; }
+.cc-btn-primario   { background: #2E7D32; color: #fff; }
+.cc-btn-perigo     { background: #c62828; color: #fff; }
+
+.cc-dialogo-botoes button:focus-visible,
+.cc-btn-novas:focus-visible,
+.cc-lightbox-fechar:focus-visible,
+.chat-image:focus-visible {
+    outline: 3px solid #81c784;
+    outline-offset: 2px;
+}
+
+/* ---------- Botão de notificações ---------- */
+.cc-btn-notificacoes {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: #f0f2f5;
+    color: #65676b;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* No cabeçalho fica colado ao botão Voltar */
+.chat-header .cc-btn-notificacoes {
+    margin-left: auto;
+    margin-right: 8px;
+}
+
+.cc-btn-notificacoes:hover {
+    background: #e4e6eb;
+    color: #2E7D32;
+}
+
+@media (max-width: 768px) {
+    .cc-btn-novas {
+        bottom: 80px;
+    }
+
+    .message.cc-sistema {
+        max-width: 95%;
+    }
+}

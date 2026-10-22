@@ -5,6 +5,7 @@ error_reporting(0);
 ini_set('display_errors', 0);
 
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/chat_config.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -19,6 +20,7 @@ try {
         echo json_encode(['success' => false, 'error' => 'Não autenticado']);
         exit();
     }
+    chatExigirCsrf();
 
     // Ler dados JSON
     $json = file_get_contents('php://input');
@@ -161,9 +163,10 @@ try {
         $mensagem_confirmacao .= "Ambas as partes assinaram o acordo digitalmente.\n";
         $mensagem_confirmacao .= "A proposta foi oficialmente aceita e a compra está confirmada.\n\n";
         
-        // Inserir mensagem no chat (sistema envia como vendedor)
-        $sql_mensagem = "INSERT INTO chat_mensagens (conversa_id, remetente_id, mensagem, tipo) 
-                        VALUES (:conversa_id, :remetente_id, :mensagem, 'texto')";
+        // Inserir mensagem no chat (sistema envia como vendedor; dados_json
+        // marca como aviso da plataforma, exibido centralizado)
+        $sql_mensagem = "INSERT INTO chat_mensagens (conversa_id, remetente_id, mensagem, tipo, dados_json)
+                        VALUES (:conversa_id, :remetente_id, :mensagem, 'texto', '{\"sistema\":true}')";
         
         $stmt_msg = $conn->prepare($sql_mensagem);
         $stmt_msg->bindParam(':conversa_id', $conversa['id'], PDO::PARAM_INT);

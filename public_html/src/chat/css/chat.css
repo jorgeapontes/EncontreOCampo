@@ -324,29 +324,18 @@ html, body {
     text-align: right;
 }
 
-/* Debug de imagens - remover depois */
-.message img {
-    border: 2px solid red;
-}
-
-.message img[src*="data:image"] {
-    border: 2px solid blue;
-}
-
-.message img[data-src] {
-    border: 2px solid green;
-}
-
 .chat-input {
     padding: 16px 20px;
     background: #ffffff;
     border-top: 1px solid #e4e6eb;
     display: flex;
     gap: 10px;
-    align-items: center;
+    /* botões alinhados com a última linha quando o texto cresce */
+    align-items: flex-end;
 }
 
-.chat-input input[type="text"] {
+.chat-input input[type="text"],
+.chat-input textarea {
     flex: 1;
     padding: 12px 16px;
     border: 1px solid #ccd0d5;
@@ -358,12 +347,22 @@ html, body {
     background: #f0f2f5;
 }
 
+.chat-input textarea {
+    resize: none;
+    line-height: 1.4;
+    max-height: 140px;
+    overflow-y: hidden;
+    display: block;
+}
+
 /* Allow input to shrink inside flex without causing overflow */
-.chat-input input[type="text"] {
+.chat-input input[type="text"],
+.chat-input textarea {
     min-width: 0;
 }
 
-.chat-input input[type="text"]:focus {
+.chat-input input[type="text"]:focus,
+.chat-input textarea:focus {
     border-color: #2E7D32;
     background: #ffffff;
 }
@@ -3143,4 +3142,90 @@ button.processando::after {
     color: #1877f2;
     text-decoration: none;
     font-weight: 500;
+}
+/* Botões e card de proposta (antes injetados via JavaScript no chat.php) */
+.btn-accept-proposal, .btn-reject-proposal, .btn-cancel-proposal {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 4px;
+    margin-top: 10px;
+}
+
+.btn-accept-proposal {
+    background-color: #42b72a;
+    color: white;
+}
+
+.btn-accept-proposal:hover {
+    background-color: #36a420;
+    transform: translateY(-1px);
+}
+
+.btn-accept-proposal:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-reject-proposal {
+    background-color: #ff4444;
+    color: white;
+}
+
+.btn-reject-proposal:hover {
+    background-color: #ff2222;
+    transform: translateY(-1px);
+}
+
+.btn-reject-proposal:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-cancel-proposal {
+    background-color: #ff9500;
+    color: white;
+}
+
+.btn-cancel-proposal:hover {
+    background-color: #e68900;
+    transform: translateY(-1px);
+}
+
+.btn-cancel-proposal:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.proposta-acoes {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+/* Animações para o card */
+.proposta-card {
+    transition: all 0.3s ease;
+}
+
+.proposta-card.aceita {
+    border: 2px solid #42b72a;
+    background-color: #f0fff0;
+}
+
+.proposta-card.recusada {
+    border: 2px solid #ff4444;
+    background-color: #fff0f0;
 }

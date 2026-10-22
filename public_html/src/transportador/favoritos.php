@@ -2,6 +2,7 @@
 // src/transportador/favoritos.php
 require_once __DIR__ . '/../permissions.php';
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/../chat/chat_config.php';
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'transportador') {
     header("Location: ../login?erro=" . urlencode("Acesso restrito. Faça login como Transportador."));
@@ -142,6 +143,7 @@ if ($transportador_id) {
             try{
                 const form = new URLSearchParams();
                 form.append('proposta_id', propostaId);
+                form.append('csrf_token', <?php echo json_encode(chatCsrfToken()); ?>);
                 const res = await fetch('../chat/create_conversa_transportador', {
                     method: 'POST',
                     headers: {'Content-Type':'application/x-www-form-urlencoded'},

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/../chat/chat_config.php';
 
 header('Content-Type: application/json');
 
@@ -8,6 +9,7 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'comprador'
     echo json_encode(['success' => false, 'erro' => 'Acesso restrito - Apenas compradores podem responder propostas']);
     exit();
 }
+chatExigirCsrf();
 
 $json = file_get_contents('php://input');
 $dados = json_decode($json, true);
@@ -275,7 +277,8 @@ try {
             $conversa_id = (int)$convRow['id'];
             // MENSAGEM ALTERADA: Agora indica que foi recusada pelo comprador
             $msg = "❌ Proposta recusada pelo comprador.";
-            $sql_msg = "INSERT INTO chat_mensagens (conversa_id, remetente_id, mensagem, tipo) VALUES (:conversa_id, :remetente_id, :mensagem, 'texto')";
+            // dados_json marca como aviso do sistema (exibido centralizado no chat)
+            $sql_msg = "INSERT INTO chat_mensagens (conversa_id, remetente_id, mensagem, tipo, dados_json) VALUES (:conversa_id, :remetente_id, :mensagem, 'texto', '{\"sistema\":true}')";
             $st_msg = $conn->prepare($sql_msg);
             $st_msg->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);
             $st_msg->bindParam(':remetente_id', $usuario_id, PDO::PARAM_INT);

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/chat_config.php';
 
 header('Content-Type: application/json');
 
@@ -8,6 +9,7 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'transporta
     echo json_encode(['success' => false, 'erro' => 'Acesso negado']);
     exit();
 }
+chatExigirCsrf();
 
 $proposta_id = isset($_POST['proposta_id']) ? (int)$_POST['proposta_id'] : 0;
 if ($proposta_id <= 0) {

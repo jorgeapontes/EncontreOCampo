@@ -18,6 +18,7 @@ if ($proposta_id <= 0) {
 }
 
 $usuario_id = $_SESSION['usuario_id'];
+session_write_close(); // libera o lock da sessão para não travar outras requisições do usuário
 $database = new Database();
 $conn = $database->getConnection();
 

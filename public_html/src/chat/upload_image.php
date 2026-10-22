@@ -1,21 +1,24 @@
 <?php
 require_once __DIR__ . '/../conexao.php';
-
-
-$uploadDir = __DIR__ . '/../../uploads/chat/'; 
-$allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-$maxSize = 5 * 1024 * 1024; // 5MB
+require_once __DIR__ . '/chat_config.php';
 
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['usuario_id']) || !isset($_POST['conversa_id']) || !isset($_FILES['imagem'])) {
-    echo json_encode(['success' => false, 'error' => 'Dados incompletos.']);
-    exit;
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    chatErro(405, 'Método inválido');
 }
 
-$usuario_id = $_SESSION['usuario_id'];
+verificarLoginChat();
+chatExigirCsrf();
+
+$usuario_id = (int)$_SESSION['usuario_id'];
+chatLiberarSessao();
+
+if (!isset($_POST['conversa_id']) || !isset($_FILES['imagem'])) {
+    chatErro(400, 'Dados incompletos.');
+}
+
 $conversa_id = (int)$_POST['conversa_id'];
-$file = $_FILES['imagem'];
 
 $database = new Database();
 $conn = $database->getConnection();
@@ -25,69 +28,47 @@ $stmt_check->bindParam(':id', $conversa_id, PDO::PARAM_INT);
 $stmt_check->bindParam(':uid', $usuario_id, PDO::PARAM_INT);
 $stmt_check->execute();
 if (!$stmt_check->fetch()) {
-    echo json_encode(['success' => false, 'error' => 'Conversa inválida.']);
-    exit;
+    chatErro(403, 'Conversa inválida.');
 }
 
-// Validar arquivo
-if ($file['error'] !== UPLOAD_ERR_OK) {
-    echo json_encode(['success' => false, 'error' => 'Erro no upload do arquivo.']);
-    exit;
-}
-if ($file['size'] > $maxSize) {
-    echo json_encode(['success' => false, 'error' => 'Arquivo muito grande (Máx 5MB).']);
-    exit;
-}
-$finfo = new finfo(FILEINFO_MIME_TYPE);
-$mimeType = $finfo->file($file['tmp_name']);
-if (!in_array($mimeType, $allowedTypes)) {
-    echo json_encode(['success' => false, 'error' => 'Tipo de arquivo não permitido.']);
-    exit;
-}
+$newFilename = chatSalvarImagem($_FILES['imagem'], 'img_');
+$destination = __DIR__ . '/../../uploads/chat/' . $newFilename;
 
-if (!is_dir($uploadDir)) {
-    mkdir($uploadDir, 0755, true);
-}
+// Caminho relativo à raiz do site (public_html), sem o prefixo de pasta
+// local de desenvolvimento que não existe em produção.
+$webPath = '/uploads/chat/' . $newFilename;
 
-$extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-$newFilename = uniqid('img_') . '_' . time() . '.' . $extension;
-$destination = $uploadDir . $newFilename;
+try {
+    $sql = "INSERT INTO chat_mensagens (conversa_id, remetente_id, mensagem, tipo)
+            VALUES (:conversa_id, :remetente_id, :caminho_imagem, 'imagem')";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);
+    $stmt->bindParam(':remetente_id', $usuario_id, PDO::PARAM_INT);
+    $stmt->bindParam(':caminho_imagem', $webPath);
+    $stmt->execute();
+    $mensagem_id = (int)$conn->lastInsertId();
 
-if (move_uploaded_file($file['tmp_name'], $destination)) {
-    // Caminho relativo à raiz do site (public_html), sem o prefixo de pasta
-    // local de desenvolvimento que não existe em produção.
-    $webPath = '/uploads/chat/' . $newFilename;
+    $sql_update = "UPDATE chat_conversas
+                  SET ultima_mensagem = '[Imagem]',
+                      ultima_mensagem_data = NOW(),
+                      comprador_lido = IF(comprador_id = :usuario_id, 1, 0),
+                      vendedor_lido = IF(vendedor_id = :usuario_id, 1, 0)
+                  WHERE id = :id";
+    $stmt_update = $conn->prepare($sql_update);
+    $stmt_update->bindParam(':id', $conversa_id, PDO::PARAM_INT);
+    $stmt_update->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+    $stmt_update->execute();
 
-    try {
-
-        $sql = "INSERT INTO chat_mensagens (conversa_id, remetente_id, mensagem, tipo) 
-                VALUES (:conversa_id, :remetente_id, :caminho_imagem, 'imagem')";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);
-        $stmt->bindParam(':remetente_id', $usuario_id, PDO::PARAM_INT);
-        $stmt->bindParam(':caminho_imagem', $webPath);
-        $stmt->execute();
-
-        $sql_update = "UPDATE chat_conversas 
-                      SET ultima_mensagem = '[Imagem]', 
-                          ultima_mensagem_data = NOW(),
-                          comprador_lido = IF(comprador_id = :usuario_id, 1, 0),
-                          vendedor_lido = IF(vendedor_id = :usuario_id, 1, 0)
-                      WHERE id = :id";
-        $stmt_update = $conn->prepare($sql_update);
-        $stmt_update->bindParam(':id', $conversa_id, PDO::PARAM_INT);
-        $stmt_update->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
-        $stmt_update->execute();
-
-        echo json_encode(['success' => true, 'path' => $webPath]);
-    } catch (PDOException $e) {
-        // Se der erro no BD, tenta apagar a imagem enviada
-        @unlink($destination);
-        error_log("Erro ao salvar imagem no banco: " . $e->getMessage());
-        echo json_encode(['success' => false, 'error' => 'Erro ao salvar no banco.']);
-    }
-} else {
-    error_log("Falha ao mover arquivo de upload de chat: tmp_name={$file['tmp_name']} destino={$destination}");
-    echo json_encode(['success' => false, 'error' => 'Falha ao mover arquivo.']);
+    echo json_encode([
+        'success' => true,
+        'path' => $webPath,
+        'mensagem_id' => $mensagem_id,
+        'data_envio' => chatDataEnvio($conn, $mensagem_id)
+    ]);
+} catch (PDOException $e) {
+    // Se der erro no BD, tenta apagar a imagem enviada
+    @unlink($destination);
+    error_log("Erro ao salvar imagem no banco: " . $e->getMessage());
+    chatErro(500, 'Erro ao salvar no banco.');
 }
 ?>

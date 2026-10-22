@@ -12,6 +12,7 @@ if (!isset($_SESSION['usuario_id']) || !isset($_GET['produto_id'])) {
 $usuario_id = $_SESSION['usuario_id'];
 $produto_id = (int)$_GET['produto_id'];
 $usuario_tipo = $_SESSION['usuario_tipo']; // 'comprador' ou 'vendedor'
+session_write_close(); // libera o lock da sessão para não travar outras requisições do usuário
 
 $database = new Database();
 $conn = $database->getConnection();

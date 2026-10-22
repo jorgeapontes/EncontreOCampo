@@ -11,6 +11,7 @@ if (!isset($_SESSION['usuario_id']) || !isset($_GET['id'])) {
 
 $proposta_id = (int)$_GET['id'];
 $usuario_id = $_SESSION['usuario_id'];
+session_write_close(); // libera o lock da sessão para não travar outras requisições do usuário
 
 $database = new Database();
 $conn = $database->getConnection();

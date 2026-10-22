@@ -5,20 +5,24 @@ require_once __DIR__ . '/chat_config.php';
 
 header('Content-Type: application/json');
 
-verificarLoginChat();
-
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'erro' => 'Método inválido']);
-    exit();
+    chatErro(405, 'Método inválido');
 }
+
+verificarLoginChat();
+chatExigirCsrf();
 
 $conversa_id = isset($_POST['conversa_id']) ? (int)$_POST['conversa_id'] : 0;
 $mensagem = isset($_POST['mensagem']) ? trim($_POST['mensagem']) : '';
-$usuario_id = $_SESSION['usuario_id'];
+$usuario_id = (int)$_SESSION['usuario_id'];
 
-if ($conversa_id <= 0 || empty($mensagem)) {
-    echo json_encode(['success' => false, 'erro' => 'Dados inválidos']);
-    exit();
+chatLiberarSessao();
+
+if ($conversa_id <= 0 || $mensagem === '') {
+    chatErro(400, 'Dados inválidos');
+}
+if (mb_strlen($mensagem) > CHAT_TAMANHO_MAX_MENSAGEM) {
+    chatErro(400, 'Mensagem muito longa (máx. ' . CHAT_TAMANHO_MAX_MENSAGEM . ' caracteres).');
 }
 
 $database = new Database();
@@ -31,43 +35,44 @@ try {
     $stmt_verifica->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);
     $stmt_verifica->execute();
     $conversa = $stmt_verifica->fetch(PDO::FETCH_ASSOC);
-    
+
     if (!$conversa || ($conversa['comprador_id'] != $usuario_id && $conversa['vendedor_id'] != $usuario_id)) {
-        echo json_encode(['success' => false, 'erro' => 'Acesso negado']);
-        exit();
+        chatErro(403, 'Acesso negado');
     }
-    
+
     // Inserir mensagem
-    $sql_insert = "INSERT INTO chat_mensagens (conversa_id, remetente_id, mensagem) 
+    $sql_insert = "INSERT INTO chat_mensagens (conversa_id, remetente_id, mensagem)
                    VALUES (:conversa_id, :remetente_id, :mensagem)";
-    
+
     $stmt_insert = $conn->prepare($sql_insert);
     $stmt_insert->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);
     $stmt_insert->bindParam(':remetente_id', $usuario_id, PDO::PARAM_INT);
     $stmt_insert->bindParam(':mensagem', $mensagem);
     $stmt_insert->execute();
-    
+    $mensagem_id = (int)$conn->lastInsertId();
+
     // Atualizar última mensagem na conversa
-    $sql_update = "UPDATE chat_conversas 
+    $sql_update = "UPDATE chat_conversas
                    SET ultima_mensagem = :mensagem,
                        ultima_mensagem_data = NOW(),
                        comprador_lido = IF(comprador_id = :usuario_id, 1, 0),
                        vendedor_lido = IF(vendedor_id = :usuario_id, 1, 0)
                    WHERE id = :conversa_id";
-    
+
     $stmt_update = $conn->prepare($sql_update);
     $stmt_update->bindParam(':mensagem', $mensagem);
     $stmt_update->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
     $stmt_update->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);
     $stmt_update->execute();
-    
+
     echo json_encode([
         'success' => true,
-        'mensagem_id' => $conn->lastInsertId()
+        'mensagem_id' => $mensagem_id,
+        'data_envio' => chatDataEnvio($conn, $mensagem_id)
     ]);
-    
+
 } catch (PDOException $e) {
     error_log("Erro ao enviar mensagem: " . $e->getMessage());
-    echo json_encode(['success' => false, 'erro' => 'Erro ao enviar mensagem']);
+    chatErro(500, 'Erro ao enviar mensagem');
 }
 ?>

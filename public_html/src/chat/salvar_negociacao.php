@@ -4,6 +4,7 @@ error_reporting(0);
 ini_set('display_errors', 0);
 
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/chat_config.php';
 require_once 'enviar_mensagem_automatica.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -19,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'error' => 'Método não permitido']);
     exit();
 }
+chatExigirCsrf();
 
 ob_start();
 

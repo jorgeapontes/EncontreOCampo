@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/../chat/chat_config.php';
 
 header('Content-Type: application/json');
 
@@ -8,6 +9,7 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'transporta
     echo json_encode(['success' => false, 'error' => 'Acesso restrito - Apenas transportadores podem enviar propostas']);
     exit();
 }
+chatExigirCsrf();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'error' => 'Método inválido']);

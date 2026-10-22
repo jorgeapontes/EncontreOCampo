@@ -10,6 +10,7 @@ if (!isset($_SESSION['usuario_id']) || !isset($_SESSION['usuario_tipo'])) {
 
 $usuario_id = $_SESSION['usuario_id'];
 $usuario_tipo = $_SESSION['usuario_tipo'];
+session_write_close(); // libera o lock da sessão para não travar outras requisições do usuário
 $aba = $_GET['aba'] ?? 'ativos';
 $mostrar_arquivados = ($aba === 'arquivados');
 
@@ -37,7 +38,7 @@ try {
                   WHERE (cc.comprador_id = :usuario_id OR cc.vendedor_id = :usuario_id)
                   AND cm.remetente_id != :usuario_id
                   AND cm.lida = 0
-                  AND UNIX_TIMESTAMP(cm.data_envio) > :ultima_verificacao
+                  AND cm.data_envio > FROM_UNIXTIME(:ultima_verificacao)
                   GROUP BY cm.conversa_id";
     
     $stmt_novas = $conn->prepare($sql_novas);
@@ -108,7 +109,7 @@ try {
                             cc.ultima_mensagem_data
                            FROM chat_conversas cc
                            WHERE (cc.comprador_id = :usuario_id OR cc.vendedor_id = :usuario_id)
-                           AND UNIX_TIMESTAMP(cc.ultima_mensagem_data) > :ultima_verificacao";
+                           AND cc.ultima_mensagem_data > FROM_UNIXTIME(:ultima_verificacao)";
         
         $stmt_ultimas = $conn->prepare($sql_ultimas_msg);
         $stmt_ultimas->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);

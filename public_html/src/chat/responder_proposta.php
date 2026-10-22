@@ -4,6 +4,7 @@ error_reporting(0);
 ini_set('display_errors', 0);
 
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/chat_config.php';
 require_once 'enviar_mensagem_automatica.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -18,6 +19,7 @@ if (!isset($_SESSION['usuario_id']) || !isset($_SESSION['usuario_tipo'])) {
     echo json_encode(['success' => false, 'error' => 'Não autenticado']);
     exit();
 }
+chatExigirCsrf();
 
 // Ler dados JSON
 $json = file_get_contents('php://input');

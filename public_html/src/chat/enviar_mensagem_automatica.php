@@ -4,26 +4,31 @@ require_once __DIR__ . '/../conexao.php';
 
 header('Content-Type: application/json');
 
-function enviarMensagemAutomatica($conversa_id, $remetente_id, $mensagem, $tipo = 'texto') {
+// $dados_json com {"sistema": true} faz o chat exibir a mensagem como aviso
+// da plataforma (centralizado), e não como se o remetente tivesse digitado.
+// $resumo é o texto curto mostrado na lista de conversas.
+function enviarMensagemAutomatica($conversa_id, $remetente_id, $mensagem, $tipo = 'texto', $dados_json = null, $resumo = null) {
     $database = new Database();
     $conn = $database->getConnection();
-    
+    $resumo = $resumo ?? $mensagem;
+
     try {
         // Inserir mensagem
-        $sql = "INSERT INTO chat_mensagens (conversa_id, remetente_id, mensagem, tipo) 
-                VALUES (:conversa_id, :remetente_id, :mensagem, :tipo)";
-        
+        $sql = "INSERT INTO chat_mensagens (conversa_id, remetente_id, mensagem, tipo, dados_json)
+                VALUES (:conversa_id, :remetente_id, :mensagem, :tipo, :dados_json)";
+
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);
         $stmt->bindParam(':remetente_id', $remetente_id, PDO::PARAM_INT);
         $stmt->bindParam(':mensagem', $mensagem);
         $stmt->bindParam(':tipo', $tipo);
-        
+        $stmt->bindParam(':dados_json', $dados_json);
+
         if ($stmt->execute()) {
             $mensagem_id = $conn->lastInsertId();
-            
+
             // Atualizar conversa
-            $sql_update = "UPDATE chat_conversas 
+            $sql_update = "UPDATE chat_conversas
                           SET ultima_mensagem = :mensagem,
                               ultima_mensagem_data = NOW(),
                               comprador_lido = CASE WHEN comprador_id = :remetente_id THEN 1 ELSE 0 END,
@@ -31,7 +36,7 @@ function enviarMensagemAutomatica($conversa_id, $remetente_id, $mensagem, $tipo 
                           WHERE id = :conversa_id";
             
             $stmt_update = $conn->prepare($sql_update);
-            $stmt_update->bindParam(':mensagem', $mensagem);
+            $stmt_update->bindParam(':mensagem', $resumo);
             $stmt_update->bindParam(':remetente_id', $remetente_id, PDO::PARAM_INT);
             $stmt_update->bindParam(':conversa_id', $conversa_id, PDO::PARAM_INT);
             $stmt_update->execute();
@@ -140,6 +145,11 @@ function enviarNotificacaoAcao($produto_id, $comprador_id, $vendedor_id, $acao, 
     // Se não especificado remetente, usar vendedor para notificações do sistema
     $remetente_final = $remetente_id ?: $vendedor_id;
     
-    return enviarMensagemAutomatica($conversa_id, $remetente_final, $template);
+    $titulo = $mensagens_acoes[$acao]['titulo'];
+    $dados_json = json_encode(['sistema' => true, 'acao' => $acao, 'titulo' => $titulo], JSON_UNESCAPED_UNICODE);
+    // "NOVA PROPOSTA DE COMPRA" => "Nova proposta de compra" na lista de conversas
+    $resumo = mb_strtoupper(mb_substr($titulo, 0, 1)) . mb_strtolower(mb_substr($titulo, 1));
+
+    return enviarMensagemAutomatica($conversa_id, $remetente_final, $template, 'texto', $dados_json, $resumo);
 }
 ?>

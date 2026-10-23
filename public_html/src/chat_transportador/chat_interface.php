@@ -148,16 +148,12 @@ try {
 <body class="<?php echo $conversa_id ? 'tem-conversa' : ''; ?>">
     <div class="chat-container">
         <div class="chat-sidebar">
-            <div class="sidebar-header">
-                <h2><i class="fas fa-comments"></i> Chat</h2>
-                <small><?php echo htmlspecialchars($conv['produto_nome']); ?></small>
-            </div>
-
+            <!-- Produto no topo, alinhado com o cabeçalho da conversa -->
             <div class="produto-info-sidebar">
                 <img src="<?php echo htmlspecialchars($conv['produto_imagem'] ?: '../../img/placeholder.png'); ?>" alt="Produto">
                 <div class="info">
+                    <small class="produto-contexto"><i class="fas fa-truck" aria-hidden="true"></i> Entrega de</small>
                     <h3><?php echo htmlspecialchars($conv['produto_nome']); ?></h3>
-                    <div class="preco"></div>
                 </div>
             </div>
             <div class="conversas-lista">

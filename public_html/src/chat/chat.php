@@ -240,17 +240,11 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
 <body class="<?php echo $conversa_id ? 'tem-conversa' : ''; ?>">
     <div class="chat-container">
         <div class="chat-sidebar">
-            <div class="sidebar-header">
-                <h2>
-                    <i class="fas fa-comments"></i>
-                    Chat
-                </h2>
-                <small><?php echo htmlspecialchars($produto['nome']); ?></small>
-            </div>
-            
+            <!-- Produto no topo, alinhado com o cabeçalho da conversa -->
             <div class="produto-info-sidebar">
                 <img src="<?php echo htmlspecialchars($produto['imagem_url'] ?: '../../img/placeholder.png'); ?>" alt="Produto">
                 <div class="info">
+                    <small class="produto-contexto"><i class="fas fa-comments" aria-hidden="true"></i> Conversa sobre</small>
                     <h3><?php echo htmlspecialchars($produto['nome']); ?></h3>
                     <div class="preco">R$ <?php echo number_format($produto['preco'], 2, ',', '.'); ?></div>
                 </div>

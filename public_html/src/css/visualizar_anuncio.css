@@ -209,3 +209,11 @@
 .btn-compartilhar-whatsapp i {
     font-size: 1.2em;
 }
+
+/* Deslogado o botão de conversar é um <button> (logado é um <a>): sem isto
+   ele encolhia até o texto e usava a fonte padrão do navegador */
+button.btn-chat {
+    width: 100%;
+    font-family: inherit;
+    line-height: inherit;
+}

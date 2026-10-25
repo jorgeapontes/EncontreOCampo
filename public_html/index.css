@@ -2271,3 +2271,18 @@ input.cep-preenchido {
         display: none;
     }
 }
+/* Aceite dos termos: as regras genéricas .form-group label (display:block) e
+   .form-group input (width:100%) ganhavam das específicas e jogavam o
+   checkbox numa linha só dele, centralizado longe do texto. */
+.form-group .label-aceite-termos {
+    display: flex;
+    margin-bottom: 0;
+}
+
+.form-group input.checkbox-termos {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    margin: 2px 0 0;
+    accent-color: #4CAF50;
+}

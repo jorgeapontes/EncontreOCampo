@@ -85,7 +85,7 @@ function precoBR($valor) {
     <meta property="og:url" content="https://encontreocampo.com.br/">
     <meta property="og:image" content="https://encontreocampo.com.br/img/logo-nova.png">
     <meta name="twitter:card" content="summary">
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="index.css?v=<?php echo filemtime(__DIR__ . '/index.css'); ?>">
     <link rel="shortcut icon" href="img/logo-nova.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">

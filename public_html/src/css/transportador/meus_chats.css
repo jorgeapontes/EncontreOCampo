@@ -176,3 +176,10 @@ body { font-family: 'Montserrat', sans-serif; background: #f5f5f5; min-height: 1
 .conversa-card.nao-lida {
     background-color: #e8f5e9 !important;
 }
+
+/* Celular estreito: título em cima, filtros embaixo dividindo a largura */
+@media (max-width: 480px) {
+    .conversas-header { flex-direction: column; align-items: stretch; gap: 10px; padding: 1rem; }
+    .filter-buttons > * { flex: 1; justify-content: center; }
+    .aba { flex: 1; min-width: 0; padding: 12px 8px; font-size: 14px; }
+}

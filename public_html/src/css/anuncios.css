@@ -1424,3 +1424,15 @@ body {
         max-width: none;
     }
 }
+/* Celular: quem é item do flex é a .dropdown que envolve cada botão; sem
+   isto ela não encolhia e os três filtros passavam da tela em 320px. */
+@media (max-width: 576px) {
+    .filtros-botoes .dropdown {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .filtros-botoes .dropdown .filtro-btn {
+        width: 100%;
+    }
+}

@@ -566,3 +566,7 @@
 .legal-section {
     animation: fadeInUp 0.5s ease;
 }
+/* E-mails e palavras longas ("Compartilhamento") passavam da tela em 320px */
+.legal-content {
+    overflow-wrap: anywhere;
+}

@@ -803,3 +803,13 @@ th:last-child {
     align-items: center;
     gap: 8px;
 }
+/* Título + filtros de status/ordem: quebram linha quando não cabem (em
+   tablet o select "Aguardando vendedor confirmar pagamento" estourava a tela) */
+.status-row,
+.filter-form-inline {
+    flex-wrap: wrap;
+}
+
+.filter-form-inline select {
+    max-width: 100%;
+}

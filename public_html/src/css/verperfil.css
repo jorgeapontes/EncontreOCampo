@@ -75,3 +75,28 @@
 .cards-list {
     margin-top: 12px;
 }
+
+/* Celular: foto, dados e avaliação empilhados; e-mail/endereço longos quebram */
+.perfil-info-flex {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 700px) {
+    .perfil-header-flex {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+    }
+
+    .perfil-info-flex,
+    .perfil-avaliacao-col {
+        width: 100%;
+    }
+
+    .sem-avaliacoes-box {
+        margin-left: auto;
+        margin-right: auto;
+    }
+}

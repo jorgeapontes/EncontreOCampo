@@ -252,3 +252,27 @@
         margin-left: 10px;
     }
 }
+
+/* Menu lateral (mobile): os links ocupam a largura toda, então a margem
+   à esquerda dos botões empurrava o "Sair" 10px para dentro da tela com o
+   menu fechado. Fica no fim para valer também sobre a regra de 480px. */
+@media (max-width: 768px) {
+    .navbar .nav-link.exit-button,
+    .navbar .nav-link.login-button {
+        margin-left: 0;
+    }
+}
+
+/* Menu lateral fechado fica invisível: nada dele (botão Sair, contador do
+   sino) aparece na borda da tela, e os links escondidos não recebem foco.
+   O visibility acompanha a animação de abrir/fechar. */
+@media (max-width: 768px) {
+    .navbar .nav-menu {
+        visibility: hidden;
+        transition: left 0.3s, visibility 0.3s;
+    }
+
+    .navbar .nav-menu.active {
+        visibility: visible;
+    }
+}

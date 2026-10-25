@@ -533,7 +533,7 @@ th:last-child {
         float: none;
         width: 100%;
         justify-content: center;
-        margin-bottom: 20px;
+        margin: 0 0 20px; /* o margin: 20px da regra base somava aos 100% e estourava a tela */
     }
 
     .section-anuncios h2 {

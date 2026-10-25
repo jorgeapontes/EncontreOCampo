@@ -214,7 +214,7 @@ try {
                             
                             <div class="card-actions">
                                 <div class="card-actions-row">
-                                    <a href="view_ad?anuncio_id=<?php echo $produto['id']; ?>" class="btn btn-primary">
+                                    <a href="../visualizar_anuncio?anuncio_id=<?php echo $produto['id']; ?>" class="btn btn-primary">
                                         <i class="fas fa-eye"></i> Ver Detalhes
                                     </a>
                                     <a href="remover_favorito?favorito_id=<?php echo $produto['favorito_id']; ?>"

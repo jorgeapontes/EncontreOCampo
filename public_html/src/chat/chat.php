@@ -113,7 +113,7 @@ if ($eh_vendedor_produto) {
     if ($referrer === 'meus_chats') {
         $url_voltar = "../comprador/meus_chats.php";
     } else {
-        $url_voltar = "../comprador/view_ad.php?anuncio_id=" . $produto_id;
+        $url_voltar = "../visualizar_anuncio?anuncio_id=" . $produto_id;
     }
 }
 
@@ -568,7 +568,7 @@ if (isset($ultima_proposta) && $ultima_proposta['status'] === 'assinando') {
                         </div>
                     </div>
                     </div>
-                    <a href="<?php echo $url_voltar; ?>" class="btn-voltar">
+                    <a href="<?php echo $url_voltar; ?>" class="btn-voltar" aria-label="Voltar">
                         <i class="fas fa-arrow-left"></i>
                         Voltar
                     </a>

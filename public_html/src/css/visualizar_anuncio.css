@@ -103,12 +103,6 @@
     opacity: 1;
 }
 
-/* Estilos específicos para visualização pública */
-.visao-publica .produto-actions,
-.visao-publica .proposta-section {
-    display: none;
-}
-
 .status-info i, .status-alert i {
     margin-right: 5px;
 }

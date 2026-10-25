@@ -350,3 +350,55 @@ body {
         max-width: 100%;
     }
 }
+/* ===== Celular (a página não tinha nenhuma regra responsiva) ===== */
+@media (max-width: 768px) {
+    /* busca, ordenação e botão um embaixo do outro */
+    .filters {
+        grid-template-columns: 1fr;
+        padding: 15px;
+    }
+
+    .filters select,
+    .filters button {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .conversa-item {
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 15px;
+    }
+
+    .conversa-info {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .conversa-header {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    /* comprador e vendedor/transportador empilhados */
+    .usuarios-info {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .actions {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .actions .btn,
+    .actions .delete-form {
+        flex: 1;
+    }
+
+    .actions .delete-form .btn {
+        width: 100%;
+    }
+}

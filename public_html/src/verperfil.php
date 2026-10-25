@@ -531,7 +531,7 @@ if ($viewer_id) {
                                 <div class="card-image">
                                 <?php $raw_img = !empty($n['produto_imagem']) ? $n['produto_imagem'] : '';
                                     $img = getNormalizedImage($raw_img, '../img/placeholder.png');
-                                    $link = './comprador/view_ad.php?anuncio_id=' . intval($n['produto_id']); ?>
+                                    $link = 'visualizar_anuncio?anuncio_id=' . intval($n['produto_id']); ?>
                                 <a href="<?php echo $link; ?>"><img src="<?php echo htmlspecialchars($img); ?>" alt="<?php echo htmlspecialchars($n['produto_nome'] ?? 'Produto'); ?>" loading="lazy" decoding="async"></a>
                               </div>
                                 <div class="card-content">

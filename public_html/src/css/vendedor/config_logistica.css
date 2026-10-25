@@ -128,7 +128,7 @@ body {
 
 .estados-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* quantas colunas couberem */
     gap: 8px;
     margin-bottom: 30px;
 }
@@ -582,7 +582,7 @@ body {
 
 .cidades-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* quantas colunas couberem */
     gap: 8px;
     margin-top: 8px;
 }

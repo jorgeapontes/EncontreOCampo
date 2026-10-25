@@ -601,3 +601,19 @@ body {
     font-size: 0.9rem;
     color: #7f8c8d;
 }
+/* Celular: no grupo do CEP a coluna herdava align-items:flex-end, então cada
+   campo encolhia e encostava à direita. Ocupa a largura toda. */
+@media (max-width: 768px) {
+    .form-group-row.input-group-cep {
+        align-items: stretch;
+    }
+
+    .form-group-row.input-group-cep .form-group-cep {
+        min-width: 0;
+    }
+
+    .input-group-cep .btn-buscar-cep {
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+}

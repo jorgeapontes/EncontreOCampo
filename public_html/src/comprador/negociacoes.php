@@ -170,7 +170,7 @@ try {
                 <?php if (count($propostas) > 0): ?>
                     <div class="cards-list">
                         <?php foreach ($propostas as $p): 
-                            // Verificar se o usuário é elegível para avaliar este produto (mesma lógica do view_ad.php)
+                            // Verificar se o usuário é elegível para avaliar este produto (mesma lógica do visualizar_anuncio.php)
                             $mostrar_avaliar = false;
                             if (isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo') {
                                 try {
@@ -219,7 +219,7 @@ try {
                             <div class="proposal-card" id="proposal-<?php echo $p['ID']; ?>">
                                 <div class="card-image">
                                     <?php $img = !empty($p['produto_imagem']) ? $p['produto_imagem'] : '../../img/placeholder.png';
-                                          $link = './view_ad.php?anuncio_id=' . intval($p['produto_id']); ?>
+                                          $link = '../visualizar_anuncio?anuncio_id=' . intval($p['produto_id']); ?>
                                     <a href="<?php echo $link; ?>"><img src="<?php echo $img; ?>" alt="<?php echo htmlspecialchars($p['produto_nome'] ?? 'Produto'); ?>"></a>
                                 </div>
                                 <div class="card-content">

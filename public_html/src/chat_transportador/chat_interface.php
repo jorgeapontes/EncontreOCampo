@@ -272,7 +272,7 @@ try {
                         </div>
                     </div>
                 </div>
-                <a href="#" class="btn-voltar" onclick="goBack(event)"> <i class="fas fa-arrow-left"></i>Voltar</a>
+                <a href="#" class="btn-voltar" onclick="goBack(event)" aria-label="Voltar"> <i class="fas fa-arrow-left"></i>Voltar</a>
             </div>
 
             <div class="chat-messages" id="chat-messages"></div>

@@ -3245,3 +3245,56 @@ button.processando::after {
     border: 2px solid #ff4444;
     background-color: #fff0f0;
 }
+
+/* Cabeçalho do chat em telas estreitas: nome, nota, sino e Voltar precisam
+   caber numa linha. O Voltar vira só o ícone e o nome ganha reticências. */
+@media (max-width: 600px) {
+    .chat-header {
+        gap: 8px;
+    }
+
+    .chat-header-top-row,
+    .chat-header .usuario-info,
+    .chat-header .perfil-link-reset,
+    .chat-header .name-and-type {
+        min-width: 0;
+    }
+
+    .chat-header-top-row {
+        flex: 1;
+        align-items: center;
+    }
+
+    .chat-header .name-and-type h3 {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .chat-header .btn-voltar {
+        font-size: 0; /* esconde o texto, mantém o ícone */
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .chat-header .btn-voltar i {
+        font-size: 16px;
+    }
+
+    .chat-header .cc-btn-notificacoes {
+        margin-right: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .total-avaliacoes-chat {
+        display: none;
+    }
+
+    .avaliacao-usuario-chat {
+        min-width: 0;
+    }
+}

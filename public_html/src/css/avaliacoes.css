@@ -351,3 +351,31 @@ body {
         padding: 20px;
     }
 }
+
+/* Celular: título/voltar em cima, resumo da nota embaixo, ocupando a largura */
+@media (max-width: 600px) {
+    .container {
+        margin-top: 80px;
+        padding: 12px;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px;
+    }
+
+    .header h1 {
+        font-size: 1.5em;
+        line-height: 1.25;
+    }
+
+    .resumo-avaliacoes {
+        width: 100%;
+        padding: 16px;
+    }
+
+    .estrelas-media {
+        justify-content: center;
+    }
+}

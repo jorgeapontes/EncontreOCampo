@@ -2,6 +2,7 @@
 // src/vendedor/anuncio_excluir.php
 
 require_once '../conexao.php';
+require_once __DIR__ . '/../functions/notificacao_functions.php';
 
 // Configurar cabeçalhos para JSON
 header('Content-Type: application/json; charset=utf-8');
@@ -55,6 +56,14 @@ try {
         }
     }
     
+    // Notificações de outros usuários que levariam a este anúncio (antes das
+    // propostas, que a função usa para achar os links de proposta)
+    try {
+        excluirNotificacoesDoProduto($conn, $anuncio_id);
+    } catch (Exception $e) {
+        error_log("Aviso: Não foi possível excluir notificações do anúncio " . $anuncio_id . ": " . $e->getMessage());
+    }
+
     // Excluir propostas relacionadas (se existirem)
     try {
         $sql_excluir_propostas = "DELETE FROM propostas WHERE produto_id = :anuncio_id";

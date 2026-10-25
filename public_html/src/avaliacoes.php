@@ -49,7 +49,7 @@ switch ($tipo_avaliacao) {
                 if (isset($_SESSION['usuario_status']) && $_SESSION['usuario_status'] === 'ativo' && $_SESSION['usuario_tipo'] === 'comprador') {
                     $usuario_logado = $_SESSION['usuario_id'];
                     
-                    // Verificar se o usuário já comprou este produto (mesma lógica do view_ad.php)
+                    // Verificar se o usuário já comprou este produto (mesma lógica do visualizar_anuncio.php)
                     $sql_check = "SELECT p.opcao_frete, p.comprador_id FROM propostas p 
                                  LEFT JOIN compradores c ON p.comprador_id = c.id 
                                  WHERE p.produto_id = :produto_id 

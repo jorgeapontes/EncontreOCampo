@@ -1,6 +1,6 @@
 /* src/css/footer.css
    Rodapé compartilhado (site-footer). Marcação em src/includes/footer.php.
-   Usado por anuncios, visualizar_anuncio, comprador/view_ad, vendedor/escolher_plano. */
+   Usado por anuncios, visualizar_anuncio e vendedor/escolher_plano. */
 
 .site-footer {
     background: #2E7D32;
@@ -97,4 +97,10 @@
         gap: 30px;
         padding: 35px 0 20px;
     }
+}
+
+/* A coluna da grade não encolhia por causa do e-mail longo (min-width auto) */
+.site-footer .footer-section {
+    min-width: 0;
+    overflow-wrap: anywhere;
 }

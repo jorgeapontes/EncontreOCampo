@@ -149,6 +149,41 @@ foreach ($TABELAS as $tabela => $cfg) {
     }
 }
 
+// =============================================
+// NOTIFICAÇÕES ÓRFÃS (lidas ou não)
+// Links para anúncio ou proposta que não existe mais. A exclusão de anúncio já
+// apaga essas notificações (functions/notificacao_functions.php); isto pega as
+// que ficaram de antes disso e qualquer caminho de exclusão que não passe por lá.
+// O id vem da própria URL (REGEXP_SUBSTR existe no MySQL 8 e no MariaDB).
+// =============================================
+$ORFAS = [
+    'anúncio inexistente' => "url REGEXP '[?&](produto_id|anuncio_id)=[0-9]+'
+        AND NOT EXISTS (SELECT 1 FROM produtos p WHERE p.id =
+            CAST(REGEXP_SUBSTR(REGEXP_SUBSTR(url, '(produto_id|anuncio_id)=[0-9]+'), '[0-9]+') AS UNSIGNED))",
+    'proposta inexistente' => "url REGEXP 'detalhes_proposta(\\\\.php)?\\\\?id=[0-9]+'
+        AND NOT EXISTS (SELECT 1 FROM propostas pr WHERE pr.ID =
+            CAST(REGEXP_SUBSTR(REGEXP_SUBSTR(url, 'detalhes_proposta(\\\\.php)?\\\\?id=[0-9]+'), '[0-9]+$') AS UNSIGNED))",
+];
+
+cronLog('----------------------------------------');
+cronLog('Notificações órfãs (link para anúncio/proposta apagado)');
+foreach ($ORFAS as $motivo => $whereOrfa) {
+    try {
+        $qtd = (int)$db->query("SELECT COUNT(*) FROM notificacoes WHERE $whereOrfa")->fetchColumn();
+        if ($qtd === 0) {
+            cronLog("   ✅ Nada a apagar ($motivo).");
+            continue;
+        }
+        $apagadas = (int)$db->exec("DELETE FROM notificacoes WHERE $whereOrfa");
+        cronLog("   ✅ $apagadas notificação(ões) removida(s) ($motivo).");
+        $totalGeral += $apagadas;
+    } catch (Throwable $e) {
+        cronLog("   ❌ ERRO ($motivo): " . $e->getMessage());
+        error_log("CRON LIMPAR BANCO - erro nas notificações órfãs ($motivo): " . $e->getMessage());
+        $tabelasComErro[] = 'notificacoes (órfãs)';
+    }
+}
+
 cronLog('========================================');
 cronLog("RESUMO: $totalGeral registro(s) removido(s) no total.");
 if ($tabelasComErro) {

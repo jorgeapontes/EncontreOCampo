@@ -391,15 +391,7 @@ foreach ($anuncios as &$a) {
                         }
                     }
                 ?>
-                <div class="anuncio-card <?= $tem_desconto ? 'card-desconto' : '' ?>" data-url="<?php 
-                    if ($is_logged_in) {
-                        if ($usuario_tipo === 'comprador' || $usuario_tipo === 'vendedor') {
-                            echo 'comprador/view_ad.php?anuncio_id=' . $anuncio['id'];
-                        }
-                    } else {
-                        echo 'visualizar_anuncio.php?anuncio_id=' . $anuncio['id'];
-                    }
-                ?>">
+                <div class="anuncio-card <?= $tem_desconto ? 'card-desconto' : '' ?>" data-url="visualizar_anuncio?anuncio_id=<?= (int)$anuncio['id'] ?>">
                     <div class="card-image">
                         <span class="categoria-badge"><?= htmlspecialchars($anuncio['categoria']) ?></span>
                         <?php if ($tem_desconto): ?><div class="badge-desconto">-<?= $percentual_off ?>%</div><?php endif; ?>
@@ -435,7 +427,7 @@ foreach ($anuncios as &$a) {
                         <div class="card-actions">
                             <?php if ($is_logged_in): ?>
                                 <?php if ($usuario_tipo === 'comprador' || $usuario_tipo === 'vendedor'): ?>
-                                    <a href="comprador/view_ad?anuncio_id=<?= $anuncio['id'] ?>" class="btn btn-primary">
+                                    <a href="visualizar_anuncio?anuncio_id=<?= $anuncio['id'] ?>" class="btn btn-primary">
                                         <i class="fas fa-handshake"></i> Comprar
                                     </a>
                                 <?php else: ?>

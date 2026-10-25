@@ -1,6 +1,7 @@
 <?php
 // src/vendedor/processar_anuncio.php
-require_once 'auth.php'; 
+require_once 'auth.php';
+require_once __DIR__ . '/../functions/notificacao_functions.php';
 
 // Somente processa requisições POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -63,8 +64,11 @@ try {
             break;
 
         case 'deletar':
+            // Notificações de outros usuários que levariam a este anúncio
+            // (na mesma transação: se o DELETE falhar, elas voltam)
+            excluirNotificacoesDoProduto($db, (int)$anuncio_id);
             // Excluir o registro permanentemente
-            $query = "DELETE FROM produtos WHERE id = :anuncio_id AND vendedor_id = :vendedor_id";
+            $query ="DELETE FROM produtos WHERE id = :anuncio_id AND vendedor_id = :vendedor_id";
             $mensagem_sucesso = "O anúncio '{$nome_anuncio}' foi DELETADO permanentemente.";
             break;
 

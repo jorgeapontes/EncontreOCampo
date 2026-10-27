@@ -71,6 +71,12 @@ $TABELAS = [
         'dias'         => 365,
         'colunas_data' => ['data_hora'],
     ],
+    // Eventos do Stripe: registro financeiro, 5 anos. As chamadas recusadas
+    // (não vieram do Stripe) saem antes, no bloco "Chamadas recusadas" abaixo.
+    'pagamentos_stripe' => [
+        'dias'         => 1825,
+        'colunas_data' => ['data_hora'],
+    ],
 ];
 
 $LOTE     = 2000;   // linhas por DELETE (evita lock longo)
@@ -367,6 +373,20 @@ try {
     $tabelasComErro[] = 'usuarios (tokens)';
 }
 
+// =============================================
+// CHAMADAS RECUSADAS NO WEBHOOK DO STRIPE (robôs/testes): 90 dias
+// =============================================
+cronLog('----------------------------------------');
+cronLog('Chamadas recusadas no webhook do Stripe (retenção: 90 dias)');
+try {
+    $stmt = $db->prepare("DELETE FROM pagamentos_stripe WHERE status = 'recusado' AND data_hora < ?");
+    $stmt->execute([date('Y-m-d H:i:s', strtotime('-90 days'))]);
+    cronLog('   ✅ ' . $stmt->rowCount() . ' registro(s) removido(s).');
+} catch (Throwable $e) {
+    cronLog('   ❌ ERRO (pagamentos_stripe): ' . $e->getMessage());
+    $tabelasComErro[] = 'pagamentos_stripe';
+}
+
 require_once __DIR__ . '/../functions/config_functions.php';
 
 // O endereço dos alertas fica no banco e é copiado para a pasta privada, para
@@ -417,7 +437,7 @@ cronLog('Log de erros do site');
 $arquivoErros = PASTA_PRIVADA . '/logs/erros_site.log';
 try {
     $posicao = (int) obterConfig('cron_erros_posicao', '0');
-    $errosGraves = 0;
+    $errosGraves = $errosJs = 0;
     if (is_file($arquivoErros)) {
         $tamanho = filesize($arquivoErros);
         if ($tamanho < $posicao) {
@@ -425,6 +445,7 @@ try {
         }
         $novos = (string) file_get_contents($arquivoErros, false, null, $posicao, 5 * 1024 * 1024);
         $errosGraves = preg_match_all('/PHP Fatal error|Uncaught|SQLSTATE/', $novos);
+        $errosJs = preg_match_all('/^\[[^\]]+\] JS: /m', $novos);
         $posicao = $tamanho;
         if ($tamanho > ERROS_LOG_MAX_BYTES) {
             rename($arquivoErros, PASTA_PRIVADA . '/logs/erros_site.anterior.log'); // guarda só a versão anterior
@@ -437,6 +458,10 @@ try {
         cronLog("   ❌ {$errosGraves} erro(s) grave(s) no site desde a última manutenção (veja a aba Erros do monitoramento).");
     } else {
         cronLog('   ✅ Nenhum erro grave desde a última manutenção.');
+    }
+    if (!empty($errosJs)) {
+        // Informativo: erros no navegador dos usuários (aba Erros), sem disparar alerta
+        cronLog("   ℹ️ {$errosJs} erro(s) de JavaScript registrado(s) desde a última manutenção.");
     }
 } catch (Throwable $e) {
     cronLog('   ❌ ERRO (log de erros): ' . $e->getMessage());
@@ -494,6 +519,20 @@ try {
     }
 } catch (Throwable $e) {
     $alertasEmail[] = 'Não foi possível ler o histórico das tarefas agendadas: ' . $e->getMessage();
+}
+// Pagamentos recusados e erros do site ao processar eventos do Stripe
+try {
+    $stmt = $db->prepare("SELECT status, COUNT(*) FROM pagamentos_stripe WHERE status IN ('falha', 'erro') AND data_hora >= ? GROUP BY status");
+    $stmt->execute([date('Y-m-d H:i:s', strtotime('-24 hours'))]);
+    $pagamentos = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    if (!empty($pagamentos['falha'])) {
+        $alertasEmail[] = "[Stripe] {$pagamentos['falha']} cobrança(s) recusada(s) nas últimas 24 h (veja a seção Pagamentos).";
+    }
+    if (!empty($pagamentos['erro'])) {
+        $alertasEmail[] = "[Stripe] {$pagamentos['erro']} evento(s) que o site não conseguiu processar nas últimas 24 h: confira se o plano do vendedor ficou certo (seção Pagamentos).";
+    }
+} catch (Throwable $e) {
+    $alertasEmail[] = 'Não foi possível ler os eventos do Stripe (a migration 010 foi rodada?): ' . $e->getMessage();
 }
 if ($alertasEmail) {
     $CRON_EXTRA['email_enviado'] = enviarAlertaManutencao($alertasEmail, $emailAlerta);

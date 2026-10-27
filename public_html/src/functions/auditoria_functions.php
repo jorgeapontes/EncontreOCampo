@@ -25,11 +25,6 @@ const AUDITORIA_ACOES = [
         'conta_excluida'       => 'Conta excluída pelo usuário',
         'email_alterado'       => 'E-mail da conta alterado',
     ],
-    'Pagamentos (Stripe)' => [
-        'stripe_evento'        => 'Evento do Stripe processado',
-        'stripe_erro'          => 'Falha ao processar evento do Stripe',
-        'stripe_assinatura_invalida' => 'Webhook com assinatura inválida',
-    ],
     'Chats' => [
         'chat_visualizado'     => 'Conversa aberta pelo admin',
         'chat_exportado'       => 'Conversa exportada em PDF',

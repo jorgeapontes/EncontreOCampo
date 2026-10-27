@@ -152,6 +152,39 @@ foreach ($arquivosLegados as $arquivo) {
 }
 
 // ------------------------------------------------------------
+// 2b. ARQUIVOS "error_log" ESPALHADOS PELAS PASTAS
+// Antes o PHP criava um error_log em cada pasta que dava erro. Desde
+// 2026-10-27 tudo vai para o log único da pasta privada (src/functions/privado.php,
+// rotacionado pelo cron_limpar_banco), então estes são sobras: apaga os parados
+// há mais de 30 dias e os que passaram de 5 MB.
+// ------------------------------------------------------------
+$iterador = new RecursiveIteratorIterator(
+    new RecursiveCallbackFilterIterator(
+        new RecursiveDirectoryIterator(__DIR__, FilesystemIterator::SKIP_DOTS),
+        fn ($item) => !($item->isDir() && in_array($item->getFilename(), ['vendor', 'uploads', 'node_modules', '.git'], true))
+    )
+);
+foreach ($iterador as $item) {
+    if (!$item->isFile() || $item->getFilename() !== 'error_log') {
+        continue;
+    }
+    $tamanho  = $item->getSize();
+    $idadeDias = ($agora - $item->getMTime()) / 86400;
+    if ($idadeDias <= 30 && $tamanho <= 5 * 1024 * 1024) {
+        continue;
+    }
+    $relativo = substr($item->getPathname(), strlen(__DIR__) + 1);
+    if (@unlink($item->getPathname())) {
+        $totalDeletados++;
+        $espacoLiberado += $tamanho;
+        cronLog("🗑️  Apagado error_log antigo: $relativo (" . formatarMB($tamanho) . ', ' . round($idadeDias) . ' dias)');
+    } else {
+        $totalFalhas++;
+        cronLog("❌ Falha ao apagar: $relativo (verifique permissões)");
+    }
+}
+
+// ------------------------------------------------------------
 // 3. TEMPORÁRIOS DE RATE LIMIT
 // ------------------------------------------------------------
 $totalTmpDeletados = 0;

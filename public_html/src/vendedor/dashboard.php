@@ -65,7 +65,6 @@ try {
 // Inicializar variáveis
 $total_anuncios = 0;
 $anuncios = [];
-$total_propostas_pendentes = 0;
 $total_mensagens_nao_lidas = 0;
 $total_procurando_transportador_nao_lidas = 0;
 $total_favoritos = 0;
@@ -85,27 +84,6 @@ if (!$is_pendente && $vendedor_id) {
     $anuncios = $stmt_anuncios->fetchAll(PDO::FETCH_ASSOC);
 
     $total_anuncios = count($anuncios);
-
-    // CONTADOR DE PROPOSTAS PENDENTES
-    try {
-        $query_propostas = "SELECT COUNT(pc.id) as total_pendentes
-                            FROM propostas_comprador pc
-                            INNER JOIN propostas_negociacao pn ON pc.id = pn.proposta_comprador_id
-                            INNER JOIN produtos p ON pn.produto_id = p.id
-                            WHERE p.vendedor_id = :vendedor_id 
-                            AND pc.status = 'enviada'
-                            AND pn.status = 'negociacao'";
-                            
-        $stmt_propostas = $db->prepare($query_propostas);
-        $stmt_propostas->bindParam(':vendedor_id', $vendedor_id);
-        $stmt_propostas->execute();
-        $resultado = $stmt_propostas->fetch(PDO::FETCH_ASSOC);
-        
-        $total_propostas_pendentes = $resultado['total_pendentes'] ?? 0;
-        
-    } catch (PDOException $e) {
-        error_log("Erro ao contar propostas pendentes: " . $e->getMessage());
-    }
 
     // CONTADOR DE MENSAGENS NÃO LIDAS
     try {

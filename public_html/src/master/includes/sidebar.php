@@ -14,6 +14,7 @@ $itensMenu = [
     'saude'         => ['href' => 'monitoramento?aba=saude',         'icon' => 'fa-heartbeat',      'label' => 'Saúde'],
     'auditoria'     => ['href' => 'monitoramento?aba=auditoria',     'icon' => 'fa-clipboard-list', 'label' => 'Auditoria'],
     'seguranca'     => ['href' => 'monitoramento?aba=seguranca',     'icon' => 'fa-shield-alt',     'label' => 'Segurança'],
+    'pagamentos'    => ['href' => 'monitoramento?aba=pagamentos',    'icon' => 'fa-credit-card',    'label' => 'Pagamentos'],
     'erros'         => ['href' => 'monitoramento?aba=erros',         'icon' => 'fa-bug',            'label' => 'Erros'],
     'backups'       => ['href' => 'monitoramento?aba=backups',       'icon' => 'fa-database',       'label' => 'Backups'],
     'configuracoes' => ['href' => 'monitoramento?aba=configuracoes', 'icon' => 'fa-cog',            'label' => 'Configurações'],

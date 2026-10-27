@@ -24,14 +24,10 @@ $dotenv->load();
 // Carregar configurações do Stripe e conexão com banco
 require_once __DIR__ . '/../../config/StripeConfig.php';
 require_once __DIR__ . '/../conexao.php';
-require_once __DIR__ . '/../functions/auditoria_functions.php';
-
-/** Registra o evento na auditoria do master (sem dados de cartão: só tipo, id e cliente). */
-function auditarStripe(string $acao, string $descricao, $event = null): void {
-    $cliente = $event->data->object->customer ?? null;
-    $texto = $event ? "{$event->type} ({$event->id})" . ($cliente ? " · cliente {$cliente}" : '') . ($descricao !== '' ? " · {$descricao}" : '') : $descricao;
-    registrarAuditoria($acao, $texto, 'stripe', null, null, 'Stripe (webhook)', 'sistema');
-}
+// Histórico dos eventos para a seção Pagamentos do master
+require_once __DIR__ . '/../functions/pagamentos_functions.php';
+// Quando o processamento falha sem derrubar o webhook, o motivo fica aqui (vira status "erro")
+$problemaStripe = null;
 
 // Inicializar Stripe
 \Config\StripeConfig::init();
@@ -223,7 +219,7 @@ try {
             
             if (!$subscription_id) {
                 writeLog("❌ Não foi possível encontrar subscription_id no payload", 'ERRO');
-                auditarStripe('stripe_erro', 'subscription_id não encontrado no payload', $event);
+                registrarEventoStripe($event, 'erro', 'Assinatura (subscription_id) não encontrada no evento');
                 http_response_code(200); // Stripe espera 200 mesmo se não processarmos
                 exit();
             }
@@ -270,6 +266,7 @@ try {
                 $stmt = $db->prepare("UPDATE vendedores SET status_assinatura = 'ativo' WHERE stripe_customer_id = ?");
                 $stmt->execute([$cus_id]);
                 writeLog("⚠️ Fallback executado - apenas status atualizado para ativo", 'AVISO');
+                $problemaStripe = 'Pagamento aplicado, mas sem a data de vencimento: ' . $e->getMessage();
             }
             break;
             
@@ -286,7 +283,7 @@ try {
             // Validar dados obrigatórios
             if (!$v_id || !$p_id || !$sub_id || !$cus_id) {
                 writeLog("❌ Dados incompletos no checkout.session.completed", 'ERRO');
-                auditarStripe('stripe_erro', 'metadados incompletos (vendedor, plano, assinatura ou cliente)', $event);
+                registrarEventoStripe($event, 'erro', 'Checkout sem vendedor, plano, assinatura ou cliente: plano NÃO foi ativado');
                 http_response_code(200);
                 exit();
             }
@@ -319,6 +316,7 @@ try {
                 $stmt->execute([$p_id, $cus_id, $sub_id, $v_id]);
                 
                 writeLog("⚠️ Checkout com fallback | Vendedor=$v_id | Erro: " . $e->getMessage(), 'AVISO');
+                $problemaStripe = 'Plano ativado, mas sem a data de vencimento: ' . $e->getMessage();
             }
             break;
             
@@ -435,9 +433,11 @@ try {
                     writeLog("✅ Plano atualizado: Cliente=$cus_id | Novo Plano=" . $novo_plano['nome'] . " | Próximo vencimento=$next_billing_date", 'SUCESSO');
                 } else {
                     writeLog("❌ ERRO: Plano não encontrado para price_id: $novo_price_id", 'ERRO');
+                    $problemaStripe = "Nenhum plano do site usa o preço $novo_price_id do Stripe: plano do vendedor não foi alterado";
                 }
             } catch (\Exception $e) {
                 writeLog("❌ Erro ao processar subscription.updated: " . $e->getMessage(), 'ERRO');
+                $problemaStripe = 'Erro ao processar a atualização da assinatura: ' . $e->getMessage();
             }
             break;
             
@@ -461,21 +461,21 @@ try {
     http_response_code(200);
     writeLog("✅ Webhook processado com sucesso", 'FIM');
     if (empty($eventoIgnorado)) {
-        auditarStripe('stripe_evento', '', $event);
+        if ($problemaStripe) {
+            registrarEventoStripe($event, 'erro', $problemaStripe);
+        } elseif ($event->type === 'invoice.payment_failed') {
+            registrarEventoStripe($event, 'falha', 'Cobrança recusada; vendedor marcado como atrasado');
+        } else {
+            registrarEventoStripe($event, 'ok');
+        }
     }
 
 } catch (\Stripe\Exception\SignatureVerificationException $e) {
     // Erro de assinatura - requisição não é realmente da Stripe
     writeLog("🔒 ERRO DE ASSINATURA: " . $e->getMessage(), 'ERRO');
-    // Qualquer um pode chamar esta URL: no máximo 20 registros por hora, para ninguém lotar a auditoria
-    try {
-        $recentes = (int) auditoriaConexao()->query("SELECT COUNT(*) FROM logs_auditoria WHERE acao = 'stripe_assinatura_invalida'
-                                                     AND data_hora >= '" . date('Y-m-d H:i:s', strtotime('-1 hour')) . "'")->fetchColumn();
-    } catch (\Throwable $t) {
-        $recentes = 0;
-    }
-    if ($recentes < 20) {
-        auditarStripe('stripe_assinatura_invalida', 'Requisição recusada: assinatura do webhook inválida (não veio do Stripe)');
+    // Qualquer um pode chamar esta URL: no máximo 20 registros por hora, para ninguém lotar o histórico
+    if (stripeRecusadosUltimaHora() < 20) {
+        registrarEventoStripe(null, 'recusado', 'Chamada sem a assinatura do Stripe (robô ou teste): ignorada, nada foi alterado');
     }
     http_response_code(400);
     exit();
@@ -483,7 +483,9 @@ try {
 } catch (\Exception $e) {
     // Outros erros
     writeLog("❌ ERRO NO WEBHOOK: " . $e->getMessage() . " em " . $e->getFile() . ":" . $e->getLine(), 'ERRO');
-    auditarStripe('stripe_erro', 'Stripe vai tentar de novo (respondido 500): ' . $e->getMessage(), $event);
+    if ($event) {
+        registrarEventoStripe($event, 'erro', 'Stripe vai tentar de novo (respondido 500): ' . $e->getMessage());
+    }
     // Também vai para o log de erros, para o cron contar como erro grave e avisar por e-mail
     error_log('PHP Fatal error (webhook Stripe, tratado): ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
     http_response_code(500);

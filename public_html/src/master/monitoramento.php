@@ -134,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'senha')
 $mensagem = $_SESSION['monitoramento_msg'] ?? null;
 unset($_SESSION['monitoramento_msg']);
 
-$abas = ['saude' => 'Saúde', 'auditoria' => 'Auditoria', 'seguranca' => 'Segurança', 'erros' => 'Erros', 'backups' => 'Backups', 'configuracoes' => 'Configurações'];
+$abas = ['saude' => 'Saúde', 'auditoria' => 'Auditoria', 'seguranca' => 'Segurança', 'pagamentos' => 'Pagamentos', 'erros' => 'Erros', 'backups' => 'Backups', 'configuracoes' => 'Configurações'];
 $aba = isset($abas[$_GET['aba'] ?? '']) ? $_GET['aba'] : 'saude';
 $pastaBackups = PASTA_PRIVADA . '/backups';
 $arquivoErros = PASTA_PRIVADA . '/logs/erros_site.log';
@@ -196,7 +196,8 @@ if ($aba === 'auditoria') {
     $pagina = max(1, (int) ($_GET['pagina'] ?? 1));
     $porPagina = 50;
 
-    $where = ["data_hora >= ?"];
+    // Eventos do Stripe ficam na seção Pagamentos (os stripe_* são registros antigos, de antes dela)
+    $where = ["data_hora >= ?", "acao NOT LIKE 'stripe\\_%'"];
     $params = [date('Y-m-d H:i:s', strtotime("-{$periodo} days"))];
     if (str_starts_with($filtroAcao, 'grupo:') && isset(AUDITORIA_ACOES[substr($filtroAcao, 6)])) {
         $chaves = array_keys(AUDITORIA_ACOES[substr($filtroAcao, 6)]);
@@ -248,10 +249,78 @@ if ($aba === 'seguranca') {
     $stmt->execute([date('Y-m-d H:i:s')]);
     $ipsBloqueados = (int) $stmt->fetchColumn();
     $stmt = $pdo->prepare("SELECT * FROM logs_auditoria WHERE acao IN ('acesso_negado', 'conta_bloqueada', 'senha_alterada', 'senha_redefinida', 'reset_solicitado', 'backup_baixado',
-                                                                   'email_alterado', 'stripe_erro', 'stripe_assinatura_invalida')
+                                                                   'email_alterado')
                            AND data_hora >= ? ORDER BY data_hora DESC LIMIT 50");
     $stmt->execute([date('Y-m-d H:i:s', strtotime('-30 days'))]);
     $eventosSeguranca = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// ===== Aba Pagamentos: assinaturas dos vendedores e eventos do Stripe =====
+if ($aba === 'pagamentos') {
+    require_once __DIR__ . '/../functions/pagamentos_functions.php';
+    $periodosPag = [7 => '7 dias', 30 => '30 dias', 90 => '90 dias', 365 => '1 ano'];
+    $periodoPag = isset($periodosPag[(int) ($_GET['periodo'] ?? 0)]) ? (int) $_GET['periodo'] : 30;
+    $filtroStatus = isset(STRIPE_STATUS[$_GET['status'] ?? '']) ? $_GET['status'] : '';
+    $desde = date('Y-m-d H:i:s', strtotime("-{$periodoPag} days"));
+
+    // Vendedores com plano pago (ou que já passaram pelo Stripe)
+    $assinaturas = $pdo->query(
+        "SELECT v.id, u.nome, p.nome AS plano, p.preco_mensal, v.status_assinatura,
+                v.data_inicio_assinatura, v.data_vencimento_assinatura, v.stripe_subscription_id
+         FROM vendedores v
+         JOIN usuarios u ON u.id = v.usuario_id
+         LEFT JOIN planos p ON p.id = v.plano_id
+         WHERE p.preco_mensal > 0 OR v.stripe_subscription_id IS NOT NULL
+         ORDER BY FIELD(v.status_assinatura, 'ativo', 'atrasado') DESC, v.data_vencimento_assinatura"
+    )->fetchAll(PDO::FETCH_ASSOC);
+
+    $ativas = $atrasadas = $semRenovar = 0;
+    $receitaMensal = 0.0;
+    foreach ($assinaturas as &$a) {
+        $pago = (float) $a['preco_mensal'] > 0;
+        // Vencida há mais de 2 dias (a carência do cron) e ainda "ativa": a renovação não chegou
+        $a['sem_renovar'] = $pago && $a['status_assinatura'] === 'ativo' && $a['data_vencimento_assinatura']
+            && strtotime($a['data_vencimento_assinatura']) < strtotime('-2 days');
+        if ($pago && $a['status_assinatura'] === 'ativo') {
+            $ativas++;
+            $receitaMensal += (float) $a['preco_mensal'];
+        }
+        $atrasadas += $a['status_assinatura'] === 'atrasado' ? 1 : 0;
+        $semRenovar += $a['sem_renovar'] ? 1 : 0;
+    }
+    unset($a);
+
+    $recebido = ['total' => 0, 'qtd' => 0];
+    $problemasPag = 0;
+    $eventosStripe = [];
+    try {
+        // invoice.payment_succeeded chega junto com invoice.paid: soma só o invoice.paid para não contar duas vezes
+        $stmt = $pdo->prepare("SELECT COALESCE(SUM(valor), 0) AS total, COUNT(*) AS qtd FROM pagamentos_stripe
+                               WHERE tipo = 'invoice.paid' AND status = 'ok' AND data_hora >= ?");
+        $stmt->execute([$desde]);
+        $recebido = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM pagamentos_stripe WHERE status IN ('falha', 'erro') AND data_hora >= ?");
+        $stmt->execute([$desde]);
+        $problemasPag = (int) $stmt->fetchColumn();
+
+        $sql = "SELECT ps.*, u.nome AS vendedor_nome FROM pagamentos_stripe ps
+                LEFT JOIN vendedores v ON v.id = ps.vendedor_id
+                LEFT JOIN usuarios u ON u.id = v.usuario_id
+                WHERE ps.data_hora >= ?" . ($filtroStatus ? " AND ps.status = ?" : '') . "
+                ORDER BY ps.data_hora DESC, ps.id DESC LIMIT 200";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($filtroStatus ? [$desde, $filtroStatus] : [$desde]);
+        $eventosStripe = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) {
+        error_log('Monitoramento (pagamentos): ' . $e->getMessage());
+        $mensagem = $mensagem ?? ['warning', 'A tabela pagamentos_stripe ainda não existe: rode a migration 010 no phpMyAdmin.'];
+    }
+}
+
+/** "R$ 49,90" */
+function reais(?float $valor): string
+{
+    return $valor === null ? '—' : 'R$ ' . number_format($valor, 2, ',', '.');
 }
 
 // ===== Aba Erros: fim do log de erros, mais recentes primeiro =====
@@ -623,15 +692,130 @@ if ($aba === 'erros') {
                 </table>
             </div>
 
+        <?php elseif ($aba === 'pagamentos'): ?>
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-xl-3">
+                    <div class="cartao-status neutro">
+                        <div class="rotulo"><i class="fas fa-user-check"></i> Assinaturas ativas</div>
+                        <div class="valor"><?= $ativas ?></div>
+                        <div class="detalhe"><?= reais($receitaMensal) ?> por mês nos planos atuais</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="cartao-status neutro">
+                        <div class="rotulo"><i class="fas fa-hand-holding-usd"></i> Recebido (<?= e($periodosPag[$periodoPag]) ?>)</div>
+                        <div class="valor"><?= reais((float) $recebido['total']) ?></div>
+                        <div class="detalhe"><?= (int) $recebido['qtd'] ?> pagamento(s) confirmados pelo Stripe</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="cartao-status <?= ($atrasadas || $semRenovar) ? 'atencao' : 'neutro' ?>">
+                        <div class="rotulo"><i class="fas fa-exclamation-circle"></i> Atrasadas agora</div>
+                        <div class="valor"><?= $atrasadas + $semRenovar ?></div>
+                        <div class="detalhe"><?= $atrasadas ?> com cobrança recusada · <?= $semRenovar ?> vencida(s) sem renovação</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="cartao-status <?= $problemasPag ? 'problema' : 'ok' ?>">
+                        <div class="rotulo"><i class="fas fa-bug"></i> Falhas (<?= e($periodosPag[$periodoPag]) ?>)</div>
+                        <div class="valor"><?= $problemasPag ?></div>
+                        <div class="detalhe">pagamentos recusados ou erros do site ao processar</div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="titulo-secao">Assinaturas dos vendedores</h2>
+            <div class="table-responsive mb-4">
+                <table class="table tabela-acessos tabela-cartoes">
+                    <thead><tr><th>Vendedor</th><th>Plano</th><th>Situação</th><th>Desde</th><th>Próximo vencimento</th></tr></thead>
+                    <tbody>
+                        <?php foreach ($assinaturas as $a): ?>
+                            <tr>
+                                <td><?= e($a['nome']) ?></td>
+                                <td class="text-nowrap"><?= e($a['plano'] ?? '—') ?> <span class="texto-secundario small">· <?= reais((float) $a['preco_mensal']) ?>/mês</span></td>
+                                <td class="text-nowrap">
+                                    <?php if ($a['sem_renovar']): ?>
+                                        <span class="selo problema" title="Venceu e o Stripe não avisou a renovação">Vencida sem renovar</span>
+                                    <?php elseif ($a['status_assinatura'] === 'ativo'): ?>
+                                        <span class="selo ok">Ativa</span>
+                                    <?php elseif ($a['status_assinatura'] === 'atrasado'): ?>
+                                        <span class="selo problema">Pagamento atrasado</span>
+                                    <?php else: ?>
+                                        <span class="selo atencao"><?= e(ucfirst((string) ($a['status_assinatura'] ?: 'sem status'))) ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="texto-secundario text-nowrap"><?= $a['data_inicio_assinatura'] ? date('d/m/Y', strtotime($a['data_inicio_assinatura'])) : '—' ?></td>
+                                <td class="text-nowrap"><?= $a['data_vencimento_assinatura'] ? date('d/m/Y', strtotime($a['data_vencimento_assinatura'])) : '—' ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        <?php if (!$assinaturas): ?>
+                            <tr><td colspan="5" class="text-center py-4 texto-vazio">Nenhum vendedor com plano pago ainda.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 class="titulo-secao">Eventos do Stripe</h2>
+            <form method="GET" class="filtros-acessos row g-3 mb-3">
+                <input type="hidden" name="aba" value="pagamentos">
+                <div class="col-md-5">
+                    <label class="form-label" for="statusPag">Resultado</label>
+                    <select class="form-select" id="statusPag" name="status">
+                        <option value="">Todos</option>
+                        <?php foreach (STRIPE_STATUS as $chave => [$rotulo]): ?>
+                            <option value="<?= e($chave) ?>" <?= $filtroStatus === $chave ? 'selected' : '' ?>><?= e($rotulo) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label" for="periodoPag">Período</label>
+                    <select class="form-select" id="periodoPag" name="periodo">
+                        <?php foreach ($periodosPag as $dias => $rotulo): ?>
+                            <option value="<?= $dias ?>" <?= $periodoPag === $dias ? 'selected' : '' ?>>Últimos <?= e($rotulo) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-filtrar w-100">Filtrar</button>
+                </div>
+            </form>
+            <div class="table-responsive">
+                <table class="table tabela-acessos tabela-cartoes">
+                    <thead><tr><th>Data</th><th>Evento</th><th>Vendedor</th><th>Valor</th><th>Resultado</th><th>Detalhe</th></tr></thead>
+                    <tbody>
+                        <?php foreach ($eventosStripe as $ev): ?>
+                            <?php [$rotuloStatus, $classeStatus] = STRIPE_STATUS[$ev['status']] ?? [$ev['status'], 'atencao']; ?>
+                            <tr>
+                                <td class="text-nowrap"><?= date('d/m/Y H:i', strtotime($ev['data_hora'])) ?></td>
+                                <td class="text-nowrap" title="<?= e($ev['tipo'] . ($ev['evento_id'] ? ' · ' . $ev['evento_id'] : '')) ?>"><?= e(STRIPE_EVENTOS[$ev['tipo']] ?? $ev['tipo']) ?></td>
+                                <td><?= e($ev['vendedor_nome'] ?? ($ev['cliente_stripe'] ?: '—')) ?></td>
+                                <td class="text-nowrap"><?= $ev['valor'] !== null ? reais((float) $ev['valor']) . ($ev['moeda'] && $ev['moeda'] !== 'BRL' ? ' ' . e($ev['moeda']) : '') : '—' ?></td>
+                                <td class="text-nowrap"><span class="selo <?= e($classeStatus) ?>"><?= e($rotuloStatus) ?></span></td>
+                                <td class="texto-secundario small"><?= e($ev['detalhe'] ?? '') ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        <?php if (!$eventosStripe): ?>
+                            <tr><td colspan="6" class="text-center py-4 texto-vazio">Nenhum evento do Stripe nesse período.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+            <p class="texto-secundario small mt-3">
+                Cada aviso que o Stripe manda ao site (cobrança paga ou recusada, nova assinatura, cancelamento) fica registrado aqui por 5 anos.
+                "Não veio do Stripe" são chamadas sem a assinatura secreta do Stripe (robôs ou testes): o site as ignora e nada é alterado.
+                Os detalhes completos de cada cobrança estão no painel do Stripe.
+            </p>
+
         <?php elseif ($aba === 'erros'): ?>
             <p class="contagem-acessos">
                 Erros registrados pelo PHP no site (mais recentes primeiro) · arquivo com <?= tamanho_legivel($tamanhoLogErros) ?>,
-                trocado automaticamente ao passar de 5 MB. Linhas em vermelho são erros graves.
+                trocado automaticamente ao passar de 5 MB. Linhas em vermelho são erros graves; em azul, erros de JavaScript
+                no navegador dos usuários. A linha "↳" abaixo de cada erro mostra a página e quem estava logado.
             </p>
             <?php if ($linhasErro): ?>
                 <div class="log-erros">
                     <?php foreach ($linhasErro as $linha): ?>
-                        <div class="<?= preg_match('/PHP Fatal error|Uncaught|SQLSTATE/', $linha) ? 'grave' : '' ?>"><?= e($linha) ?></div>
+                        <div class="<?= preg_match('/PHP Fatal error|Uncaught|SQLSTATE/', $linha) ? 'grave' : (preg_match('/^\[[^\]]+\] JS: /', $linha) ? 'js' : '') ?>"><?= e($linha) ?></div>
                     <?php endforeach; ?>
                 </div>
             <?php else: ?>

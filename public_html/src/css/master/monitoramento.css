@@ -284,6 +284,9 @@ h1, h2, h3, h4, h6 {
     word-break: break-word;
 }
 
+.log-erros > div.js {
+    color: #1f5fa8;
+}
 .log-erros > div.grave {
     color: var(--cor-secundaria);
     font-weight: 600;

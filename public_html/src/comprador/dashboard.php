@@ -28,11 +28,6 @@ $database = new Database();
 $conn = $database->getConnection();
 
 $dashboard_data = [
-    'total_propostas' => 0,
-    'enviada' => 0,
-    'pendente' => 0,
-    'aceita' => 0,
-    'recusada' => 0,
     'favoritos' => 0,
     'total_chats' => 0,
     'chats_nao_lidos' => 0,
@@ -61,50 +56,7 @@ try {
    die("Ocorreu um erro ao carregar seu painel. Tente novamente mais tarde.");
 }
 
-// 3. BUSCA DOS TOTAIS DAS PROPOSTAS POR STATUS
-try {
-    $sql_propostas = "SELECT status, COUNT(id) AS total FROM propostas_comprador 
-                      WHERE comprador_id = :comprador_id
-                      GROUP BY status";
-            
-    $stmt_propostas = $conn->prepare($sql_propostas);
-    $stmt_propostas->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
-    $stmt_propostas->execute();
-    $totais_status = $stmt_propostas->fetchAll(PDO::FETCH_ASSOC);
-
-    $dashboard_data['enviada'] = 0;
-    $dashboard_data['pendente'] = 0;
-    $dashboard_data['aceita'] = 0;
-    $dashboard_data['recusada'] = 0;
-    $dashboard_data['finalizada'] = 0;
-    $dashboard_data['total_propostas'] = 0;
-
-    foreach ($totais_status as $item) {
-        $dashboard_data['total_propostas'] += $item['total'];
-        $status_key = strtolower($item['status']);
-        if (isset($dashboard_data[$status_key])) {
-            $dashboard_data[$status_key] = $item['total'];
-        }
-    }
-
-    $sql_compras_realizadas = "SELECT COUNT(DISTINCT pn.id) as compras_realizadas
-                               FROM propostas_negociacao pn
-                               INNER JOIN propostas_comprador pc ON pn.proposta_comprador_id = pc.id
-                               WHERE pc.comprador_id = :comprador_id 
-                               AND pn.status = 'aceita'";
-    
-    $stmt_compras = $conn->prepare($sql_compras_realizadas);
-    $stmt_compras->bindParam(':comprador_id', $comprador_id, PDO::PARAM_INT);
-    $stmt_compras->execute();
-    $compras_result = $stmt_compras->fetch(PDO::FETCH_ASSOC);
-    
-    $dashboard_data['aceita'] = $compras_result['compras_realizadas'] ?? 0;
-
-} catch (PDOException $e) {
-    error_log("Erro ao carregar totais de propostas: " . $e->getMessage());
-}
-
-// 4. BUSCA DO TOTAL DE FAVORITOS
+// 3. BUSCA DO TOTAL DE FAVORITOS
 try {
     $sql_favoritos = "SELECT COUNT(id) AS total_favoritos FROM favoritos 
                       WHERE usuario_id = :usuario_id";
@@ -121,7 +73,7 @@ try {
     $dashboard_data['favoritos'] = 0;
 }
 
-// 5. BUSCAR TOTAL DE CHATS E MENSAGENS NÃO LIDAS
+// 4. BUSCAR TOTAL DE CHATS E MENSAGENS NÃO LIDAS
 try {
     // Total de chats do comprador
     // Contar apenas conversas ativas que envolvam um vendedor (excluir apenas conversas com transportador)
@@ -162,7 +114,7 @@ try {
     $dashboard_data['chats_nao_lidos'] = 0;
 }
 
-// 6. CONTAR NÃO-LIDAS ESPECÍFICAS DE CONVERSAS COM TRANSPORTADOR (para o card "Procurando transportador")
+// 5. CONTAR NÃO-LIDAS ESPECÍFICAS DE CONVERSAS COM TRANSPORTADOR (para o card "Procurando transportador")
 try {
     $sql_procurando = "SELECT COUNT(DISTINCT cm.conversa_id) as procurando_nao_lidas
                        FROM chat_mensagens cm

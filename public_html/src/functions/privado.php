@@ -20,5 +20,7 @@ if (!defined('PASTA_PRIVADA')) {
     if (is_dir(PASTA_PRIVADA . '/logs')) {
         ini_set('log_errors', '1');
         ini_set('error_log', PASTA_PRIVADA . '/logs/erros_site.log');
+        // Contexto (página e usuário) nos erros e coletor de erros de JavaScript
+        require_once __DIR__ . '/monitor_erros.php';
     }
 }

@@ -106,6 +106,159 @@ function registrarEventoStripe($event, string $status, string $detalhe = ''): vo
     }
 }
 
+// =====================================================================
+// CONFERÊNCIA COM O STRIPE (seção Pagamentos do master)
+// Compara o que o site guarda de cada vendedor com o que o Stripe diz, usando a
+// mesma regra do webhook e do cron_verificar_vencimentos (o Stripe é a fonte da
+// verdade): active/trialing → ativo com o plano do preço e o vencimento do
+// período; past_due/incomplete → atrasado (mantém o plano); paused → pausado;
+// canceled/unpaid/incomplete_expired/sem assinatura → Free + expirado.
+// =====================================================================
+const STRIPE_ID_PLANO_FREE = 1;
+
+/** Fim do período atual da assinatura (o campo mudou de lugar nas versões da API). */
+function stripeFimDoPeriodo($assinatura): ?string
+{
+    $fim = $assinatura->current_period_end ?? ($assinatura->items->data[0]->current_period_end ?? null);
+    return $fim ? date('Y-m-d H:i:s', $fim) : null;
+}
+
+/**
+ * Compara um vendedor com a assinatura dele no Stripe ($assinatura null = não existe no Stripe).
+ * $planosPorPreco: [stripe_price_id => ['id' => .., 'nome' => ..]].
+ * Retorna o estado esperado e a lista de divergências (vazia = tudo certo).
+ */
+function compararComStripe(array $vendedor, $assinatura, array $planosPorPreco): array
+{
+    $statusStripe = $assinatura->status ?? 'sem assinatura';
+    $esperado = ['status' => 'expirado', 'plano_id' => STRIPE_ID_PLANO_FREE, 'vencimento' => null];
+    $avisos = [];
+    if (in_array($statusStripe, ['active', 'trialing'], true)) {
+        $precoId = $assinatura->items->data[0]->price->id ?? null;
+        $plano = $planosPorPreco[$precoId] ?? null;
+        $esperado = ['status' => 'ativo', 'plano_id' => $plano['id'] ?? (int) $vendedor['plano_id'], 'vencimento' => stripeFimDoPeriodo($assinatura)];
+        if (!$plano) {
+            $avisos[] = "o preço {$precoId} do Stripe não corresponde a nenhum plano do site";
+        }
+        if (!empty($assinatura->cancel_at_period_end)) {
+            $avisos[] = 'cancelamento agendado para o fim do período';
+        }
+    } elseif (in_array($statusStripe, ['past_due', 'incomplete'], true)) {
+        $esperado = ['status' => 'atrasado', 'plano_id' => (int) $vendedor['plano_id'], 'vencimento' => $vendedor['data_vencimento_assinatura']];
+    } elseif ($statusStripe === 'paused') {
+        $esperado = ['status' => 'pausado', 'plano_id' => (int) $vendedor['plano_id'], 'vencimento' => $vendedor['data_vencimento_assinatura']];
+    }
+
+    $divergencias = [];
+    // No plano grátis, "inativo" ou vazio equivale a "expirado"
+    $semPlanoPago = $esperado['status'] === 'expirado' && (int) $vendedor['plano_id'] === STRIPE_ID_PLANO_FREE
+        && in_array((string) $vendedor['status_assinatura'], ['expirado', 'inativo', ''], true);
+    if (!$semPlanoPago && $vendedor['status_assinatura'] !== $esperado['status']) {
+        $divergencias[] = "situação no site \"{$vendedor['status_assinatura']}\", deveria ser \"{$esperado['status']}\"";
+    }
+    if ((int) $vendedor['plano_id'] !== (int) $esperado['plano_id']) {
+        $divergencias[] = (int) $esperado['plano_id'] === STRIPE_ID_PLANO_FREE
+            ? 'continua com plano pago no site, mas o Stripe não cobra mais'
+            : 'plano no site diferente do que o Stripe cobra';
+    }
+    if ($esperado['status'] === 'ativo' && $esperado['vencimento']
+        && abs(strtotime((string) $vendedor['data_vencimento_assinatura']) - strtotime($esperado['vencimento'])) > 86400) {
+        $divergencias[] = 'vencimento no site ' . ($vendedor['data_vencimento_assinatura'] ? date('d/m/Y', strtotime($vendedor['data_vencimento_assinatura'])) : 'vazio')
+            . ', no Stripe ' . date('d/m/Y', strtotime($esperado['vencimento']));
+    }
+    if ($assinatura && !empty($vendedor['stripe_customer_id']) && ($assinatura->customer ?? null) !== $vendedor['stripe_customer_id']) {
+        $avisos[] = 'a assinatura pertence a outro cliente do Stripe';
+    }
+    return ['status_stripe' => $statusStripe, 'esperado' => $esperado, 'divergencias' => $divergencias, 'avisos' => $avisos];
+}
+
+/** Vendedores que passaram pelo Stripe ou estão num plano pago (os únicos que dá para conferir). */
+function vendedoresParaConferir(PDO $pdo, ?int $vendedorId = null): array
+{
+    $sql = "SELECT v.id, v.usuario_id, u.nome, v.plano_id, v.status_assinatura, v.data_vencimento_assinatura,
+                   v.stripe_customer_id, v.stripe_subscription_id
+            FROM vendedores v JOIN usuarios u ON u.id = v.usuario_id LEFT JOIN planos p ON p.id = v.plano_id
+            WHERE (p.preco_mensal > 0 OR v.stripe_subscription_id IS NOT NULL)" . ($vendedorId ? ' AND v.id = ?' : '') . "
+            ORDER BY u.nome LIMIT 200";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($vendedorId ? [$vendedorId] : []);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/** Busca a assinatura no Stripe: o objeto, null se não existe lá, ou lança erro de comunicação. */
+function buscarAssinaturaStripe(?string $assinaturaId)
+{
+    if (!$assinaturaId) {
+        return null;
+    }
+    try {
+        return \Stripe\Subscription::retrieve($assinaturaId);
+    } catch (\Stripe\Exception\InvalidRequestException $e) {
+        return null; // apagada no Stripe (ou de outro ambiente)
+    }
+}
+
+/** Confere todos os vendedores. Retorna uma linha por vendedor (com 'erro' se o Stripe não respondeu). */
+function conferirAssinaturasComStripe(PDO $pdo): array
+{
+    require_once __DIR__ . '/../../config/StripeConfig.php';
+    \Config\StripeConfig::init();
+    $planosPorPreco = [];
+    foreach ($pdo->query("SELECT id, nome, stripe_price_id FROM planos WHERE stripe_price_id IS NOT NULL AND stripe_price_id <> ''") as $p) {
+        $planosPorPreco[$p['stripe_price_id']] = $p;
+    }
+    $resultado = [];
+    foreach (vendedoresParaConferir($pdo) as $v) {
+        $linha = ['vendedor' => $v];
+        try {
+            $linha += compararComStripe($v, buscarAssinaturaStripe($v['stripe_subscription_id']), $planosPorPreco);
+        } catch (\Stripe\Exception\AuthenticationException $e) {
+            throw $e; // chave errada: não adianta seguir para os outros vendedores
+        } catch (Throwable $e) {
+            $linha['erro'] = 'O Stripe não respondeu: ' . $e->getMessage();
+        }
+        $resultado[] = $linha;
+    }
+    return $resultado;
+}
+
+/**
+ * Aplica no site o que o Stripe diz para um vendedor (botão "Corrigir").
+ * Avisa o vendedor no painel quando ele perde ou fica com o plano em atraso, como o cron faz.
+ * Retorna o texto do que foi feito.
+ */
+function corrigirVendedorPeloStripe(PDO $pdo, int $vendedorId): string
+{
+    require_once __DIR__ . '/../../config/StripeConfig.php';
+    \Config\StripeConfig::init();
+    $v = vendedoresParaConferir($pdo, $vendedorId)[0] ?? null;
+    if (!$v) {
+        // Já está no plano grátis sem assinatura: não há o que conferir
+        return 'Nada a corrigir: o vendedor já está no plano gratuito, sem assinatura no Stripe.';
+    }
+    $planosPorPreco = [];
+    foreach ($pdo->query("SELECT id, nome, stripe_price_id FROM planos WHERE stripe_price_id IS NOT NULL AND stripe_price_id <> ''") as $p) {
+        $planosPorPreco[$p['stripe_price_id']] = $p;
+    }
+    $c = compararComStripe($v, buscarAssinaturaStripe($v['stripe_subscription_id']), $planosPorPreco);
+    if (!$c['divergencias']) {
+        return 'Nada a corrigir: o site já está igual ao Stripe.';
+    }
+    $e = $c['esperado'];
+    $pdo->prepare("UPDATE vendedores SET status_assinatura = ?, plano_id = ?, data_vencimento_assinatura = ? WHERE id = ?")
+        ->execute([$e['status'], $e['plano_id'], $e['vencimento'], $vendedorId]);
+
+    $avisoVendedor = [
+        'expirado' => 'Sua assinatura foi encerrada por falta de pagamento e sua conta voltou para o Plano Gratuito.',
+        'atrasado' => 'Não conseguimos cobrar a sua mensalidade. Atualize a forma de pagamento para não perder os benefícios do seu plano.',
+    ][$e['status']] ?? null;
+    if ($avisoVendedor && $v['status_assinatura'] !== $e['status']) {
+        $pdo->prepare("INSERT INTO notificacoes (usuario_id, mensagem, tipo, url) VALUES (?, ?, 'alerta', 'vendedor/gerenciar_assinatura')")
+            ->execute([$v['usuario_id'], $avisoVendedor]);
+    }
+    return "{$v['nome']}: " . implode('; ', $c['divergencias']) . ". Corrigido para \"{$e['status']}\" (Stripe: {$c['status_stripe']}).";
+}
+
 /** Quantas chamadas recusadas (sem assinatura válida) houve na última hora — para limitar o registro. */
 function stripeRecusadosUltimaHora(): int
 {

@@ -23,4 +23,7 @@ if (!defined('PASTA_PRIVADA')) {
         // Contexto (página e usuário) nos erros e coletor de erros de JavaScript
         require_once __DIR__ . '/monitor_erros.php';
     }
+
+    // Bloqueio de IP e sessões encerradas pelo master (aba Segurança)
+    require_once __DIR__ . '/seguranca_functions.php';
 }

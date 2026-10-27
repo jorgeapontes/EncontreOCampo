@@ -1,82 +1,23 @@
 <?php
 /**
  * Monitoramento do site — SÓ para o usuário master (dono do sistema), que não usa as páginas do admin.
- * Seções (no menu lateral): Saúde, Auditoria, Segurança, Erros, Backups e Configurações.
+ * Seções (no menu lateral): Saúde, Auditoria, Segurança, Pagamentos, Erros, Backups e
+ * Configurações. Admins, LGPD e Checklist são páginas próprias (admins.php, lgpd.php, checklist.php).
  * Os dados vêm de cron_execucoes e logs_auditoria (gravados pelos crons e pelas telas)
  * e dos arquivos da pasta privada (backups e log de erros), fora do public_html.
  */
-require_once __DIR__ . '/../conexao.php';
-require_once __DIR__ . '/../functions/auditoria_functions.php';
-require_once __DIR__ . '/../functions/config_functions.php';
+require_once __DIR__ . '/includes/comum.php';
+require_once __DIR__ . '/../functions/seguranca_functions.php';
 
-if (($_SESSION['usuario_tipo'] ?? '') !== 'master') {
-    if (isset($_SESSION['usuario_id'])) {
-        auditoriaAcessoNegado('master');
-    }
-    header("Location: ../login");
-    exit;
-}
-
-$pdo = (new Database())->getConnection();
-if (!$pdo) {
-    error_log('Monitoramento: sem conexão com o banco');
-    die('Ocorreu um erro ao carregar a página. Tente novamente mais tarde.');
-}
-
-const CRON_ATRASO_HORAS = 30; // todos rodam 1x por dia; passou disso, algo está errado
-
-/** Crons agendados na Hostinger (nome usado em cronIniciar => descrição e horário de Brasília). */
-const CRONS = [
-    'cron_limpar_banco'      => ['Manutenção do banco e backup', '01:00'],
-    'cron_vencimentos'       => ['Vencimento das assinaturas', '21:00'],
-    'limpar_logs'            => ['Limpeza de logs e temporários', '21:00'],
-    'cron_rejeitados'        => ['Cadastros rejeitados', '01:30'],
-    'cron_documentos_orfaos' => ['Documentos órfãos', '01:45'],
-];
-
-/** "1,2 MB" / "350 KB" */
-function tamanho_legivel(?int $bytes): string
-{
-    if ($bytes === null) {
-        return '—';
-    }
-    if ($bytes === 0) {
-        return '0 KB';
-    }
-    return $bytes < 1048576
-        ? max(1, round($bytes / 1024)) . ' KB'
-        : number_format($bytes / 1048576, 1, ',', '.') . ' MB';
-}
-
-/** "há 3 h" / "há 2 dias" */
-function tempo_atras(int $timestamp): string
-{
-    $segundos = time() - $timestamp;
-    if ($segundos < 3600) {
-        return 'há ' . max(1, floor($segundos / 60)) . ' min';
-    }
-    if ($segundos < 86400 * 2) {
-        return 'há ' . floor($segundos / 3600) . ' h';
-    }
-    return 'há ' . floor($segundos / 86400) . ' dias';
-}
-
-function e($texto): string
-{
-    return htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
-}
-
-// ===== Configurações (e-mail de alerta e limite de disco) =====
-if (empty($_SESSION['csrf_monitoramento'])) {
-    $_SESSION['csrf_monitoramento'] = bin2hex(random_bytes(32));
-}
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'configuracoes') {
+// ===== Configurações (e-mail de alerta, limite de disco e resumo semanal) =====
+if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'configuracoes') {
     $ok = hash_equals($_SESSION['csrf_monitoramento'], (string) ($_POST['csrf'] ?? ''));
     $email = trim((string) ($_POST['alerta_email'] ?? ''));
     $limite = (int) ($_POST['limite_disco_mb'] ?? 0);
     if ($ok && filter_var($email, FILTER_VALIDATE_EMAIL) && $limite >= 0) {
         salvarConfig('alerta_email', $email);
         salvarConfig('limite_disco_mb', (string) $limite);
+        salvarConfig('resumo_semanal', isset($_POST['resumo_semanal']) ? '1' : '0');
         $_SESSION['monitoramento_msg'] = ['success', 'Configurações salvas.'];
     } else {
         $_SESSION['monitoramento_msg'] = ['danger', 'Não foi possível salvar: confira o e-mail informado.'];
@@ -131,8 +72,123 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'senha')
     header('Location: monitoramento?aba=configuracoes');
     exit;
 }
-$mensagem = $_SESSION['monitoramento_msg'] ?? null;
-unset($_SESSION['monitoramento_msg']);
+// ===== Resumo semanal: enviar agora (o cron manda sozinho toda segunda) =====
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'resumo_agora') {
+    require_once __DIR__ . '/../functions/resumo_functions.php';
+    $destino = obterConfig('alerta_email', '');
+    if (!csrfOk()) {
+        avisar('danger', 'Requisição inválida. Tente novamente.');
+    } elseif (!filter_var($destino, FILTER_VALIDATE_EMAIL)) {
+        avisar('danger', 'Cadastre um e-mail de alerta válido antes de enviar o resumo.');
+    } elseif (enviarResumoSemanal($pdo, $destino)) {
+        avisar('success', "Resumo dos últimos 7 dias enviado para {$destino}.");
+    } else {
+        avisar('danger', 'O envio falhou. O motivo foi registrado na seção Erros.');
+    }
+    header('Location: monitoramento?aba=configuracoes');
+    exit;
+}
+
+// ===== Conferência das assinaturas com o Stripe (aba Pagamentos) =====
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array($_POST['acao'] ?? '', ['conferir_stripe', 'corrigir_stripe'], true)) {
+    require_once __DIR__ . '/../functions/pagamentos_functions.php';
+    if (!csrfOk()) {
+        avisar('danger', 'Requisição inválida. Tente novamente.');
+    } elseif ($_POST['acao'] === 'conferir_stripe') {
+        try {
+            $linhas = conferirAssinaturasComStripe($pdo);
+            $comDivergencia = count(array_filter($linhas, fn ($l) => !empty($l['divergencias'])));
+            $semResposta = count(array_filter($linhas, fn ($l) => !empty($l['erro'])));
+            $_SESSION['conferencia_stripe'] = ['em' => time(), 'linhas' => $linhas];
+            salvarConfig('stripe_ultima_conferencia', date('Y-m-d H:i:s'));
+            registrarAuditoria('pagamento_conferido', 'Conferiu ' . count($linhas) . " assinatura(s) com o Stripe: {$comDivergencia} com divergência"
+                . ($semResposta ? ", {$semResposta} sem resposta" : ''), 'pagamento');
+            avisar($comDivergencia || $semResposta ? 'warning' : 'success', $comDivergencia || $semResposta
+                ? "De " . count($linhas) . " assinatura(s): {$comDivergencia} diferente(s) do Stripe" . ($semResposta ? " e {$semResposta} que não deu para consultar" : '') . '. Veja abaixo.'
+                : 'Conferidas ' . count($linhas) . ' assinatura(s): o site está igual ao Stripe.');
+        } catch (\Stripe\Exception\AuthenticationException $e) {
+            unset($_SESSION['conferencia_stripe']);
+            avisar('danger', 'O Stripe recusou a chave do site (STRIPE_SECRET_KEY no .env). Veja o Checklist.');
+        } catch (Throwable $e) {
+            error_log('Conferência Stripe: ' . $e->getMessage());
+            avisar('danger', 'Não foi possível falar com o Stripe: ' . $e->getMessage());
+        }
+    } else {
+        $vendedorId = (int) ($_POST['vendedor_id'] ?? 0);
+        try {
+            $feito = corrigirVendedorPeloStripe($pdo, $vendedorId);
+            registrarAuditoria('pagamento_corrigido', mb_substr($feito, 0, 250), 'vendedor', $vendedorId);
+            // Tira o vendedor corrigido da lista da última conferência
+            if (isset($_SESSION['conferencia_stripe']['linhas'])) {
+                foreach ($_SESSION['conferencia_stripe']['linhas'] as &$linha) {
+                    if ((int) $linha['vendedor']['id'] === $vendedorId) {
+                        $linha['corrigido'] = true;
+                    }
+                }
+                unset($linha);
+            }
+            avisar('success', $feito);
+        } catch (Throwable $e) {
+            avisar('danger', 'Não foi possível corrigir: ' . $e->getMessage());
+        }
+    }
+    header('Location: monitoramento?aba=pagamentos');
+    exit;
+}
+
+// ===== Ações de emergência (aba Segurança) =====
+$acoesSeguranca = ['desbloquear_conta', 'desbloquear_ip_login', 'bloquear_ip', 'desbloquear_ip_site', 'encerrar_sessoes'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array($_POST['acao'] ?? '', $acoesSeguranca, true)) {
+    $acao = $_POST['acao'];
+    $ip = trim((string) ($_POST['ip'] ?? ''));
+    if (!csrfOk()) {
+        avisar('danger', 'Requisição inválida. Tente novamente.');
+    } elseif ($acao === 'desbloquear_conta') {
+        $id = (int) ($_POST['usuario_id'] ?? 0);
+        $pdo->prepare("UPDATE usuarios SET tentativas_falhas = 0, bloqueado_ate = NULL WHERE id = ?")->execute([$id]);
+        registrarAuditoria('conta_desbloqueada', 'Desbloqueou a conta de ' . auditoriaUsuario($id), 'usuario', $id);
+        avisar('success', 'Conta desbloqueada: a pessoa já pode tentar entrar de novo.');
+    } elseif (!in_array($acao, ['desbloquear_conta', 'encerrar_sessoes'], true) && !filter_var($ip, FILTER_VALIDATE_IP)) {
+        avisar('danger', 'Informe um IP válido (ex.: 189.40.22.10).');
+    } elseif ($acao === 'desbloquear_ip_login') {
+        $pdo->prepare("UPDATE tentativas_ip SET tentativas = 0, bloqueado_ate = NULL WHERE ip = ?")->execute([$ip]);
+        registrarAuditoria('ip_desbloqueado', "Liberou o login do IP {$ip} (bloqueado por tentativas)", 'ip');
+        avisar('success', "O IP {$ip} já pode tentar entrar de novo.");
+    } elseif ($acao === 'bloquear_ip') {
+        $dias = in_array((int) ($_POST['dias'] ?? 0), [1, 7, 30], true) ? (int) $_POST['dias'] : 1;
+        $motivo = trim((string) ($_POST['motivo'] ?? ''));
+        if ($ip === ($_SERVER['REMOTE_ADDR'] ?? '')) {
+            avisar('danger', 'Esse é o IP que você está usando agora: bloqueá-lo tiraria você do site.');
+        } elseif (bloquearIpNoSite($ip, $dias, $motivo)) {
+            registrarAuditoria('ip_bloqueado', "Bloqueou o IP {$ip} no site por {$dias} dia(s)" . ($motivo !== '' ? ": {$motivo}" : ''), 'ip');
+            avisar('success', "IP {$ip} bloqueado no site inteiro por {$dias} dia(s).");
+        } else {
+            avisar('danger', 'Não foi possível gravar o bloqueio (a pasta privada existe e aceita escrita?).');
+        }
+    } elseif ($acao === 'desbloquear_ip_site') {
+        desbloquearIpNoSite($ip);
+        registrarAuditoria('ip_desbloqueado', "Tirou o bloqueio do IP {$ip} no site", 'ip');
+        avisar('success', "IP {$ip} desbloqueado.");
+    } else { // encerrar_sessoes
+        $stmt = $pdo->prepare("SELECT id, nome, tipo FROM usuarios WHERE email = ?");
+        $stmt->execute([trim((string) ($_POST['email'] ?? ''))]);
+        $alvo = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$alvo) {
+            avisar('danger', 'Nenhuma conta com esse e-mail.');
+        } elseif ((int) $alvo['id'] === (int) $_SESSION['usuario_id']) {
+            avisar('danger', 'Essa é a sua própria conta. Para sair, use o botão Sair.');
+        } elseif (encerrarSessoesUsuario((int) $alvo['id'])) {
+            registrarAuditoria('sessoes_encerradas', "Encerrou as sessões de {$alvo['nome']} ({$alvo['tipo']})", 'usuario', $alvo['id']);
+            avisar('success', "Sessões de {$alvo['nome']} encerradas: na próxima página, a pessoa terá de entrar de novo. Se a senha vazou, peça para trocá-la.");
+        } else {
+            avisar('danger', 'Não foi possível gravar (a pasta privada existe e aceita escrita?).');
+        }
+    }
+    header('Location: monitoramento?aba=seguranca');
+    exit;
+}
+
+$mensagem = mensagemPendente();
 
 $abas = ['saude' => 'Saúde', 'auditoria' => 'Auditoria', 'seguranca' => 'Segurança', 'pagamentos' => 'Pagamentos', 'erros' => 'Erros', 'backups' => 'Backups', 'configuracoes' => 'Configurações'];
 $aba = isset($abas[$_GET['aba'] ?? '']) ? $_GET['aba'] : 'saude';
@@ -180,6 +236,7 @@ if ($aba === 'saude') {
 if ($aba === 'configuracoes') {
     $alertaEmail = obterConfig('alerta_email', '');
     $limiteDiscoMb = (int) obterConfig('limite_disco_mb', '0');
+    $resumoSemanal = obterConfig('resumo_semanal', '1') === '1';
 }
 
 $rotulos = [];
@@ -242,14 +299,17 @@ if ($aba === 'seguranca') {
          GROUP BY u.id, u.nome, u.tipo ORDER BY falhas DESC LIMIT 10"
     )->fetchAll(PDO::FETCH_ASSOC);
     // bloqueado_ate é gravado a cada senha errada; só conta como bloqueio a partir de 5 (login.php)
-    $stmt = $pdo->prepare("SELECT nome, tipo, bloqueado_ate FROM usuarios WHERE tentativas_falhas >= 5 AND bloqueado_ate > ? ORDER BY bloqueado_ate");
+    $stmt = $pdo->prepare("SELECT id, nome, tipo, bloqueado_ate FROM usuarios WHERE tentativas_falhas >= 5 AND bloqueado_ate > ? ORDER BY bloqueado_ate");
     $stmt->execute([date('Y-m-d H:i:s')]);
     $contasBloqueadas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM tentativas_ip WHERE bloqueado_ate > ?");
+    $stmt = $pdo->prepare("SELECT ip, tentativas, bloqueado_ate FROM tentativas_ip WHERE bloqueado_ate > ? ORDER BY bloqueado_ate");
     $stmt->execute([date('Y-m-d H:i:s')]);
-    $ipsBloqueados = (int) $stmt->fetchColumn();
+    $ipsLogin = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $ipsBloqueados = count($ipsLogin);
+    $ipsSite = ipsBloqueadosNoSite();
+    $meuIp = $_SERVER['REMOTE_ADDR'] ?? '';
     $stmt = $pdo->prepare("SELECT * FROM logs_auditoria WHERE acao IN ('acesso_negado', 'conta_bloqueada', 'senha_alterada', 'senha_redefinida', 'reset_solicitado', 'backup_baixado',
-                                                                   'email_alterado')
+                                                                   'email_alterado', 'conta_desbloqueada', 'ip_desbloqueado', 'ip_bloqueado', 'sessoes_encerradas')
                            AND data_hora >= ? ORDER BY data_hora DESC LIMIT 50");
     $stmt->execute([date('Y-m-d H:i:s', strtotime('-30 days'))]);
     $eventosSeguranca = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -290,6 +350,9 @@ if ($aba === 'pagamentos') {
     }
     unset($a);
 
+    $conferencia = $_SESSION['conferencia_stripe'] ?? null;
+    $ultimaConferencia = obterConfig('stripe_ultima_conferencia', '');
+
     $recebido = ['total' => 0, 'qtd' => 0];
     $problemasPag = 0;
     $eventosStripe = [];
@@ -317,12 +380,6 @@ if ($aba === 'pagamentos') {
     }
 }
 
-/** "R$ 49,90" */
-function reais(?float $valor): string
-{
-    return $valor === null ? '—' : 'R$ ' . number_format($valor, 2, ',', '.');
-}
-
 // ===== Aba Erros: fim do log de erros, mais recentes primeiro =====
 if ($aba === 'erros') {
     $linhasErro = [];
@@ -337,40 +394,10 @@ if ($aba === 'erros') {
         $linhasErro = array_slice(array_reverse($linhas), 0, 150);
     }
 }
+$paginaAtiva = $aba;
+$tituloPagina = $abas[$aba];
+require __DIR__ . '/includes/layout_inicio.php';
 ?>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex, nofollow">
-    <title>Monitoramento - Encontre o Campo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="shortcut icon" href="../../img/logo-nova.png" type="image/x-icon">
-    <link rel="stylesheet" href="../css/master/base.css?v=<?= @filemtime(__DIR__ . '/../css/master/base.css') ?>">
-    <link rel="stylesheet" href="../css/master/monitoramento.css?v=<?= @filemtime(__DIR__ . '/../css/master/monitoramento.css') ?>">
-</head>
-<body>
-
-<div class="d-flex">
-    <?php $paginaAtiva = $aba; $tituloMobile = $abas[$aba]; require __DIR__ . '/includes/sidebar.php'; ?>
-
-    <div class="main-content flex-grow-1">
-        <div class="page-header">
-            <div>
-                <div class="sobretitulo">Monitoramento</div>
-                <h1 class="page-title"><?= e($abas[$aba]) ?></h1>
-            </div>
-        </div>
-
-        <?php if ($mensagem): ?>
-            <div class="alert alert-<?= e($mensagem[0]) ?> alert-dismissible fade show" role="alert">
-                <?= e($mensagem[1]) ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
-            </div>
-        <?php endif; ?>
 
 
         <?php if ($aba === 'saude'): ?>
@@ -513,11 +540,25 @@ if ($aba === 'erros') {
                 <div class="col-md-2 d-flex align-items-end">
                     <button type="submit" class="btn btn-filtrar w-100">Salvar</button>
                 </div>
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="resumoSemanal" name="resumo_semanal" value="1" <?= $resumoSemanal ? 'checked' : '' ?>>
+                        <label class="form-check-label" for="resumoSemanal">Receber o resumo semanal por e-mail (toda segunda, de madrugada)</label>
+                    </div>
+                </div>
             </form>
             <p class="texto-secundario small mb-4">
                 Os alertas chegam por e-mail só quando a manutenção diária encontra algum problema em qualquer tarefa agendada (no máximo um por noite).
                 O alerta de disco dispara quando o site passa de 80% do limite. Use 0 para desligar.
+                O resumo semanal traz cadastros, anúncios, negociações, pagamentos, erros e espaço em disco dos últimos 7 dias.
             </p>
+
+            <form method="POST" class="mb-4 d-inline-block me-2">
+                <input type="hidden" name="acao" value="resumo_agora"><?= campoCsrf() ?>
+                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-chart-line me-1"></i> Enviar o resumo semanal agora
+                </button>
+            </form>
 
             <form method="POST" class="mb-4">
                 <input type="hidden" name="acao" value="email_teste">
@@ -655,7 +696,78 @@ if ($aba === 'erros') {
                 <h2 class="titulo-secao">Contas bloqueadas agora</h2>
                 <ul class="lista-simples mb-4">
                     <?php foreach ($contasBloqueadas as $c): ?>
-                        <li><?= e($c['nome']) ?> <span class="texto-secundario">(<?= e($c['tipo']) ?>) · até <?= date('H:i', strtotime($c['bloqueado_ate'])) ?></span></li>
+                        <li class="d-flex flex-wrap align-items-center gap-2">
+                            <span><?= e($c['nome']) ?> <span class="texto-secundario">(<?= e($c['tipo']) ?>) · até <?= date('H:i', strtotime($c['bloqueado_ate'])) ?></span></span>
+                            <form method="POST" class="ms-auto">
+                                <input type="hidden" name="acao" value="desbloquear_conta"><?= campoCsrf() ?>
+                                <input type="hidden" name="usuario_id" value="<?= (int) $c['id'] ?>">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="fas fa-unlock me-1"></i> Desbloquear</button>
+                            </form>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+
+            <?php if ($ipsLogin): ?>
+                <h2 class="titulo-secao">IPs impedidos de fazer login agora</h2>
+                <ul class="lista-simples mb-4">
+                    <?php foreach ($ipsLogin as $i): ?>
+                        <li class="d-flex flex-wrap align-items-center gap-2">
+                            <span><?= e($i['ip']) ?> <span class="texto-secundario">· <?= (int) $i['tentativas'] ?> tentativa(s) · até <?= date('d/m H:i', strtotime($i['bloqueado_ate'])) ?></span></span>
+                            <form method="POST" class="ms-auto">
+                                <input type="hidden" name="acao" value="desbloquear_ip_login"><?= campoCsrf() ?>
+                                <input type="hidden" name="ip" value="<?= e($i['ip']) ?>">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="fas fa-unlock me-1"></i> Liberar</button>
+                            </form>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+
+            <h2 class="titulo-secao">Ações de emergência</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-lg-6">
+                    <form method="POST" class="filtros-acessos h-100">
+                        <input type="hidden" name="acao" value="encerrar_sessoes"><?= campoCsrf() ?>
+                        <label class="form-label" for="emailSessoes"><i class="fas fa-user-slash me-1"></i> Encerrar as sessões de uma conta</label>
+                        <div class="d-flex gap-2">
+                            <input type="email" class="form-control" id="emailSessoes" name="email" placeholder="e-mail da conta" required>
+                            <button type="submit" class="btn btn-filtrar text-nowrap" onclick="return confirm('Tirar essa pessoa do site em todos os aparelhos?')">Encerrar</button>
+                        </div>
+                        <p class="texto-secundario small mb-0 mt-2">Para conta invadida: tira a pessoa do site em todos os aparelhos. Depois, peça para ela trocar a senha.</p>
+                    </form>
+                </div>
+                <div class="col-lg-6">
+                    <form method="POST" class="filtros-acessos h-100">
+                        <input type="hidden" name="acao" value="bloquear_ip"><?= campoCsrf() ?>
+                        <label class="form-label" for="ipBloquear"><i class="fas fa-ban me-1"></i> Bloquear um IP no site inteiro</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <input type="text" class="form-control flex-grow-1 w-auto" id="ipBloquear" name="ip" placeholder="IP (ex.: 189.40.22.10)" required>
+                            <select class="form-select w-auto" name="dias" aria-label="Por quanto tempo">
+                                <option value="1">1 dia</option><option value="7">7 dias</option><option value="30">30 dias</option>
+                            </select>
+                        </div>
+                        <div class="d-flex gap-2 mt-2">
+                            <input type="text" class="form-control" name="motivo" maxlength="150" placeholder="Motivo (opcional)">
+                            <button type="submit" class="btn btn-filtrar text-nowrap" onclick="return confirm('Bloquear esse IP no site inteiro?')">Bloquear</button>
+                        </div>
+                        <p class="texto-secundario small mb-0 mt-2">Para ataque ou robô insistente. O bloqueio vence sozinho. Seu IP agora: <?= e($meuIp) ?> (não pode ser bloqueado).</p>
+                    </form>
+                </div>
+            </div>
+
+            <?php if ($ipsSite): ?>
+                <h2 class="titulo-secao">IPs bloqueados no site</h2>
+                <ul class="lista-simples mb-4">
+                    <?php foreach ($ipsSite as $ipBloqueado => $b): ?>
+                        <li class="d-flex flex-wrap align-items-center gap-2">
+                            <span><?= e($ipBloqueado) ?> <span class="texto-secundario">· até <?= date('d/m/Y H:i', (int) $b['ate']) ?><?= !empty($b['motivo']) ? ' · ' . e($b['motivo']) : '' ?></span></span>
+                            <form method="POST" class="ms-auto">
+                                <input type="hidden" name="acao" value="desbloquear_ip_site"><?= campoCsrf() ?>
+                                <input type="hidden" name="ip" value="<?= e($ipBloqueado) ?>">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="fas fa-unlock me-1"></i> Desbloquear</button>
+                            </form>
+                        </li>
                     <?php endforeach; ?>
                 </ul>
             <?php endif; ?>
@@ -723,6 +835,64 @@ if ($aba === 'erros') {
                     </div>
                 </div>
             </div>
+
+            <h2 class="titulo-secao">Conferência com o Stripe</h2>
+            <form method="POST" class="mb-3 d-flex flex-wrap align-items-center gap-2">
+                <input type="hidden" name="acao" value="conferir_stripe"><?= campoCsrf() ?>
+                <button type="submit" class="btn btn-filtrar"><i class="fas fa-sync-alt me-1"></i> Conferir agora</button>
+                <span class="texto-secundario small">
+                    Pergunta ao Stripe a situação real de cada assinatura e compara com o site.
+                    <?= $ultimaConferencia ? 'Última conferência: ' . date('d/m/Y H:i', strtotime($ultimaConferencia)) . '.' : 'Nunca conferido.' ?>
+                </span>
+            </form>
+            <?php if ($conferencia): ?>
+                <?php $comProblema = array_filter($conferencia['linhas'], fn ($l) => !empty($l['divergencias']) || !empty($l['erro']) || !empty($l['avisos'])); ?>
+                <?php if (!$comProblema): ?>
+                    <p class="texto-vazio mb-4">Na conferência das <?= date('H:i', $conferencia['em']) ?>, as <?= count($conferencia['linhas']) ?> assinatura(s) estavam iguais ao Stripe.</p>
+                <?php else: ?>
+                    <div class="table-responsive mb-4">
+                        <table class="table tabela-acessos tabela-cartoes">
+                            <thead><tr><th>Vendedor</th><th>No site</th><th>No Stripe</th><th>O que está diferente</th><th>Ações</th></tr></thead>
+                            <tbody>
+                                <?php foreach ($comProblema as $l): ?>
+                                    <tr>
+                                        <td><?= e($l['vendedor']['nome']) ?></td>
+                                        <td class="text-nowrap"><?= e($l['vendedor']['status_assinatura'] ?: '—') ?></td>
+                                        <td class="text-nowrap"><?= e($l['status_stripe'] ?? '—') ?></td>
+                                        <td class="small">
+                                            <?php if (!empty($l['erro'])): ?>
+                                                <span class="text-danger"><?= e($l['erro']) ?></span>
+                                            <?php else: ?>
+                                                <?= e(implode('; ', array_merge($l['divergencias'], array_map(fn ($a) => 'aviso: ' . $a, $l['avisos'])))) ?>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="td-acoes text-nowrap">
+                                            <?php if (!empty($l['corrigido'])): ?>
+                                                <span class="selo ok">Corrigido</span>
+                                            <?php elseif (!empty($l['divergencias'])): ?>
+                                                <form method="POST">
+                                                    <input type="hidden" name="acao" value="corrigir_stripe"><?= campoCsrf() ?>
+                                                    <input type="hidden" name="vendedor_id" value="<?= (int) $l['vendedor']['id'] ?>">
+                                                    <button type="submit" class="btn btn-sm btn-outline-secondary"
+                                                            onclick="return confirm(<?= e(json_encode('Deixar ' . $l['vendedor']['nome'] . ' igual ao Stripe? (situação: ' . $l['esperado']['status'] . ')')) ?>)">
+                                                        <i class="fas fa-check"></i> Corrigir
+                                                    </button>
+                                                </form>
+                                            <?php else: ?>
+                                                <span class="texto-secundario small">só aviso</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="texto-secundario small mb-4">
+                        "Corrigir" aplica no site o que o Stripe diz, com a mesma regra do aviso automático do Stripe e da tarefa noturna de vencimentos.
+                        Quando o vendedor perde o plano ou fica em atraso, ele é avisado no painel dele.
+                    </p>
+                <?php endif; ?>
+            <?php endif; ?>
 
             <h2 class="titulo-secao">Assinaturas dos vendedores</h2>
             <div class="table-responsive mb-4">
@@ -853,9 +1023,4 @@ if ($aba === 'erros') {
                 Para restaurar: phpMyAdmin → banco → aba Importar → escolher o arquivo .sql.gz.
             </p>
         <?php endif; ?>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<?php require __DIR__ . '/includes/layout_fim.php'; ?>

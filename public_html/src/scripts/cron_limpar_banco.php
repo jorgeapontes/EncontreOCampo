@@ -62,10 +62,12 @@ $TABELAS = [
         'colunas_data' => ['data_criacao'],
         'extra_where'  => 'lida = 1',
     ],
-    // Trilha de auditoria (IP já ofuscado) e histórico dos crons: 1 ano.
+    // Trilha de auditoria (IP já ofuscado) e histórico dos crons: 1 ano. Os pedidos
+    // da LGPD atendidos ficam: são a prova de que o pedido do titular foi respondido.
     'logs_auditoria' => [
         'dias'         => 365,
         'colunas_data' => ['data_hora'],
+        'extra_where'  => "acao <> 'lgpd_exportacao'",
     ],
     'cron_execucoes' => [
         'dias'         => 365,
@@ -538,6 +540,21 @@ if ($alertasEmail) {
     $CRON_EXTRA['email_enviado'] = enviarAlertaManutencao($alertasEmail, $emailAlerta);
     cronLog('----------------------------------------');
     cronLog(count($alertasEmail) . ' alerta(s) para o e-mail: ' . ($CRON_EXTRA['email_enviado'] ? 'enviado.' : 'NÃO enviado (confira o alerta_email e o SMTP).'));
+}
+
+// =============================================
+// RESUMO SEMANAL (toda segunda): uso, pagamentos, segurança, erros e disco
+// =============================================
+if (date('N') === '1' && obterConfig('resumo_semanal', '1') === '1' && filter_var($emailAlerta, FILTER_VALIDATE_EMAIL)
+    && obterConfig('resumo_ultimo_envio', '') !== date('Y-m-d')) {
+    require_once __DIR__ . '/../functions/resumo_functions.php';
+    cronLog('----------------------------------------');
+    if (enviarResumoSemanal($db, $emailAlerta)) {
+        salvarConfig('resumo_ultimo_envio', date('Y-m-d'));
+        cronLog('📊 Resumo semanal enviado.');
+    } else {
+        cronLog('❌ O resumo semanal não foi enviado (confira o SMTP).');
+    }
 }
 
 cronLog('========================================');

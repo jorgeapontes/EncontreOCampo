@@ -55,6 +55,11 @@ try {
     $stmt_acao->bindParam(':registro_id', $usuario_id, PDO::PARAM_INT);
     $stmt_acao->execute();
 
+    // Desativado sai do site na hora (não só quando fechar o navegador)
+    if ($novo_status === 'inativo' && function_exists('encerrarSessoesUsuario')) {
+        encerrarSessoesUsuario($usuario_id);
+    }
+
     require_once __DIR__ . '/../functions/auditoria_functions.php';
     registrarAuditoria('usuario_status', ($novo_status === 'ativo' ? 'Ativou' : 'Desativou') . " o usuário $nome (" . ($alvo['tipo'] ?? '?') . ')',
         'usuario', $usuario_id);

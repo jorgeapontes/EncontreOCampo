@@ -40,6 +40,22 @@ const AUDITORIA_ACOES = [
         'conta_bloqueada'      => 'Conta bloqueada por tentativas',
         'acesso_negado'        => 'Acesso negado',
         'backup_baixado'       => 'Backup baixado',
+        'conta_desbloqueada'   => 'Conta desbloqueada pelo master',
+        'ip_desbloqueado'      => 'IP desbloqueado pelo master',
+        'ip_bloqueado'         => 'IP bloqueado no site pelo master',
+        'sessoes_encerradas'   => 'Sessões encerradas pelo master',
+    ],
+    'Administradores' => [
+        'admin_criado'         => 'Admin criado',
+        'admin_status'         => 'Admin ativado/desativado',
+        'admin_link_senha'     => 'Link de senha enviado ao admin',
+    ],
+    'Pagamentos' => [
+        'pagamento_conferido'  => 'Assinaturas conferidas com o Stripe',
+        'pagamento_corrigido'  => 'Assinatura corrigida pelo Stripe',
+    ],
+    'LGPD' => [
+        'lgpd_exportacao'      => 'Dados exportados a pedido do titular',
     ],
 ];
 

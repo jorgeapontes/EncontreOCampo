@@ -247,6 +247,7 @@ h1, h2, h3, h4, h6 {
 .selo.ok { background: #e8f5ee; color: #146c43; }
 .selo.atencao { background: #fff1e6; color: #a8510b; }
 .selo.problema { background: #fdf3f2; color: var(--cor-secundaria); }
+.selo.neutro { background: #eef1f4; color: #495057; }
 
 .resumo-cron {
     font-size: 0.8rem;

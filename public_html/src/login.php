@@ -173,6 +173,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $_SESSION['usuario_tipo'] = $usuario['tipo'];
                             $_SESSION['usuario_nome'] = $usuario['nome'];
                             $_SESSION['usuario_status'] = $usuario['status'];
+                            // Hora do login: o master pode encerrar as sessões abertas antes disso
+                            $_SESSION['login_em'] = time();
 
                             // Sinalizar login recente para vendedores (para mostrar aviso nas páginas)
                             if ($usuario['tipo'] === 'vendedor') {

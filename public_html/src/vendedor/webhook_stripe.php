@@ -24,6 +24,14 @@ $dotenv->load();
 // Carregar configurações do Stripe e conexão com banco
 require_once __DIR__ . '/../../config/StripeConfig.php';
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/../functions/auditoria_functions.php';
+
+/** Registra o evento na auditoria do master (sem dados de cartão: só tipo, id e cliente). */
+function auditarStripe(string $acao, string $descricao, $event = null): void {
+    $cliente = $event->data->object->customer ?? null;
+    $texto = $event ? "{$event->type} ({$event->id})" . ($cliente ? " · cliente {$cliente}" : '') . ($descricao !== '' ? " · {$descricao}" : '') : $descricao;
+    registrarAuditoria($acao, $texto, 'stripe', null, null, 'Stripe (webhook)', 'sistema');
+}
 
 // Inicializar Stripe
 \Config\StripeConfig::init();
@@ -215,6 +223,7 @@ try {
             
             if (!$subscription_id) {
                 writeLog("❌ Não foi possível encontrar subscription_id no payload", 'ERRO');
+                auditarStripe('stripe_erro', 'subscription_id não encontrado no payload', $event);
                 http_response_code(200); // Stripe espera 200 mesmo se não processarmos
                 exit();
             }
@@ -277,6 +286,7 @@ try {
             // Validar dados obrigatórios
             if (!$v_id || !$p_id || !$sub_id || !$cus_id) {
                 writeLog("❌ Dados incompletos no checkout.session.completed", 'ERRO');
+                auditarStripe('stripe_erro', 'metadados incompletos (vendedor, plano, assinatura ou cliente)', $event);
                 http_response_code(200);
                 exit();
             }
@@ -444,21 +454,38 @@ try {
         
         default:
             writeLog("ℹ️ Evento não processado (ignorado): " . $event->type, 'IGNORADO');
+            $eventoIgnorado = true;
     }
 
     // Responder com sucesso para a Stripe
     http_response_code(200);
     writeLog("✅ Webhook processado com sucesso", 'FIM');
+    if (empty($eventoIgnorado)) {
+        auditarStripe('stripe_evento', '', $event);
+    }
 
 } catch (\Stripe\Exception\SignatureVerificationException $e) {
     // Erro de assinatura - requisição não é realmente da Stripe
     writeLog("🔒 ERRO DE ASSINATURA: " . $e->getMessage(), 'ERRO');
+    // Qualquer um pode chamar esta URL: no máximo 20 registros por hora, para ninguém lotar a auditoria
+    try {
+        $recentes = (int) auditoriaConexao()->query("SELECT COUNT(*) FROM logs_auditoria WHERE acao = 'stripe_assinatura_invalida'
+                                                     AND data_hora >= '" . date('Y-m-d H:i:s', strtotime('-1 hour')) . "'")->fetchColumn();
+    } catch (\Throwable $t) {
+        $recentes = 0;
+    }
+    if ($recentes < 20) {
+        auditarStripe('stripe_assinatura_invalida', 'Requisição recusada: assinatura do webhook inválida (não veio do Stripe)');
+    }
     http_response_code(400);
     exit();
-    
+
 } catch (\Exception $e) {
     // Outros erros
     writeLog("❌ ERRO NO WEBHOOK: " . $e->getMessage() . " em " . $e->getFile() . ":" . $e->getLine(), 'ERRO');
+    auditarStripe('stripe_erro', 'Stripe vai tentar de novo (respondido 500): ' . $e->getMessage(), $event);
+    // Também vai para o log de erros, para o cron contar como erro grave e avisar por e-mail
+    error_log('PHP Fatal error (webhook Stripe, tratado): ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
     http_response_code(500);
     exit();
 }

@@ -2,9 +2,14 @@
 // Incluir a conexão
 require_once __DIR__ . '/../conexao.php'; 
 require_once __DIR__ . '/includes/toast.php';
+require_once __DIR__ . '/../functions/auditoria_functions.php';
 // Redireciona se não for um admin logado
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
+    if (isset($_SESSION['usuario_id'])) { // logado com outro perfil: fica na auditoria
+        require_once __DIR__ . '/../functions/auditoria_functions.php';
+        auditoriaAcessoNegado('admin');
+    }
     header("Location: ../index");
     exit;
 }
@@ -150,6 +155,8 @@ try {
         }
 
         $conn->commit();
+        registrarAuditoria('cadastro_rejeitado', "Rejeitou o cadastro de {$rejeitada['nome']}"
+            . ($rejeitada['tipo_solicitacao'] ? " ({$rejeitada['tipo_solicitacao']})" : ''), 'solicitacao', $solicitacao_id);
         adminToast(
             'rejeitado',
             'Cadastro rejeitado',
@@ -183,14 +190,18 @@ try {
     }
 
     // VERIFICAR SE O EMAIL JÁ EXISTE NA TABELA USUARIOS
-    $sql_check_email = "SELECT id FROM usuarios WHERE email = :email";
+    $sql_check_email = "SELECT id, tipo FROM usuarios WHERE email = :email";
     $stmt_check = $conn->prepare($sql_check_email);
     $stmt_check->bindParam(':email', $email);
     $stmt_check->execute();
-    
+
     if ($stmt_check->rowCount() > 0) {
         // Email já existe, vamos apenas atualizar a solicitação
         $usuario_existente = $stmt_check->fetch(PDO::FETCH_ASSOC);
+        // Nunca transformar a conta master (dono do sistema) em outro tipo
+        if ($usuario_existente['tipo'] === 'master') {
+            throw new Exception("Este e-mail pertence a uma conta que não pode ser alterada. Rejeite a solicitação.");
+        }
         $novo_usuario_id = $usuario_existente['id'];
         
         // Atualizar o usuário existente
@@ -452,6 +463,7 @@ try {
 
     // 3.2.6. FINALIZAR TRANSAÇÃO
     $conn->commit();
+    registrarAuditoria('cadastro_aprovado', "Aprovou o cadastro de {$solicitacao['nome']} ({$tipo_usuario})", 'usuario', $novo_usuario_id);
     adminToast(
         'aprovado',
         'Cadastro aprovado',

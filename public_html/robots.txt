@@ -15,30 +15,30 @@ User-agent: *
 Allow: /
 
 # Áreas autenticadas / painéis por tipo de usuário
-Disallow: /src/admin/
-Disallow: /src/comprador/
-Disallow: /src/vendedor/
-Disallow: /src/transportador/
+Disallow: /admin/
+Disallow: /comprador/
+Disallow: /vendedor/
+Disallow: /transportador/
 
 # Chat (conversas privadas entre usuários)
-Disallow: /src/chat/
-Disallow: /src/chat_transportador/
+Disallow: /chat/
+Disallow: /chat_transportador/
 
 # Páginas que exigem login ou expõem dados de usuários (não são conteúdo de busca)
-Disallow: /src/verperfil
-Disallow: /src/notificacoes
-Disallow: /src/avaliar
-Disallow: /src/avaliacoes
-Disallow: /src/procurando_transportador
-Disallow: /src/logout
+Disallow: /verperfil
+Disallow: /notificacoes
+Disallow: /avaliar
+Disallow: /avaliacoes
+Disallow: /procurando_transportador
+Disallow: /logout
 
 # Endpoints e processadores (não são páginas)
-Disallow: /src/processar_
-Disallow: /src/*_ajax
-Disallow: /src/scripts/
-Disallow: /src/cron/
-Disallow: /src/stripe/
-Disallow: /src/webhooks/
+Disallow: /processar_
+Disallow: /*_ajax
+Disallow: /scripts/
+Disallow: /cron/
+Disallow: /stripe/
+Disallow: /webhooks/
 Disallow: /includes/
 
 # Uploads privados de usuários (documentos, chat, comprovantes de entrega)

@@ -84,18 +84,18 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 
 sitemapUrl($base . '/', $ultimaAtualizacao);
-sitemapUrl($base . '/src/anuncios', $ultimaAtualizacao);
+sitemapUrl($base . '/anuncios', $ultimaAtualizacao);
 
 foreach ($anuncios as $anuncio) {
     sitemapUrl(
-        $base . '/src/visualizar_anuncio?anuncio_id=' . (int)$anuncio['id'],
+        $base . '/visualizar_anuncio?anuncio_id=' . (int)$anuncio['id'],
         sitemapData($anuncio['lastmod'])
     );
 }
 
 foreach ($vendedores as $vendedorId => $lastmod) {
     sitemapUrl(
-        $base . '/src/perfil_vendedor?vendedor_id=' . (int)$vendedorId,
+        $base . '/perfil_vendedor?vendedor_id=' . (int)$vendedorId,
         sitemapData($lastmod)
     );
 }

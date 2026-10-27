@@ -52,6 +52,8 @@ $tipo_usuario = $_SESSION['usuario_tipo'] ?? '';
 $nav_items = [];
 if (in_array($tipo_usuario, ['admin', 'vendedor', 'comprador', 'transportador'], true)) {
     $nav_items[] = ['key' => 'painel', 'label' => 'Painel', 'href' => $tipo_usuario . '/dashboard'];
+} elseif ($tipo_usuario === 'master') {
+    $nav_items[] = ['key' => 'painel', 'label' => 'Painel', 'href' => 'master/monitoramento'];
 }
 if (in_array($tipo_usuario, ['vendedor', 'comprador', 'transportador'], true)) {
     $nav_items[] = ['key' => 'perfil', 'label' => 'Meu Perfil', 'href' => $tipo_usuario . '/perfil'];
@@ -59,12 +61,14 @@ if (in_array($tipo_usuario, ['vendedor', 'comprador', 'transportador'], true)) {
 
 /**
  * Converte a URL gravada na notificação em um link válido a partir desta
- * página (que fica em src/). O sistema gravou URLs em vários formatos ao
- * longo do tempo, então isso também corrige as notificações antigas:
- *   "src/vendedor/x.php"  -> relativa à raiz do site
- *   "/src/vendedor/x"     -> absoluta
- *   "../avaliar.php"      -> escrita a partir de uma subpasta de src/
- *   "avaliar.php"         -> já relativa a src/
+ * página. As páginas ficam em src/, mas o "src" não aparece mais na URL
+ * (.htaccess): esta página abre em /notificacoes e todo link vira relativo
+ * a ela, sem "src/" e sem ".php". O sistema gravou URLs em vários formatos
+ * ao longo do tempo, então isso também corrige as notificações antigas:
+ *   "src/vendedor/x.php"       -> "vendedor/x"
+ *   "/src/vendedor/x"          -> "vendedor/x"
+ *   "../../src/chat/chat.php"  -> "chat/chat"
+ *   "../avaliar.php?id=1"      -> "avaliar?id=1"
  */
 function urlNotificacao($url) {
     $url = trim((string)$url);
@@ -81,16 +85,15 @@ function urlNotificacao($url) {
     // Página que nunca existiu: as solicitações pendentes ficam no dashboard do admin
     $url = preg_replace('#^/?src/admin/solicitacoes(\.php)?#', 'src/admin/dashboard', $url);
 
-    if ($url[0] === '/') {
-        return '..' . $url;
-    }
-    if (strpos($url, 'src/') === 0) {
-        return '../' . $url;
-    }
+    $url = ltrim($url, '/');
     while (strpos($url, '../') === 0) {
         $url = substr($url, 3);
     }
-    return $url;
+    if (strpos($url, 'src/') === 0) {
+        $url = substr($url, 4);
+    }
+    // "pagina.php?x=1" -> "pagina?x=1" (o .htaccess redirecionaria de qualquer jeito)
+    return preg_replace('#\.php(?=$|[?\#])#', '', $url);
 }
 ?>
 

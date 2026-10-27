@@ -175,11 +175,11 @@ http_response_code(404);
 
             <div class="acoes">
                 <a href="/" class="botao botao-primario"><i class="fas fa-home" aria-hidden="true"></i> Voltar ao início</a>
-                <a href="/src/anuncios" class="botao botao-secundario"><i class="fas fa-store" aria-hidden="true"></i> Ver anúncios</a>
+                <a href="/anuncios" class="botao botao-secundario"><i class="fas fa-store" aria-hidden="true"></i> Ver anúncios</a>
             </div>
 
             <p class="ajuda">
-                Precisa de ajuda? Veja o <a href="/src/faq">FAQ</a> ou escreva para
+                Precisa de ajuda? Veja o <a href="/faq">FAQ</a> ou escreva para
                 <a href="mailto:contato@encontreocampo.com.br">contato@encontreocampo.com.br</a>.
             </p>
         </div>

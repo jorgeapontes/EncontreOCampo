@@ -3,6 +3,10 @@ require_once __DIR__ . '/../conexao.php';
 require_once __DIR__ . '/includes/toast.php';
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
+    if (isset($_SESSION['usuario_id'])) { // logado com outro perfil: fica na auditoria
+        require_once __DIR__ . '/../functions/auditoria_functions.php';
+        auditoriaAcessoNegado('admin');
+    }
     header("Location: ../index");
     exit;
 }
@@ -21,10 +25,18 @@ if ($usuario_id === false || $usuario_id === null || !in_array($novo_status, ['a
 }
 
 try {
-    $stmt_nome = $conn->prepare("SELECT nome FROM usuarios WHERE id = :id");
+    $stmt_nome = $conn->prepare("SELECT nome, tipo FROM usuarios WHERE id = :id");
     $stmt_nome->bindParam(':id', $usuario_id, PDO::PARAM_INT);
     $stmt_nome->execute();
-    $nome = $stmt_nome->fetchColumn() ?: "Usuário #$usuario_id";
+    $alvo = $stmt_nome->fetch(PDO::FETCH_ASSOC) ?: [];
+    $nome = $alvo['nome'] ?? "Usuário #$usuario_id";
+
+    // A conta master (dono do sistema) não é gerenciada pelo admin
+    if (($alvo['tipo'] ?? '') === 'master') {
+        adminToast('erro', 'Não foi possível alterar', 'Usuário não encontrado.');
+        header('Location: todos_usuarios');
+        exit;
+    }
 
     $sql = "UPDATE usuarios SET status = :status WHERE id = :id";
     $stmt = $conn->prepare($sql);
@@ -42,6 +54,10 @@ try {
     $stmt_acao->bindParam(':acao', $acao_desc);
     $stmt_acao->bindParam(':registro_id', $usuario_id, PDO::PARAM_INT);
     $stmt_acao->execute();
+
+    require_once __DIR__ . '/../functions/auditoria_functions.php';
+    registrarAuditoria('usuario_status', ($novo_status === 'ativo' ? 'Ativou' : 'Desativou') . " o usuário $nome (" . ($alvo['tipo'] ?? '?') . ')',
+        'usuario', $usuario_id);
 
     if ($novo_status === 'ativo') {
         adminToast('aprovado', 'Usuário ativado', "$nome voltou a ter acesso à plataforma.");

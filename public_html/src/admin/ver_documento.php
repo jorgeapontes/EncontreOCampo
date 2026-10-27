@@ -7,6 +7,10 @@
 require_once __DIR__ . '/../conexao.php';
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
+    if (isset($_SESSION['usuario_id'])) { // logado com outro perfil: fica na auditoria
+        require_once __DIR__ . '/../functions/auditoria_functions.php';
+        auditoriaAcessoNegado('admin');
+    }
     http_response_code(403);
     exit('Acesso negado.');
 }
@@ -60,6 +64,11 @@ if (
     http_response_code(404);
     exit('Documento não encontrado.');
 }
+
+// LGPD: quem viu qual documento de identidade fica na auditoria
+require_once __DIR__ . '/../functions/auditoria_functions.php';
+$nomesDocumento = ['rosto' => 'foto do rosto', 'frente' => 'documento (frente)', 'verso' => 'documento (verso)'];
+registrarAuditoria('documento_visto', 'Viu ' . $nomesDocumento[$tipo] . ' de ' . auditoriaUsuario($usuario_id), 'usuario', $usuario_id);
 
 // Detecta o tipo real do arquivo pelo conteúdo (não confia na extensão do nome)
 $finfo = finfo_open(FILEINFO_MIME_TYPE);

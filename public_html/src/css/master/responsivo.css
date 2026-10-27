@@ -1,0 +1,112 @@
+/* Tabelas viram cartões quando não cabem na tela (copiado do css/responsivo.css do Risenglish).
+   O script em src/master/includes/responsivo.php liga a classe .em-cartoes. */
+.table-responsive:has(> .em-cartoes) {
+    overflow: visible;
+}
+
+table.em-cartoes,
+table.em-cartoes tbody,
+table.em-cartoes tr,
+table.em-cartoes td {
+    display: block;
+    width: 100%;
+}
+
+/* Em espaços largos (tablet), os cartões ficam em 2 colunas */
+table.em-cartoes tbody {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 12px;
+}
+
+table.em-cartoes {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    --bs-table-bg: transparent;
+    --bs-table-striped-bg: transparent;
+    --bs-table-hover-bg: transparent;
+}
+
+table.em-cartoes thead {
+    display: none;
+}
+
+table.em-cartoes tr {
+    padding: 4px 14px;
+    background: #fff;
+    border: 1px solid #e3e5e8 !important;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+table.em-cartoes tr.table-secondary,
+table.em-cartoes tr.linha-inativa {
+    background: #f1f3f5;
+}
+
+table.em-cartoes td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    min-height: 44px;
+    padding: 8px 0 !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-align: right;
+    white-space: normal !important;
+}
+
+table.em-cartoes td + td {
+    border-top: 1px solid #f1f3f5 !important;
+}
+
+table.em-cartoes td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    margin-right: auto;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #6c757d;
+    text-align: left;
+}
+
+/* Primeira célula: título do cartão, sem rótulo */
+table.em-cartoes td.td-titulo {
+    justify-content: flex-start;
+    text-align: left;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+table.em-cartoes td.td-titulo::before,
+table.em-cartoes td[data-label=""]::before {
+    display: none;
+}
+
+/* Células de ações: botões lado a lado, quebrando linha se precisar */
+table.em-cartoes td.td-acoes > * {
+    margin-left: 0 !important;
+}
+
+table.em-cartoes td.td-acoes {
+    gap: 8px;
+}
+
+/* Linha "nenhum registro" (colspan) ocupa o cartão inteiro e fica centralizada */
+table.em-cartoes td[colspan] {
+    justify-content: center;
+    text-align: center;
+}
+
+table.em-cartoes tr:has(> td[colspan]) {
+    grid-column: 1 / -1;
+}
+
+table.em-cartoes td[colspan]::before {
+    display: none;
+}
+

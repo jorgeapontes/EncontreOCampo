@@ -4,6 +4,10 @@ require_once __DIR__ . '/../conexao.php';
 
 // Verificar se é admin
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
+    if (isset($_SESSION['usuario_id'])) { // logado com outro perfil: fica na auditoria
+        require_once __DIR__ . '/../functions/auditoria_functions.php';
+        auditoriaAcessoNegado('admin');
+    }
     header("Location: ../login");
     exit();
 }
@@ -37,11 +41,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['excluir_conversa'])) 
         $stmt_delete_conversa->bindParam(':conversa_id', $conversa_id_excluir, PDO::PARAM_INT);
         $stmt_delete_conversa->execute();
         
-        // Registrar no log de auditoria (se quiser manter um histórico)
-        // Antes de excluir tudo, podemos salvar em uma tabela de backup se necessário
-        
         $conn->commit();
-        
+
+        require_once __DIR__ . '/../functions/auditoria_functions.php';
+        registrarAuditoria('chat_excluido', "Excluiu a conversa #{$conversa_id_excluir} e todas as mensagens dela", 'conversa', $conversa_id_excluir);
+
         $mensagem_sucesso = "Conversa excluída permanentemente do banco de dados!";
         
         // Redirecionar para evitar reenvio do formulário

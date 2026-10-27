@@ -21,7 +21,7 @@ try {
     $base_url = $protocol . '://' . $host;
     
     // URL de retorno com parâmetro para identificar que vem do Stripe
-    $return_url = $base_url . '/src/vendedor/gerenciar_assinatura.php?return_from_stripe=1';
+    $return_url = $base_url . '/vendedor/gerenciar_assinatura.php?return_from_stripe=1';
     
     // Cria o link seguro para o Portal do Cliente do Stripe
     $session = \Stripe\BillingPortal\Session::create([

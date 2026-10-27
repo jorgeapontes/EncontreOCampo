@@ -4,6 +4,10 @@
 require_once __DIR__ . '/../conexao.php';
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
+    if (isset($_SESSION['usuario_id'])) { // logado com outro perfil: fica na auditoria
+        require_once __DIR__ . '/../functions/auditoria_functions.php';
+        auditoriaAcessoNegado('admin');
+    }
     header('Content-Type: application/json');
     echo json_encode(['error' => 'Acesso não autorizado']);
     exit();
@@ -22,7 +26,7 @@ $user_id = $_GET['id'];
 
 try {
     // Buscar dados do usuário
-    $sql = "SELECT * FROM usuarios WHERE id = :id";
+    $sql = "SELECT * FROM usuarios WHERE id = :id AND tipo <> 'master'";
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
     $stmt->execute();

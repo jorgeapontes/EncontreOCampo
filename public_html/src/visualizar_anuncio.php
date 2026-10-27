@@ -320,7 +320,7 @@ $unidade = htmlspecialchars($anuncio['unidade_medida']);
 // COMPARTILHAMENTO (prévia no WhatsApp/redes via Open Graph)
 // ============================================================
 $url_site = 'https://encontreocampo.com.br';
-$url_anuncio = $url_site . '/src/visualizar_anuncio?anuncio_id=' . $anuncio_id;
+$url_anuncio = $url_site . '/visualizar_anuncio?anuncio_id=' . $anuncio_id;
 
 // Imagens são gravadas relativas a src/ ("../uploads/...") ou à raiz ("uploads/...")
 $og_imagem = $url_site . '/img/logo-nova.png';

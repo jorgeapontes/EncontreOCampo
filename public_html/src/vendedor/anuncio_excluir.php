@@ -32,7 +32,7 @@ try {
     $conn = $database->getConnection();
     
     // Verificar se o vendedor tem permissão para excluir este anúncio
-    $sql_verificar = "SELECT p.id, p.imagem_url FROM produtos p 
+    $sql_verificar = "SELECT p.id, p.nome, p.imagem_url FROM produtos p 
                      INNER JOIN vendedores v ON p.vendedor_id = v.id 
                      WHERE p.id = :anuncio_id AND v.usuario_id = :usuario_id";
     
@@ -81,21 +81,9 @@ try {
     $stmt_excluir->bindParam(':id', $anuncio_id, PDO::PARAM_INT);
     
     if ($stmt_excluir->execute()) {
-        // Registrar ação no log (opcional)
-        $sql_log = "INSERT INTO log_alteracoes (usuario_id, acao, detalhes, data) 
-                   VALUES (:usuario_id, 'EXCLUIR_ANUNCIO', 
-                   CONCAT('Anúncio excluído - ID: ', :anuncio_id), NOW())";
-        
-        try {
-            $stmt_log = $conn->prepare($sql_log);
-            $stmt_log->bindParam(':usuario_id', $_SESSION['usuario_id'], PDO::PARAM_INT);
-            $stmt_log->bindParam(':anuncio_id', $anuncio_id, PDO::PARAM_INT);
-            $stmt_log->execute();
-        } catch (Exception $e) {
-            // Não falhar se o log não funcionar
-            error_log("Erro ao registrar log: " . $e->getMessage());
-        }
-        
+        require_once __DIR__ . '/../functions/auditoria_functions.php';
+        registrarAuditoria('anuncio_excluido', "Excluiu o anúncio #{$anuncio_id} ({$anuncio['nome']})", 'anuncio', $anuncio_id);
+
         echo json_encode(['success' => true, 'message' => 'Anúncio excluído com sucesso!']);
     } else {
         echo json_encode(['success' => false, 'message' => 'Erro ao excluir o anúncio.']);

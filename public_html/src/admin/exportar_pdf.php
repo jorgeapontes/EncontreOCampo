@@ -5,6 +5,10 @@ require_once __DIR__ . '/fpdf/fpdf.php';
 
 // 1. Verificar permissões
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
+    if (isset($_SESSION['usuario_id'])) { // logado com outro perfil: fica na auditoria
+        require_once __DIR__ . '/../functions/auditoria_functions.php';
+        auditoriaAcessoNegado('admin');
+    }
     header("Location: ../login");
     exit();
 }
@@ -221,6 +225,10 @@ if (count($mensagens) > 0) {
     $pdf->SetFont('Arial', 'I', 10);
     $pdf->Cell(0, 10, utf8_decode('Nenhuma mensagem trocada nesta conversa.'), 0, 1, 'C');
 }
+
+require_once __DIR__ . '/../functions/auditoria_functions.php';
+registrarAuditoria('chat_exportado', "Exportou em PDF a conversa #{$conversa_id} entre {$conversa['comprador_nome']} e {$conversa['vendedor_nome']} ({$conversa['produto_nome']})",
+    'conversa', $conversa_id);
 
 // Saída do arquivo (D = Download)
 $nomeArquivo = 'ChatEOC_' . $conversa_id . '_' . date('Ymd_Hi') . '.pdf';

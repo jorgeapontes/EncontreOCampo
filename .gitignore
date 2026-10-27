@@ -1,0 +1,3 @@
+# Pasta privada do ambiente local (backups do banco e log de erros do PHP).
+# Em produção ela fica em /home/u569225384/domains/encontreocampo.com.br/privado
+/privado/

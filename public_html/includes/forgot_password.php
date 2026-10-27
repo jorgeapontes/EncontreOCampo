@@ -44,7 +44,7 @@ $conn = $database->getConnection();
         </form>
         
         <div class="back-link">
-            <a href="../src/login">← Voltar para o Login</a>
+            <a href="../login">← Voltar para o Login</a>
         </div>
     </div>
 </body>

@@ -28,7 +28,13 @@ $active_nav   = $active_nav   ?? '';
 $mostrar_sino = $mostrar_sino ?? true;
 
 if (!isset($nav_items)) {
-    if ($nav_logado && $nav_tipo !== '') {
+    if ($nav_logado && $nav_tipo === 'master') {
+        // O master só tem o monitoramento (sem chats nem perfil)
+        $nav_items = [
+            ['key' => 'anuncios', 'label' => 'Anúncios', 'href' => 'anuncios'],
+            ['key' => 'painel',   'label' => 'Painel',   'href' => 'master/monitoramento'],
+        ];
+    } elseif ($nav_logado && $nav_tipo !== '') {
         $nav_items = [
             ['key' => 'anuncios', 'label' => 'Anúncios',   'href' => 'anuncios'],
             ['key' => 'painel',   'label' => 'Painel',     'href' => "$nav_tipo/dashboard"],

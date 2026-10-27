@@ -1215,7 +1215,7 @@ function resetAutoSlide() {
 }
 
 function verAnuncio(id) {
-    window.location.href = `src/visualizar_anuncio?anuncio_id=${id}`;
+    window.location.href = `visualizar_anuncio?anuncio_id=${id}`;
 }
 
 // ===============================================
@@ -1365,7 +1365,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Função para verificar notificações não lidas
 function verificarNotificacoes() {
     if (document.querySelector('.fa-bell')) {
-        fetch('src/verificar_notificacoes.php')
+        fetch('verificar_notificacoes')
             .then(response => response.json())
             .then(data => {
                 const badge = document.querySelector('.notificacao-badge');

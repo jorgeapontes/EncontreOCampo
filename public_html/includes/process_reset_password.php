@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nova_senha = $_POST['nova_senha'] ?? '';
     
     // Validar token
-    $sql = "SELECT id FROM usuarios WHERE reset_token = ? AND reset_token_expira > NOW()";
+    $sql = "SELECT id, nome, tipo FROM usuarios WHERE reset_token = ? AND reset_token_expira > NOW()";
     $stmt = $conn->prepare($sql);
     $stmt->execute([$token]);
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (strlen($nova_senha) < 8) {
         $_SESSION['message'] = "A senha deve ter pelo menos 8 caracteres!";
         $_SESSION['message_type'] = 'error';
-        header("Location: ../src/reset_senha?token=$token");
+        header("Location: reset_password?token=" . urlencode($token));
         exit;
     }
     
@@ -37,9 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Atualizar senha e limpar token
     $sql_update = "UPDATE usuarios SET senha = ?, reset_token = NULL, reset_token_expira = NULL WHERE id = ?";
     $stmt_update = $conn->prepare($sql_update);
-    $stmt_update->execute([$senha_hash, $usuario['id']]);
-    
-    if ($stmt_update->execute()) {
+
+    if ($stmt_update->execute([$senha_hash, $usuario['id']])) {
+        require_once __DIR__ . '/../src/functions/auditoria_functions.php';
+        registrarAuditoria('senha_redefinida', 'Redefiniu a senha pelo link de "esqueci a senha"', 'usuario', $usuario['id'],
+            (int) $usuario['id'], $usuario['nome'], $usuario['tipo']);
         $_SESSION['message'] = "Senha alterada com sucesso! Você já pode fazer login.";
         $_SESSION['message_type'] = 'success';
     } else {
@@ -48,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $conn = null;
     
-    header('Location: ../src/login'); // Sua página de login
+    header('Location: ../login'); // Sua página de login
     exit;
 }
 ?>

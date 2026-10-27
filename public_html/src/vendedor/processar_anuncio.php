@@ -83,6 +83,10 @@ try {
     $stmt->execute();
 
     $db->commit();
+    if ($acao === 'deletar') {
+        require_once __DIR__ . '/../functions/auditoria_functions.php';
+        registrarAuditoria('anuncio_excluido', "Excluiu o anúncio #{$anuncio_id} ({$nome_anuncio})", 'anuncio', $anuncio_id);
+    }
     $_SESSION['mensagem_anuncio_sucesso'] = $mensagem_sucesso;
 
 } catch (Exception $e) {

@@ -6,6 +6,7 @@
 // diferentes (um dos sintomas: login funciona mas páginas internas não
 // reconhecem o usuário logado).
 require_once 'conexao.php';
+require_once __DIR__ . '/functions/auditoria_functions.php';
 
 // Define o fuso horário para garantir que o tempo de bloqueio seja preciso
 date_default_timezone_set('America/Sao_Paulo');
@@ -186,6 +187,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 case 'admin':
                                     header("Location: admin/dashboard");
                                     break;
+                                case 'master':
+                                    header("Location: master/monitoramento");
+                                    break;
                                 case 'comprador':
                                 case 'vendedor':
                                 case 'transportador':
@@ -239,6 +243,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $stmtUpdate->execute();
 
                             registrarLogAcesso($db, $usuario['id'], $email, $ip_atual, false, 'senha_incorreta');
+                            if ($tentativas === $MAX_TENTATIVAS_CONTA) {
+                                registrarAuditoria('conta_bloqueada', "Conta bloqueada por {$TEMPO_BLOQUEIO_MINUTOS} min após {$tentativas} senhas erradas",
+                                    'usuario', $usuario['id'], (int) $usuario['id'], $usuario['nome'], $usuario['tipo']);
+                            }
                         } else {
                             // Mensagem genérica para não revelar se o e-mail existe
                             $erro = "E-mail ou senha inválidos";

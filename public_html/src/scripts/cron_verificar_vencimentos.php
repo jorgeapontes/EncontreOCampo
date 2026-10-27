@@ -126,7 +126,7 @@ try {
             }
 
             if ($acao !== 'sem_mudanca' && $mensagem) {
-                $stmtNotificar->execute([$vendedor['usuario_id'], $mensagem, '/src/vendedor/gerenciar_assinatura']);
+                $stmtNotificar->execute([$vendedor['usuario_id'], $mensagem, 'vendedor/gerenciar_assinatura']);
             }
 
             $db->commit();

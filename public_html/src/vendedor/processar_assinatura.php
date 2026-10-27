@@ -54,8 +54,8 @@ if ($id_plano && $usuario_id) {
             $base_url = $protocol . '://' . $host;
             
             // URLs de redirecionamento dinâmicas
-            $success_url = $base_url . '/src/vendedor/redirects/sucesso.php?session_id={CHECKOUT_SESSION_ID}';
-            $cancel_url = $base_url . '/src/vendedor/escolher_plano.php';
+            $success_url = $base_url . '/vendedor/redirects/sucesso.php?session_id={CHECKOUT_SESSION_ID}';
+            $cancel_url = $base_url . '/vendedor/escolher_plano.php';
             
             $session = \Stripe\Checkout\Session::create([
                 'payment_method_types' => ['card'], 

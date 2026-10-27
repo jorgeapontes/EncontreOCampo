@@ -14,16 +14,16 @@ function safe($string) {
 }
 
 $button_text = 'Login';
-$button_action = 'src/login';
+$button_action = 'login';
 
 if (isset($_SESSION['usuario_nome'])) {
     // CORREÇÃO: Escapar o nome do usuário para evitar XSS
     $button_text = 'Olá, ' . safe($_SESSION['usuario_nome']);
     $usuario_tipo = isset($_SESSION['usuario_tipo']) ? safe($_SESSION['usuario_tipo']) : '';
-    $button_action = 'src/' . $usuario_tipo . '/dashboard.php';
+    $button_action = $usuario_tipo === 'master' ? 'master/monitoramento' : $usuario_tipo . '/dashboard';
 } else {
     $button_text = 'Login';
-    $button_action = 'src/login';
+    $button_action = 'login';
 }
 
 // ============================================================
@@ -118,7 +118,7 @@ function precoBR($valor) {
                     </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                     <li class="nav-item">
-                        <a href="src/notificacoes" class="nav-link no-underline">
+                        <a href="notificacoes" class="nav-link no-underline">
                             <span class="icon-wrapper">
                                 <i class="fas fa-bell"></i>
                                 <?php
@@ -191,7 +191,7 @@ function precoBR($valor) {
                                 && (empty($produto['desconto_data_fim']) || $produto['desconto_data_fim'] > date('Y-m-d H:i:s'));
                             $preco_final = $tem_desconto ? $preco_desconto : $preco;
                             $porcentagem = $tem_desconto ? round((($preco - $preco_desconto) / $preco) * 100) : 0;
-                            $link_anuncio = 'src/visualizar_anuncio?anuncio_id=' . (int)$produto['id'];
+                            $link_anuncio = 'visualizar_anuncio?anuncio_id=' . (int)$produto['id'];
                         ?>
                         <div class="product-card" style="animation-delay: <?= $i * 0.1 ?>s">
                             <div class="product-image" role="img" aria-label="<?= safe($produto['nome']) ?>" style="background-image: url('<?= safe(imagemAnuncioHome($produto['imagem_url'])) ?>')">
@@ -234,7 +234,7 @@ function precoBR($valor) {
             </div>
 
             <center>
-                <a href="src/anuncios" class="cta-button cta-anuncios-link">
+                <a href="anuncios" class="cta-button cta-anuncios-link">
                     Ver Todos os Anúncios
                 </a>
             </center>
@@ -310,7 +310,7 @@ function precoBR($valor) {
                     </div>
                 </div>
                 <div class="contact-form">
-                    <form id="mainForm" action="src/processar_solicitacao" method="POST" enctype="multipart/form-data">
+                    <form id="mainForm" action="processar_solicitacao" method="POST" enctype="multipart/form-data">
                         <div class="form-group">
                             <label for="name" class="required">Nome </label>
                             <input type="text" id="name" name="name" required placeholder="Seu nome completo">
@@ -333,7 +333,7 @@ function precoBR($valor) {
                         <div class="form-group form-group-termos">
                             <label class="label-aceite-termos">
                                 <input type="checkbox" id="aceite_termos" name="aceite_termos" value="1" required class="checkbox-termos">
-                                <span>Li e aceito os <a href="src/termos" target="_blank" rel="noopener noreferrer" class="link-termos">termos e condições</a> e a <a href="src/privacidade" target="_blank" rel="noopener noreferrer" class="link-termos">política de privacidade</a></span>
+                                <span>Li e aceito os <a href="termos" target="_blank" rel="noopener noreferrer" class="link-termos">termos e condições</a> e a <a href="privacidade" target="_blank" rel="noopener noreferrer" class="link-termos">política de privacidade</a></span>
                             </label>
                             <small class="form-help">Você precisa aceitar os termos para continuar</small>
                         </div>
@@ -850,17 +850,17 @@ function precoBR($valor) {
                             <li><a href="#comprar">Comprar</a></li>
                             <li><a href="#vender">Vender</a></li>
                             <li><a href="#transporte">Transporte</a></li>
-                            <li><a href="src/anuncios">Anúncios</a>
+                            <li><a href="anuncios">Anúncios</a>
                         </ul>
                     </div>
                     <div class="footer-column">
                         <h4>Suporte</h4>
                         <ul>
                             <li><a href="#contato">Contato</a></li>
-                            <li><a href="src/faq">FAQ</a></li>
-                            <li><a href="src/sobre">Sobre Nós</a></li>
-                            <li><a href="src/termos">Termos de Uso</a></li>
-                            <li><a href="src/privacidade">Política de Privacidade</a></li>
+                            <li><a href="faq">FAQ</a></li>
+                            <li><a href="sobre">Sobre Nós</a></li>
+                            <li><a href="termos">Termos de Uso</a></li>
+                            <li><a href="privacidade">Política de Privacidade</a></li>
                         </ul>
                     </div>
                     <div class="footer-column">

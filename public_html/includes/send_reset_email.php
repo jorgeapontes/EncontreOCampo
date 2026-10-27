@@ -35,6 +35,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sucesso_update = $stmt_update->execute([$token, $expiracao, $usuario['id']]);
 
         if ($sucesso_update) {
+            require_once __DIR__ . '/../src/functions/auditoria_functions.php';
+            registrarAuditoria('reset_solicitado', 'Pediu o link de redefinição de senha', 'usuario', $usuario['id'],
+                (int) $usuario['id'], $usuario['nome']);
+
             // Configurar email
             require_once 'email_config.php';
 

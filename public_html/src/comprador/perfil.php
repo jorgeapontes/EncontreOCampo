@@ -113,6 +113,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $conn->beginTransaction();
 
+            require_once __DIR__ . '/../functions/auditoria_functions.php';
+            $email_anterior = auditoriaEmailAtual((int) $usuario_id);
+
             // 1. Atualizar tabela USUARIOS (Nome e Email)
             $sql_u = "UPDATE usuarios SET nome = :nome, email = :email WHERE id = :id";
             $stmt_u = $conn->prepare($sql_u);
@@ -187,6 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
             $conn->commit();
+            auditoriaEmailAlterado((int) $usuario_id, $email_anterior, (string) $_POST['email']);
             $_SESSION['usuario_nome'] = $_POST['nome']; // Atualiza nome na sessão
             $mensagem_sucesso = "Perfil atualizado com sucesso!";
             

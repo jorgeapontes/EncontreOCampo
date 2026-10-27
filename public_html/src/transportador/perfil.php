@@ -173,8 +173,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['buscar_cep'])) {
             throw new Exception("Erro: Transportador não encontrado no sistema.");
         }
         
+        require_once __DIR__ . '/../functions/auditoria_functions.php';
+        $email_anterior = auditoriaEmailAtual((int) $_SESSION['usuario_id']);
+
         $db->beginTransaction();
-        
+
         // 1. Atualiza USUÁRIO
         $stmt_u = $db->prepare("UPDATE usuarios SET nome = ?, email = ? WHERE id = ?");
         $stmt_u->execute([$nome, $email, $_SESSION['usuario_id']]);
@@ -215,6 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['buscar_cep'])) {
         ]);
 
         $db->commit();
+        auditoriaEmailAlterado((int) $_SESSION['usuario_id'], $email_anterior, (string) $email);
         $mensagem_sucesso = "Perfil atualizado com sucesso!";
         
         // Atualiza variáveis visuais - ADICIONE A FOTO

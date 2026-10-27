@@ -301,6 +301,11 @@ function excluirContaDaSessao(string $tipoEsperado, ?callable $antesDeAnonimizar
         exit();
     }
 
+    // Sem nome nem e-mail: a conta acabou de ser anonimizada a pedido do titular
+    require_once __DIR__ . '/auditoria_functions.php';
+    registrarAuditoria('conta_excluida', "Conta #{$usuarioId} ({$tipoEsperado}) excluída e anonimizada a pedido do titular",
+        'usuario', $usuarioId, $usuarioId, 'Titular (anonimizado)', $tipoEsperado);
+
     // Confirmação para o e-mail original (já não existe mais no banco)
     $arquivoEmail = __DIR__ . '/../../includes/send_notification.php';
     if (is_file($arquivoEmail)) {

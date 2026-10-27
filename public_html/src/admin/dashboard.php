@@ -3,6 +3,10 @@
 require_once __DIR__ . '/../conexao.php'; 
 
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
+    if (isset($_SESSION['usuario_id'])) { // logado com outro perfil: fica na auditoria
+        require_once __DIR__ . '/../functions/auditoria_functions.php';
+        auditoriaAcessoNegado('admin');
+    }
     header("Location: ../index"); 
     exit();
 }
@@ -73,7 +77,7 @@ try {
                     <h3>Usuários ativos</h3>
                     <p>
                         <?php 
-                        $sql_total = "SELECT COUNT(*) as total FROM usuarios WHERE status = 'ativo'";
+                        $sql_total = "SELECT COUNT(*) as total FROM usuarios WHERE status = 'ativo' AND tipo <> 'master'";
                         $stmt_total = $conn->prepare($sql_total);
                         $stmt_total->execute();
                         echo $stmt_total->fetch(PDO::FETCH_ASSOC)['total'];

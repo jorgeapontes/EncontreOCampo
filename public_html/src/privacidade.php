@@ -54,7 +54,7 @@ if ($is_logged_in) {
     <main class="container">
         <div class="page-header">
             <h2>Política de Privacidade</h2>
-            <p>Última atualização: 14/10/2026</p>
+            <p>Última atualização: 28/10/2026</p>
         </div>
 
         <div class="legal-content">
@@ -89,7 +89,9 @@ if ($is_logged_in) {
                     <li>Mensagens trocadas no chat da plataforma, incluindo imagens enviadas</li>
                     <li>Preferências e favoritos</li>
                     <li>Logs de acesso (endereço IP, data/hora e navegador utilizado)</li>
+                    <li>Registros técnicos de erro (página em que o erro ocorreu, navegador e, se você estiver conectado, o número da sua conta), usados apenas para corrigir falhas da plataforma</li>
                 </ul>
+                <p>As fotos enviadas à plataforma (anúncios, chat, avaliações, comprovantes de entrega e foto de perfil) são reduzidas e têm os metadados removidos ao serem salvas, inclusive a localização (GPS) e o modelo do aparelho que muitas câmeras gravam dentro da imagem.</p>
             </div>
 
             <div class="legal-section">
@@ -136,7 +138,8 @@ if ($is_logged_in) {
                     <li>Conexão HTTPS obrigatória em toda a plataforma</li>
                     <li>Controle de acesso restrito a documentos de identidade, disponível somente para administradores autenticados</li>
                     <li>Registro de tentativas de acesso e bloqueio automático em caso de tentativas suspeitas de login</li>
-                    <li>Backups regulares</li>
+                    <li>Registro das ações dos administradores (por exemplo, quem visualizou um documento de identidade ou abriu uma conversa, e quando), para que todo acesso a dados pessoais possa ser verificado</li>
+                    <li>Backups semanais do banco de dados, guardados fora da área pública do servidor</li>
                 </ul>
             </div>
 
@@ -149,11 +152,31 @@ if ($is_logged_in) {
                     <li>Resolver disputas</li>
                     <li>Executar acordos</li>
                 </ul>
-                <p>Dados de transações são mantidos por 5 anos para fins fiscais e legais. Logs de acesso são mantidos por 6 meses, conforme o Marco Civil da Internet (Lei nº 12.965/2014, art. 15), sendo excluídos automaticamente após esse período.</p>
+                <p>Guardamos cada tipo de dado pelos prazos abaixo:</p>
+
                 <p><strong>Fotos de documento e do rosto:</strong></p>
                 <ul>
                     <li>Cadastro aprovado: mantidas enquanto a conta estiver ativa, para eventual nova verificação em caso de suspeita de fraude, e apagadas quando a conta é excluída.</li>
                     <li>Cadastro rejeitado: apagadas automaticamente, junto com os demais dados do cadastro, 30 dias após a rejeição. Esse prazo permite que você conteste a decisão.</li>
+                    <li>Fotos que ficarem sem cadastro vinculado (por exemplo, quando o envio do cadastro é interrompido no meio) são separadas automaticamente e apagadas em até 30 dias.</li>
+                </ul>
+
+                <p><strong>Conversas do chat:</strong></p>
+                <ul>
+                    <li>Conversas abertas e nunca usadas: apagadas após 30 dias.</li>
+                    <li>Conversas que todos os participantes excluíram e que não resultaram em acordo de compra: apagadas 90 dias após a última mensagem.</li>
+                    <li>Imagens enviadas no chat: apagadas quando a conversa fica 12 meses sem novas mensagens. O texto da conversa é mantido, com a indicação de que a imagem foi removida.</li>
+                    <li>Texto das conversas: mantido por até 5 anos após a última mensagem, porque registra os termos combinados entre as partes e pode ser necessário para resolver disputas, inclusive no prazo do Código de Defesa do Consumidor (art. 27). Depois disso, a conversa é apagada.</li>
+                </ul>
+
+                <p><strong>Outros dados:</strong></p>
+                <ul>
+                    <li>Propostas, acordos de compra e registros de pagamento de assinaturas: 5 anos, para fins fiscais e legais.</li>
+                    <li>Logs de acesso (IP, data/hora e navegador de cada login): 6 meses, conforme o Marco Civil da Internet (Lei nº 12.965/2014, art. 15).</li>
+                    <li>Registro das ações dos administradores: 1 ano, com o endereço IP parcialmente ocultado. O registro de que um pedido seu sobre dados pessoais foi atendido é mantido como comprovação desse atendimento.</li>
+                    <li>Notificações do painel já lidas: 6 meses.</li>
+                    <li>Registros técnicos de erro: apagados automaticamente à medida que novos registros são gerados.</li>
+                    <li>Backups do banco de dados: substituídos periodicamente; o mais antigo tem até 6 meses.</li>
                 </ul>
                 <p><strong>Exclusão da conta:</strong> ao excluir sua conta, seu nome, e-mail, CPF/CNPJ, endereço, telefones, dados do veículo, foto de perfil e fotos de documento são apagados ou anonimizados imediatamente. As conversas e propostas das quais você participou continuam disponíveis para a outra parte da negociação, que também tem direito a esse histórico, mas sem os seus dados de identificação.</p>
             </div>

@@ -1243,9 +1243,9 @@ try {
     unset($dadosSolicitacao['confirma_senha']);
     $dadosSolicitacao['senha_hash'] = $senhaHash;
     // Prova do consentimento: quando e qual versão dos documentos foi aceita.
-    // A versão é a data de "Última atualização" de termos.php e privacidade.php.
+    // A versão é a data mais recente de "Última atualização" entre termos.php e privacidade.php.
     $dadosSolicitacao['aceite_termos_em'] = date('Y-m-d H:i:s');
-    $dadosSolicitacao['versao_termos'] = '2026-10-14';
+    $dadosSolicitacao['versao_termos'] = '2026-10-28';
     
     if ($tipoUsuario === 'comprador') {
         $sqlComprador = "INSERT INTO compradores (usuario_id, tipo_pessoa, nome_comercial, cpf_cnpj, cip, cep, rua, numero, complemento, estado, cidade, telefone1, telefone2, plano) 

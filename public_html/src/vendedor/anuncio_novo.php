@@ -125,10 +125,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $max_file_size = 5 * 1024 * 1024; // Aumentado para 5MB
                     
                     if (in_array($file_ext, $allowed_extensions) && $file_size <= $max_file_size) {
-                        $novo_nome = uniqid('prod_', true) . '.' . $file_ext;
-                        $destino_servidor = $upload_dir . $novo_nome;
-                        
-                        if (move_uploaded_file($file_tmp, $destino_servidor)) {
+                        // Guarda já reduzida (functions/imagem_functions.php); JPEG porque vira a prévia do anúncio nas redes
+                        $destino_servidor = salvarImagemOtimizada($file_tmp, $upload_dir . uniqid('prod_', true), 'jpg');
+                        if ($destino_servidor) {
                             $imagens_temp[] = $destino_servidor;
                         }
                     }

@@ -148,10 +148,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['buscar_cep'])) {
         $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
 
         if (in_array($file_extension, $allowed_extensions)) {
-            $new_file_name = 'perfil_' . $transportador_id_fk . '_' . time() . '.' . $file_extension;
-            $dest_path = $upload_dir . $new_file_name;
+            // Guarda já reduzida em WebP (functions/imagem_functions.php)
+            $dest_path = salvarImagemOtimizada($_FILES['foto_perfil']['tmp_name'], $upload_dir . 'perfil_' . $transportador_id_fk . '_' . time());
 
-            if (move_uploaded_file($_FILES['foto_perfil']['tmp_name'], $dest_path)) {
+            if ($dest_path) {
+                $new_file_name = basename($dest_path);
                 // Salvar o caminho relativo correto no banco (relativo ao arquivo perfil.php)
                 $foto_perfil_nova = '../../uploads/transportadores/' . $new_file_name;
                 

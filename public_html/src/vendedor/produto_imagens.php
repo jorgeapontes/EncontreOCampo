@@ -73,10 +73,11 @@ function handleUpload($db, $produto_id) {
         }
         
         // Gerar nome único para o arquivo
-        $novo_nome = uniqid('prod_img_', true) . '.' . $file_ext;
-        $destino_servidor = $upload_dir . $novo_nome;
-        
-        if (move_uploaded_file($file_tmp, $destino_servidor)) {
+        // Guarda já reduzida (functions/imagem_functions.php); JPEG porque vira a prévia do anúncio nas redes
+        $destino_servidor = salvarImagemOtimizada($file_tmp, $upload_dir . uniqid('prod_img_', true), 'jpg');
+
+        if ($destino_servidor) {
+            $novo_nome = basename($destino_servidor);
             // Verificar quantas imagens já existem para este produto
             $query_count = "SELECT COUNT(*) as total FROM produto_imagens WHERE produto_id = :produto_id";
             $stmt_count = $db->prepare($query_count);

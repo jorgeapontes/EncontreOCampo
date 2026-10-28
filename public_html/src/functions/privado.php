@@ -26,4 +26,7 @@ if (!defined('PASTA_PRIVADA')) {
 
     // Bloqueio de IP e sessões encerradas pelo master (aba Segurança)
     require_once __DIR__ . '/seguranca_functions.php';
+
+    // salvarImagemOtimizada(): todo upload de imagem é guardado já reduzido
+    require_once __DIR__ . '/imagem_functions.php';
 }

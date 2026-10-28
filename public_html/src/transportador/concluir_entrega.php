@@ -86,7 +86,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nome_assinatura = "assinatura_" . $entrega_id . "_" . time() . ".png";
             $caminho_assinatura = "../../uploads/entregas/" . $nome_assinatura;
 
-            if (move_uploaded_file($foto['tmp_name'], $caminho_foto)) {
+            // Guarda já reduzida em WebP (functions/imagem_functions.php)
+            $caminho_foto = salvarImagemOtimizada($foto['tmp_name'], "../../uploads/entregas/entrega_" . $entrega_id . "_" . time());
+            if ($caminho_foto) {
+                $nome_foto = basename($caminho_foto);
                 file_put_contents($caminho_assinatura, $data_assinatura);
 
                 // 3. Atualizar Banco de Dados

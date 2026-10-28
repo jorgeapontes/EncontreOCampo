@@ -361,6 +361,122 @@ foreach ($ORFAS as $motivo => $whereOrfa) {
 }
 
 // =============================================
+// CHATS
+// O texto quase não ocupa espaço e é a prova da negociação numa disputa entre
+// comprador e vendedor (prescrição do CDC: 5 anos), por isso a limpeza é
+// conservadora. O ganho de espaço vem das imagens.
+//   1. Conversas vazias (nunca usadas) com mais de 30 dias: apagadas.
+//   2. Conversas excluídas por todas as partes, paradas há mais de 90 dias e
+//      sem acordo fechado: apagadas (mensagens e imagens).
+//   3. Imagens de conversas paradas há mais de 12 meses: o arquivo é apagado e
+//      a mensagem vira "imagem removida" (o texto da conversa fica).
+//   4. Qualquer conversa parada há mais de 5 anos: apagada.
+//   5. Arquivos em uploads/chat que nenhuma mensagem usa (ex.: conversa apagada
+//      pelo admin), com mais de 7 dias: apagados (com trava de segurança).
+// =============================================
+const CHAT_VAZIA_DIAS = 30;
+const CHAT_EXCLUIDA_DIAS = 90;
+const CHAT_IMAGEM_MESES = 12;
+const CHAT_GUARDA_ANOS = 5;
+
+$pastaChat = realpath(__DIR__ . '/../../uploads/chat');
+/** Caminho no disco de uma imagem do chat a partir do texto da mensagem (só dentro de uploads/chat). */
+$arquivoDoChat = function (string $mensagem) use ($pastaChat): ?string {
+    $nome = basename(str_replace('\\', '/', $mensagem));
+    return ($pastaChat && preg_match('/^[\w.-]+\.(jpe?g|png|gif|webp)$/i', $nome) && is_file("$pastaChat/$nome")) ? "$pastaChat/$nome" : null;
+};
+/** Apaga conversas por id: imagens, mensagens, auditoria do chat e a conversa. Retorna [conversas, imagens]. */
+$apagarConversas = function (array $ids) use ($db, $arquivoDoChat): array {
+    $imagens = 0;
+    foreach (array_chunk($ids, 200) as $lote) {
+        $marcas = implode(',', array_fill(0, count($lote), '?'));
+        $stmt = $db->prepare("SELECT mensagem FROM chat_mensagens WHERE conversa_id IN ($marcas) AND tipo = 'imagem'");
+        $stmt->execute($lote);
+        foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $mensagem) {
+            if (($arquivo = $arquivoDoChat((string) $mensagem)) && @unlink($arquivo)) {
+                $imagens++;
+            }
+        }
+        $db->prepare("DELETE FROM chat_mensagens WHERE conversa_id IN ($marcas)")->execute($lote);
+        $db->prepare("DELETE FROM chat_auditoria WHERE conversa_id IN ($marcas)")->execute($lote);
+        $db->prepare("DELETE FROM chat_conversas WHERE id IN ($marcas)")->execute($lote);
+    }
+    return [count($ids), $imagens];
+};
+// Última atividade da conversa; acordo fechado = proposta aceita/assinando do mesmo produto e comprador
+$ATIVIDADE = "COALESCE(cc.ultima_mensagem_data, cc.data_criacao)";
+$SEM_ACORDO = "NOT EXISTS (SELECT 1 FROM propostas pr WHERE pr.produto_id = cc.produto_id AND pr.comprador_id = cc.comprador_id
+                                                       AND pr.status IN ('aceita', 'assinando'))";
+
+cronLog('----------------------------------------');
+cronLog('Chats');
+try {
+    // 1. Vazias
+    $ids = $db->query("SELECT cc.id FROM chat_conversas cc
+                       WHERE cc.data_criacao < NOW() - INTERVAL " . CHAT_VAZIA_DIAS . " DAY
+                         AND NOT EXISTS (SELECT 1 FROM chat_mensagens m WHERE m.conversa_id = cc.id)")->fetchAll(PDO::FETCH_COLUMN);
+    [$n] = $ids ? $apagarConversas($ids) : [0];
+    cronLog("   ✅ $n conversa(s) vazia(s) com mais de " . CHAT_VAZIA_DIAS . ' dias apagada(s).');
+    $totalGeral += $n;
+
+    // 2. Excluídas por todas as partes, paradas e sem acordo
+    $ids = $db->query("SELECT cc.id FROM chat_conversas cc
+                       WHERE cc.comprador_excluiu = 1 AND cc.vendedor_excluiu = 1
+                         AND (cc.transportador_id IS NULL OR cc.transportador_excluiu = 1)
+                         AND $ATIVIDADE < NOW() - INTERVAL " . CHAT_EXCLUIDA_DIAS . " DAY
+                         AND $SEM_ACORDO")->fetchAll(PDO::FETCH_COLUMN);
+    [$n, $img] = $ids ? $apagarConversas($ids) : [0, 0];
+    cronLog("   ✅ $n conversa(s) excluída(s) pelas partes apagada(s) ($img imagem(ns)).");
+    $totalGeral += $n;
+
+    // 3. Imagens de conversas paradas há mais de 12 meses
+    $mensagens = $db->query("SELECT m.id, m.mensagem FROM chat_mensagens m JOIN chat_conversas cc ON cc.id = m.conversa_id
+                             WHERE m.tipo = 'imagem' AND $ATIVIDADE < NOW() - INTERVAL " . CHAT_IMAGEM_MESES . " MONTH")->fetchAll(PDO::FETCH_ASSOC);
+    $stmtSemImagem = $db->prepare("UPDATE chat_mensagens SET tipo = 'texto', mensagem = ? WHERE id = ?");
+    $imagensVelhas = 0;
+    foreach ($mensagens as $m) {
+        if ($arquivo = $arquivoDoChat((string) $m['mensagem'])) {
+            @unlink($arquivo);
+            $imagensVelhas++;
+        }
+        $stmtSemImagem->execute(['[Imagem removida: conversa parada há mais de ' . CHAT_IMAGEM_MESES . ' meses]', $m['id']]);
+    }
+    cronLog("   ✅ $imagensVelhas imagem(ns) de conversas paradas há mais de " . CHAT_IMAGEM_MESES . ' meses apagada(s).');
+
+    // 4. Paradas há mais de 5 anos
+    $ids = $db->query("SELECT cc.id FROM chat_conversas cc WHERE $ATIVIDADE < NOW() - INTERVAL " . CHAT_GUARDA_ANOS . " YEAR")->fetchAll(PDO::FETCH_COLUMN);
+    [$n] = $ids ? $apagarConversas($ids) : [0];
+    cronLog("   ✅ $n conversa(s) parada(s) há mais de " . CHAT_GUARDA_ANOS . ' anos apagada(s).');
+    $totalGeral += $n;
+
+    // 5. Arquivos sem mensagem
+    if ($pastaChat) {
+        $emUso = [];
+        foreach ($db->query("SELECT mensagem FROM chat_mensagens WHERE tipo = 'imagem'") as $m) {
+            $emUso[basename(str_replace('\\', '/', (string) $m['mensagem']))] = true;
+        }
+        $semDono = [];
+        $totalArquivos = 0;
+        foreach (glob("$pastaChat/*.{jpg,jpeg,png,gif,webp}", GLOB_BRACE) ?: [] as $arquivo) {
+            $totalArquivos++;
+            if (!isset($emUso[basename($arquivo)]) && filemtime($arquivo) < time() - 7 * 86400) {
+                $semDono[] = $arquivo;
+            }
+        }
+        // Trava: muitos de uma vez indicam problema na consulta, não lixo de verdade
+        if (count($semDono) > max(5, (int) floor($totalArquivos * 0.3))) {
+            cronLog('   ❌ TRAVA: ' . count($semDono) . " de {$totalArquivos} imagens do chat sem mensagem — acima do limite, nada foi apagado. Confira.");
+        } else {
+            $apagadasSemDono = count(array_filter($semDono, fn ($a) => @unlink($a)));
+            cronLog("   ✅ $apagadasSemDono imagem(ns) do chat sem mensagem apagada(s).");
+        }
+    }
+} catch (Throwable $e) {
+    cronLog('   ❌ ERRO (chats): ' . $e->getMessage());
+    $tabelasComErro[] = 'chats';
+}
+
+// =============================================
 // TOKENS DE "ESQUECI A SENHA" VENCIDOS
 // =============================================
 cronLog('----------------------------------------');
@@ -513,7 +629,14 @@ try {
         }
     }
     $ultimas = $db->query("SELECT cron, MAX(data_hora) FROM cron_execucoes GROUP BY cron")->fetchAll(PDO::FETCH_KEY_PAIR);
+    // "Nunca rodou" só vale depois de o histórico existir há mais de CRON_ATRASO_HORAS:
+    // na primeira noite, os crons que rodam depois desta manutenção ainda não registraram nada.
+    $historicoDesde = strtotime((string) $db->query("SELECT MIN(data_hora) FROM cron_execucoes")->fetchColumn());
+    $historicoMaduro = $historicoDesde && $historicoDesde < time() - CRON_ATRASO_HORAS * 3600;
     foreach (CRONS_AGENDADOS as $cron) {
+        if (!isset($ultimas[$cron]) && !$historicoMaduro) {
+            continue;
+        }
         if ($cron !== 'cron_limpar_banco' && (!isset($ultimas[$cron]) || strtotime($ultimas[$cron]) < time() - CRON_ATRASO_HORAS * 3600)) {
             $alertasEmail[] = "[{$cron}] não rodou nas últimas " . CRON_ATRASO_HORAS . ' h'
                 . (isset($ultimas[$cron]) ? ' (última vez em ' . date('d/m H:i', strtotime($ultimas[$cron])) . ')' : ' (nunca registrou execução)');

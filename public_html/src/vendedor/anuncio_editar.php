@@ -263,9 +263,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             throw new Exception('Um dos arquivos enviados não é uma imagem válida.');
                         }
 
-                        $new_name = uniqid('prod_', true) . '.' . $ext;
-                        
-                        if (move_uploaded_file($tmp, $upload_dir . $new_name)) {
+                        // Guarda já reduzida (functions/imagem_functions.php); JPEG porque vira a prévia do anúncio nas redes
+                        $salvo = salvarImagemOtimizada($tmp, $upload_dir . uniqid('prod_', true), 'jpg');
+
+                        if ($salvo) {
+                            $new_name = basename($salvo);
                             $stmt_ins = $db->prepare("INSERT INTO produto_imagens (produto_id, imagem_url, ordem) VALUES (:pid, :url, 999)");
                             $stmt_ins->execute([':pid' => $anuncio_id, ':url' => $upload_dir . $new_name]);
                             $new_db_id = $db->lastInsertId();

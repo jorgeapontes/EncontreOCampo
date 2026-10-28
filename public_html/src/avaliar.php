@@ -272,10 +272,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $allowed = ['jpg','jpeg','png','gif','webp'];
                     if (!in_array($ext, $allowed)) continue;
 
-                    $newName = 'avaliacao_' . $avaliacao_id . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-                    $destPath = $uploadDir . $newName;
+                    // Guarda já reduzida em WebP (functions/imagem_functions.php)
+                    $destPath = salvarImagemOtimizada($tmpName, $uploadDir . 'avaliacao_' . $avaliacao_id . '_' . time() . '_' . bin2hex(random_bytes(4)));
 
-                    if (@move_uploaded_file($tmpName, $destPath)) {
+                    if ($destPath) {
+                        $newName = basename($destPath);
                         $relativePath = 'uploads/avaliacoes/' . $newName;
                         $ins = $conn->prepare("INSERT INTO avaliacao_fotos (avaliacao_id, caminho) VALUES (:aid, :c)");
                         $ins->bindParam(':aid', $avaliacao_id, PDO::PARAM_INT);

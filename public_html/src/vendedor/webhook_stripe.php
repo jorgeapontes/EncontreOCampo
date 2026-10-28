@@ -58,7 +58,8 @@ function writeLog($message, $type = 'INFO') {
     file_put_contents($logFile, $formattedMessage, FILE_APPEND);
 
     // Em ambiente de desenvolvimento, também pode logar no error_log
-    if ($_ENV['APP_ENV'] ?? 'production' === 'development') {
+    // (os parênteses importam: sem eles o ?? engolia a comparação e tudo ia para o log em produção)
+    if (($_ENV['APP_ENV'] ?? 'production') === 'development') {
         error_log("[WEBHOOK] $message");
     }
 }

@@ -77,13 +77,14 @@ function chatSalvarImagem($file, $prefixo) {
         mkdir($uploadDir, 0755, true);
     }
 
-    $nome = uniqid($prefixo) . '_' . time() . '.' . CHAT_TIPOS_IMAGEM[$mime];
-    if (!move_uploaded_file($file['tmp_name'], $uploadDir . $nome)) {
-        error_log("Falha ao mover arquivo de upload de chat: tmp_name={$file['tmp_name']} destino={$uploadDir}{$nome}");
+    // Guarda já reduzida em WebP (functions/imagem_functions.php); GIF fica como veio
+    $salvo = salvarImagemOtimizada($file['tmp_name'], $uploadDir . uniqid($prefixo) . '_' . time());
+    if (!$salvo) {
+        error_log("Falha ao salvar imagem do chat: tmp_name={$file['tmp_name']} destino={$uploadDir}");
         chatErro(500, 'Falha ao salvar o arquivo.');
     }
 
-    return $nome;
+    return basename($salvo);
 }
 
 // Mensagens marcadas como apagadas pelo admin não são exibidas

@@ -138,10 +138,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
                 
                 if (in_array($file_extension, $allowed_extensions)) {
-                    $new_file_name = 'perfil_' . $usuario_id . '_' . time() . '.' . $file_extension;
-                    $dest_path = $upload_dir . $new_file_name;
-                    
-                    if (move_uploaded_file($_FILES['foto_perfil']['tmp_name'], $dest_path)) {
+                    // Guarda já reduzida em WebP (functions/imagem_functions.php)
+                    $dest_path = salvarImagemOtimizada($_FILES['foto_perfil']['tmp_name'], $upload_dir . 'perfil_' . $usuario_id . '_' . time());
+
+                    if ($dest_path) {
+                        $new_file_name = basename($dest_path);
                         $foto_perfil_url = '../../uploads/compradores/' . $new_file_name;
                         
                         // Deletar foto antiga se existir

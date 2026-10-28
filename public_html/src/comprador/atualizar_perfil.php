@@ -46,13 +46,9 @@ function processarUploadFoto($campo, $usuario_id, $foto_atual = null) {
         mkdir($diretorio, 0777, true);
     }
 
-    // Gerar nome único para o arquivo
-    $extensao = pathinfo($arquivo['name'], PATHINFO_EXTENSION);
-    $nomeArquivo = 'comprador_' . $usuario_id . '_' . time() . '.' . $extensao;
-    $caminhoCompleto = $diretorio . $nomeArquivo;
-
-    // Mover arquivo
-    if (!move_uploaded_file($arquivo['tmp_name'], $caminhoCompleto)) {
+    // Guarda já reduzida em WebP (functions/imagem_functions.php)
+    $caminhoCompleto = salvarImagemOtimizada($arquivo['tmp_name'], $diretorio . 'comprador_' . $usuario_id . '_' . time());
+    if (!$caminhoCompleto) {
         throw new Exception("Erro ao salvar a imagem.");
     }
 

@@ -464,8 +464,10 @@ try {
             }
         }
         // Trava: muitos de uma vez indicam problema na consulta, não lixo de verdade
-        if (count($semDono) > max(5, (int) floor($totalArquivos * 0.3))) {
-            cronLog('   ❌ TRAVA: ' . count($semDono) . " de {$totalArquivos} imagens do chat sem mensagem — acima do limite, nada foi apagado. Confira.");
+        // (--forcar-chat libera, depois de alguém conferir que são sobras mesmo)
+        if (count($semDono) > max(5, (int) floor($totalArquivos * 0.3)) && !in_array('--forcar-chat', $argv ?? [], true)) {
+            cronLog('   ❌ TRAVA: ' . count($semDono) . " de {$totalArquivos} imagens do chat sem mensagem — acima do limite, nada foi apagado."
+                . ' Confira; se forem sobras mesmo, rode uma vez com --forcar-chat.');
         } else {
             $apagadasSemDono = count(array_filter($semDono, fn ($a) => @unlink($a)));
             cronLog("   ✅ $apagadasSemDono imagem(ns) do chat sem mensagem apagada(s).");

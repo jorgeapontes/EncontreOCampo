@@ -479,6 +479,94 @@ try {
 }
 
 // =============================================
+// SOBRAS NAS PASTAS DE UPLOAD (anúncios, perfis, entregas, avaliações)
+// Um arquivo é sobra quando o nome dele não aparece em NENHUMA coluna de texto do
+// banco (de qualquer tabela) e tem mais de 7 dias. Sobras vão para a quarentena
+// PASTA_PRIVADA/quarentena_uploads/AAAA-MM-DD/<pasta>/ e são apagadas de vez depois
+// de 30 dias. Trava por pasta: mais de 2 sobras e mais de 30% dos arquivos de uma
+// vez = não mexe (--forcar-uploads libera, depois de conferir).
+// Documentos e chat têm limpeza própria (cron_limpar_documentos_orfaos e acima).
+// =============================================
+const SOBRAS_PASTAS = ['src/uploads/produtos', 'src/uploads/vendedores', 'src/uploads/compradores',
+                       'uploads/compradores', 'uploads/transportadores', 'uploads/entregas', 'uploads/avaliacoes'];
+const SOBRAS_DIAS_MINIMOS = 7;
+const SOBRAS_QUARENTENA_DIAS = 30;
+
+cronLog('----------------------------------------');
+cronLog('Sobras nas pastas de upload');
+try {
+    // Todos os nomes de imagem citados em qualquer coluna de texto do banco
+    $citados = [];
+    $colunasTexto = $db->query("SELECT table_name, column_name FROM information_schema.columns
+                                WHERE table_schema = DATABASE() AND data_type IN ('varchar', 'char', 'text', 'mediumtext', 'longtext')")->fetchAll(PDO::FETCH_NUM);
+    foreach ($colunasTexto as [$tabela, $coluna]) {
+        $valores = $db->query("SELECT `$coluna` FROM `$tabela` WHERE `$coluna` REGEXP '\\\\.(jpe?g|png|webp|gif)'")->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($valores as $valor) {
+            preg_match_all('/[\w.-]+\.(?:jpe?g|png|webp|gif)/i', (string) $valor, $m);
+            foreach ($m[0] as $nome) {
+                $citados[$nome] = true;
+            }
+        }
+    }
+    if (!$citados) {
+        throw new RuntimeException('nenhuma imagem citada no banco — consulta suspeita, nada foi movido');
+    }
+
+    $raizUploads = dirname(__DIR__, 2); // public_html
+    $quarentenaHoje = PASTA_PRIVADA . '/quarentena_uploads/' . date('Y-m-d');
+    $movidas = 0;
+    $bytesMovidos = 0;
+    foreach (SOBRAS_PASTAS as $pastaRelativa) {
+        $pasta = "$raizUploads/$pastaRelativa";
+        if (!is_dir($pasta)) {
+            continue;
+        }
+        $arquivos = glob("$pasta/*.{jpg,jpeg,png,webp,gif,JPG,JPEG,PNG,WEBP,GIF}", GLOB_BRACE) ?: [];
+        $sobras = array_filter($arquivos, fn ($a) => !isset($citados[basename($a)]) && filemtime($a) < time() - SOBRAS_DIAS_MINIMOS * 86400);
+        if (!$sobras) {
+            continue;
+        }
+        // Até 2 sobras por pasta passam sempre; acima disso, só se forem no máximo 30% da pasta
+        if (count($sobras) > max(2, (int) floor(count($arquivos) * 0.3)) && !in_array('--forcar-uploads', $argv ?? [], true)) {
+            cronLog("   ❌ TRAVA: $pastaRelativa tem " . count($sobras) . ' de ' . count($arquivos)
+                . ' arquivos sem referência no banco — acima do limite, nada movido. Confira; se forem sobras, rode uma vez com --forcar-uploads.');
+            continue;
+        }
+        $destino = "$quarentenaHoje/$pastaRelativa";
+        if (!is_dir($destino) && !@mkdir($destino, 0750, true)) {
+            cronLog("   ❌ Não foi possível criar a quarentena $destino");
+            continue;
+        }
+        foreach ($sobras as $arquivo) {
+            $tamanho = filesize($arquivo);
+            if (@rename($arquivo, "$destino/" . basename($arquivo))) {
+                $movidas++;
+                $bytesMovidos += $tamanho;
+                cronLog('   📦 Para a quarentena: ' . $pastaRelativa . '/' . basename($arquivo));
+            } else {
+                cronLog('   ❌ Falha ao mover: ' . $pastaRelativa . '/' . basename($arquivo));
+            }
+        }
+    }
+    cronLog("   ✅ $movidas sobra(s) para a quarentena (" . tamanhoLegivel($bytesMovidos) . '), apagadas de vez em ' . SOBRAS_QUARENTENA_DIAS . ' dias.');
+
+    // Esvazia as quarentenas antigas
+    foreach (glob(PASTA_PRIVADA . '/quarentena_uploads/*', GLOB_ONLYDIR) ?: [] as $dia) {
+        if (strtotime(basename($dia)) < time() - SOBRAS_QUARENTENA_DIAS * 86400) {
+            $apagadosDia = 0;
+            foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dia, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST) as $item) {
+                $item->isDir() ? @rmdir($item->getPathname()) : (@unlink($item->getPathname()) && $apagadosDia++);
+            }
+            @rmdir($dia);
+            cronLog('   🗑️ Quarentena de ' . date('d/m/Y', strtotime(basename($dia))) . " apagada de vez ($apagadosDia arquivo(s)).");
+        }
+    }
+} catch (Throwable $e) {
+    cronLog('   ❌ ERRO (sobras de upload): ' . $e->getMessage());
+    $tabelasComErro[] = 'sobras de upload';
+}
+
+// =============================================
 // TOKENS DE "ESQUECI A SENHA" VENCIDOS
 // =============================================
 cronLog('----------------------------------------');

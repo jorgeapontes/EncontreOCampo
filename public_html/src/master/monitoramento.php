@@ -203,11 +203,16 @@ $backupAtrasado = !$ultimoBackupTs || (time() - $ultimoBackupTs) > 8 * 86400;
 // ===== Aba Saúde =====
 if ($aba === 'saude') {
     $execucoes = [];
+    $diasExecucoes = 2;
     $ultimaPorCron = [];
     $ultimaManutencao = null;
     $haTrintaDias = null;
     try {
-        $execucoes = $pdo->query("SELECT * FROM cron_execucoes ORDER BY data_hora DESC, id DESC LIMIT 40")->fetchAll(PDO::FETCH_ASSOC);
+        // Padrão: 2 dias (as 5 tarefas de ontem e de hoje); 7 ou 30 para investigar algo
+        $diasExecucoes = in_array((int) ($_GET['dias'] ?? 2), [2, 7, 30], true) ? (int) ($_GET['dias'] ?? 2) : 2;
+        $stmt = $pdo->prepare("SELECT * FROM cron_execucoes WHERE data_hora >= ? ORDER BY data_hora DESC, id DESC");
+        $stmt->execute([date('Y-m-d H:i:s', strtotime("-{$diasExecucoes} days"))]);
+        $execucoes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         foreach ($pdo->query(
             "SELECT c.* FROM cron_execucoes c
              JOIN (SELECT cron, MAX(id) AS id FROM cron_execucoes GROUP BY cron) u ON u.id = c.id"
@@ -495,7 +500,14 @@ require __DIR__ . '/includes/layout_inicio.php';
                 </table>
             </div>
 
-            <h2 class="titulo-secao">Últimas execuções</h2>
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <h2 class="titulo-secao mb-0">Últimas execuções</h2>
+                <div class="btn-group btn-group-sm mb-2" role="group" aria-label="Período">
+                    <?php foreach ([2 => '2 dias', 7 => '7 dias', 30 => '30 dias'] as $dias => $rotulo): ?>
+                        <a href="monitoramento?aba=saude&amp;dias=<?= $dias ?>" class="btn <?= $diasExecucoes === $dias ? 'btn-filtrar' : 'btn-outline-secondary' ?>"><?= $rotulo ?></a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
             <div class="table-responsive mb-4">
                 <table class="table tabela-acessos tabela-cartoes">
                     <thead>
@@ -518,7 +530,7 @@ require __DIR__ . '/includes/layout_inicio.php';
                             </tr>
                         <?php endforeach; ?>
                         <?php if (!$execucoes): ?>
-                            <tr><td colspan="5" class="text-center py-4 texto-vazio">Nenhuma execução registrada ainda.</td></tr>
+                            <tr><td colspan="5" class="text-center py-4 texto-vazio">Nenhuma execução nos últimos <?= $diasExecucoes ?> dias.</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>

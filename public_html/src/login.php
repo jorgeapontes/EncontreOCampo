@@ -327,7 +327,7 @@ function registrarLogAcesso($db, $usuarioId, $email, $ip, $sucesso, $motivoFalha
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Encontre o Campo</title>
     <link rel="shortcut icon" href="../img/logo-nova.png" type="image/x-icon">
-    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/login.css?v=<?= @filemtime(__DIR__ . '/css/login.css') ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
@@ -338,6 +338,9 @@ function registrarLogAcesso($db, $usuarioId, $email, $ip, $sucesso, $motivoFalha
         <div class="login-container">
             <div class="login-header">
                 <div class="login-logo">
+                    <a href="index" class="login-logo-link" aria-label="Voltar para a página inicial">
+                        <img src="../img/logo-nova.png" alt="" class="login-logo-img" width="76" height="76">
+                    </a>
                     <h1>ENCONTRE</h1>
                     <h2>O CAMPO</h2>
                 </div>

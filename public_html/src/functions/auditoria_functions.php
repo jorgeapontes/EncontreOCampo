@@ -49,6 +49,7 @@ const AUDITORIA_ACOES = [
         'admin_criado'         => 'Admin criado',
         'admin_status'         => 'Admin ativado/desativado',
         'admin_link_senha'     => 'Link de senha enviado ao admin',
+        'admin_senha_definida' => 'Senha do admin definida pelo master',
     ],
     'Pagamentos' => [
         'pagamento_conferido'  => 'Assinaturas conferidas com o Stripe',

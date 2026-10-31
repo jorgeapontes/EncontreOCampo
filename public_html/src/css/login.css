@@ -86,6 +86,25 @@
             margin-bottom: 20px;
         }
 
+        /* Símbolo da marca acima do nome; leva de volta à página inicial */
+        .login-logo-link {
+            display: inline-block;
+            border-radius: 50%;
+            transition: transform 0.2s ease;
+        }
+
+        .login-logo-link:hover,
+        .login-logo-link:focus-visible {
+            transform: scale(1.05);
+        }
+
+        .login-logo-img {
+            display: block;
+            width: 76px;
+            height: 76px;
+            margin: 0 auto 4px;
+        }
+
         .login-logo h1 {
             font-size: 2.2rem;
             color: var(--primary-color);
@@ -288,5 +307,10 @@
         padding: 30px 20px;
         max-width: 100%;
         box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .login-logo-img {
+        width: 64px;
+        height: 64px;
     }
 }

@@ -9,6 +9,7 @@
 require_once __DIR__ . '/includes/comum.php';
 
 const ADMIN_LINK_HORAS = 48;
+const ADMIN_SENHA_MINIMA = 8;
 
 /** Gera um link novo para o admin definir a senha e tenta mandar por e-mail. Retorna [enviou, link]. */
 function mandarLinkSenhaAdmin(PDO $pdo, array $admin, bool $novo): array
@@ -28,6 +29,18 @@ function mandarLinkSenhaAdmin(PDO $pdo, array $admin, bool $novo): array
     return [$enviou, $link];
 }
 
+/** Valida a senha escolhida pelo master; retorna a mensagem de erro ou null se estiver boa. */
+function erroNaSenhaAdmin(string $senha, string $confirmacao): ?string
+{
+    if (strlen($senha) < ADMIN_SENHA_MINIMA) {
+        return 'A senha deve ter pelo menos ' . ADMIN_SENHA_MINIMA . ' caracteres.';
+    }
+    if ($senha !== $confirmacao) {
+        return 'A confirmação não confere com a senha.';
+    }
+    return null;
+}
+
 // ===== Ações =====
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $acao = (string) ($_POST['acao'] ?? '');
@@ -39,20 +52,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare("SELECT tipo FROM usuarios WHERE email = ?");
         $stmt->execute([$email]);
         $existente = $stmt->fetchColumn();
+        $erroSenha = erroNaSenhaAdmin((string) ($_POST['senha'] ?? ''), (string) ($_POST['confirma_senha'] ?? ''));
         if (mb_strlen($nome) < 2 || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             avisar('danger', 'Informe o nome e um e-mail válido.');
         } elseif ($existente !== false) {
             avisar('danger', "Já existe uma conta ({$existente}) com esse e-mail. Use outro e-mail para o admin.");
+        } elseif ($erroSenha) {
+            avisar('danger', $erroSenha);
         } else {
-            // Senha aleatória que ninguém conhece: o acesso começa pelo link de definição de senha
+            // A senha é escolhida pelo master; a auditoria registra a criação, nunca a senha
             $pdo->prepare("INSERT INTO usuarios (email, senha, tipo, nome, status, data_criacao) VALUES (?, ?, 'admin', ?, 'ativo', NOW())")
-                ->execute([$email, password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT), mb_substr($nome, 0, 100)]);
+                ->execute([$email, password_hash((string) $_POST['senha'], PASSWORD_DEFAULT), mb_substr($nome, 0, 100)]);
             $novoId = (int) $pdo->lastInsertId();
-            registrarAuditoria('admin_criado', "Criou o admin {$nome} ({$email})", 'usuario', $novoId);
-            [$enviou, $link] = mandarLinkSenhaAdmin($pdo, ['id' => $novoId, 'nome' => $nome, 'email' => $email], true);
-            avisar($enviou ? 'success' : 'warning', $enviou
-                ? "Admin {$nome} criado. Ele recebeu por e-mail o link para definir a senha (vale " . ADMIN_LINK_HORAS . ' h).'
-                : "Admin {$nome} criado, mas o e-mail não saiu. Mande este link para ele (vale " . ADMIN_LINK_HORAS . " h): {$link}");
+            registrarAuditoria('admin_criado', "Criou o admin {$nome} ({$email}) com senha definida pelo master", 'usuario', $novoId);
+            avisar('success', "Admin {$nome} criado. Passe a ele o e-mail e a senha que você definiu; ele já pode entrar pelo login do site.");
         }
     } else {
         $id = (int) ($_POST['usuario_id'] ?? 0);
@@ -69,6 +82,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             registrarAuditoria('admin_status', ($novo === 'ativo' ? 'Reativou' : 'Desativou') . " o admin {$admin['nome']}", 'usuario', $id);
             avisar('success', $novo === 'ativo' ? "{$admin['nome']} voltou a ter acesso ao painel do admin." : "{$admin['nome']} foi desativado e saiu do painel.");
+        } elseif ($acao === 'definir_senha') {
+            $erroSenha = erroNaSenhaAdmin((string) ($_POST['senha'] ?? ''), (string) ($_POST['confirma_senha'] ?? ''));
+            if ($erroSenha) {
+                avisar('danger', $erroSenha);
+            } else {
+                // Senha nova: invalida links pendentes, zera o bloqueio por tentativas e tira as sessões abertas
+                $pdo->prepare("UPDATE usuarios SET senha = ?, reset_token = NULL, reset_token_expira = NULL, tentativas_falhas = 0, bloqueado_ate = NULL
+                               WHERE id = ? AND tipo = 'admin'")->execute([password_hash((string) $_POST['senha'], PASSWORD_DEFAULT), $id]);
+                encerrarSessoesUsuario($id);
+                registrarAuditoria('admin_senha_definida', "Definiu uma nova senha para o admin {$admin['nome']}", 'usuario', $id);
+                avisar('success', "Senha de {$admin['nome']} trocada. Ele saiu do painel e entra com a senha nova; passe-a para ele.");
+            }
         } elseif ($acao === 'link_senha') {
             [$enviou, $link] = mandarLinkSenhaAdmin($pdo, $admin, false);
             registrarAuditoria('admin_link_senha', "Mandou link de definição de senha para o admin {$admin['nome']}", 'usuario', $id);
@@ -121,6 +146,17 @@ require __DIR__ . '/includes/layout_inicio.php';
                                                 <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="fas fa-user-check"></i> Reativar</button>
                                             <?php endif; ?>
                                         </form>
+                                        <details class="definir-senha w-100">
+                                            <summary class="btn btn-sm btn-outline-secondary"><i class="fas fa-key"></i> Definir senha</summary>
+                                            <form method="POST" class="d-flex flex-wrap gap-1 mt-2" autocomplete="off">
+                                                <input type="hidden" name="acao" value="definir_senha"><?= campoCsrf() ?>
+                                                <input type="hidden" name="usuario_id" value="<?= (int) $a['id'] ?>">
+                                                <input type="password" class="form-control form-control-sm campo-senha" name="senha" minlength="<?= ADMIN_SENHA_MINIMA ?>" placeholder="Nova senha" autocomplete="new-password" required aria-label="Nova senha">
+                                                <input type="password" class="form-control form-control-sm campo-senha" name="confirma_senha" minlength="<?= ADMIN_SENHA_MINIMA ?>" placeholder="Confirmar" autocomplete="new-password" required aria-label="Confirmar senha">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary gerar-senha" title="Gera uma senha forte e mostra para você copiar"><i class="fas fa-magic"></i> Gerar</button>
+                                                <button type="submit" class="btn btn-sm btn-filtrar" onclick="return confirm(<?= e(json_encode('Trocar a senha de ' . $a['nome'] . '? Ele sai do painel e entra com a senha nova.')) ?>)">Salvar</button>
+                                            </form>
+                                        </details>
                                         <form method="POST">
                                             <input type="hidden" name="acao" value="link_senha"><?= campoCsrf() ?>
                                             <input type="hidden" name="usuario_id" value="<?= (int) $a['id'] ?>">
@@ -145,20 +181,47 @@ require __DIR__ . '/includes/layout_inicio.php';
             <h2 class="titulo-secao">Novo admin</h2>
             <form method="POST" class="filtros-acessos row g-3 mb-2">
                 <input type="hidden" name="acao" value="criar"><?= campoCsrf() ?>
-                <div class="col-md-5">
+                <div class="col-md-6">
                     <label class="form-label" for="nomeAdmin">Nome</label>
                     <input type="text" class="form-control" id="nomeAdmin" name="nome" maxlength="100" required>
                 </div>
-                <div class="col-md-5">
+                <div class="col-md-6">
                     <label class="form-label" for="emailAdmin">E-mail</label>
-                    <input type="email" class="form-control" id="emailAdmin" name="email" required>
+                    <input type="email" class="form-control" id="emailAdmin" name="email" required autocomplete="off">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="senhaAdmin">Senha</label>
+                    <input type="password" class="form-control campo-senha" id="senhaAdmin" name="senha" minlength="<?= ADMIN_SENHA_MINIMA ?>" autocomplete="new-password" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="confirmaAdmin">Confirmar senha</label>
+                    <input type="password" class="form-control campo-senha" id="confirmaAdmin" name="confirma_senha" minlength="<?= ADMIN_SENHA_MINIMA ?>" autocomplete="new-password" required>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-secondary w-100 gerar-senha" title="Gera uma senha forte e mostra para você copiar"><i class="fas fa-magic"></i> Gerar</button>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <button type="submit" class="btn btn-filtrar w-100">Criar</button>
                 </div>
             </form>
             <p class="texto-secundario small">
-                O novo admin recebe por e-mail um link para criar a própria senha (vale <?= ADMIN_LINK_HORAS ?> horas); você nunca vê nem digita a senha dele.
-                Desativar tira o admin do painel na hora, em todos os aparelhos. Tudo fica registrado na Auditoria.
+                Você define a senha do admin (mínimo de <?= ADMIN_SENHA_MINIMA ?> caracteres) e a passa para ele; "Gerar" cria uma senha forte e a mostra para você copiar.
+                Em cada admin, "Definir senha" troca a senha (ele sai do painel e entra com a nova) e "Link de senha" manda um link para ele mesmo escolher, válido por <?= ADMIN_LINK_HORAS ?> horas.
+                Desativar tira o admin do painel na hora, em todos os aparelhos. Tudo fica registrado na Auditoria, menos a senha.
             </p>
+            <script>
+                // "Gerar": senha forte (sem caracteres parecidos, como l/1 e O/0) nos dois campos do mesmo formulário, visível para copiar
+                document.querySelectorAll('.gerar-senha').forEach(function (botao) {
+                    botao.addEventListener('click', function () {
+                        var letras = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%&*';
+                        var aleatorio = new Uint32Array(14);
+                        crypto.getRandomValues(aleatorio);
+                        var senha = Array.from(aleatorio, function (n) { return letras[n % letras.length]; }).join('');
+                        botao.closest('form').querySelectorAll('.campo-senha').forEach(function (campo) {
+                            campo.type = 'text';
+                            campo.value = senha;
+                        });
+                    });
+                });
+            </script>
 <?php require __DIR__ . '/includes/layout_fim.php'; ?>
